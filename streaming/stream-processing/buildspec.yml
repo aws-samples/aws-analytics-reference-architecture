@@ -1,0 +1,25 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+  build:
+    commands:
+      - echo Build started on `date`
+      - mvn clean verify -B -f streaming/stream-processing/pom.xml
+  post_build:
+    commands:
+      - echo Build completed on `date`
+
+artifacts:
+  discard-paths: yes
+  files:
+    - streaming/stream-processing/target/stream-processing-*.jar
+
+cache:
+  paths:
+    - '/root/.m2/**/*'

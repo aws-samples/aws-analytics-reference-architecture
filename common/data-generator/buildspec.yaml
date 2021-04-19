@@ -1,0 +1,42 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+version: 0.2
+
+env:
+  variables:
+    SCALA_VERSION: 2.11.12
+    SBT_VERSION: 1.2.8
+
+phases:
+  install:
+    runtime-versions:
+      java: openjdk8
+    commands:
+      - curl -fsL https://downloads.typesafe.com/scala/$SCALA_VERSION/scala-$SCALA_VERSION.tgz | tar xfz - -C ~/
+      - echo >> ~/.bashrc
+      - echo "export PATH=~/scala-$SCALA_VERSION/bin:$PATH" >> ~/.bashrc
+      - curl -L -o sbt-$SBT_VERSION.deb https://dl.bintray.com/sbt/debian/sbt-$SBT_VERSION.deb
+      - dpkg -i sbt-$SBT_VERSION.deb
+      - rm sbt-$SBT_VERSION.deb
+      - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+      - apt-get update
+      - apt-get install sbt
+  build:
+    commands:
+      - cd common/data-generator
+      - echo "starting build..."
+      # Build a fat jar using SBT
+      - sbt clean assembly
+cache:
+  paths:
+    # we can tell Code Build to cache any number of directories,
+    # here we are directing it to cache all of our project's dependencies that live in the Ivy cache (a Java/JVM dependency manager - similar to Maven)
+    - "~/.ivy2/cache/**/*"
+artifacts:
+  discard-paths: yes
+  files:
+    # These are our "artifacts", e.g. the output of our build system we'd like Code Build to do something with
+    - target/scala-2.11/tpc-generator-assembly-v1.0.jar
+    - deploy/cloud-formation/tpcds-gen.yml
+    - livetest/cloud-formation/livetest.yml

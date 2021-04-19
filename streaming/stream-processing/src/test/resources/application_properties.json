@@ -1,0 +1,23 @@
+[
+  {
+    "PropertyGroupId": "ConsumerConfigProperties",
+    "PropertyMap": {
+      "aws.region": "eu-west-1",
+      "CustomerStream": "customers",
+      "AddressStream": "addresses",
+      "SaleStream": "sales",
+      "PromoDataPath": "promos",
+      "ItemDataPath": "items"
+    }
+  },
+  {
+    "PropertyGroupId": "ProducerConfigProperties",
+    "PropertyMap": {
+      "ElasticsearchHost": "http://localhost:9200",
+      "Region": "eu-west-1",
+      "DenormalizedSalesDeliveryStream": "denormalized-stream",
+      "IndexName": "ara-write",
+      "DenormalizedSalesS3Path": "/tmp/denormalized-sales/"
+    }
+  }
+]

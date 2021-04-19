@@ -1,0 +1,25 @@
+*.swp
+package-lock.json
+*__pycache__*
+.pytest_cache
+.env
+venv/
+*.egg-info
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+.DS_Store
+.idea
+*.iml
+*.pyc
+common/data-generator/project/project/
+common/data-generator/project/target/
+common/data-generator/src/test/resources/
+common/data-generator/target/
+dwh/dwh_cdk/bootstrap_lambda_layer
+dwh/dwh_loader_layer
+streaming/streaming_cdk/lambda-layer
+streaming/stream-processing/target
+/node_modules/
+*.log
+doc/site

@@ -1,0 +1,44 @@
+{
+  "policy": {
+    "description": "ingesting logs",
+    "default_state": "ingest",
+    "states": [
+      {
+        "name": "ingest",
+        "actions": [
+          {
+            "rollover": {
+              "min_size": "50gb"
+            }
+          }
+        ],
+        "transitions": [
+          {
+            "state_name": "search"
+          }
+        ]
+      },
+      {
+        "name": "search",
+        "actions": [],
+        "transitions": [
+          {
+            "state_name": "delete",
+            "conditions": {
+              "min_index_age": "5m"
+            }
+          }
+        ]
+      },
+      {
+        "name": "delete",
+        "actions": [
+          {
+            "delete": {}
+          }
+        ],
+        "transitions": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+site_name: "AWS Analytics Reference Architecture"
+repo_name: "aws-samples/aws-analytics-reference-architecture"
+repo_url: "https://github.com/aws-samples/aws-analytics-reference-architecture"
+docs_dir: "content"
+theme:
+  name: material
+  palette:
+    primary: blue-grey
+  features:
+    - navigation.sections
+
+nav:
+  - Introduction:
+    - What is the Analytics Reference Architecture: 'index.md'
+  - High Level Design:
+    - 'high-level-design/architecture.md'
+    - Data Sources: 'high-level-design/data-sources.md'
+    - Modules:
+      - Data Lake: 'high-level-design/modules/data-lake.md'
+      - Batch Analytics: 'high-level-design/modules/batch.md'
+      - Data Warehouse:
+        - Data Warehouse Data Loading: 'high-level-design/modules/data-warehouse.md'
+        - Star Schema Physical Data Model: 'high-level-design/modules/star-schema-physical-model.md'
+        - Source to Target Mappings: 'high-level-design/modules/source-to-target-mapping.md'
+      - Data Visualization: 'high-level-design/modules/data-visualization.md'
+      - Streaming Analytics: 'high-level-design/modules/streaming.md'
+  - Solutions:
+      - Data Lake Solutions: 'solutions/data-lake.md'
+      - Batch Analytics Solutions: 'solutions/data-preparation.md'
+      - Data Warehouse Solutions: 'solutions/data-warehouse.md'
+      - Data Visualization Solutions: 'solutions/data-visualization.md'
+      - Streaming Solutions: 'solutions/streaming.md'
+      - Costs Solutions: 'solutions/costs.md'
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      use_pygments: false
+extra_css:
+  - stylesheets/extra.css
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/atom-one-light.min.css
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js
+  - javascripts/config.js

@@ -1,0 +1,21 @@
+{
+  "cluster_permissions": [
+    "cluster_composite_ops",
+    "cluster_monitor"
+  ],
+  "index_permissions": [
+    {
+      "index_patterns": [
+        "ara-*"
+      ],
+      "dls": "",
+      "fls": [],
+      "masked_fields": [],
+      "allowed_actions": [
+        "crud",
+        "create_index",
+        "manage"
+      ]
+    }
+  ]
+}
