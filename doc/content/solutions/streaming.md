@@ -9,7 +9,7 @@ Exactly once processing ensures that one streamed message is processed only once
 
 Although Kinesis Data Streams itself only provides at-least-once, the Kinesis Flink connector supports exactly-once.
 
-See https://ci.apache.org/projects/flink/flink-docs-stable/dev/connectors/guarantees.html for reference.
+See [Apache Flink documentation](https://ci.apache.org/projects/flink/flink-docs-stable/dev/connectors/guarantees.html) for reference.
 
 Notice that the Elasticsearch connector only provides at-least-once guarantee.
 In the case of Elasticsearch, the solution is to provide a consistent document id so that a second copy will overwrite the first one instead of adding an additional entry.

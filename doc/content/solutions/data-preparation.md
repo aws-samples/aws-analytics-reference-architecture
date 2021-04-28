@@ -2,7 +2,7 @@
 
 ### Challenge/Issue
 To create a data lake, you must catalog the data stored within the lake.
-As described in the [data lake section of the high-level design](../high-level-design/modules/data-lake), MyStore utilizes the [Glue Data Catalog](https://docs.aws.amazon.com/glue/latest/dg/populate-data-catalog.html) for keeping track of the location, schema, and statistics of the data.
+As described in the [data lake section of the high-level design](../../high-level-design/modules/data-lake), MyStore utilizes the [Glue Data Catalog](https://docs.aws.amazon.com/glue/latest/dg/populate-data-catalog.html) for keeping track of the location, schema, and statistics of the data.
 There are different ways to populate the metadata in the Data Catalog.
 A crawler can be used to take inventory of the data in your data stores, but there are [various methods](https://docs.aws.amazon.com/glue/latest/dg/tables-described.html) to define and update objects manually.
 Factors like latency in visibility of newly arrived data, dependency management, and cost have to be considered when looking for the right approach to keep your Data Catalog up-to-date. 
@@ -36,9 +36,10 @@ While this approach increases the cost by another crawler execution per data pre
 Even though, having a single crawler scanning all entity types within the *clean* S3 bucket introduces an unnecessary dependency between all entity types, it reduces the crawling cost significantly.
 
 In summary, tradeoffs have to be made between:
-- **Latency in data visibility**: Strictly separating the cataloging process for each entity type vs. introducing artificial dependencies between the independent entity types.
-- **Cost**: Running no, one, or multiple crawlers to update the Data Catalog.
-- **Complexity**: Updating the Data Catalog manually vs. only via crawlers vs. using a mix of manual updates and crawlers. 
+
+  * **Latency in data visibility**: Strictly separating the cataloging process for each entity type vs. introducing artificial dependencies between the independent entity types.
+  * **Cost**: Running no, one, or multiple crawlers to update the Data Catalog.
+  * **Complexity**: Updating the Data Catalog manually vs. only via crawlers vs. using a mix of manual updates and crawlers. 
 
 ## Orchestrating a serverless batch analytics pipeline
 ### Challenge/Issue
@@ -52,7 +53,7 @@ Looking at the various different workflow management products, you can easily ca
 While AWS Step Functions and Amazon Managed Workflows for Apache Airflow can be used for a wide variety of use cases and applications, AWS Glue Workflow is targeted to ease the definition, execution management, and monitoring of workflows consisting of AWS Glue activities, such as crawlers, jobs, and triggers.
 
 MyStore's data preparation process is completely decoupled from all up- and down-stream systems via the interfaces of the *raw* and *clean* S3 buckets, as well as metadata provided in the Glue Data Catalog, so its workflow management platform choice can be made in isolation from other processes.
-Furthermore, all individual steps of the data preparation process have been designed and implemented as AWS Glue activities, namely two AWS Glue crawlers and a single AWS Glue ETL Job for each entity type, as described in the [data lake section of the high-level design](../high-level-design/modules/data-lake).
+Furthermore, all individual steps of the data preparation process have been designed and implemented as AWS Glue activities, namely two AWS Glue crawlers and a single AWS Glue ETL Job for each entity type, as described in the [data lake section of the high-level design](../../high-level-design/modules/batch).
 Operating solely within the context of AWS Glue, MyStore has chosen to use AWS Glue Workflows, which natively supports all the described requirements that MyStore has for their data preparation process.
 Leveraging AWS Glue Workflows, all data preparation related processing elements can be found within the AWS Glue console.  
 
@@ -64,7 +65,7 @@ While creating a separate ETL script for each entity type would solve the issue,
 
 ### Solution
 MyStore is using a single parameterized Glue ETL script for each type of data storage format. Currently, MyStore is relying on a combination of Apache Parquet files for event logs data and Apache Hudi for updatable data. 
-(see the reasons why MyStore is using this solution [here]( #query-performance-impact-when-building-slowly-changing-dimensions)). In consequence, the Batch Analytics pipeline is limited to two ETL scripts.
+(see the reasons why MyStore is using this solution [here](../data-warehouse#optimizing-load-performance-for-slowly-changing-dimensions-in-the-data-warehouse)). In consequence, the Batch Analytics pipeline is limited to two ETL scripts.
 
 Any entity-type-specific source or target information gets defined within the parameters, whose default values are specified in the entity-type-related AWS Glue Job definition.
 It is important to note that the script does not require to define the entity-type-specific schema. 
@@ -127,7 +128,7 @@ enriched_data = cleaned_data.withColumn('etl_processing_datetime', unix_timestam
 ```
 
 Finally, the script stores the enriched data sets partitioned by the `partition_key` column in the *clean* S3 bucket, which is defined in the `output_bucket_name` parameter.
-The `clean_table_name` parameter is used to prefix the object paths of the output and update the meta data in the AWS Glue Data Catalog (in combination with `clean_db_name` parameter) as described in [Keeping the Data Catalog Up-To-Date](http://localhost:1313/solutions/data_lake/data_preparation.html#keeping-the-data-catalog-up-to-date).
+The `clean_table_name` parameter is used to prefix the object paths of the output and update the meta data in the AWS Glue Data Catalog (in combination with `clean_db_name` parameter) as described in [Keeping the Data Catalog Up-To-Date](#keeping-the-data-catalog-up-to-date).
 ``` python
 sink = glue_context.getSink(connection_type="s3", path="s3://" + output_bucket_name + "/" + clean_table_name,
                             enableUpdateCatalog=True, updateBehavior="UPDATE_IN_DATABASE",

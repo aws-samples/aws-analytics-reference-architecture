@@ -34,11 +34,11 @@ Each update of the customer is generating a new record in *store_customer* table
 Bottom line the described approach is not scalable.
 ### Solution
 To be able to always query the latest state of the record and keep the amount of historical records limited, MyStore introduced the usage of [Apache Hudi](https://hudi.apache.org/).
-Glue *clean* job is writing directly to Amazon S3 in Hudi format. To have more details about the write implementation and Hudi configuration please look at [raw2clean_hudi.py](TODO_add_link_to_file).
+Glue *clean* job is writing directly to Amazon S3 in Hudi format. To have more details about the write implementation and Hudi configuration please look at [raw2clean_hudi.py](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/batch/glue-scripts/raw2clean_hudi.py).
 
 Hudi format is no supported by Glue Crawler, nevertheless Hudi is supporting the synchronisation with Hive metastore out of the box.
-To prevent Glue Crawler failure MyStore configured *store_customer* and *store_csutomer_address* tables as exclusions [crawler.py](TODO_add_link_to_file).
-To enable Hive metastore sync, the AWS Glue job is using the Hudi configuration *hoodie.datasource.hive_sync* in [raw2clean_hudi.py](TODO_add_link_to_file). You can find more details about Hudi configuration on [this page](https://hudi.apache.org/docs/configurations.html).
+To prevent Glue Crawler failure MyStore configured *store_customer* and *store_csutomer_address* tables as exclusions [crawler.py](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/batch/batch_cdk/crawler.py#L86).
+To enable Hive metastore sync, the AWS Glue job is using the Hudi configuration *hoodie.datasource.hive_sync* in [raw2clean_hudi.py](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/batch/glue-scripts/raw2clean_hudi.py). You can find more details about Hudi configuration on [this page](https://hudi.apache.org/docs/configurations.html).
 
 Hudi is managing the number of historical records automatically and limited according to the configuration parameter *hoodie.cleaner.commits.retained*, which is configured to 10.
 

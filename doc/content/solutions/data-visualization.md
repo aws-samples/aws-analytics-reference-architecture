@@ -38,7 +38,7 @@ If the data needs to be refresh more than approximately once per hour then you w
 How can I best optimise my use of SPICE and the underlying data sources?
 
 ### Solution
-SPICE data can be refreshed manually, via the QuickSight APIs or on a schedule, for example daily, weekly or monthly. Where possible the recommended best practice is to refresh SPICE only when necessary, this ensures the underlying data sources are used efficiently by only querying the data when an update is required. This can be achieved using an event driven approach, with an example shown in this blog post (https://aws.amazon.com/blogs/big-data/event-driven-refresh-of-spice-datasets-in-amazon-quicksight/) . 
+SPICE data can be refreshed manually, via the QuickSight APIs or on a schedule, for example daily, weekly or monthly. Where possible the recommended best practice is to refresh SPICE only when necessary, this ensures the underlying data sources are used efficiently by only querying the data when an update is required. This can be achieved using an event driven approach, with an example shown in this [blog post](https://aws.amazon.com/blogs/big-data/event-driven-refresh-of-spice-datasets-in-amazon-quicksight/) . 
 
 
 ## Redshift Private Connectivity from QuickSight
@@ -47,7 +47,7 @@ SPICE data can be refreshed manually, via the QuickSight APIs or on a schedule, 
 How can I connect QuickSight to my private Redshift cluster?
 
 ### Solution
-Best practice is for Redshift clusters to not be publicly accessible, all access should be tightly controlled. In order to connect QuickSight to a Redshift cluster in a private subnet a VPC Connection can be created within QuickSight to the VPC. Security groups can be used in order to control the network communication. This article (https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-redshift-private-connection/) provides step by step instructions that detail how this can be configured.
+Best practice is for Redshift clusters to not be publicly accessible, all access should be tightly controlled. In order to connect QuickSight to a Redshift cluster in a private subnet a VPC Connection can be created within QuickSight to the VPC. Security groups can be used in order to control the network communication. This [article](https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-redshift-private-connection/) provides step by step instructions that detail how this can be configured.
 
 ## Sharing a QuickSight Analysis or Dashboard between Accounts
 
