@@ -24,7 +24,7 @@ Here is the graphical representation of the state machine
 
 For security reasons, Amazon Redshift Data API are session scoped so only submitters can see their statements. Currently, the session is based on the AWS Lambda function name so the AWS Step Function state machine is using the same AWS Lambda function for both submitting statement and polling the statement status.
 
-[Here](https://github.com/aws-samples/aws-analytics-reference-architecture/dwh/dwh_loader/dwh_loader.py) is the code for the AWS Lambda function
+[Here](https://github.com/aws-samples/aws-analytics-reference-architecture/refarch/aws-native/dwh/dwh_loader/dwh_loader.py) is the code for the AWS Lambda function
 
 
 ## Optimizing load performance for Slowly Changing Dimensions in the Data Warehouse
@@ -34,11 +34,11 @@ Each update of the customer is generating a new record in *store_customer* table
 Bottom line the described approach is not scalable.
 ### Solution
 To be able to always query the latest state of the record and keep the amount of historical records limited, MyStore introduced the usage of [Apache Hudi](https://hudi.apache.org/).
-Glue *clean* job is writing directly to Amazon S3 in Hudi format. To have more details about the write implementation and Hudi configuration please look at [raw2clean_hudi.py](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/batch/glue-scripts/raw2clean_hudi.py).
+Glue *clean* job is writing directly to Amazon S3 in Hudi format. To have more details about the write implementation and Hudi configuration please look at [raw2clean_hudi.py](https://github.com/aws-samples/aws-analytics-reference-architecture/refarch/aws-native/batch/glue-scripts/raw2clean_hudi.py).
 
 Hudi format is no supported by Glue Crawler, nevertheless Hudi is supporting the synchronisation with Hive metastore out of the box.
-To prevent Glue Crawler failure MyStore configured *store_customer* and *store_csutomer_address* tables as exclusions [crawler.py](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/batch/batch_cdk/crawler.py#L86).
-To enable Hive metastore sync, the AWS Glue job is using the Hudi configuration *hoodie.datasource.hive_sync* in [raw2clean_hudi.py](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/batch/glue-scripts/raw2clean_hudi.py). You can find more details about Hudi configuration on [this page](https://hudi.apache.org/docs/configurations.html).
+To prevent Glue Crawler failure MyStore configured *store_customer* and *store_csutomer_address* tables as exclusions [crawler.py](https://github.com/aws-samples/aws-analytics-reference-architecture/refarch/aws-native/batch/batch_cdk/crawler.py#L86).
+To enable Hive metastore sync, the AWS Glue job is using the Hudi configuration *hoodie.datasource.hive_sync* in [raw2clean_hudi.py](https://github.com/aws-samples/aws-analytics-reference-architecture/refarch/aws-native/batch/glue-scripts/raw2clean_hudi.py). You can find more details about Hudi configuration on [this page](https://hudi.apache.org/docs/configurations.html).
 
 Hudi is managing the number of historical records automatically and limited according to the configuration parameter *hoodie.cleaner.commits.retained*, which is configured to 10.
 
