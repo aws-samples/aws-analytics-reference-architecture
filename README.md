@@ -51,7 +51,7 @@ Before starting the deployment, ensure that the following steps are completed.
 2. Create a Python virtual environment in the project's directory, source it, and install all dependencies.
 
    ```
-   cd aws-analytics-reference-architecture
+   cd aws-analytics-reference-architecture/refarch/aws-native
    python3 -m venv .env
    source .env/bin/activate
    pip install -r requirements.txt
