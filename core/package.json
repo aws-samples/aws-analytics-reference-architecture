@@ -53,11 +53,13 @@
     "typescript": "^4.3.2"
   },
   "peerDependencies": {
+    "@aws-cdk/aws-kinesis": "^1.106",
     "@aws-cdk/aws-s3": "^1.106",
     "@aws-cdk/core": "^1.106",
     "constructs": "^3.2.27"
   },
   "dependencies": {
+    "@aws-cdk/aws-kinesis": "^1.106",
     "@aws-cdk/aws-s3": "^1.106",
     "@aws-cdk/core": "^1.106"
   },
