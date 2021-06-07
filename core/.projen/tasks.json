@@ -117,6 +117,7 @@
         }
       ]
     },
+<<<<<<< HEAD
     "upgrade-dependencies": {
       "name": "upgrade-dependencies",
       "description": "upgrade dependencies",
@@ -135,6 +136,8 @@
         }
       ]
     },
+=======
+>>>>>>> main
     "upgrade-projen": {
       "name": "upgrade-projen",
       "description": "upgrade projen",
