@@ -1,8 +1,8 @@
-import * as s3 from '@aws-cdk/aws-s3';
+import { Bucket, StorageClass, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Stack, RemovalPolicy, Duration } from '@aws-cdk/core';
 
 /**
- * Properties for DataLakeStorage Construct
+ * @summary Properties for DataLakeStorage Construct
  *
  */
 
@@ -10,7 +10,7 @@ export interface DataLakeStorageProps {
 }
 
 /**
- * A Data Lake Storage including AWS best practices:
+ * @summary A Data Lake Storage including AWS best practices:
  *  - S3 buckets for Raw, Cleaned and Transformed data
  *  - Data lifecycle optimization
  *  - Encryption
@@ -19,14 +19,16 @@ export interface DataLakeStorageProps {
 
 export class DataLakeStorage extends Construct {
 
-  rawBucket: s3.Bucket;
-  cleanBucket: s3.Bucket;
-  transformBucket: s3.Bucket;
+  rawBucket: Bucket;
+  cleanBucket: Bucket;
+  transformBucket: Bucket;
 
   /**
-     * Return S3 buckets with best practices configuration for Data Lakes
-     * @param scope the Scope of the CDK Stack
-     * @param id the ID of the CDK Stack
+     * Construct a new instance of DataLakeStorage based on S3 buckets with best practices configuration
+     * @param {Construct} scope the Scope of the CDK Construct
+     * @param {string} id the ID of the CDK Construct
+     * @since 1.0.0
+     * @access public
      */
 
   constructor(scope: Construct, id: string) {
@@ -36,9 +38,9 @@ export class DataLakeStorage extends Construct {
     const accountId = Stack.of(this).account;
 
     // Create the raw data bucket
-    this.rawBucket = new s3.Bucket(scope, 'RawBucket', {
+    this.rawBucket = new Bucket(scope, 'RawBucket', {
       bucketName: 'ara-raw' + accountId,
-      encryption: s3.BucketEncryption.KMS_MANAGED,
+      encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -46,11 +48,11 @@ export class DataLakeStorage extends Construct {
         {
           transitions: [
             {
-              storageClass: s3.StorageClass.INFREQUENT_ACCESS,
+              storageClass: StorageClass.INFREQUENT_ACCESS,
               transitionAfter: Duration.days(30),
             },
             {
-              storageClass: s3.StorageClass.GLACIER,
+              storageClass: StorageClass.GLACIER,
               transitionAfter: Duration.days(90),
             },
           ],
@@ -59,9 +61,9 @@ export class DataLakeStorage extends Construct {
     });
 
     // Create the clean data bucket
-    this.cleanBucket = new s3.Bucket(scope, 'CleanBucket', {
+    this.cleanBucket = new Bucket(scope, 'CleanBucket', {
       bucketName: 'ara-clean' + accountId,
-      encryption: s3.BucketEncryption.KMS_MANAGED,
+      encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -69,7 +71,7 @@ export class DataLakeStorage extends Construct {
         {
           transitions: [
             {
-              storageClass: s3.StorageClass.INFREQUENT_ACCESS,
+              storageClass: StorageClass.INFREQUENT_ACCESS,
               transitionAfter: Duration.days(365),
             },
           ],
@@ -78,9 +80,9 @@ export class DataLakeStorage extends Construct {
     });
 
     // Create the transform data bucket
-    this.transformBucket = new s3.Bucket(scope, 'TransformBucket', {
+    this.transformBucket = new Bucket(scope, 'TransformBucket', {
       bucketName: 'ara-transform' + accountId,
-      encryption: s3.BucketEncryption.KMS_MANAGED,
+      encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -88,7 +90,7 @@ export class DataLakeStorage extends Construct {
         {
           transitions: [
             {
-              storageClass: s3.StorageClass.INFREQUENT_ACCESS,
+              storageClass: StorageClass.INFREQUENT_ACCESS,
               transitionAfter: Duration.days(365),
             },
           ],

@@ -1,10 +1,10 @@
-import * as cdk from '@aws-cdk/core';
+import { Stack } from '@aws-cdk/core';
 import { DataLakeStorage } from '../src/data-lake-storage';
 import '@aws-cdk/assert/jest';
 
 test('dataLakeStorage', () => {
 
-  const dataLakeStorageStack = new cdk.Stack();
+  const dataLakeStorageStack = new Stack();
 
   // Instantiate Example Construct with customer Props
   new DataLakeStorage(dataLakeStorageStack, 'DataLakeStorageTest');
