@@ -1,10 +1,10 @@
-import * as cdk from '@aws-cdk/core';
+import { Stack } from '@aws-cdk/core';
 import { Example } from '../src/example';
 import '@aws-cdk/assert/jest';
 
 test('example construct', () => {
 
-  const exampleStack = new cdk.Stack();
+  const exampleStack = new Stack();
 
   // Instantiate Example Construct with custom Props
   new Example(exampleStack, 'CustomExample', { name: 'message', value: 'hello!' });
