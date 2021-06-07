@@ -52,11 +52,13 @@
     "typescript": "^4.3.2"
   },
   "peerDependencies": {
+    "@aws-cdk/aws-iam": "^1",
     "@aws-cdk/aws-s3": "^1",
     "@aws-cdk/core": "^1",
     "constructs": "^3.2.27"
   },
   "dependencies": {
+    "@aws-cdk/aws-iam": "^1",
     "@aws-cdk/aws-s3": "^1",
     "@aws-cdk/core": "^1"
   },
