@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-const { AwsCdkConstructLibrary } = require('projen');
-=======
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
->>>>>>> main
 const project = new AwsCdkConstructLibrary({
 
   authorName: 'Amazon Web Services',
@@ -19,32 +15,23 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-<<<<<<< HEAD
-  cdkVersion: '1.106',
-=======
   cdkVersion: '1',
->>>>>>> main
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',
   repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
   repositoryDirectory: 'core',
-<<<<<<< HEAD
-  buildWorkflow: false,
-  releaseWorkflow: false,
-  dependabot: false,
-=======
   workflow: false,
   buildWorkflow: false,
   releaseWorkflow: false,
   depsUpgrade: DependenciesUpgradeMechanism.NONE,
->>>>>>> main
   pullRequestTemplate: false,
   docgen: true,
 
   cdkDependencies: [
     '@aws-cdk/core',
     '@aws-cdk/aws-s3',
+    '@aws-cdk/aws-iam',
   ],
   devDeps: [
   ],

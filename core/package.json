@@ -13,10 +13,6 @@
     "build": "npx projen build",
     "test:watch": "npx projen test:watch",
     "test:update": "npx projen test:update",
-<<<<<<< HEAD
-    "upgrade-dependencies": "npx projen upgrade-dependencies",
-=======
->>>>>>> main
     "upgrade-projen": "npx projen upgrade-projen",
     "default": "npx projen default",
     "watch": "npx projen watch",
@@ -33,32 +29,11 @@
     "organization": true
   },
   "devDependencies": {
-<<<<<<< HEAD
-    "@aws-cdk/assert": "^1.106",
-    "@types/jest": "^26.0.23",
-    "@types/node": "^10.17.0",
-    "@typescript-eslint/eslint-plugin": "^4.25.0",
-    "@typescript-eslint/parser": "^4.25.0",
-    "eslint": "^7.27.0",
-    "eslint-import-resolver-node": "^0.3.4",
-    "eslint-import-resolver-typescript": "^2.4.0",
-    "eslint-plugin-import": "^2.23.4",
-    "jest": "^27.0.3",
-    "jest-junit": "^12",
-    "jsii": "^1.30.0",
-    "jsii-diff": "^1.30.0",
-    "jsii-docgen": "^1.8.85",
-    "jsii-pacmak": "^1.30.0",
-    "json-schema": "^0.3.0",
-    "npm-check-updates": "^11",
-    "projen": "^0.20.2",
-    "ts-jest": "^27.0.2",
-=======
     "@aws-cdk/assert": "^1",
     "@types/jest": "^26.0.23",
     "@types/node": "^10.17.0",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
-    "@typescript-eslint/parser": "^4.26.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "@typescript-eslint/parser": "^4.26.1",
     "eslint": "^7.28.0",
     "eslint-import-resolver-node": "^0.3.4",
     "eslint-import-resolver-typescript": "^2.4.0",
@@ -73,28 +48,19 @@
     "npm-check-updates": "^11",
     "projen": "^0.19.1",
     "ts-jest": "^27.0.3",
->>>>>>> main
     "typedoc": "^0.20.35",
     "typescript": "^4.3.2"
   },
   "peerDependencies": {
-<<<<<<< HEAD
-    "@aws-cdk/aws-s3": "^1.106",
-    "@aws-cdk/core": "^1.106",
-    "constructs": "^3.2.27"
-  },
-  "dependencies": {
-    "@aws-cdk/aws-s3": "^1.106",
-    "@aws-cdk/core": "^1.106"
-=======
+    "@aws-cdk/aws-iam": "^1",
     "@aws-cdk/aws-s3": "^1",
     "@aws-cdk/core": "^1",
     "constructs": "^3.2.27"
   },
   "dependencies": {
+    "@aws-cdk/aws-iam": "^1",
     "@aws-cdk/aws-s3": "^1",
     "@aws-cdk/core": "^1"
->>>>>>> main
   },
   "bundledDependencies": [],
   "keywords": [
@@ -147,11 +113,7 @@
     }
   },
   "types": "lib/index.d.ts",
-<<<<<<< HEAD
-  "stability": "experimentala",
-=======
   "stability": "experimental",
->>>>>>> main
   "jsii": {
     "outdir": "dist",
     "targets": {

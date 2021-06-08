@@ -2,11 +2,7 @@
   "dependencies": [
     {
       "name": "@aws-cdk/assert",
-<<<<<<< HEAD
-      "version": "^1.106",
-=======
       "version": "^1",
->>>>>>> main
       "type": "build"
     },
     {
@@ -77,18 +73,8 @@
       "type": "build"
     },
     {
-<<<<<<< HEAD
-      "name": "npm-check-updates",
-      "version": "^11",
-      "type": "build"
-    },
-    {
-      "name": "projen",
-      "version": "^0.20.2",
-=======
       "name": "projen",
       "version": "^0.19.1",
->>>>>>> main
       "type": "build"
     },
     {
@@ -105,21 +91,18 @@
       "type": "build"
     },
     {
-      "name": "@aws-cdk/aws-s3",
-<<<<<<< HEAD
-      "version": "^1.106",
-=======
+      "name": "@aws-cdk/aws-iam",
       "version": "^1",
->>>>>>> main
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-s3",
+      "version": "^1",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/core",
-<<<<<<< HEAD
-      "version": "^1.106",
-=======
       "version": "^1",
->>>>>>> main
       "type": "peer"
     },
     {
@@ -128,21 +111,18 @@
       "type": "peer"
     },
     {
-      "name": "@aws-cdk/aws-s3",
-<<<<<<< HEAD
-      "version": "^1.106",
-=======
+      "name": "@aws-cdk/aws-iam",
       "version": "^1",
->>>>>>> main
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-s3",
+      "version": "^1",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/core",
-<<<<<<< HEAD
-      "version": "^1.106",
-=======
       "version": "^1",
->>>>>>> main
       "type": "runtime"
     }
   ],
