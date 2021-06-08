@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@aws-cdk/assert@^1.106":
+"@aws-cdk/assert@^1":
   version "1.107.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/assert/-/assert-1.107.0.tgz#dd4798d1e92414662b38bfd088d65ce9b02a90e1"
   integrity sha512-tV+Nbvb3DOvZpgrLEYFoG4lsMk2zddtPSGDVdWN4A5xaIhYFcnh27+l2//2IuBlV9RSmeLAYPZtJV6Zn7nLegg==
@@ -39,7 +39,7 @@
     "@aws-cdk/core" "1.107.0"
     constructs "^3.3.69"
 
-"@aws-cdk/aws-iam@1.107.0":
+"@aws-cdk/aws-iam@1.107.0", "@aws-cdk/aws-iam@^1":
   version "1.107.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-iam/-/aws-iam-1.107.0.tgz#7ab84fb9ab133599aaaa6f041009d4177b1c55b0"
   integrity sha512-ZSULS+IdMK82VjcxNyLATlnYN1bQVD1om8MXGYxAkFuQLb3XL+uAa7NLVeHZtEKkPYqr8BcYlCXpB1JvGImJkA==
@@ -48,7 +48,7 @@
     "@aws-cdk/region-info" "1.107.0"
     constructs "^3.3.69"
 
-"@aws-cdk/aws-kinesis@^1.106":
+"@aws-cdk/aws-kinesis@^1":
   version "1.107.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-kinesis/-/aws-kinesis-1.107.0.tgz#6ee2dec4b2f4fefd4a4befe4ca84c31c9831774a"
   integrity sha512-ubWyaLmqK54WZvMUUgvMJ+AsRKzX7EG5xjvnoj5wYvN9bILeXUKV/I3yHMU47WluKKaDOk12wbUANK2H+sbwZg==
@@ -95,7 +95,7 @@
     "@aws-cdk/cx-api" "1.107.0"
     constructs "^3.3.69"
 
-"@aws-cdk/aws-s3@1.107.0", "@aws-cdk/aws-s3@^1.106":
+"@aws-cdk/aws-s3@1.107.0", "@aws-cdk/aws-s3@^1":
   version "1.107.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-s3/-/aws-s3-1.107.0.tgz#54914b5171d44f9f70fed764195bce735ac22b36"
   integrity sha512-BjH9S+ZlFHoqRDRT/I8m3MFB+80F6mHASMnKHuyXoMfUs8qMos7R8XEJAprx/dMf5EwAMfFYS0IFZH21CpBlxw==
@@ -135,7 +135,7 @@
     string-width "^4.2.2"
     table "^6.7.1"
 
-"@aws-cdk/core@1.107.0", "@aws-cdk/core@^1.106":
+"@aws-cdk/core@1.107.0", "@aws-cdk/core@^1":
   version "1.107.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/core/-/core-1.107.0.tgz#1c88e0b9b8afb185d49c36647d5eb45b32fd0f7f"
   integrity sha512-yE0yU341HZWd7ee0SsMOToqz4xC3PoaDerSklxWWdgw3rgVatwP4pqrml5ZOE+q6vhPseESvNRjfZizKc7xK7w==
@@ -3690,10 +3690,10 @@ jsii-diff@^1.30.0:
     typescript "~3.9.9"
     yargs "^16.2.0"
 
-jsii-docgen@^1.8.89:
-  version "1.8.89"
-  resolved "https://registry.yarnpkg.com/jsii-docgen/-/jsii-docgen-1.8.89.tgz#81f71da20161e293ef9d08de2b6a8153cbf12584"
-  integrity sha512-gb6N86ePVwGlQqZjkOzR70z0QpTh51P6/+gPGlRva5ndVIO5CzRv7qAFQhHcBgv7dTkH34qu8ncIUkMxMXCzpw==
+jsii-docgen@^1.8.90:
+  version "1.8.90"
+  resolved "https://registry.yarnpkg.com/jsii-docgen/-/jsii-docgen-1.8.90.tgz#cabafb6040c7376fcbdb2e6c8a4ce889b21ca3a3"
+  integrity sha512-qf+ebOa5p78onOokgf5SlEzNi1HnqXSlVGJTeI1w16FQPHKBgDVuTiFaxTVv1Wg4H0PUIvg20SEcRvGPqJLnag==
   dependencies:
     "@jsii/spec" "^1.30.0"
     fs-extra "^9.1.0"
