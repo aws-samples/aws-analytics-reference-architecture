@@ -1,5 +1,3 @@
-//import * as s3 from '@aws-cdk/aws-s3';
-//import * as kinesis from '@aws-cdk/aws-kinesis';
 import { Construct, Arn } from '@aws-cdk/core';
 
 /**
@@ -8,15 +6,15 @@ import { Construct, Arn } from '@aws-cdk/core';
 
 export class Dataset {
   // Enums for pre-defined dataset
-  public static DATASETS_LOCATION = 's3://aws-analytics-reference-architecture/datasets';
-  public static RETAIL_WEBSALE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/websale', 'sale_datetime');
-  public static RETAIL_STORESALE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/storesale', 'sale_datetime');
-  public static RETAIL_CUSTOMER = new Dataset(Dataset.DATASETS_LOCATION + '/retail/customer', 'customer_datetime');
-  public static RETAIL_ADDRESS = new Dataset(Dataset.DATASETS_LOCATION + '/retail/address', 'address_datetime');
-  public static RETAIL_ITEM = new Dataset(Dataset.DATASETS_LOCATION + '/retail/item', 'item_datetime');
-  public static RETAIL_PROMO = new Dataset(Dataset.DATASETS_LOCATION + '/retail/promo', 'promo_datetime');
-  public static RETAIL_WAREHOUSE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/warehouse', 'warehouse_datetime');
-  public static RETAIL_STORE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/store', 'store_datetime');
+  public static readonly DATASETS_LOCATION = 's3://aws-analytics-reference-architecture/datasets';
+  public static readonly RETAIL_WEBSALE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/websale', 'sale_datetime');
+  public static readonly RETAIL_STORESALE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/storesale', 'sale_datetime');
+  public static readonly RETAIL_CUSTOMER = new Dataset(Dataset.DATASETS_LOCATION + '/retail/customer', 'customer_datetime');
+  public static readonly RETAIL_ADDRESS = new Dataset(Dataset.DATASETS_LOCATION + '/retail/address', 'address_datetime');
+  public static readonly RETAIL_ITEM = new Dataset(Dataset.DATASETS_LOCATION + '/retail/item', 'item_datetime');
+  public static readonly RETAIL_PROMO = new Dataset(Dataset.DATASETS_LOCATION + '/retail/promo', 'promo_datetime');
+  public static readonly RETAIL_WAREHOUSE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/warehouse', 'warehouse_datetime');
+  public static readonly RETAIL_STORE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/store', 'store_datetime');
 
   /**
    * Constructs a new instance of the Dataset class
@@ -64,8 +62,8 @@ export class DataGenerator extends Construct {
 
   /**
    * Constructs a new instance of the DataGenerator class
-   * @param {cdk.App} scope the Scope of the CDK Stack
-   * @param {string} id the ID of the CDK Stack
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
    * @param {DataGeneratorProps} props the DataGenerator [properties]{@link DataGeneratorProps}
    * @since 1.0.1
    * @access public
