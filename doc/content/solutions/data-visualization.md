@@ -4,7 +4,7 @@
 How do I know when to use SPICE or direct query for my data set?
 
 ### Solution
-When creating a QuickSight data set you have the option to directly query the underlying data source, such as Athena, or load the data in to to QuickSight’s Super-fast, In-memory Calculation Engine (SPICE). Using SPICE can save time and money 
+When creating a QuickSight data set you have the option to directly query the underlying data source, such as Athena, or load the data into QuickSight’s Super-fast, In-memory Calculation Engine (SPICE). Using SPICE can save time and money 
 
 1. As the further calculations and queries needed by data and business analysts are processing locally instead of waiting for results from direct query on the external data source.
 2. As it reduces the overhead on the data lake or data warehouse by allowing the data stored in SPICE to be reused multiple times. 
@@ -28,14 +28,14 @@ If the volume of data required for analysis is larger than the limit listed abov
 2. An un-aggregated dataset, that is configured for direct query, the summary data can then be used to drill down to a filtered subset of the un-aggregated data.
 > Note: To eliminate the direct query from being made to the full un-aggregated dataset, it is recommended to keep the visual representation of detailed un-aggregated dataset i.e. the `detailed visualization` in a separate sheet from the visual representation of the pre-aggregated dataset i.e. the `summary visualization`.
 > 
-> Hence, to use [Navigation Action](https://docs.aws.amazon.com/quicksight/latest/user/quicksight-actions.html/) to keep passing filters from the `summary visualization` to the `detailed visualization`.
+> Hence, to use [Navigation Action](https://docs.aws.amazon.com/quicksight/latest/user/quicksight-actions.html) to keep passing filters from the `summary visualization` to the `detailed visualization`.
 
 ## Data Refresh Rate
-If the data needs to be refresh more than approximately once per hour then you will need to direct query the underlying data source. 
+If the data needs to be refreshed more than approximately once per hour then you will need to direct query the underlying data source. 
 
 *SPICE Refresh*
 ### Challenge/Issue
-How can I best optimise my use of SPICE and the underlying data sources?
+How can I best optimise my use of SPICE, and the underlying data sources?
 
 ### Solution
 SPICE data can be refreshed manually, via the QuickSight APIs or on a schedule, for example daily, weekly or monthly. Where possible the recommended best practice is to refresh SPICE only when necessary, this ensures the underlying data sources are used efficiently by only querying the data when an update is required. This can be achieved using an event driven approach, with an example shown in this [blog post](https://aws.amazon.com/blogs/big-data/event-driven-refresh-of-spice-datasets-in-amazon-quicksight/) . 
@@ -47,7 +47,7 @@ SPICE data can be refreshed manually, via the QuickSight APIs or on a schedule, 
 How can I connect QuickSight to my private Redshift cluster?
 
 ### Solution
-Best practice is for Redshift clusters to not be publicly accessible, all access should be tightly controlled. In order to connect QuickSight to a Redshift cluster in a private subnet a VPC Connection can be created within QuickSight to the VPC. Security groups can be used in order to control the network communication. This [article](https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-redshift-private-connection/) provides step by step instructions that detail how this can be configured.
+Best practice is for Redshift clusters to not be publicly accessible, all access should be tightly controlled. In order to connect QuickSight to a Redshift cluster in a private subnet a VPC Connection can be created within QuickSight to the VPC. Security groups can be used in order to control the network communication. This [article](https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-redshift-private-connection/) provides step-by-step instructions that detail how this can be configured.
 
 ## Sharing a QuickSight Analysis or Dashboard between Accounts
 
@@ -55,6 +55,6 @@ Best practice is for Redshift clusters to not be publicly accessible, all access
 I want to be able to share my QuickSight analysis between AWS accounts?
 
 ### Solution
-In order to share either an analysis or dashboard between QuickSight instances in separate AWS Accounts, a template can be created in the source account. This template can then be used to create a new template, analysis or dashboard in the target account. This article (https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-cross-account-template/) provides a step by step example of how this can be configured.
+In order to share either an analysis or dashboard between QuickSight instances in separate AWS Accounts, a template can be created in the source account. This template can then be used to create a new template, analysis or dashboard in the target account. This article (https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-cross-account-template/) provides a step-by-step example of how this can be configured.
 
 
