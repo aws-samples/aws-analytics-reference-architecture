@@ -53,7 +53,7 @@ Looking at the various different workflow management products, you can easily ca
 While AWS Step Functions and Amazon Managed Workflows for Apache Airflow can be used for a wide variety of use cases and applications, AWS Glue Workflow is targeted to ease the definition, execution management, and monitoring of workflows consisting of AWS Glue activities, such as crawlers, jobs, and triggers.
 
 MyStore's data preparation process is completely decoupled from all up- and down-stream systems via the interfaces of the *raw* and *clean* S3 buckets, as well as metadata provided in the Glue Data Catalog, so its workflow management platform choice can be made in isolation from other processes.
-Furthermore, all individual steps of the data preparation process have been designed and implemented as AWS Glue activities, namely two AWS Glue crawlers and, a single AWS Glue ETL Job for each entity type, as described in the [data lake section of the high-level design](../../high-level-design/modules/batch).
+Furthermore, all individual steps of the data preparation process have been designed and implemented as AWS Glue activities, namely two AWS Glue crawlers and, a single AWS Glue ETL Job for each entity type, as described in the [data lake section of the high-level design](../high-level-design/modules/batch.md).
 Operating solely within the context of AWS Glue, MyStore has chosen to use AWS Glue Workflows, which natively supports all the described requirements that MyStore has for their data preparation process.
 Leveraging AWS Glue Workflows, all data preparation related processing elements can be found within the AWS Glue console.  
 

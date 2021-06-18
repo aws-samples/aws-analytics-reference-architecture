@@ -55,6 +55,6 @@ Best practice is for Redshift clusters to not be publicly accessible, all access
 I want to be able to share my QuickSight analysis between AWS accounts?
 
 ### Solution
-In order to share either an analysis or dashboard between QuickSight instances in separate AWS Accounts, a template can be created in the source account. This template can then be used to create a new template, analysis or dashboard in the target account. This article (https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-cross-account-template/) provides a step-by-step example of how this can be configured.
+In order to share either an analysis or dashboard between QuickSight instances in separate AWS Accounts, a template can be created in the source account. This template can then be used to create a new template, analysis or dashboard in the target account. This [article](https://aws.amazon.com/premiumsupport/knowledge-center/quicksight-cross-account-template/) provides a step-by-step example of how this can be configured.
 
 
