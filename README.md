@@ -8,6 +8,8 @@ This repository contains the codebase and getting started instructions of the AW
 <!-- TODO: Update the link in the next line -->
 The background of this project, the description of the business cases, architecture, and individual patterns can be found in the [documentation](https://aws-samples.github.io/aws-analytics-reference-architecture/).
 
+![Architecture ref](https://aws-samples.github.io/aws-analytics-reference-architecture/resources/global-design.png)
+
 ## Table of Contents
 
 1. [Documentation](#getting-started---deploying-the-project-a-namegettingstarteda)
