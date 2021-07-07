@@ -6,6 +6,6 @@ updates:
     versioning-strategy: lockfile-only
     directory: /core
     schedule:
-      interval: daily
+      interval: weekly
     ignore:
       - dependency-name: projen
