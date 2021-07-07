@@ -9,6 +9,6 @@ updates:
       interval: weekly
     ignore:
       - dependency-name: projen
-      - dependency-name: @aws-cdk*
+      - dependency-name: "@aws-cdk*"
 
 
