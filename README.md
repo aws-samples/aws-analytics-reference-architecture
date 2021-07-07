@@ -12,8 +12,8 @@ The background of this project, the description of the business cases, architect
 
 ## Table of Contents
 
-1. [Documentation](#getting-started---deploying-the-project-a-namegettingstarteda)
-1. [Getting started - Deploying the Project](#getting-started---deploying-the-project-a-namegettingstarteda)
+1. [Documentation](#getting-started---deploying-the-project)
+1. [Getting started - Deploying the Project](#getting-started---deploying-the-project)
     1. [Prerequisites](#prerequisites)
     1. [Deployment](#deployment)
     1. [Adding users to Kibana](#adding-users-to-kibana)
