@@ -10,10 +10,6 @@
       "type": "build"
     },
     {
-      "name": "@types/jest",
-      "type": "build"
-    },
-    {
       "name": "@types/js-yaml",
       "type": "build"
     },
@@ -82,16 +78,10 @@
     },
     {
       "name": "projen",
-      "version": "^0.19.1",
       "type": "build"
     },
     {
       "name": "ts-jest",
-      "type": "build"
-    },
-    {
-      "name": "typedoc",
-      "version": "^0.20.35",
       "type": "build"
     },
     {
@@ -136,6 +126,10 @@
     {
       "name": "constructs",
       "version": "^3.2.27",
+      "type": "peer"
+    },
+    {
+      "name": "js-yaml",
       "type": "peer"
     },
     {

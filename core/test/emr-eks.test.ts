@@ -1,7 +1,7 @@
 import * as assertCDK from '@aws-cdk/assert';
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import * as cdk from '@aws-cdk/core';
-import { EmrEksCluster } from '../src/emreks';
+import { EmrEksCluster } from '../src/emr-eks';
 
 const app = new cdk.App();
 const stack = new cdk.Stack(app, 'TestStack');

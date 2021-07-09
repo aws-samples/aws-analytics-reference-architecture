@@ -28,7 +28,6 @@ const project = new AwsCdkConstructLibrary({
   releaseWorkflow: false,
   depsUpgrade: DependenciesUpgradeMechanism.NONE,
   pullRequestTemplate: false,
-  docgen: true,
 
   cdkDependencies: [
     '@aws-cdk/core',
@@ -45,9 +44,9 @@ const project = new AwsCdkConstructLibrary({
     '@types/jest',
   ],
 
-  peerDependencies: {
-    'js-yaml': Semver.caret('3.14.1'),
-  },
+  peerDeps: [
+    'js-yaml',
+  ],
 
   python: {
     distName: 'aws-analytics-reference-architecture',
