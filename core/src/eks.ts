@@ -7,10 +7,7 @@ import * as cdk from '@aws-cdk/core';
 import * as yaml from 'js-yaml';
 
 /**
- * Configuration options for the EksCluster construct
- * @property adminRoleArn  IAM role that is used to access the console so you're able to use AWS console UI for EKS service
- * @property fargateNamespace Fargate namespace to be created in the cluster
- * @property version Kubernetes cluster version
+ * @summary The properties for the EksCluster Construct class.
  */
 
 export interface EksClusterProps {

@@ -44,7 +44,7 @@ const project = new AwsCdkConstructLibrary({
     '@types/jest',
   ],
 
-  peerDeps: [
+  bundledDeps: [
     'js-yaml',
   ],
 

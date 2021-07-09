@@ -89,6 +89,10 @@
       "type": "build"
     },
     {
+      "name": "js-yaml",
+      "type": "bundled"
+    },
+    {
       "name": "@aws-cdk/aws-autoscaling",
       "version": "^1.111.0",
       "type": "peer"
@@ -126,10 +130,6 @@
     {
       "name": "constructs",
       "version": "^3.2.27",
-      "type": "peer"
-    },
-    {
-      "name": "js-yaml",
       "type": "peer"
     },
     {

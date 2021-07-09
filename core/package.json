@@ -59,8 +59,7 @@
     "@aws-cdk/aws-iam": "^1.111.0",
     "@aws-cdk/aws-s3": "^1.111.0",
     "@aws-cdk/core": "^1.111.0",
-    "constructs": "^3.2.27",
-    "js-yaml": "^3.14.1"
+    "constructs": "^3.2.27"
   },
   "dependencies": {
     "@aws-cdk/aws-autoscaling": "^1.111.0",
@@ -69,9 +68,12 @@
     "@aws-cdk/aws-emrcontainers": "^1.111.0",
     "@aws-cdk/aws-iam": "^1.111.0",
     "@aws-cdk/aws-s3": "^1.111.0",
-    "@aws-cdk/core": "^1.111.0"
+    "@aws-cdk/core": "^1.111.0",
+    "js-yaml": "^4.1.0"
   },
-  "bundledDependencies": [],
+  "bundledDependencies": [
+    "js-yaml"
+  ],
   "keywords": [
     "analytics",
     "aws",

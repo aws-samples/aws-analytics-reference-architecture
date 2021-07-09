@@ -3,7 +3,7 @@ import * as eks from '@aws-cdk/aws-eks';
 import * as emrcontainers from '@aws-cdk/aws-emrcontainers';
 import * as iam from '@aws-cdk/aws-iam';
 import * as cdk from '@aws-cdk/core';
-import { EksCluster } from '../src/eks';
+import { EksCluster } from './eks';
 
 /**
  * Config parameters for EmrEksCluster
