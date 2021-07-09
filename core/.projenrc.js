@@ -1,4 +1,6 @@
-const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
+
+const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism, Semver } = require('projen');
+
 const project = new AwsCdkConstructLibrary({
 
   authorName: 'Amazon Web Services',
@@ -15,7 +17,7 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1',
+  cdkVersion: '1.111.0',
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',
@@ -36,13 +38,16 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-ec2',
     '@aws-cdk/aws-emrcontainers',
     '@aws-cdk/aws-autoscaling',
-    'js-yaml',
   ],
 
   devDeps: [
     '@types/js-yaml',
     '@types/jest',
   ],
+
+  peerDependencies: {
+    'js-yaml': Semver.caret('3.14.1'),
+  },
 
   python: {
     distName: 'aws-analytics-reference-architecture',
