@@ -7,6 +7,7 @@ export interface EmrEksNodegroupProps{
 export class EmrEksNodegroup {
 
   constructor() {
+    // if possible use managed nodegroups
 
   }
 }
