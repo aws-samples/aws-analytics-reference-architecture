@@ -31,6 +31,7 @@ yarn-debug.log*
 yarn-error.log*
 !/.eslintrc.json
 !/.gitattributes
+!/.github/workflows/stale.yml
 !/.mergify.yml
 !/.npmignore
 !/.projen/deps.json

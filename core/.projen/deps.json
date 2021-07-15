@@ -74,16 +74,10 @@
     },
     {
       "name": "projen",
-      "version": "^0.19.1",
       "type": "build"
     },
     {
       "name": "ts-jest",
-      "type": "build"
-    },
-    {
-      "name": "typedoc",
-      "version": "^0.20.35",
       "type": "build"
     },
     {
