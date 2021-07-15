@@ -35,7 +35,7 @@ new DataLakeStorage(scope: Construct, id: string, props: DataLakeStorageProps)
 
 * **scope** (<code>[Construct](#aws-cdk-core-construct)</code>)  the Scope of the CDK Construct.
 * **id** (<code>string</code>)  the ID of the CDK Construct.
-* **props** (<code>[DataLakeStorageProps](#aws-analytics-reference-architecture-datalakestorageprops)</code>)  *No description*
+* **props** (<code>[DataLakeStorageProps](#aws-analytics-reference-architecture-datalakestorageprops)</code>)  the DataLakeStorageProps [Properties]{@link DataLakeStorageProps}.
   * **cleanArchiveDelay** (<code>number</code>)  Delay (in days) before archiving CLEAN data to frozen storage (Glacier storage class). __*Default*__: Objects are not archived to Glacier
   * **cleanInfrequentAccessDelay** (<code>number</code>)  Delay (in days) before moving CLEAN data to cold storage (Infrequent Access storage class). __*Default*__: Move objects to Infrequent Access after 90 days
   * **rawArchiveDelay** (<code>number</code>)  Delay (in days) before archiving RAW data to frozen storage (Glacier storage class). __*Default*__: Move objects to Glacier after 90 days
