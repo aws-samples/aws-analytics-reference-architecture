@@ -26,7 +26,6 @@ const project = new AwsCdkConstructLibrary({
   releaseWorkflow: false,
   depsUpgrade: DependenciesUpgradeMechanism.NONE,
   pullRequestTemplate: false,
-  docgen: true,
 
   cdkDependencies: [
     '@aws-cdk/core',

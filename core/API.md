@@ -30,11 +30,18 @@ __Extends__: [Construct](#aws-cdk-core-construct)
 Construct a new instance of DataLakeStorage based on S3 buckets with best practices configuration.
 
 ```ts
-new DataLakeStorage(scope: Construct, id: string)
+new DataLakeStorage(scope: Construct, id: string, props: DataLakeStorageProps)
 ```
 
 * **scope** (<code>[Construct](#aws-cdk-core-construct)</code>)  the Scope of the CDK Construct.
 * **id** (<code>string</code>)  the ID of the CDK Construct.
+* **props** (<code>[DataLakeStorageProps](#aws-analytics-reference-architecture-datalakestorageprops)</code>)  *No description*
+  * **cleanArchiveDelay** (<code>number</code>)  Delay (in days) before archiving CLEAN data to frozen storage (Glacier storage class). __*Default*__: Objects are not archived to Glacier
+  * **cleanInfrequentAccessDelay** (<code>number</code>)  Delay (in days) before moving CLEAN data to cold storage (Infrequent Access storage class). __*Default*__: Move objects to Infrequent Access after 90 days
+  * **rawArchiveDelay** (<code>number</code>)  Delay (in days) before archiving RAW data to frozen storage (Glacier storage class). __*Default*__: Move objects to Glacier after 90 days
+  * **rawInfrequentAccessDelay** (<code>number</code>)  Delay (in days) before moving RAW data to cold storage (Infrequent Access storage class). __*Default*__: Move objects to Infrequent Access after 30 days
+  * **transformArchiveDelay** (<code>number</code>)  Delay (in days) before archiving TRANSFORM data to frozen storage (Glacier storage class). __*Default*__: Objects are not archived to Glacier
+  * **transformInfrequentAccessDelay** (<code>number</code>)  Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access storage class). __*Default*__: Move objects to Infrequent Access after 90 days
 
 
 
@@ -79,6 +86,18 @@ new Example(scope: Construct, id: string, props: ExampleProps)
 ## struct DataLakeStorageProps 🔹 <a id="aws-analytics-reference-architecture-datalakestorageprops"></a>
 
 
+
+
+
+
+Name | Type | Description 
+-----|------|-------------
+**cleanArchiveDelay**?🔹 | <code>number</code> | Delay (in days) before archiving CLEAN data to frozen storage (Glacier storage class).<br/>__*Default*__: Objects are not archived to Glacier
+**cleanInfrequentAccessDelay**?🔹 | <code>number</code> | Delay (in days) before moving CLEAN data to cold storage (Infrequent Access storage class).<br/>__*Default*__: Move objects to Infrequent Access after 90 days
+**rawArchiveDelay**?🔹 | <code>number</code> | Delay (in days) before archiving RAW data to frozen storage (Glacier storage class).<br/>__*Default*__: Move objects to Glacier after 90 days
+**rawInfrequentAccessDelay**?🔹 | <code>number</code> | Delay (in days) before moving RAW data to cold storage (Infrequent Access storage class).<br/>__*Default*__: Move objects to Infrequent Access after 30 days
+**transformArchiveDelay**?🔹 | <code>number</code> | Delay (in days) before archiving TRANSFORM data to frozen storage (Glacier storage class).<br/>__*Default*__: Objects are not archived to Glacier
+**transformInfrequentAccessDelay**?🔹 | <code>number</code> | Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access storage class).<br/>__*Default*__: Move objects to Infrequent Access after 90 days
 
 
 
