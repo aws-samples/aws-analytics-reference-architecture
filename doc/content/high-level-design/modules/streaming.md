@@ -2,8 +2,8 @@
 
 The data stream is ingested in a streaming bus then consumed and processed into a streaming engine before being written to an operational data store.
 
-The data is ingested in [Amazon Kinesis Data Stream](https://aws.amazon.com/kinesis/data-streams/), a scalable and durable real-time streaming bus used as the source for real-time analytics pipelines.
-The processing of the events is handled by Amazon [Kinesis Data Analytics](https://aws.amazon.com/kinesis/data-analytics/), a serverless Apache Flink service that allows to build powerful real-time processing logic.
+The data is ingested in [Amazon Kinesis Data Streams](https://aws.amazon.com/kinesis/data-streams/), a scalable and durable real-time streaming bus used as the source for real-time analytics pipelines.
+The processing of the events is handled by [Amazon Kinesis Data Analytics](https://aws.amazon.com/kinesis/data-analytics/), a serverless Apache Flink service that allows to build powerful real-time processing logic.
 The operational data store relies on [Amazon Elasticsearch Service](https://aws.amazon.com/elasticsearch-service/), a fully managed search service compatible with Elasticsearch APIs, also including a managed [Kibana](https://aws.amazon.com/elasticsearch-service/the-elk-stack/kibana/) to built real-time dashboarding
 
 The following steps outline the different components involved in the streaming analytics platform:
@@ -23,7 +23,7 @@ The streamed data is composed of events on ***customers***, ***addresses*** and 
 
 ## Reference data
 
-Reference data is slowly moving and stored in the data lake as on or multiple file. Theses files can be in CSV (in raw layer) or Parquet formats (in clean layer) for example. In our case, the reference data is ***Items*** and ***Promos***.
+Reference data is slowly moving and stored in the data lake as one or multiple files. These files can be in CSV (in raw layer) or Parquet formats (in clean layer) for example. In our case, the reference data is ***Items*** and ***Promos***.
 
 
 ## Data processing
@@ -53,7 +53,7 @@ In the future, the application could asynchronously call a REST API for data enr
 
 Amazon Elasticsearch Service is also responsible for serving real-time visualisation queries of the streamed data via search queries, 
 and securing the data with [fine-grained access control](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/fgac.html), 
-with a granularity donw to the field level.
+with a granularity down to the field level.
 
 Included in Amazon Elasticsearch Service, [Kibana](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-kibana.html) gives the user the ability to discover, visualize and search the indexed data.
 
