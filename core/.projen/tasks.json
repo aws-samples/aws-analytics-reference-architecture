@@ -2,7 +2,6 @@
   "tasks": {
     "clobber": {
       "name": "clobber",
-      "category": "30.maintain",
       "description": "hard resets to HEAD of origin and cleans the local repo",
       "env": {
         "BRANCH": "$(git branch --show-current)"
@@ -35,7 +34,6 @@
     },
     "compile": {
       "name": "compile",
-      "category": "00.build",
       "description": "Only compile",
       "steps": [
         {
@@ -48,7 +46,6 @@
     },
     "test:compile": {
       "name": "test:compile",
-      "category": "10.test",
       "description": "compiles the test code",
       "steps": [
         {
@@ -58,7 +55,6 @@
     },
     "test": {
       "name": "test",
-      "category": "10.test",
       "description": "Run tests",
       "steps": [
         {
@@ -77,7 +73,6 @@
     },
     "build": {
       "name": "build",
-      "category": "00.build",
       "description": "Full release build (test+compile)",
       "steps": [
         {
@@ -96,7 +91,6 @@
     },
     "test:watch": {
       "name": "test:watch",
-      "category": "10.test",
       "description": "Run jest in watch mode",
       "steps": [
         {
@@ -106,7 +100,6 @@
     },
     "test:update": {
       "name": "test:update",
-      "category": "10.test",
       "description": "Update jest snapshots",
       "steps": [
         {
@@ -128,6 +121,9 @@
           "exec": "yarn install --check-files"
         },
         {
+          "exec": "yarn upgrade projen"
+        },
+        {
           "exec": "npx projen"
         }
       ]
@@ -142,7 +138,6 @@
     },
     "watch": {
       "name": "watch",
-      "category": "00.build",
       "description": "Watch & compile in the background",
       "steps": [
         {
@@ -152,7 +147,6 @@
     },
     "package": {
       "name": "package",
-      "category": "20.release",
       "description": "Create an npm tarball",
       "steps": [
         {
@@ -162,7 +156,6 @@
     },
     "eslint": {
       "name": "eslint",
-      "category": "10.test",
       "description": "Runs eslint against the codebase",
       "steps": [
         {
@@ -172,7 +165,6 @@
     },
     "compat": {
       "name": "compat",
-      "category": "20.release",
       "description": "Perform API compatibility check against latest version",
       "steps": [
         {
@@ -182,7 +174,6 @@
     },
     "docgen": {
       "name": "docgen",
-      "category": "20.release",
       "description": "Generate API.md from .jsii manifest",
       "steps": [
         {
