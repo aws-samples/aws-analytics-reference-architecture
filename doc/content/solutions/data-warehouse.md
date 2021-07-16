@@ -24,7 +24,7 @@ Here is the graphical representation of the state machine
 
 For security reasons, Amazon Redshift Data API are session scoped so only submitters can see their statements. Currently, the session is based on the AWS Lambda function name, so the AWS Step Function state machine is using the same AWS Lambda function for both submitting statement and polling the statement status.
 
-[Here](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/refarch/aws-native/batch/glue-scripts/raw2clean_hudi.py) is the code for the AWS Lambda function
+[Here](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/refarch/aws-native/dwh/dwh_loader/dwh_loader.py) is the code for the AWS Lambda function
 
 ## Optimizing load performance for Slowly Changing Dimensions in the Data Warehouse
 ### Challenge/Issue
