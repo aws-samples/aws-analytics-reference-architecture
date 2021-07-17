@@ -14,22 +14,22 @@ export interface EmrEksClusterProps {
    * EMR Virtual Cluster Name for ec2-based cluster
    */
 
-  ec2ClusterName: string;
+  readonly ec2ClusterName: string;
 
   /**
    * EMR Virtual Cluster Name for fargate cluster
    */
-  fargateClusterName?: string;
+  readonly fargateClusterName?: string;
 
   /**
    * Kubernetes version for EKS cluster that will be created
    */
-  kubernetesVersion: eks.KubernetesVersion;
+  readonly kubernetesVersion: eks.KubernetesVersion;
 
   /**
    * IAM Role to be added to EKS master roles that will give you the access to kubernetes cluster from AWS console UI
    */
-  adminRoleArn: string;
+  readonly adminRoleArn: string;
 }
 
 /**
@@ -39,17 +39,17 @@ export interface EmrVirtualClusterProps {
   /**
    * EMR Virtual Cluster Name for ec2-based cluster
    */
-  ec2ClusterName: string;
+  readonly ec2ClusterName: string;
 
   /**
    * EMR Virtual Cluster Name for fargate cluster
    */
-  fargateClusterName?: string;
+  readonly fargateClusterName?: string;
 
   /**
    * EKS cluster name to be used with EMR Virtual clusters
    */
-  eksClusterName: string;
+  readonly eksClusterName: string;
 }
 
 /**
@@ -67,7 +67,7 @@ export class EmrEksCluster extends cdk.Construct {
    * Virtual cluster construct, used to enforce deployment dependancy on EksCluster to make sure all custom resources are provisioned.
    */
 
-  public emrVirtualClusterConstruct: EmrVirtualCluster;
+  //public emrVirtualClusterConstruct: EmrVirtualCluster;
 
   constructor(scope: cdk.Construct, id: string, props: EmrEksClusterProps) {
     super(scope, id);
@@ -78,19 +78,48 @@ export class EmrEksCluster extends cdk.Construct {
       version: props.kubernetesVersion,
     });
 
-    this.emrVirtualClusterConstruct = new EmrVirtualCluster(
-      this,
-      'emrVirtCluster',
-      {
-        ec2ClusterName: props.ec2ClusterName,
-        fargateClusterName: props.fargateClusterName,
-        eksClusterName: this.eksClusterConstruct.eksCluster.clusterName,
-      },
+    /* Create serviceLinkedRole for EMR and add to kubernetes configmap */
+
+    this.eksClusterConstruct.eksClusterCDK.awsAuth.addMastersRole(
+      iam.Role.fromRoleArn(
+        this,
+        'ServiceRoleForAmazonEMRContainers',
+        `arn:aws:iam::${
+          cdk.Stack.of(this).account
+        }:role/AWSServiceRoleForAmazonEMRContainers`,
+      ),
+      'emr-containers',
     );
 
-    this.emrVirtualClusterConstruct.node.addDependency(
-      this.eksClusterConstruct,
+    const slRole = new iam.CfnServiceLinkedRole(this, 'EmrServiceIAMRole', {
+      awsServiceName: 'emr-containers.amazonaws.com',
+    });
+
+    const roleBinding = this.eksClusterConstruct.loadManifest(
+      'roleBinding',
+      './src/k8s/rbac/emr-containers.yaml',
+      [{ key: '{{NAMESPACE}}', val: 'default' }],
     );
+    roleBinding.node.addDependency(slRole);
+
+    const ec2VirtualCluster = new emrcontainers.CfnVirtualCluster(
+      this,
+      'EMRClusterEc2',
+      {
+        name: props.ec2ClusterName,
+        containerProvider: {
+          id: this.eksClusterConstruct.eksClusterCDK.clusterName,
+          type: 'EKS',
+          info: { eksInfo: { namespace: 'default' } },
+        },
+      },
+    );
+    ec2VirtualCluster.node.addDependency(roleBinding);
+    ec2VirtualCluster.node.addDependency(slRole);
+
+    /*this.emrVirtualClusterConstruct.node.addDependency(
+      this.eksClusterConstruct
+    );*/
 
     //Create EMR Worker IAM Role and trust policy
     const EmrWorkerPolicyDocument = iam.PolicyDocument.fromJson(
@@ -105,7 +134,7 @@ export class EmrEksCluster extends cdk.Construct {
     );
     const EmrWorkerIAMRole = new iam.Role(this, 'EMRWorkerIAMRole', {
       assumedBy: new iam.FederatedPrincipal(
-        this.eksClusterConstruct.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+        this.eksClusterConstruct.eksClusterCDK.openIdConnectProvider.openIdConnectProviderArn,
         [],
         'sts:AssumeRoleWithWebIdentity',
       ),
@@ -127,7 +156,7 @@ export class EmrEksCluster extends cdk.Construct {
         {
           key: 'sla',
           value: 'critical',
-          effect: 'NO_SCHEDULE',
+          effect: eks.TaintEffect.NO_SCHEDULE,
         },
       ],
     );
@@ -154,7 +183,7 @@ export class EmrEksCluster extends cdk.Construct {
 /**
  * EMR VirtualCluster CDK construct. used only internally for correct dependency resolution
  */
-
+/*
 class EmrVirtualCluster extends cdk.Construct {
   public readonly fargateVirtualClusterId?: string;
   public readonly ec2VirtualClusterId: string;
@@ -163,15 +192,15 @@ class EmrVirtualCluster extends cdk.Construct {
     super(scope, id);
     const ec2VirtualCluster = new emrcontainers.CfnVirtualCluster(
       this,
-      'EMRClusterEc2',
+      "EMRClusterEc2",
       {
         name: props.ec2ClusterName,
         containerProvider: {
           id: props.eksClusterName,
-          type: 'EKS',
-          info: { eksInfo: { namespace: 'default' } },
+          type: "EKS",
+          info: { eksInfo: { namespace: "default" } },
         },
-      },
+      }
     );
 
     this.ec2VirtualClusterId = ec2VirtualCluster.attrId;
@@ -179,19 +208,20 @@ class EmrVirtualCluster extends cdk.Construct {
     if (props.fargateClusterName) {
       const fargateVirtualCluster = new emrcontainers.CfnVirtualCluster(
         this,
-        'EMRClusterFargate',
+        "EMRClusterFargate",
         {
           name: props.fargateClusterName,
           containerProvider: {
             id: props.eksClusterName,
-            type: 'EKS',
+            type: "EKS",
             info: {
               eksInfo: { namespace: props.fargateClusterName },
             },
           },
-        },
+        }
       );
       this.fargateVirtualClusterId = fargateVirtualCluster.attrId;
     }
   }
 }
+*/

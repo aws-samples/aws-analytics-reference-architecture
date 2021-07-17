@@ -14,36 +14,36 @@ export interface EksClusterProps {
   /**
    * IAM role that is used to access AWS console so you're able to use console UI to manage EKS service
    */
-  adminRoleArn: string;
+  readonly adminRoleArn: string;
 
   /**
    * Fargate namespace to be created in the cluster
    */
-  fargateNamespace: string;
+  readonly fargateNamespace: string;
   /**
    * Kubernetes cluster version to be created
    */
-  version: eks.KubernetesVersion;
+  readonly version: eks.KubernetesVersion;
 }
 /**
  * Configuration options for specifying node group size
  */
 
-export interface eksClusterNodeGroupProps {
+export interface EksClusterNodeGroupProps {
   /**
    * Min number of instances to be maintained in the nodegroup
    */
-  minCapacity: number;
+  readonly minCapacity: number;
 
   /**
    * Desired number of instances to be maintained in the nodegroup
    */
-  desiredCapacity: number;
+  readonly desiredCapacity: number;
 
   /**
    * Max number of instances that can be created in the nodegroup
    */
-  maxCapacity: number;
+  readonly maxCapacity: number;
 }
 
 /**
@@ -68,7 +68,7 @@ export class EksCluster extends cdk.Construct {
    *
    * @see https://docs.aws.amazon.com/cdk/api/latest/docs/aws-eks-readme.html
    */
-  public readonly eksCluster: eks.Cluster;
+  public readonly eksClusterCDK: eks.Cluster;
 
   private infra: EksClusterInfra;
   private k8s: EksClusterK8s;
@@ -83,7 +83,7 @@ export class EksCluster extends cdk.Construct {
     this.k8s.node.addDependency(this.infra);
     this.version = props.version;
     this.fargateNamespace = props.fargateNamespace;
-    this.eksCluster = this.infra.eksCluster;
+    this.eksClusterCDK = this.infra.eksCluster;
   }
 
   /**
@@ -99,12 +99,12 @@ export class EksCluster extends cdk.Construct {
   public addSelfManagedNodeGroup(
     nodeGroupName: string,
     instanceType: string,
-    nodeGroupConfig: eksClusterNodeGroupProps,
+    nodeGroupConfig: EksClusterNodeGroupProps,
     useNVMe: boolean,
     labels: string[],
     spotPrice?: string,
   ): AutoScalingGroup {
-    const asgSpark = this.eksCluster.addAutoScalingGroupCapacity(
+    const asgSpark = this.eksClusterCDK.addAutoScalingGroupCapacity(
       nodeGroupName,
       {
         instanceType: new ec2.InstanceType(instanceType),
@@ -185,11 +185,11 @@ export class EksCluster extends cdk.Construct {
   public addManagedNodeGroup(
     nodeGroupName: string,
     instanceTypes: string[],
-    nodeGroupConfig: eksClusterNodeGroupProps,
+    nodeGroupConfig: EksClusterNodeGroupProps,
     useNVMe: boolean,
     useSpot: boolean,
     labels: string[],
-    taints?: Object[],
+    taints?: eks.TaintSpec[],
   ): eks.Nodegroup {
     const userData = [
       'yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm',
@@ -242,7 +242,7 @@ ${userData.join('\r\n')}
     }
 
     const sparkManagedGroup =
-      this.eksCluster.addNodegroupCapacity(nodeGroupName);
+      this.eksClusterCDK.addNodegroupCapacity(nodeGroupName);
 
     // Attach IAM Policy for SSM to be able to get shell access to the nodes
     sparkManagedGroup.role.addManagedPolicy(
@@ -265,6 +265,14 @@ ${userData.join('\r\n')}
     );
 
     return sparkManagedGroup;
+  }
+
+  public loadManifest(
+    id: string,
+    yamlFile: string,
+    replacementMap?: ReplacementMapSpec[],
+  ) {
+    return this.k8s.loadManifest(id, yamlFile, replacementMap);
   }
 }
 
@@ -356,22 +364,6 @@ class EksClusterInfra extends cdk.Construct {
         'true',
       ),
     );
-
-    /* Create serviceLinkedRole for EMR and add to kubernetes configmap */
-    new iam.CfnServiceLinkedRole(this, 'EmrServiceIAMRole', {
-      awsServiceName: 'emr-containers.amazonaws.com',
-    });
-
-    this.eksCluster.awsAuth.addMastersRole(
-      iam.Role.fromRoleArn(
-        this,
-        'ServiceRoleForAmazonEMRContainers',
-        `arn:aws:iam::${
-          cdk.Stack.of(this).account
-        }:role/AWSServiceRoleForAmazonEMRContainers`,
-      ),
-      'emr-containers',
-    );
   }
 }
 
@@ -425,7 +417,7 @@ class EksClusterK8s extends cdk.Construct {
     });
 
     /* Add K8s Role and RoleBinding to emr-containers */
-    ['default', props.fargateNamespace].forEach((item) => {
+    /*  ['default', props.fargateNamespace].forEach((item) => {
       if (item) {
         this.loadManifest(
           'roleBinding' + item,
@@ -433,7 +425,7 @@ class EksClusterK8s extends cdk.Construct {
           [{ key: '{{NAMESPACE}}', val: item }],
         );
       }
-    });
+    });*/
   }
 
   /**
@@ -451,10 +443,10 @@ class EksClusterK8s extends cdk.Construct {
    * @param replacementMap Array of key-value objects. For each object the value of 'key' parameter will be replaced with the value of 'val' parameter.
    */
 
-  private loadManifest(
+  public loadManifest(
     id: string,
     yamlFile: string,
-    replacementMap?: { key: string; val: string }[],
+    replacementMap?: ReplacementMapSpec[],
   ) {
     let manifestYaml = fs.readFileSync(yamlFile, 'utf8');
     if (replacementMap) {
@@ -466,4 +458,9 @@ class EksClusterK8s extends cdk.Construct {
     const manifest = yaml.loadAll(manifestYaml);
     return this.eksCluster.addManifest(id, ...manifest);
   }
+}
+
+export interface ReplacementMapSpec {
+  readonly key: string;
+  readonly val: string;
 }

@@ -27,20 +27,6 @@ test('Eks cluster created with correct version', () => {
   );
 });
 
-test('should have fargate-based EMR virtual cluster', () => {
-  // THEN
-  assertCDK.expect(stack).to(
-    assertCDK.haveResource('AWS::EMRContainers::VirtualCluster', {
-      ContainerProvider: assertCDK.objectLike({
-        Info: {
-          EksInfo: {
-            Namespace: fargateClusterName,
-          },
-        },
-      }),
-    }),
-  );
-});
 test('should have ec2-based EMR virtual cluster', () => {
   // THEN
   assertCDK.expect(stack).to(
