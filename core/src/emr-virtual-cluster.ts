@@ -1,51 +1,32 @@
-import { EmrEksCluster } from "./emr-eks-cluster";
-import { CfnVirtualCluster } from "@aws-cdk/aws-emrcontainers";
-import { CfnServiceLinkedRole } from "@aws-cdk/aws-iam";
-import { Construct } from "@aws-cdk/core";
+import { Cluster } from '@aws-cdk/aws-eks';
+import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
+import { Construct } from '@aws-cdk/core';
 
 export interface EmrVirtualClusterProps {
-  eksNamespace?: string;
-  createNamespace?: boolean;
+  readonly name: string;
+  readonly eksNamespace: string;
+  readonly createNamespace?: boolean;
 }
 
 export class EmrVirtualCluster extends Construct {
+  public readonly instance: CfnVirtualCluster;
+
   constructor(
     scope: Construct,
     id: string,
-    emrEksCluster: EmrEksCluster,
-    serviceLinkedRole: CfnServiceLinkedRole,
-    props: EmrVirtualClusterProps
+    eksCluster: Cluster,
+    props: EmrVirtualClusterProps,
   ) {
     super(scope, id);
 
-    const eksNamespace = props.eksNamespace ?? "default";
-    const ns = props.createNamespace
-      ? emrEksCluster.eksCluster.addManifest("eksNamespace", {
-          apiVersion: "v1",
-          kind: "Namespace",
-          metadata: { name: eksNamespace },
-        })
-      : null;
-
-    const roleBinding = emrEksCluster.loadManifest(
-      "roleBinding" + eksNamespace,
-      "./src/k8s/rbac/emr-containers.yaml",
-      [{ key: "{{NAMESPACE}}", val: eksNamespace }]
-    );
-    roleBinding.node.addDependency(serviceLinkedRole);
-    if (ns) roleBinding.node.addDependency(ns);
-
-    const virtCluster = new CfnVirtualCluster(this, "EMRClusterEc2", {
-      name: id,
+    const virtCluster = new CfnVirtualCluster(this, 'EMRClusterEc2', {
+      name: props.name,
       containerProvider: {
-        id: emrEksCluster.eksCluster.clusterName,
-        type: "EKS",
-        info: { eksInfo: { namespace: eksNamespace } },
+        id: eksCluster.clusterName,
+        type: 'EKS',
+        info: { eksInfo: { namespace: props.eksNamespace } },
       },
     });
-    virtCluster.node.addDependency(roleBinding);
-    virtCluster.node.addDependency(serviceLinkedRole);
-
-    return virtCluster;
+    this.instance = virtCluster;
   }
 }
