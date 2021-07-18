@@ -7,7 +7,7 @@ import {
 import {
   PolicyStatement,
   PolicyDocument,
-  ManagedPolicy,
+  Policy,
   Effect,
   Role,
   CfnServiceLinkedRole,
@@ -55,8 +55,7 @@ export class EmrEksCluster extends Construct {
   public readonly eksCluster: Cluster;
   private readonly clusterNameDeferred: CfnJson;
   private readonly emrServiceRole: CfnServiceLinkedRole;
-  public static readonly clusterAutoscalerPolicyName: string =
-    "eksEmrClusterAutoscalerIAMPolicy";
+  private readonly clusterAutoscalerIamRole: Policy;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -92,28 +91,27 @@ export class EmrEksCluster extends Construct {
       this.eksCluster.awsAuth.addMastersRole(clusterAdmin, "AdminRole");
     }
 
-    this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_TOOLING);
-
     // Create a Kubernetes Service Account for the Cluster Autoscaler with Amazon IAM Role
+
     const ClusterAutoscalerPolicyDocument = PolicyDocument.fromJson(
       JSON.parse(
         fs.readFileSync("./src/k8s/iam-policy-autoscaler.json", "utf8")
       )
     );
-    const clusterAutoscalerIAMPolicy = new ManagedPolicy(
+
+    this.clusterAutoscalerIamRole = new Policy(
       this,
       "ClusterAutoscalerIAMPolicy",
       {
         document: ClusterAutoscalerPolicyDocument,
-        managedPolicyName: EmrEksCluster.clusterAutoscalerPolicyName,
       }
     );
-
     const AutoscalerServiceAccount = this.eksCluster.addServiceAccount(
       "Autoscaler",
       { name: "cluster-autoscaler", namespace: "kube-system" }
     );
-    clusterAutoscalerIAMPolicy.attachToRole(AutoscalerServiceAccount.role);
+
+    this.clusterAutoscalerIamRole.attachToRole(AutoscalerServiceAccount.role);
 
     // Add the proper Amazon IAM Policy to the Amazon IAM Role for the Cluster Autoscaler
     AutoscalerServiceAccount.addToPrincipalPolicy(
@@ -182,6 +180,7 @@ export class EmrEksCluster extends Construct {
       wait: true,
     });
 
+    this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_TOOLING);
     if (!props.emrEksNodegroups) {
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_CRITICAL);
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_SHARED);
@@ -198,14 +197,9 @@ export class EmrEksCluster extends Construct {
    */
   public addEmrEksNodegroup(props: EmrEksNodegroupProps): EmrEksNodegroup {
     const sparkManagedGroup = new EmrEksNodegroup(this, this.eksCluster, props);
+    sparkManagedGroup.node.addDependency(this.clusterAutoscalerIamRole);
 
-    sparkManagedGroup.eksGroup.role.addManagedPolicy(
-      ManagedPolicy.fromManagedPolicyName(
-        this,
-        "eksEmrClusterAutoscalerIAMPolicy" + props.id,
-        EmrEksCluster.clusterAutoscalerPolicyName
-      )
-    );
+    this.clusterAutoscalerIamRole.attachToRole(sparkManagedGroup.eksGroup.role);
 
     Tags.of(sparkManagedGroup).add(
       `k8s.io/cluster-autoscaler/${this.clusterNameDeferred}`,
@@ -288,4 +282,24 @@ export class EmrEksCluster extends Construct {
     const manifest = yaml.loadAll(manifestYaml);
     return this.eksCluster.addManifest(id, ...manifest);
   }
+  /*
+  private getAutoscalerIamPolicy(): Policy {
+    if (this.clusterAutoscalerIamRole.document)
+      return this.clusterAutoscalerIamRole;
+
+    const ClusterAutoscalerPolicyDocument = PolicyDocument.fromJson(
+      JSON.parse(
+        fs.readFileSync("./src/k8s/iam-policy-autoscaler.json", "utf8")
+      )
+    );
+
+    this.clusterAutoscalerIamRole = new Policy(
+      this,
+      "ClusterAutoscalerIAMPolicy" + Math.random(),
+      {
+        document: ClusterAutoscalerPolicyDocument,
+      }
+    );
+    return this.clusterAutoscalerIamRole;
+  }*/
 }

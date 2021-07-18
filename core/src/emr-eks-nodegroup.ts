@@ -3,6 +3,7 @@
 import { CfnLaunchTemplate, InstanceType } from "@aws-cdk/aws-ec2";
 import {
   NodegroupOptions,
+  NodegroupAmiType,
   TaintEffect,
   CapacityType,
   Cluster,
@@ -32,6 +33,7 @@ export class EmrEksNodegroup extends Construct {
     options: {
       instanceTypes: [new InstanceType("r5d.xlarge")],
       minSize: 0,
+      maxSize: 50,
       labels: {
         role: "critical",
         "emr-containers.amazonaws.com/resource.type": "job.run",
@@ -51,6 +53,7 @@ export class EmrEksNodegroup extends Construct {
     options: {
       instanceTypes: [new InstanceType("m5.xlarge")],
       minSize: 0,
+      maxSize: 50,
       labels: {
         role: "shared",
         "emr-containers.amazonaws.com/resource.type": "job.run",
@@ -69,7 +72,9 @@ export class EmrEksNodegroup extends Construct {
     mountNvme: true,
     options: {
       instanceTypes: [new InstanceType("t4g.medium")],
+      amiType: NodegroupAmiType.AL2_ARM_64,
       minSize: 0,
+      maxSize: 50,
       capacityType: CapacityType.SPOT,
       labels: {
         role: "notebook",
