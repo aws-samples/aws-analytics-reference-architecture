@@ -78,7 +78,7 @@ export class EmrEksCluster extends Construct {
 
     //Create a property that will be evaulated at runtime - required for correct tagging
     this.clusterNameDeferred = new CfnJson(this, "clusterName", {
-      value: this.eksCluster.clusterName,
+      value: "" + String(this.eksCluster.clusterName),
     });
 
     // Adding the provided Amazon IAM Role as Amazon EKS Admin
@@ -140,6 +140,7 @@ export class EmrEksCluster extends Construct {
       values: {
         "serviceAccount.name": "cluster-autoscaler",
         "serviceAccount.create": false,
+        "autoDiscovery.clusterName": this.clusterNameDeferred,
       },
     });
 
@@ -201,12 +202,12 @@ export class EmrEksCluster extends Construct {
 
     this.clusterAutoscalerIamRole.attachToRole(sparkManagedGroup.eksGroup.role);
 
-    Tags.of(sparkManagedGroup).add(
+    Tags.of(sparkManagedGroup.eksGroup).add(
       `k8s.io/cluster-autoscaler/${this.clusterNameDeferred}`,
       "owned",
       { applyToLaunchedInstances: true }
     );
-    Tags.of(sparkManagedGroup).add(
+    Tags.of(sparkManagedGroup.eksGroup).add(
       "k8s.io/cluster-autoscaler/enabled",
       "true",
       {

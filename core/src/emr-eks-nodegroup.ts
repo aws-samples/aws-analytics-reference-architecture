@@ -24,6 +24,7 @@ export class EmrEksNodegroup extends Construct {
     options: {
       instanceTypes: [new InstanceType("t3.medium")],
       minSize: 1,
+      maxSize: 50,
       labels: { role: "tooling" },
     },
   };
