@@ -11,8 +11,10 @@ import {
   Effect,
   Role,
   CfnServiceLinkedRole,
+  ManagedPolicy,
+  FederatedPrincipal,
 } from "@aws-cdk/aws-iam";
-import { Construct, Tags, Stack, CfnJson } from "@aws-cdk/core";
+import { Construct, Tags, Stack, Duration } from "@aws-cdk/core";
 import * as yaml from "js-yaml";
 import { EmrEksNodegroup, EmrEksNodegroupProps } from "./emr-eks-nodegroup";
 import {
@@ -53,7 +55,8 @@ export interface EmrEksClusterProps {
 
 export class EmrEksCluster extends Construct {
   public readonly eksCluster: Cluster;
-  private readonly clusterNameDeferred: CfnJson;
+  private readonly eksClusterName: string;
+  private readonly eksClusterVersion: KubernetesVersion;
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly clusterAutoscalerIamRole: Policy;
 
@@ -70,16 +73,24 @@ export class EmrEksCluster extends Construct {
   constructor(scope: Construct, id: string, props: EmrEksClusterProps) {
     super(scope, id);
 
+    this.eksClusterName =
+      props.eksClusterName ??
+      "EmrEksCluster-" + Math.random().toString().substr(2);
+
+    this.eksClusterVersion = props.kubernetesVersion ?? KubernetesVersion.V1_20;
     // create an Amazon EKS CLuster
     this.eksCluster = new Cluster(this, "eksCluster", {
       defaultCapacity: 0,
-      version: props.kubernetesVersion ?? KubernetesVersion.V1_20,
+      clusterName: this.eksClusterName,
+      version: this.eksClusterVersion,
     });
 
     //Create a property that will be evaulated at runtime - required for correct tagging
-    this.clusterNameDeferred = new CfnJson(this, "clusterName", {
-      value: "" + String(this.eksCluster.clusterName),
-    });
+    //@todo find out why CfnJson didn;t work correctly in this case.
+
+    /*this.clusterNameDeferred = new CfnJson(this, "clusterName", {
+      value: Token.asString(this.eksCluster.clusterName),
+    });*/
 
     // Adding the provided Amazon IAM Role as Amazon EKS Admin
     if (props.eksAdminRoleArn) {
@@ -134,13 +145,26 @@ export class EmrEksCluster extends Construct {
     // Deploy the Helm Chart for Kubernetes Cluster Autoscaler
     this.eksCluster.addHelmChart("AutoScaler", {
       chart: "cluster-autoscaler",
-      namespace: "kube-system",
       repository: "https://kubernetes.github.io/autoscaler",
-      wait: true,
+      namespace: "kube-system",
+      timeout: Duration.minutes(14),
       values: {
-        "serviceAccount.name": "cluster-autoscaler",
-        "serviceAccount.create": false,
-        "autoDiscovery.clusterName": this.clusterNameDeferred,
+        cloudProvider: "aws",
+        awsRegion: Stack.of(this).region,
+        autoDiscovery: { clusterName: this.eksClusterName },
+        rbac: {
+          serviceAccount: {
+            name: "cluster-autoscaler",
+            create: false,
+          },
+        },
+        extraArgs: {
+          "skip-nodes-with-local-storage": false,
+          "scan-interval": "5s",
+          expander: "least-waste",
+          "balance-similar-node-groups": true,
+          "skip-nodes-with-system-pods": false,
+        },
       },
     });
 
@@ -179,9 +203,11 @@ export class EmrEksCluster extends Construct {
       repository: "https://charts.jetstack.io",
       version: "v1.4.0",
       wait: true,
+      timeout: Duration.minutes(14),
     });
 
     this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_TOOLING);
+
     if (!props.emrEksNodegroups) {
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_CRITICAL);
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_SHARED);
@@ -203,7 +229,7 @@ export class EmrEksCluster extends Construct {
     this.clusterAutoscalerIamRole.attachToRole(sparkManagedGroup.eksGroup.role);
 
     Tags.of(sparkManagedGroup.eksGroup).add(
-      `k8s.io/cluster-autoscaler/${this.clusterNameDeferred}`,
+      `k8s.io/cluster-autoscaler/${this.eksClusterName}`,
       "owned",
       { applyToLaunchedInstances: true }
     );
@@ -246,6 +272,24 @@ export class EmrEksCluster extends Construct {
 
     virtCluster.node.addDependency(roleBinding);
     virtCluster.node.addDependency(this.emrServiceRole);
+
+    //Create EMR Worker IAM Role and trust policy
+    const EmrWorkerPolicyDocument = PolicyDocument.fromJson(
+      JSON.parse(
+        fs.readFileSync("./src/k8s/iam-policy-emr-job-role.json", "utf8")
+      )
+    );
+    const EmrWorkerIAMPolicy = new ManagedPolicy(this, "EMRWorkerIAMPolicy", {
+      document: EmrWorkerPolicyDocument,
+    });
+    const EmrWorkerIAMRole = new Role(this, "EMRWorkerIAMRole", {
+      assumedBy: new FederatedPrincipal(
+        this.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+        [],
+        "sts:AssumeRoleWithWebIdentity"
+      ),
+    });
+    EmrWorkerIAMRole.addManagedPolicy(EmrWorkerIAMPolicy);
 
     return virtCluster;
   }
