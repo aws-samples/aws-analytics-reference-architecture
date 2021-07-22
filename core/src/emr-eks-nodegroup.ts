@@ -12,13 +12,36 @@ import {
 import { ManagedPolicy } from "@aws-cdk/aws-iam";
 import { Construct, Fn } from "@aws-cdk/core";
 
+/**
+ * @summary The properties for the EmrEksNodegroup Construct class.
+ */
+
 export interface EmrEksNodegroupProps {
-  id: string;
-  options: NodegroupOptions;
-  mountNvme?: boolean;
+  /**
+   * unique resource Id for CDK stack
+   */
+  readonly id: string;
+
+  /**
+   * Set to true if using instance types with local NVMe drives to mount them automatically at boot time
+   * @default false
+   */
+  readonly options: NodegroupOptions;
+  /**
+   * Set to true if using instance types with local NVMe drives to mount them automatically at boot time
+   * @default false
+   */
+  readonly mountNvme?: boolean;
 }
 
+/**
+ * @summary EmrEksNodegroup High-order construct automating nodegroup creation and opinioned default nodegroups configuration for EMR on EKS workloads
+ */
+
 export class EmrEksNodegroup extends Construct {
+  /*
+   ** Default nodegroup configuration for Kubernetes applications required by EMR on EKS (e.g cert manager and cluster autoscaler)
+   */
   public static readonly NODEGROUP_TOOLING: EmrEksNodegroupProps = {
     id: "tooling",
     options: {
@@ -28,6 +51,10 @@ export class EmrEksNodegroup extends Construct {
       labels: { role: "tooling" },
     },
   };
+
+  /*
+   ** Default nodegroup configuration for EMR on EKS critical workloads
+   */
   public static readonly NODEGROUP_CRITICAL: EmrEksNodegroupProps = {
     id: "criticalNodeGroup",
     mountNvme: true,
@@ -48,6 +75,10 @@ export class EmrEksNodegroup extends Construct {
       ],
     },
   };
+
+  /*
+   ** Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads
+   */
   public static readonly NODEGROUP_SHARED: EmrEksNodegroupProps = {
     id: "sharedNodeGroup",
     mountNvme: true,
@@ -68,6 +99,10 @@ export class EmrEksNodegroup extends Construct {
       ],
     },
   };
+
+  /*
+   ** Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS
+   */
   public static readonly NODEGROUP_NOTEBOOKS: EmrEksNodegroupProps = {
     id: "notebooksNodeGroup",
     mountNvme: true,
@@ -91,14 +126,27 @@ export class EmrEksNodegroup extends Construct {
     },
   };
 
+  /**
+   * reference to the aws-eks/Nodegroup created
+   * @since 1.0.0
+   * @access public
+   */
+
   public readonly eksGroup: Nodegroup;
+
+  /**
+   * Creates a new instance of the managed Eks node group.
+   * The construct is using LaunchTemplate to install SSM agent and mounts NVME disks.
+   * If you are overwriting launchTemplateSpec via props make sure you are implementing it yourself.
+   * @param {cdk.Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {EmrEksNodegroupProps} props the EmrEksNodegroupProps [properties]{@link EmrEksNodegroupProps}
+   * @since 1.0.0
+   * @access public
+   */
 
   constructor(scope: Construct, cluster: Cluster, props: EmrEksNodegroupProps) {
     super(scope, props.id);
-
-    if ("launchTemplateSpec" in props.options) {
-      throw new TypeError("LaunchTemplate is not supported in this version");
-    }
 
     const userData = [
       "yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm",
@@ -133,7 +181,7 @@ ${userData.join("\r\n")}
     const nodeGroupParameters = {
       ...props.options,
       ...{
-        launchTemplateSpec: {
+        launchTemplateSpec: props.options.launchTemplateSpec ?? {
           id: lt.ref,
           version: lt.attrLatestVersionNumber,
         },

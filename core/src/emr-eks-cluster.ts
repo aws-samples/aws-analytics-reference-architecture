@@ -28,8 +28,8 @@ import {
 
 export interface EmrEksClusterProps {
   /**
-   * Name of the Amazon EKS cluster to reuse
-   * @default -  Create a new Amazon EKS cluster
+   * Name of the Amazon EKS cluster to be created
+   * @default -  automatically generated cluster name
    */
   readonly eksClusterName?: string;
   /**
@@ -50,7 +50,7 @@ export interface EmrEksClusterProps {
 }
 
 /**
- * @Summary EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
+ * @summary EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
  */
 
 export class EmrEksCluster extends Construct {
@@ -84,13 +84,6 @@ export class EmrEksCluster extends Construct {
       clusterName: this.eksClusterName,
       version: this.eksClusterVersion,
     });
-
-    //Create a property that will be evaulated at runtime - required for correct tagging
-    //@todo find out why CfnJson didn;t work correctly in this case.
-
-    /*this.clusterNameDeferred = new CfnJson(this, "clusterName", {
-      value: Token.asString(this.eksCluster.clusterName),
-    });*/
 
     // Adding the provided Amazon IAM Role as Amazon EKS Admin
     if (props.eksAdminRoleArn) {
@@ -142,6 +135,7 @@ export class EmrEksCluster extends Construct {
     );
 
     // @todo: check if we can create the service account from the Helm Chart
+    // @todo: check if there's a workaround to run it with wait:true - at the moment the custom resource times out if you do that.
     // Deploy the Helm Chart for Kubernetes Cluster Autoscaler
     this.eksCluster.addHelmChart("AutoScaler", {
       chart: "cluster-autoscaler",
@@ -243,6 +237,14 @@ export class EmrEksCluster extends Construct {
     return sparkManagedGroup;
   }
 
+  /**
+   * Add a new Amazon EMR Virtual Cluster linked to EKS Cluster.
+   * CfnOutput can be customized.
+   * @param {Props} props the EmrEksNodegroupProps [properties]{@link EmrEksNodegroupProps}
+   * @since 1.0.0
+   * @access public
+   */
+
   public addEmrVirtualCluster(
     props: EmrVirtualClusterProps
   ): EmrVirtualCluster {
@@ -327,24 +329,4 @@ export class EmrEksCluster extends Construct {
     const manifest = yaml.loadAll(manifestYaml);
     return this.eksCluster.addManifest(id, ...manifest);
   }
-  /*
-  private getAutoscalerIamPolicy(): Policy {
-    if (this.clusterAutoscalerIamRole.document)
-      return this.clusterAutoscalerIamRole;
-
-    const ClusterAutoscalerPolicyDocument = PolicyDocument.fromJson(
-      JSON.parse(
-        fs.readFileSync("./src/k8s/iam-policy-autoscaler.json", "utf8")
-      )
-    );
-
-    this.clusterAutoscalerIamRole = new Policy(
-      this,
-      "ClusterAutoscalerIAMPolicy" + Math.random(),
-      {
-        document: ClusterAutoscalerPolicyDocument,
-      }
-    );
-    return this.clusterAutoscalerIamRole;
-  }*/
 }
