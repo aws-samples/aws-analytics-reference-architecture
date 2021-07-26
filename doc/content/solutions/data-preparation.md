@@ -27,13 +27,6 @@ sink.writeFrame(DynamicFrame.fromDF(enriched_data, glue_context, 'result'))
 Updating the Data Catalog from within the AWS Glue ETL Job has the benefit that the consumers that rely on the Data Catalog will have immediate access to the newly produced data sets.
 Furthermore, this approach can lower the cost if no additional crawler has to be executed. To understand the cost of running a crawler, refer to the [Glue Pricing](https://aws.amazon.com/glue/pricing/) page.
 When evaluating this approach for your use case, please check your requirements against the existing [restrictions](https://docs.aws.amazon.com/glue/latest/dg/update-from-job.html#update-from-job-restrictions).
-As MyStore stores the clean data in Parquet format, two of the restrictions also apply in their use case.
-First, the output has to be writen using the `glueparquet` format, because `parquet` is not supported when leveraging the Data Catalog update feature from within the job.
-Furthermore, tables created or updated with the `glueparquet` classification cannot be used as data sources for other jobs. So MyStore runs an additional crawler on the *clean* S3 bucket, once all data preparation jobs finished successfully.
-This crawler will classify the data as `parquet` and adds statistics metadata to the Glue Data Catalog. 
-
-While this approach increases the cost by another crawler execution per data preparation workflow execution, it ensures that data is immediately accessible and compatible with any type of downstream consumers. 
-Even though, having a single crawler scanning all entity types within the *clean* S3 bucket introduces an unnecessary dependency between all entity types, it reduces the crawling cost significantly.
 
 In summary, tradeoffs have to be made between:
 
@@ -53,7 +46,7 @@ Looking at the various different workflow management products, you can easily ca
 While AWS Step Functions and Amazon Managed Workflows for Apache Airflow can be used for a wide variety of use cases and applications, AWS Glue Workflow is targeted to ease the definition, execution management, and monitoring of workflows consisting of AWS Glue activities, such as crawlers, jobs, and triggers.
 
 MyStore's data preparation process is completely decoupled from all up- and down-stream systems via the interfaces of the *raw* and *clean* S3 buckets, as well as metadata provided in the Glue Data Catalog, so its workflow management platform choice can be made in isolation from other processes.
-Furthermore, all individual steps of the data preparation process have been designed and implemented as AWS Glue activities, namely two AWS Glue crawlers and, a single AWS Glue ETL Job for each entity type, as described in the [data lake section of the high-level design](../high-level-design/modules/batch.md).
+Furthermore, all individual steps of the data preparation process have been designed and implemented as AWS Glue activities, namely an AWS Glue crawler and, a single parametrised AWS Glue ETL Job for each entity type, as described in the [data lake section of the high-level design](../high-level-design/modules/batch.md).
 Operating solely within the context of AWS Glue, MyStore has chosen to use AWS Glue Workflows, which natively supports all the described requirements that MyStore has for their data preparation process.
 Leveraging AWS Glue Workflows, all data preparation related processing elements can be found within the AWS Glue console.  
 
