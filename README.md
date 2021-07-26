@@ -35,8 +35,9 @@ This section describes all steps that have to be performed to deploy the AWS Ana
 Before starting the deployment, ensure that the following steps are completed.
 
 1. [Create an AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
-2. [Subscribe to Amazon QuickSight](https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html) (if you plan to deploy the data visualization module)
-3. Install the following components with the specified version on the machine from which the deployment will be executed:
+2. The Analytics Reference Architecture can only be deployed in **eu-west-1** for the moment
+3. [Subscribe to Amazon QuickSight](https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html) (if you plan to deploy the data visualization module)
+4. Install the following components with the specified version on the machine from which the deployment will be executed:
     1. Python [3.8-3.9.2]
     2. Node [<15.6]
     3. Git
