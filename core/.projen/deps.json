@@ -6,6 +6,10 @@
       "type": "build"
     },
     {
+      "name": "@aws-sdk/types",
+      "type": "build"
+    },
+    {
       "name": "@types/jest",
       "type": "build"
     },
@@ -89,6 +93,14 @@
       "type": "build"
     },
     {
+      "name": "@aws-sdk/client-acm",
+      "type": "bundled"
+    },
+    {
+      "name": "@aws-sdk/client-emr-containers",
+      "type": "bundled"
+    },
+    {
       "name": "js-yaml",
       "type": "bundled"
     },
@@ -124,6 +136,11 @@
     },
     {
       "name": "@aws-cdk/core",
+      "version": "^1.111.0",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/lambda-layer-awscli",
       "version": "^1.111.0",
       "type": "peer"
     },
@@ -164,6 +181,11 @@
     },
     {
       "name": "@aws-cdk/core",
+      "version": "^1.111.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/lambda-layer-awscli",
       "version": "^1.111.0",
       "type": "runtime"
     }

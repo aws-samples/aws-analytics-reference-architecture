@@ -37,15 +37,19 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-ec2',
     '@aws-cdk/aws-emrcontainers',
     '@aws-cdk/aws-autoscaling',
+    '@aws-cdk/lambda-layer-awscli',
   ],
 
   devDeps: [
     '@types/js-yaml',
     '@types/jest',
+    '@aws-sdk/types'
   ],
 
   bundledDeps: [
     'js-yaml',
+    '@aws-sdk/client-emr-containers',
+    '@aws-sdk/client-acm'
   ],
 
   python: {

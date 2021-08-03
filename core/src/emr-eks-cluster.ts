@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as path from "path";
 import {
   KubernetesVersion,
   Cluster,
@@ -14,13 +15,23 @@ import {
   ManagedPolicy,
   FederatedPrincipal,
 } from "@aws-cdk/aws-iam";
-import { Construct, Tags, Stack, Duration } from "@aws-cdk/core";
+import {
+  Construct,
+  Tags,
+  Stack,
+  Duration,
+  CustomResource,
+} from "@aws-cdk/core";
 import * as yaml from "js-yaml";
 import { EmrEksNodegroup, EmrEksNodegroupProps } from "./emr-eks-nodegroup";
+import { RetentionDays } from "@aws-cdk/aws-logs";
 import {
   EmrVirtualClusterProps,
   EmrVirtualCluster,
 } from "./emr-virtual-cluster";
+import * as lambda from "@aws-cdk/aws-lambda";
+import { Provider } from "@aws-cdk/custom-resources";
+import { AwsCliLayer } from "@aws-cdk/lambda-layer-awscli";
 
 /**
  * @summary The properties for the EmrEksCluster Construct class.
@@ -189,23 +200,23 @@ export class EmrEksCluster extends Construct {
       "emr-containers"
     );
 
-    // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
-    this.eksCluster.addHelmChart("CertManager", {
-      createNamespace: true,
-      namespace: "cert-manager",
-      chart: "cert-manager",
-      repository: "https://charts.jetstack.io",
-      version: "v1.4.0",
-      wait: true,
-      timeout: Duration.minutes(14),
-    });
-
     this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_TOOLING);
 
     if (!props.emrEksNodegroups) {
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_CRITICAL);
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_SHARED);
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_NOTEBOOKS);
+
+      //add default Emr Cluster
+      const emrCluster = this.addEmrVirtualCluster({
+        name: "emrcluster1",
+        eksNamespace: "default",
+      });
+      const managedEndpoint = this.addManagedEndpoint(
+        "me1",
+        emrCluster.instance.attrId
+      );
+      managedEndpoint.node.addDependency(emrCluster);
     }
   }
 
@@ -296,7 +307,102 @@ export class EmrEksCluster extends Construct {
     return virtCluster;
   }
 
-  public addManagedEndpoint() {}
+  public addManagedEndpoint(id: string, virtualClusterId: string) {
+    // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
+    const certManager = this.eksCluster.addHelmChart("CertManager", {
+      createNamespace: true,
+      namespace: "cert-manager",
+      chart: "cert-manager",
+      repository: "https://charts.jetstack.io",
+      version: "v1.4.0",
+      wait: true,
+      timeout: Duration.minutes(14),
+    });
+
+    //Create service account for ALB and install ALB
+    const albPolicyDocument = PolicyDocument.fromJson(
+      JSON.parse(fs.readFileSync("./src/k8s/iam-policy-alb.json", "utf8"))
+    );
+    const albIAMPolicy = new Policy(
+      this,
+      "AWSLoadBalancerControllerIAMPolicy",
+      { document: albPolicyDocument }
+    );
+    const albServiceAccount = this.eksCluster.addServiceAccount("ALB", {
+      name: "aws-load-balancer-controller",
+      namespace: "kube-system",
+    });
+    albIAMPolicy.attachToRole(albServiceAccount.role);
+
+    const albService = this.eksCluster.addHelmChart("ALB", {
+      chart: "aws-load-balancer-controller",
+      repository: "https://aws.github.io/eks-charts",
+      namespace: "kube-system",
+      timeout: Duration.minutes(14),
+      values: {
+        clusterName: this.eksClusterName,
+        serviceAccount: {
+          name: "aws-load-balancer-controller",
+          create: false,
+        },
+      },
+    });
+    albService.node.addDependency(albServiceAccount);
+    albService.node.addDependency(certManager);
+
+    // Create custom resource with async waiter until the data is completed
+    const endpointId = `managed-endpoint-${id}`;
+    const lambdaPath = "managed-endpoint-cr";
+    const lambdaLayer = new AwsCliLayer(this, "awsclilayer");
+
+    const onEvent = new lambda.SingletonFunction(
+      this,
+      `${endpointId}-on-event`,
+      {
+        code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
+        uuid: id,
+        lambdaPurpose: lambdaPath,
+        runtime: lambda.Runtime.NODEJS_14_X,
+        handler: "index.onEvent",
+        layers: [lambdaLayer],
+        environment: {
+          REGION: Stack.of(this).region,
+          CLUSTER_ID: virtualClusterId,
+          EXECUTION_ROLE_ARN: "arn::",
+          ENDPOINT_NAME: endpointId,
+          RELEASE_LABEL: "emr-6.22-latest",
+        },
+      }
+    );
+
+    const isComplete = new lambda.SingletonFunction(
+      this,
+      `${endpointId}-is-complete`,
+      {
+        code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
+        runtime: lambda.Runtime.NODEJS_14_X,
+        uuid: id,
+        lambdaPurpose: lambdaPath,
+        handler: "index.isComplete",
+        layers: [lambdaLayer],
+        initialPolicy: [
+          new PolicyStatement({
+            resources: ["*"],
+            actions: ["s3:GetObject*", "s3:GetBucket*", "s3:List*"],
+          }),
+        ],
+      }
+    );
+    const myProvider = new Provider(this, "CustomResourceProvider" + id, {
+      onEventHandler: onEvent,
+      isCompleteHandler: isComplete,
+      logRetention: RetentionDays.FIVE_DAYS,
+      totalTimeout: Duration.minutes(30),
+    });
+    return new CustomResource(this, id, {
+      serviceToken: myProvider.serviceToken,
+    });
+  }
 
   /**
    * Runs K8s manifest optionally replacing placeholders in the yaml file with actual values

@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@aws-cdk/assert": "^1.111.0",
+    "@aws-sdk/types": "^3.22.0",
     "@types/jest": "^26.0.24",
     "@types/js-yaml": "^4.0.2",
     "@types/node": "^10.17.0",
@@ -59,6 +60,7 @@
     "@aws-cdk/aws-iam": "^1.111.0",
     "@aws-cdk/aws-s3": "^1.111.0",
     "@aws-cdk/core": "^1.111.0",
+    "@aws-cdk/lambda-layer-awscli": "^1.111.0",
     "constructs": "^3.2.27"
   },
   "dependencies": {
@@ -69,9 +71,14 @@
     "@aws-cdk/aws-iam": "^1.111.0",
     "@aws-cdk/aws-s3": "^1.111.0",
     "@aws-cdk/core": "^1.111.0",
-    "js-yaml": "^4.1.0"
+    "@aws-cdk/lambda-layer-awscli": "^1.111.0",
+    "@aws-sdk/client-acm": "^3.24.0",
+    "@aws-sdk/client-emr-containers": "^3.24.0",
+    "js-yaml": "^3.14.1"
   },
   "bundledDependencies": [
+    "@aws-sdk/client-acm",
+    "@aws-sdk/client-emr-containers",
     "js-yaml"
   ],
   "keywords": [
