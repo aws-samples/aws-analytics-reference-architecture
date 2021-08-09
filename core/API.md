@@ -4,6 +4,8 @@
 
 ### DataLakeStorage <a name="aws-analytics-reference-architecture.DataLakeStorage"></a>
 
+A Data Lake Storage composed of 3 Amazon S3 Buckets configured with AWS best practices:   S3 buckets for Raw/Cleaned/Transformed data,   data lifecycle optimization/transitioning to different Amazon S3 storage classes   server side buckets encryption managed by KMS.
+
 #### Initializer <a name="aws-analytics-reference-architecture.DataLakeStorage.Initializer"></a>
 
 ```typescript
@@ -32,7 +34,7 @@ the ID of the CDK Construct.
 
 - *Type:* [`aws-analytics-reference-architecture.DataLakeStorageProps`](#aws-analytics-reference-architecture.DataLakeStorageProps)
 
-the DataLakeStorageProps [Properties]{@link DataLakeStorageProps}.
+the DataLakeStorageProps properties.
 
 ---
 
@@ -60,6 +62,11 @@ the DataLakeStorageProps [Properties]{@link DataLakeStorageProps}.
 
 
 ### Example <a name="aws-analytics-reference-architecture.Example"></a>
+
+Example Construct to help onboarding contributors.
+
+This example includes best practices for code comment/documentation generation,
+and for default parameters pattern in CDK using Props with Optional properties
 
 #### Initializer <a name="aws-analytics-reference-architecture.Example.Initializer"></a>
 
@@ -89,7 +96,7 @@ the ID of the CDK Construct.
 
 - *Type:* [`aws-analytics-reference-architecture.ExampleProps`](#aws-analytics-reference-architecture.ExampleProps)
 
-the ExampleProps [properties]{@link ExampleProps}.
+the ExampleProps properties.
 
 ---
 
@@ -100,6 +107,8 @@ the ExampleProps [properties]{@link ExampleProps}.
 ## Structs <a name="Structs"></a>
 
 ### DataLakeStorageProps <a name="aws-analytics-reference-architecture.DataLakeStorageProps"></a>
+
+Properties for the DataLakeStorage Construct.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
@@ -164,6 +173,8 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 ---
 
 ### ExampleProps <a name="aws-analytics-reference-architecture.ExampleProps"></a>
+
+The properties for the Example Construct class.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
