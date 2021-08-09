@@ -21,7 +21,7 @@ export interface ExampleProps {
 }
 
 /**
- * Example Construct to help onboarding contributors. 
+ * Example Construct to help onboarding contributors.
  * This example includes best practices for code comment/documentation generation,
  * and for default parameters pattern in CDK using Props with Optional properties
  */

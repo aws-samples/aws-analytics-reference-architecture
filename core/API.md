@@ -4,7 +4,7 @@
 
 ### DataLakeStorage <a name="aws-analytics-reference-architecture.DataLakeStorage"></a>
 
-A Data Lake Storage including AWS best practices:   S3 buckets for Raw, Cleaned and Transformed data,   Data lifecycle optimization,   Encryption.
+A Data Lake Storage composed of 3 Amazon S3 Buckets configured with AWS best practices:   S3 buckets for Raw/Cleaned/Transformed data,   data lifecycle optimization/transitioning to different Amazon S3 storage classes   server side buckets encryption managed by KMS.
 
 #### Initializer <a name="aws-analytics-reference-architecture.DataLakeStorage.Initializer"></a>
 
@@ -64,6 +64,9 @@ the DataLakeStorageProps properties.
 ### Example <a name="aws-analytics-reference-architecture.Example"></a>
 
 Example Construct to help onboarding contributors.
+
+This example includes best practices for code comment/documentation generation,
+and for default parameters pattern in CDK using Props with Optional properties
 
 #### Initializer <a name="aws-analytics-reference-architecture.Example.Initializer"></a>
 
