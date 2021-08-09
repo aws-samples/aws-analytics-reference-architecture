@@ -4,6 +4,8 @@
 
 ### DataLakeStorage <a name="aws-analytics-reference-architecture.DataLakeStorage"></a>
 
+A Data Lake Storage including AWS best practices:   S3 buckets for Raw, Cleaned and Transformed data,   Data lifecycle optimization,   Encryption.
+
 #### Initializer <a name="aws-analytics-reference-architecture.DataLakeStorage.Initializer"></a>
 
 ```typescript
@@ -32,7 +34,7 @@ the ID of the CDK Construct.
 
 - *Type:* [`aws-analytics-reference-architecture.DataLakeStorageProps`](#aws-analytics-reference-architecture.DataLakeStorageProps)
 
-the DataLakeStorageProps [Properties]{@link DataLakeStorageProps}.
+the DataLakeStorageProps properties.
 
 ---
 
@@ -60,6 +62,8 @@ the DataLakeStorageProps [Properties]{@link DataLakeStorageProps}.
 
 
 ### Example <a name="aws-analytics-reference-architecture.Example"></a>
+
+Example Construct to help onboarding contributors.
 
 #### Initializer <a name="aws-analytics-reference-architecture.Example.Initializer"></a>
 
@@ -89,7 +93,7 @@ the ID of the CDK Construct.
 
 - *Type:* [`aws-analytics-reference-architecture.ExampleProps`](#aws-analytics-reference-architecture.ExampleProps)
 
-the ExampleProps [properties]{@link ExampleProps}.
+the ExampleProps properties.
 
 ---
 
@@ -100,6 +104,8 @@ the ExampleProps [properties]{@link ExampleProps}.
 ## Structs <a name="Structs"></a>
 
 ### DataLakeStorageProps <a name="aws-analytics-reference-architecture.DataLakeStorageProps"></a>
+
+Properties for the DataLakeStorage Construct.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
@@ -164,6 +170,8 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 ---
 
 ### ExampleProps <a name="aws-analytics-reference-architecture.ExampleProps"></a>
+
+The properties for the Example Construct class.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 

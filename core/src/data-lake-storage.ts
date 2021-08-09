@@ -5,7 +5,7 @@ import { Bucket, StorageClass, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Stack, RemovalPolicy, Duration } from '@aws-cdk/core';
 
 /**
- * @summary Properties for the DataLakeStorage Construct
+ * Properties for the DataLakeStorage Construct
  */
 
 export interface DataLakeStorageProps {
@@ -48,10 +48,10 @@ export interface DataLakeStorageProps {
 }
 
 /**
- * @summary A Data Lake Storage including AWS best practices:
- *  * S3 buckets for Raw, Cleaned and Transformed data
- *  * Data lifecycle optimization
- *  * Encryption
+ * A Data Lake Storage composed of 3 Amazon S3 Buckets configured with AWS best practices:
+ *  S3 buckets for Raw/Cleaned/Transformed data,
+ *  data lifecycle optimization/transitioning to different Amazon S3 storage classes
+ *  server side buckets encryption managed by KMS
  */
 
 export class DataLakeStorage extends Construct {
@@ -64,7 +64,7 @@ export class DataLakeStorage extends Construct {
      * Construct a new instance of DataLakeStorage based on S3 buckets with best practices configuration
      * @param {Construct} scope the Scope of the CDK Construct
      * @param {string} id the ID of the CDK Construct
-     * @param {DataLakeStorageProps} props the DataLakeStorageProps [Properties]{@link DataLakeStorageProps}
+     * @param {DataLakeStorageProps} props the DataLakeStorageProps properties
      * @since 1.0.0
      * @access public
      */

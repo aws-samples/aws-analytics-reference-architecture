@@ -3,12 +3,9 @@
 *.snap               	linguist-generated
 /.eslintrc.json      	linguist-generated
 /.gitattributes      	linguist-generated
-/.gitignore          	linguist-generated
 /.mergify.yml        	linguist-generated
 /.npmignore          	linguist-generated
-/.projen/**          	linguist-generated
-/.projen/deps.json   	linguist-generated
-/.projen/tasks.json  	linguist-generated
+/.projen/            	linguist-generated
 /LICENSE             	linguist-generated
 /package.json        	linguist-generated
 /tsconfig.eslint.json	linguist-generated

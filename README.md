@@ -20,6 +20,7 @@ The background of this project, the description of the business cases, architect
     1. [Connecting to Amazon Redshift](#connecting-to-amazon-redshift)
          1. [psql](#psql)
    1. [Clean up](#clean-up)
+1. [Contributing](#contributing)
 
 
 ## Documentation
@@ -220,6 +221,10 @@ psql -h localhost -p 5400 -U dwsuser -d dev
    cdk destroy
    # confirm "Are you sure you want to delete: ara (y/n)?" with y
    ```
+
+## Contributing
+
+Please refer to the [contributing guidelines](CONTRIBUTING.md) for details.
 
 # License Summary
 

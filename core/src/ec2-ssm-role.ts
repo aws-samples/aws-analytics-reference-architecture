@@ -14,7 +14,7 @@ export class Ec2SsmRole extends Role {
    * Constructs a new instance of the Ec2SsmRole class.
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {RoleProps} props the RoleProps [properties]{@link RoleProps}
+   * @param {RoleProps} props the RoleProps properties
    * @since 1.0.0
    * @access public
    */
