@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
 const project = new AwsCdkConstructLibrary({
 
@@ -25,8 +28,8 @@ const project = new AwsCdkConstructLibrary({
   buildWorkflow: false,
   releaseWorkflow: false,
   depsUpgrade: DependenciesUpgradeMechanism.NONE,
+  stale: false,
   pullRequestTemplate: false,
-  docgen: true,
 
   cdkDependencies: [
     '@aws-cdk/core',

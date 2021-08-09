@@ -91,9 +91,6 @@
         },
         {
           "spawn": "package"
-        },
-        {
-          "spawn": "docgen"
         }
       ]
     },
@@ -173,16 +170,6 @@
         }
       ]
     },
-    "docgen": {
-      "name": "docgen",
-      "category": "20.release",
-      "description": "Generate API.md from .jsii manifest",
-      "steps": [
-        {
-          "exec": "jsii-docgen"
-        }
-      ]
-    },
     "compat": {
       "name": "compat",
       "category": "20.release",
@@ -190,6 +177,16 @@
       "steps": [
         {
           "exec": "jsii-diff npm:$(node -p \"require('./package.json').name\") -k --ignore-file .compatignore || (echo \"\nUNEXPECTED BREAKING CHANGES: add keys such as 'removed:constructs.Node.of' to .compatignore to skip.\n\" && exit 1)"
+        }
+      ]
+    },
+    "docgen": {
+      "name": "docgen",
+      "category": "20.release",
+      "description": "Generate API.md from .jsii manifest",
+      "steps": [
+        {
+          "exec": "jsii-docgen"
         }
       ]
     }
