@@ -89,7 +89,7 @@ Put relevant type of contribution in the commit message. This message is used to
 
 ### Documentation
 
-* Typedoc (https://typedoc.org/guides/doccomments/) for code comments and API documentation in the framework (./core)
+* Typedoc (https://typedoc.org/guides/doccomments/) for code comments and API documentation in the framework (./core). See the `ExampleProps` interface and `Example` class [here](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/example.ts)
 * Pdoc3 (https://pdoc3.github.io/pdoc/) for code comments and API documentation of reference architectures (./refarch)
 
 ### Coding best practices and patterns
@@ -100,7 +100,7 @@ Please refer to the official CDK guidelines (https://github.com/aws/aws-cdk/blob
 
 AWS CDK Constructs are abstractions with built-in best practices that can be overriden with custom configurations to allow extensibility. Use optional Props parameters in the interface and defaults Props values in the CDK Construct constructor. Document default values in the Props interface documentation.
 
-See the `ExampleProps` interface and `Example` class[here](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/example.ts). `name` and `value` are optional parameters of the interface. In the `Example` class constructor, `name` and `value` existance are tested and default parameters are used if they are not provided to the Props.
+See the `ExampleProps` interface and `Example` class [here](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/example.ts). `name` and `value` are optional parameters of the interface. In the `Example` class constructor, `name` and `value` existance are tested and default parameters are used if they are not provided to the Props.
 
 #### Pre-defined CDK objects
 
