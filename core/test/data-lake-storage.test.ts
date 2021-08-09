@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import { Stack } from '@aws-cdk/core';
 import { DataLakeStorage } from '../src/data-lake-storage';
 import '@aws-cdk/assert/jest';

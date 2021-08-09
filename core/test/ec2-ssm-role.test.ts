@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import { ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Stack } from '@aws-cdk/core';
 import { Ec2SsmRole } from '../src/ec2-ssm-role';
