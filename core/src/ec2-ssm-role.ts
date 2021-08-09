@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import { Role, RoleProps, ManagedPolicy } from '@aws-cdk/aws-iam';
 import { Construct } from '@aws-cdk/core';
 

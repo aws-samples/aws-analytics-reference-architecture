@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import { Bucket, StorageClass, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Stack, RemovalPolicy, Duration } from '@aws-cdk/core';
 
