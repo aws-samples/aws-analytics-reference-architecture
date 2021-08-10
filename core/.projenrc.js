@@ -26,7 +26,7 @@ const project = new AwsCdkConstructLibrary({
   repositoryDirectory: 'core',
   workflow: false,
   buildWorkflow: false,
-  releaseWorkflow: false,
+  releaseWorkflow: true,
   depsUpgrade: DependenciesUpgradeMechanism.NONE,
   stale: false,
   pullRequestTemplate: false,
