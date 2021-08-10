@@ -13,6 +13,8 @@
 .yarn-integrity
 /coverage
 /dist
+/dist/changelog.md
+/dist/version.txt
 /lib
 /test-reports/
 build/Release
@@ -31,6 +33,7 @@ yarn-debug.log*
 yarn-error.log*
 !/.eslintrc.json
 !/.gitattributes
+!/.github/workflows/release.yml
 !/.mergify.yml
 !/.npmignore
 !/.projen/deps.json
