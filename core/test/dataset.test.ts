@@ -33,7 +33,7 @@ test('custom Dataset createTable', () => {
 test('custom Dataset createTable', () => {
   // Test if datetime parameter is right
   expect(customDataset.generateData).toEqual('UNLOAD');
-});  
+});
 
 test('Table name SQL compatible', () => {
   // Test if the table name extracted from an Amazon S3 prefix is correct
@@ -43,12 +43,11 @@ test('Table name SQL compatible', () => {
 test('ParseCreateQuery method', () => {
   // Test if create table statement is correctly parsed
   expect(Dataset.RETAIL_STORE_SALE.parseCreateQuery(
-      DataGenerator.DATA_GENERATOR_DATABASE,
-      Dataset.RETAIL_STORE_SALE.tableName,
-      Dataset.RETAIL_STORE_SALE.bucket,
-      Dataset.RETAIL_STORE_SALE.key
-    )
-  ).toEqual(`CREATE EXTERNAL TABLE IF NOT EXISTS \`${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_STORE_SALE.tableName}\`(
+    DataGenerator.DATA_GENERATOR_DATABASE,
+    Dataset.RETAIL_STORE_SALE.tableName,
+    Dataset.RETAIL_STORE_SALE.bucket,
+    Dataset.RETAIL_STORE_SALE.key
+  )).toEqual(`CREATE EXTERNAL TABLE IF NOT EXISTS \`${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_STORE_SALE.tableName}\`(
   \`item_id\` bigint,
   \`ticket_id\` bigint,
   \`quantity\` bigint,

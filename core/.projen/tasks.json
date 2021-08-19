@@ -2,6 +2,7 @@
   "tasks": {
     "clobber": {
       "name": "clobber",
+      "category": "30.maintain",
       "description": "hard resets to HEAD of origin and cleans the local repo",
       "env": {
         "BRANCH": "$(git branch --show-current)"
@@ -34,6 +35,7 @@
     },
     "compile": {
       "name": "compile",
+      "category": "00.build",
       "description": "Only compile",
       "steps": [
         {
@@ -46,6 +48,7 @@
     },
     "test:compile": {
       "name": "test:compile",
+      "category": "10.test",
       "description": "compiles the test code",
       "steps": [
         {
@@ -55,6 +58,7 @@
     },
     "test": {
       "name": "test",
+      "category": "10.test",
       "description": "Run tests",
       "steps": [
         {
@@ -73,6 +77,7 @@
     },
     "build": {
       "name": "build",
+      "category": "00.build",
       "description": "Full release build (test+compile)",
       "steps": [
         {
@@ -91,6 +96,7 @@
     },
     "test:watch": {
       "name": "test:watch",
+      "category": "10.test",
       "description": "Run jest in watch mode",
       "steps": [
         {
@@ -100,6 +106,7 @@
     },
     "test:update": {
       "name": "test:update",
+      "category": "10.test",
       "description": "Update jest snapshots",
       "steps": [
         {
@@ -109,42 +116,28 @@
     },
     "bump": {
       "name": "bump",
+      "category": "20.release",
       "description": "Bumps version based on latest git tag and generates a changelog entry",
-      "env": {
-        "OUTFILE": "package.json",
-        "CHANGELOG": "dist/changelog.md",
-        "BUMPFILE": "dist/version.txt"
-      },
       "steps": [
         {
-          "builtin": "release/bump-version"
+          "exec": "git -c \"versionsort.suffix=-\" tag --sort=\"-version:refname\" --list \"v*\" | head -n1 > .version.tmp.json"
+        },
+        {
+          "exec": "if [ \"$(cat .version.tmp.json)\" = \"\" ]; then echo \"v0.1.0\" > .version.tmp.json; fi"
+        },
+        {
+          "exec": "npx standard-version@^9"
         }
       ],
       "condition": "! git log --oneline -1 | grep -q \"chore(release):\""
     },
     "unbump": {
       "name": "unbump",
+      "category": "20.release",
       "description": "Restores version to 0.0.0",
-      "env": {
-        "OUTFILE": "package.json",
-        "CHANGELOG": "dist/changelog.md",
-        "BUMPFILE": "dist/version.txt"
-      },
       "steps": [
         {
-          "builtin": "release/reset-version"
-        }
-      ]
-    },
-    "publish:github": {
-      "name": "publish:github",
-      "description": "Publish this package to GitHub Releases",
-      "requiredEnv": [
-        "GITHUB_TOKEN"
-      ],
-      "steps": [
-        {
-          "exec": "gh release create v$(cat dist/version.txt) -R ${{ github.repository }} -F dist/changelog.md -t v$(cat dist/version.txt)"
+          "exec": "npx standard-version@^9 -r 0.0.0"
         }
       ]
     },
@@ -162,9 +155,6 @@
           "exec": "yarn install --check-files"
         },
         {
-          "exec": "yarn upgrade projen"
-        },
-        {
           "exec": "npx projen"
         }
       ]
@@ -179,6 +169,7 @@
     },
     "watch": {
       "name": "watch",
+      "category": "00.build",
       "description": "Watch & compile in the background",
       "steps": [
         {
@@ -188,6 +179,7 @@
     },
     "package": {
       "name": "package",
+      "category": "20.release",
       "description": "Create an npm tarball",
       "steps": [
         {
@@ -197,6 +189,7 @@
     },
     "eslint": {
       "name": "eslint",
+      "category": "10.test",
       "description": "Runs eslint against the codebase",
       "steps": [
         {
@@ -206,6 +199,7 @@
     },
     "compat": {
       "name": "compat",
+      "category": "20.release",
       "description": "Perform API compatibility check against latest version",
       "steps": [
         {
@@ -213,37 +207,9 @@
         }
       ]
     },
-    "publish:npm": {
-      "name": "publish:npm",
-      "description": "Publish this package to npm",
-      "env": {
-        "NPM_DIST_TAG": "latest",
-        "NPM_REGISTRY": "registry.npmjs.org"
-      },
-      "requiredEnv": [
-        "NPM_TOKEN"
-      ],
-      "steps": [
-        {
-          "exec": "npx -p jsii-release@latest jsii-release-npm"
-        }
-      ]
-    },
-    "publish:pypi": {
-      "name": "publish:pypi",
-      "description": "Publish this package to PyPI",
-      "requiredEnv": [
-        "TWINE_USERNAME",
-        "TWINE_PASSWORD"
-      ],
-      "steps": [
-        {
-          "exec": "npx -p jsii-release@latest jsii-release-pypi"
-        }
-      ]
-    },
     "docgen": {
       "name": "docgen",
+      "category": "20.release",
       "description": "Generate API.md from .jsii manifest",
       "steps": [
         {
@@ -264,30 +230,6 @@
       "steps": [
         {
           "exec": "cdk destroy --app=./lib/integ.default.js"
-        }
-      ]
-    },
-    "release": {
-      "name": "release",
-      "description": "Prepare a release from \"main\" branch",
-      "env": {
-        "RELEASE": "true"
-      },
-      "steps": [
-        {
-          "exec": "rm -fr dist"
-        },
-        {
-          "spawn": "bump"
-        },
-        {
-          "spawn": "build"
-        },
-        {
-          "spawn": "unbump"
-        },
-        {
-          "exec": "git diff --ignore-space-at-eol --exit-code"
         }
       ]
     }

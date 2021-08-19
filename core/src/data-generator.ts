@@ -5,14 +5,15 @@ import { CfnDatabase } from '@aws-cdk/aws-glue';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { SingletonFunction, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
+import { Bucket } from '@aws-cdk/aws-s3'
+;
 import { StateMachine, IntegrationPattern } from '@aws-cdk/aws-stepfunctions';
 import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfunctions-tasks';
 import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
 import { Dataset } from './dataset';
 import { SingletonBucket } from './singleton-bucket';
-import { Bucket } from '@aws-cdk/aws-s3'
-;import { SynchronousAthenaQuery } from './synchronous-athena-query';
+import { SynchronousAthenaQuery } from './synchronous-athena-query';
 
 
 /**
@@ -97,7 +98,7 @@ export class DataGenerator extends Construct {
 
     // Parse the sinkArn into ArnComponents and raise an error if it's not an Amazon S3 Sink
     const arn = Arn.split(this.sinkArn, ArnFormat.SLASH_RESOURCE_NAME);
-    Bucket.fromBucketArn(this, 'Sink', this.sinkArn)
+    Bucket.fromBucketArn(this, 'Sink', this.sinkArn);
 
     // Target table creation in Amazon Athena
     const createTargetTable = new SynchronousAthenaQuery(this, 'createTargetTable', {
@@ -201,21 +202,6 @@ export class DataGenerator extends Construct {
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(30),
     });
-
-    querySetupFn.addToRolePolicy(new PolicyStatement({
-      resources: [
-        stack.formatArn({
-          region: Aws.REGION,
-          account: Aws.ACCOUNT_ID,
-          service: 'ssm',
-          resource: 'parameter',
-          resourceName: this.dataset.tableName + '_offset',
-        }),
-      ],
-      actions: [
-        'ssm:GetParameter',
-      ],
-    }));
 
     // AWS Step Functions task to prepare data generation
     const querySetupTask = new LambdaInvoke(this, 'querySetupTask', {

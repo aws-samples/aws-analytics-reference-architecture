@@ -2,7 +2,7 @@
   "dependencies": [
     {
       "name": "@aws-cdk/assert",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "build"
     },
     {
@@ -74,6 +74,7 @@
     },
     {
       "name": "projen",
+      "version": "^0.19.1",
       "type": "build"
     },
     {
@@ -91,57 +92,57 @@
     },
     {
       "name": "@aws-cdk/aws-athena",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-glue",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-iam",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-kinesis",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-lambda",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-logs",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-s3",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions-tasks",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/custom-resources",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "peer"
     },
     {
@@ -151,57 +152,57 @@
     },
     {
       "name": "@aws-cdk/aws-athena",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-glue",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-iam",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-kinesis",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-lambda",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-logs",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-s3",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions-tasks",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/custom-resources",
-      "version": "^1.118",
+      "version": "^1.119",
       "type": "runtime"
     }
   ],

@@ -23,7 +23,7 @@ export interface SynchronousAthenaQueryProps {
   /**
    * The Amazon S3 path for the query results
    */
-  readonly resultPath: string;
+  readonly resultsPath: string;
 }
 
 /**
@@ -110,7 +110,7 @@ export class SynchronousAthenaQuery extends Construct {
       serviceToken: synchronousAthenaQueryCRP.serviceToken,
       properties: {
         Statement: props.statement,
-        ResultsPath: props.resultPath,
+        ResultsPath: props.resultsPath,
       },
     });
   }
