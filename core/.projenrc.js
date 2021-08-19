@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-const PROJECT_NAME = 'aws-analytics-reference-architecture'
+const PROJECT_NAME = 'aws-analytics-reference-architecture';
 
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
 const project = new AwsCdkConstructLibrary({
