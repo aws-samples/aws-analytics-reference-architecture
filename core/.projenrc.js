@@ -18,7 +18,7 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1',
+  cdkVersion: '1.119',
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',
@@ -36,7 +36,8 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-s3',
     '@aws-cdk/aws-iam',
   ],
-  devDeps: [
+  bundledDeps: [
+    'xmldom@github:xmldom/xmldom#0.7.0',
   ],
 
   python: {

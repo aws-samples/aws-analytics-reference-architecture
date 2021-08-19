@@ -2,7 +2,7 @@
   "dependencies": [
     {
       "name": "@aws-cdk/assert",
-      "version": "^1",
+      "version": "^1.119",
       "type": "build"
     },
     {
@@ -91,18 +91,23 @@
       "type": "build"
     },
     {
+      "name": "xmldom",
+      "version": "github:xmldom/xmldom#0.7.0",
+      "type": "bundled"
+    },
+    {
       "name": "@aws-cdk/aws-iam",
-      "version": "^1",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-s3",
-      "version": "^1",
+      "version": "^1.119",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "^1",
+      "version": "^1.119",
       "type": "peer"
     },
     {
@@ -112,17 +117,17 @@
     },
     {
       "name": "@aws-cdk/aws-iam",
-      "version": "^1",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-s3",
-      "version": "^1",
+      "version": "^1.119",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "^1",
+      "version": "^1.119",
       "type": "runtime"
     }
   ],

@@ -31,40 +31,43 @@
     "organization": true
   },
   "devDependencies": {
-    "@aws-cdk/assert": "^1",
-    "@types/jest": "^26.0.24",
+    "@aws-cdk/assert": "^1.119",
+    "@types/jest": "^27.0.1",
     "@types/node": "^10.17.0",
-    "@typescript-eslint/eslint-plugin": "^4.28.3",
-    "@typescript-eslint/parser": "^4.28.3",
-    "eslint": "^7.30.0",
-    "eslint-import-resolver-node": "^0.3.4",
+    "@typescript-eslint/eslint-plugin": "^4.29.2",
+    "@typescript-eslint/parser": "^4.29.2",
+    "eslint": "^7.32.0",
+    "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^2.4.0",
-    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-import": "^2.24.0",
     "jest": "^27.0.6",
     "jest-junit": "^12",
-    "jsii": "^1.31.0",
-    "jsii-diff": "^1.31.0",
-    "jsii-docgen": "^3.1.1",
-    "jsii-pacmak": "^1.31.0",
-    "json-schema": "^0.2.3",
+    "jsii": "^1.33.0",
+    "jsii-diff": "^1.33.0",
+    "jsii-docgen": "^3.2.30",
+    "jsii-pacmak": "^1.33.0",
+    "json-schema": "^0.3.0",
     "npm-check-updates": "^11",
     "projen": "^0.19.1",
     "standard-version": "^9",
-    "ts-jest": "^27.0.3",
+    "ts-jest": "^27.0.5",
     "typescript": "^4.3.5"
   },
   "peerDependencies": {
-    "@aws-cdk/aws-iam": "^1",
-    "@aws-cdk/aws-s3": "^1",
-    "@aws-cdk/core": "^1",
+    "@aws-cdk/aws-iam": "^1.119",
+    "@aws-cdk/aws-s3": "^1.119",
+    "@aws-cdk/core": "^1.119",
     "constructs": "^3.2.27"
   },
   "dependencies": {
-    "@aws-cdk/aws-iam": "^1",
-    "@aws-cdk/aws-s3": "^1",
-    "@aws-cdk/core": "^1"
+    "@aws-cdk/aws-iam": "^1.119",
+    "@aws-cdk/aws-s3": "^1.119",
+    "@aws-cdk/core": "^1.119",
+    "xmldom": "github:xmldom/xmldom#0.7.0"
   },
-  "bundledDependencies": [],
+  "bundledDependencies": [
+    "xmldom"
+  ],
   "keywords": [
     "analytics",
     "aws",
