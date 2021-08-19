@@ -34,7 +34,6 @@ export class Example extends Construct {
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
    * @param {ExampleProps} props the ExampleProps properties
-   * @since 1.0.0
    * @access public
    */
 

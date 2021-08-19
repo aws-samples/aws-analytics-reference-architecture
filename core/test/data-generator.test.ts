@@ -2,36 +2,23 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Stack } from '@aws-cdk/core';
-import { DataGenerator, Dataset } from '../src/data-generator';
+import { DataGenerator } from '../src/data-generator';
+import { Dataset } from '../src/dataset';
 import '@aws-cdk/assert/jest';
 
 const dataGeneratorStack = new Stack();
-// Instantiate a custom Dataset
-const customDataset = new Dataset('s3://custom-s3-path', 'custom_datetime');
-
-test('custom Dataset location', () => {
-  // Test if location parameter is right
-  expect(customDataset.location).toEqual('s3://custom-s3-path');
-});
-
-test('custom Dataset datetime', () => {
-  // Test if datetime parameter is right
-  expect(customDataset.datetime).toEqual('custom_datetime');
-});
-
 // Instantiate a DataGenerator
 const predefinedGenerator = new DataGenerator(dataGeneratorStack, 'predefinedGenerator', {
-  sinkArn: 'arn:aws:s3:::*',
-  sourceS3Path: Dataset.RETAIL_WEBSALE.location,
-  sourceDatetime: Dataset.RETAIL_WEBSALE.datetime,
+  sinkArn: 'arn:aws:s3:::test-bucket',
+  dataset: Dataset.RETAIL_STORE_SALE,
 });
 
-test('DataGenerator source S3 path', () => {
-  // Test if the source S3 path is right
-  expect(predefinedGenerator.sourceS3Path).toEqual(Dataset.RETAIL_WEBSALE.location);
+test('Predefined source Amazon S3 Bucket', () => {
+  // Test if the Amazon S3 Bucket for the source is correct
+  expect(predefinedGenerator.dataset.bucket).toEqual(Dataset.RETAIL_STORE_SALE.bucket);
 });
 
-test('DataGenerator source datetime', () => {
-  // Test if the source datetime column is right
-  expect(predefinedGenerator.sourceDatetime).toEqual(Dataset.RETAIL_WEBSALE.datetime);
+test('Predefined source Amazon S3 prefix', () => {
+  // Test if the Amazon S3 Prefix for the source is correct
+  expect(predefinedGenerator.dataset.key).toEqual(Dataset.RETAIL_STORE_SALE.key);
 });

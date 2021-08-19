@@ -251,6 +251,22 @@
         }
       ]
     },
+    "test:deploy": {
+      "name": "test:deploy",
+      "steps": [
+        {
+          "exec": "cdk deploy --app=./lib/integ.default.js"
+        }
+      ]
+    },
+    "test:destroy": {
+      "name": "test:destroy",
+      "steps": [
+        {
+          "exec": "cdk destroy --app=./lib/integ.default.js"
+        }
+      ]
+    },
     "release": {
       "name": "release",
       "description": "Prepare a release from \"main\" branch",

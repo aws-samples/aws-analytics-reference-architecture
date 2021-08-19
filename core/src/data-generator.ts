@@ -1,89 +1,255 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Construct, Arn } from '@aws-cdk/core';
+import { CfnDatabase } from '@aws-cdk/aws-glue';
+import { PolicyStatement } from '@aws-cdk/aws-iam';
+import { SingletonFunction, Runtime, Code } from '@aws-cdk/aws-lambda';
+import { RetentionDays } from '@aws-cdk/aws-logs';
+import { StateMachine, IntegrationPattern } from '@aws-cdk/aws-stepfunctions';
+import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfunctions-tasks';
+import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
+import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
+import { Dataset } from './dataset';
+import { SingletonBucket } from './singleton-bucket';
+import { Bucket } from '@aws-cdk/aws-s3'
+;import { SynchronousAthenaQuery } from './synchronous-athena-query';
+
 
 /**
- * @summary Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
- */
-
-export class Dataset {
-  // Enums for pre-defined dataset
-  public static readonly DATASETS_LOCATION = 's3://aws-analytics-reference-architecture/datasets';
-  public static readonly RETAIL_WEBSALE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/websale', 'sale_datetime');
-  public static readonly RETAIL_STORESALE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/storesale', 'sale_datetime');
-  public static readonly RETAIL_CUSTOMER = new Dataset(Dataset.DATASETS_LOCATION + '/retail/customer', 'customer_datetime');
-  public static readonly RETAIL_ADDRESS = new Dataset(Dataset.DATASETS_LOCATION + '/retail/address', 'address_datetime');
-  public static readonly RETAIL_ITEM = new Dataset(Dataset.DATASETS_LOCATION + '/retail/item', 'item_datetime');
-  public static readonly RETAIL_PROMO = new Dataset(Dataset.DATASETS_LOCATION + '/retail/promo', 'promo_datetime');
-  public static readonly RETAIL_WAREHOUSE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/warehouse', 'warehouse_datetime');
-  public static readonly RETAIL_STORE = new Dataset(Dataset.DATASETS_LOCATION + '/retail/store', 'store_datetime');
-
-  /**
-   * Constructs a new instance of the Dataset class
-   * @param {string} location the S3 path where the dataset is located
-   * @param {string} datetime the column name in the dataset containing event datetime
-   * @since 1.0.1
-   * @access public
-   */
-  constructor(public readonly location: string, public readonly datetime: string) { }
-}
-
-/**
- * @summary Properties for DataGenerator Construct.
+ * The properties for DataGenerator Construct.
  */
 
 export interface DataGeneratorProps {
   /**
-   * Sink Arn to receive the genarated data.
-   * Sink can be an S3 bucket, a Kinesis Data Stream or a MSK topic.
+   * Sink Arn to receive the generated data.
+   * Sink must be an Amazon S3 bucket.
    */
   readonly sinkArn: string;
   /**
-   * Dataset S3 path source used to generate the data.
+   * Source dataset used to generate the data by replying it.
    * Use a pre-defined [Dataset]{@link Dataset} or create a [custom one]{@link Dataset.constructor}.
    */
-  readonly sourceS3Path: string;
+  readonly dataset: Dataset;
   /**
-   * Dataset column containing the event datetime, updated by the DataGenerator with current datetime.
-   * Use a pre-defined [Dataset]{@link Dataset} or create a [custom one]{@link Dataset.constructor}.
+   * Frequency (in Seconds) of the data generation. Should be > 60s.
+   * @default - 30 min (1800s)
    */
-  readonly sourceDatetime: string;
+  readonly frequency?: number;
 }
 
 /**
- * @summary DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime
- * Target can be an S3 bucket, a Kinesis Data Stream or a MSK topic.
- * DataGenerator provides pre-defined datasets to reuse or can use custom datasets.
- * If a custom dataset is used, an S3 Arn source and a datetime column must be provided.
+ * DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime
+ * Target can be an Amazon S3 bucket or an Amazon Kinesis Data Stream.
+ * DataGenerator can use pre-defined or custom datasets available in the [Dataset]{@link Dataset} Class
  */
 
 export class DataGenerator extends Construct {
-  public readonly sinkArn: Arn;
-  public readonly sourceS3Path: string;
-  public readonly sourceDatetime: string;
+  /**
+   * AWS Glue Database name used by the DataGenerator
+   */
+  static readonly DATA_GENERATOR_DATABASE = 'data_generator';
+  /**
+   * Sink Arn to receive the generated data.
+   */
+  public readonly sinkArn: string;
+  /**
+   * Dataset used to generate data
+   */
+  public readonly dataset: Dataset;
+  /**
+   * Frequency (in Seconds) of the data generation
+   */
+  public readonly frequency: number;
 
   /**
    * Constructs a new instance of the DataGenerator class
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
    * @param {DataGeneratorProps} props the DataGenerator [properties]{@link DataGeneratorProps}
-   * @since 1.0.1
    * @access public
    */
 
   constructor(scope: Construct, id: string, props: DataGeneratorProps) {
     super(scope, id);
 
-    // Validate parameters
-    // check if the service in the sink is supported [S3, KDS, MSK]
-    if ( ['s3', 'kinesis', 'msk'].includes(Arn.parse(props.sinkArn).service) ) {
-      this.sinkArn = props.sinkArn;
-    } else {
-      throw new TypeError('DataGenerator sinkArn parameter should be S3, Kinesis Data Stream or MSK topic');
-    }
+    const stack = Stack.of(this);
+    this.sinkArn = props.sinkArn;
+    this.dataset = props.dataset;
+    this.frequency = props.frequency || 1800;
 
-    this.sourceS3Path = props.sourceS3Path;
-    this.sourceDatetime = props.sourceDatetime;
+    // AWS Glue Database to store source Tables
+    const datageneratorDB = new CfnDatabase(this, 'database', {
+      catalogId: Aws.ACCOUNT_ID,
+      databaseInput: {
+        name: DataGenerator.DATA_GENERATOR_DATABASE,
+      },
+    });
+
+    // Singleton Amazon S3 bucket for Amazon Athena Query logs
+    const logBucket = SingletonBucket.getOrCreate(this, 'log');
+
+    // Source table creation in Amazon Athena
+    const createSourceTable = new SynchronousAthenaQuery(this, 'createSourceTable', {
+      statement: this.dataset.parseCreateQuery(datageneratorDB.ref, this.dataset.tableName+'_source', this.dataset.bucket, this.dataset.key),
+      resultPath: logBucket.s3UrlForObject(`data-generator/${this.dataset.tableName}/create_source/`),
+    });
+    createSourceTable.node.addDependency(datageneratorDB);
+
+    // Parse the sinkArn into ArnComponents and raise an error if it's not an Amazon S3 Sink
+    const arn = Arn.split(this.sinkArn, ArnFormat.SLASH_RESOURCE_NAME);
+    Bucket.fromBucketArn(this, 'Sink', this.sinkArn)
+
+    // Target table creation in Amazon Athena
+    const createTargetTable = new SynchronousAthenaQuery(this, 'createTargetTable', {
+      statement: this.dataset.parseCreateQuery(
+        datageneratorDB.ref,
+        this.dataset.tableName+'_target',
+        arn.resource,
+        this.dataset.tableName),
+      resultPath: logBucket.s3UrlForObject(`data-generator/${this.dataset.tableName}/create_target/`),
+    });
+    createTargetTable.node.addDependency(datageneratorDB);
+
+    // Calculate offset between now and the min datetime in the dataset
+    const offset = this.dataset.offset.toString();
+
+    // AWS Custom Resource to store the datetime offset only on creation
+    const offsetCreate = new AwsCustomResource(this, 'offsetCreate', {
+      onCreate: {
+        service: 'SSM',
+        action: 'putParameter',
+        physicalResourceId: PhysicalResourceId.of(this.dataset.tableName + '_offset'),
+        parameters: {
+          Name: this.dataset.tableName + '_offset',
+          Value: offset,
+          Type: 'String',
+        },
+      },
+      onDelete: {
+        service: 'SSM',
+        action: 'deleteParameter',
+        physicalResourceId: PhysicalResourceId.of(this.dataset.tableName + '_offset'),
+        parameters: {
+          Name: this.dataset.tableName + '_offset',
+        },
+      },
+      policy: AwsCustomResourcePolicy.fromStatements([
+        new PolicyStatement({
+          resources: [
+            stack.formatArn({
+              account: Aws.ACCOUNT_ID,
+              region: Aws.REGION,
+              service: 'ssm',
+              resource: 'parameter',
+              resourceName: this.dataset.tableName + '_offset',
+            }),
+          ],
+          actions: [
+            'ssm:PutParameter',
+            'ssm:DeleteParameter',
+            'ssm:GetParameter',
+          ],
+        }),
+      ]),
+      logRetention: RetentionDays.ONE_DAY,
+    });
+
+    // AWS Custom Resource to get the datetime offset from AWS SSM
+    const offsetGet = new AwsCustomResource(this, 'offsetGet', {
+      onCreate: {
+        service: 'SSM',
+        action: 'getParameter',
+        physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
+        parameters: {
+          Name: this.dataset.tableName + '_offset',
+        },
+      },
+      onUpdate: {
+        service: 'SSM',
+        action: 'getParameter',
+        physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
+        parameters: {
+          Name: this.dataset.tableName + '_offset',
+        },
+      },
+      policy: AwsCustomResourcePolicy.fromStatements([
+        new PolicyStatement({
+          resources: [
+            stack.formatArn({
+              account: Aws.ACCOUNT_ID,
+              region: Aws.REGION,
+              service: 'ssm',
+              resource: 'parameter',
+              resourceName: this.dataset.tableName + '_offset',
+            }),
+          ],
+          actions: [
+            'ssm:GetParameter',
+          ],
+        }),
+      ]),
+      logRetention: RetentionDays.ONE_DAY,
+    });
+    offsetGet.node.addDependency(offsetCreate);
+
+    // AWS Lambda function to prepare data generation
+    const querySetupFn = new SingletonFunction(this, 'querySetupFn', {
+      uuid: '91aeec93-2570-465b-a25f-a776b8a9b792',
+      runtime: Runtime.PYTHON_3_8,
+      code: Code.fromAsset('./src/lambdas/data-generator-setup'),
+      handler: 'lambda.handler',
+      logRetention: RetentionDays.ONE_DAY,
+      timeout: Duration.seconds(30),
+    });
+
+    querySetupFn.addToRolePolicy(new PolicyStatement({
+      resources: [
+        stack.formatArn({
+          region: Aws.REGION,
+          account: Aws.ACCOUNT_ID,
+          service: 'ssm',
+          resource: 'parameter',
+          resourceName: this.dataset.tableName + '_offset',
+        }),
+      ],
+      actions: [
+        'ssm:GetParameter',
+      ],
+    }));
+
+    // AWS Step Functions task to prepare data generation
+    const querySetupTask = new LambdaInvoke(this, 'querySetupTask', {
+      lambdaFunction: querySetupFn,
+      inputPath: `$.{
+        'Offset': ${offsetGet.getResponseField('Parameter.Value')},
+        'Frequency': ${this.frequency},
+        'Statement': ${this.dataset.parseGenerateQuery(
+    DataGenerator.DATA_GENERATOR_DATABASE,
+    this.dataset.tableName+'_source',
+    this.dataset.tableName+'_target',
+  )}
+      }`,
+      outputPath: '$.Statement',
+    });
+
+    // AWS Step Functions Task to run an Amazon Athena Query for data generation
+    const athenaQueryTask = new AthenaStartQueryExecution(this, 'dataGeneratorQuery', {
+      queryString: '$.Statement',
+      timeout: Duration.minutes(5),
+      workGroup: 'primary',
+      integrationPattern: IntegrationPattern.RUN_JOB,
+      resultConfiguration: {
+        outputLocation: {
+          bucketName: SingletonBucket.getOrCreate(this, 'log').bucketName,
+          objectKey: `data-generator/${this.dataset.tableName}/generate/`,
+        },
+      },
+    });
+
+    // AWS Step Functions State Machine to generate data
+    new StateMachine(this, 'dataGenerator', {
+      definition: querySetupTask.next(athenaQueryTask),
+      timeout: Duration.minutes(7),
+    });
   }
 }

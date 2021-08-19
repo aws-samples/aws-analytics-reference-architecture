@@ -25,6 +25,8 @@
     "publish:npm": "npx projen publish:npm",
     "publish:pypi": "npx projen publish:pypi",
     "docgen": "npx projen docgen",
+    "test:deploy": "npx projen test:deploy",
+    "test:destroy": "npx projen test:destroy",
     "release": "npx projen release",
     "projen": "npx projen"
   },
@@ -34,7 +36,7 @@
     "organization": true
   },
   "devDependencies": {
-    "@aws-cdk/assert": "^1",
+    "@aws-cdk/assert": "^1.118",
     "@types/jest": "^26.0.24",
     "@types/node": "^10.17.0",
     "@typescript-eslint/eslint-plugin": "^4.29.1",
@@ -57,17 +59,31 @@
     "typescript": "^4.3.5"
   },
   "peerDependencies": {
-    "@aws-cdk/aws-iam": "^1",
-    "@aws-cdk/aws-kinesis": "^1",
-    "@aws-cdk/aws-s3": "^1",
-    "@aws-cdk/core": "^1",
+    "@aws-cdk/aws-athena": "^1.118",
+    "@aws-cdk/aws-glue": "^1.118",
+    "@aws-cdk/aws-iam": "^1.118",
+    "@aws-cdk/aws-kinesis": "^1.118",
+    "@aws-cdk/aws-lambda": "^1.118",
+    "@aws-cdk/aws-logs": "^1.118",
+    "@aws-cdk/aws-s3": "^1.118",
+    "@aws-cdk/aws-stepfunctions": "^1.118",
+    "@aws-cdk/aws-stepfunctions-tasks": "^1.118",
+    "@aws-cdk/core": "^1.118",
+    "@aws-cdk/custom-resources": "^1.118",
     "constructs": "^3.2.27"
   },
   "dependencies": {
-    "@aws-cdk/aws-iam": "^1",
-    "@aws-cdk/aws-kinesis": "^1",
-    "@aws-cdk/aws-s3": "^1",
-    "@aws-cdk/core": "^1"
+    "@aws-cdk/aws-athena": "^1.118",
+    "@aws-cdk/aws-glue": "^1.118",
+    "@aws-cdk/aws-iam": "^1.118",
+    "@aws-cdk/aws-kinesis": "^1.118",
+    "@aws-cdk/aws-lambda": "^1.118",
+    "@aws-cdk/aws-logs": "^1.118",
+    "@aws-cdk/aws-s3": "^1.118",
+    "@aws-cdk/aws-stepfunctions": "^1.118",
+    "@aws-cdk/aws-stepfunctions-tasks": "^1.118",
+    "@aws-cdk/core": "^1.118",
+    "@aws-cdk/custom-resources": "^1.118"
   },
   "bundledDependencies": [],
   "keywords": [

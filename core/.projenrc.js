@@ -18,7 +18,7 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1',
+  cdkVersion: '1.118',
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',
@@ -33,11 +33,16 @@ const project = new AwsCdkConstructLibrary({
 
   cdkDependencies: [
     '@aws-cdk/core',
+    '@aws-cdk/custom-resources',
+    '@aws-cdk/aws-logs',
+    '@aws-cdk/aws-lambda',
     '@aws-cdk/aws-s3',
     '@aws-cdk/aws-kinesis',
     '@aws-cdk/aws-iam',
-  ],
-  devDeps: [
+    '@aws-cdk/aws-athena',
+    '@aws-cdk/aws-glue',
+    '@aws-cdk/aws-stepfunctions',
+    '@aws-cdk/aws-stepfunctions-tasks',
   ],
 
   python: {
@@ -48,4 +53,13 @@ const project = new AwsCdkConstructLibrary({
   stability: 'experimental',
 
 });
+
+project.addTask('test:deploy', {
+  exec: 'cdk deploy --app=./lib/integ.default.js',
+});
+
+project.addTask('test:destroy', {
+  exec: 'cdk destroy --app=./lib/integ.default.js',
+});
+
 project.synth();
