@@ -124,7 +124,7 @@
     "targets": {
       "python": {
         "distName": "aws_analytics_reference_architecture",
-        "module": "aws-analytics-reference-architecture"
+        "module": "aws_analytics_reference_architecture"
       }
     },
     "tsc": {

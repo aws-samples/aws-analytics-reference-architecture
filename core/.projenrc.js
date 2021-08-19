@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-const PROJECT_NAME = 'aws-analytics-reference-architecture';
 
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
 const project = new AwsCdkConstructLibrary({
@@ -23,7 +22,7 @@ const project = new AwsCdkConstructLibrary({
   cdkVersion: '1.119',
   defaultReleaseBranch: 'main',
   license: 'MIT',
-  name: PROJECT_NAME,
+  name: 'aws-analytics-reference-architecture',
   repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
   repositoryDirectory: 'core',
   workflow: false,
@@ -44,7 +43,7 @@ const project = new AwsCdkConstructLibrary({
 
   python: {
     distName: 'aws_analytics_reference_architecture',
-    module: PROJECT_NAME,
+    module: 'aws_analytics_reference_architecture',
   },
 
   stability: 'experimental',
