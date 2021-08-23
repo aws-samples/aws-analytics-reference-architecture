@@ -8,8 +8,10 @@ import '@aws-cdk/assert/jest';
 
 // Instantiate a custom Dataset
 const customDataset = new Dataset({
-  bucket: 'custom-bucket',
-  key: 'custom-prefix/custom-table',
+  location: {
+    bucketName: 'custom-bucket',
+    objectKey: 'custom-prefix/custom-table',
+  },
   startDatetime: '2021-06-27T21:20:44.000Z',
   createTable: 'CREATE TABLE',
   generateData: 'UNLOAD',
@@ -17,12 +19,12 @@ const customDataset = new Dataset({
 
 test('custom Dataset bucket', () => {
   // Test if bucket parameter is right
-  expect(customDataset.bucket).toEqual('custom-bucket');
+  expect(customDataset.location.bucketName).toEqual('custom-bucket');
 });
 
 test('custom Dataset location', () => {
   // Test if prefix parameter is right
-  expect(customDataset.key).toEqual('custom-prefix/custom-table');
+  expect(customDataset.location.objectKey).toEqual('custom-prefix/custom-table');
 });
 
 test('custom Dataset createTable', () => {
@@ -37,7 +39,7 @@ test('custom Dataset createTable', () => {
 
 test('Table name SQL compatible', () => {
   // Test if the table name extracted from an Amazon S3 prefix is correct
-  expect(customDataset["sqlTable"]()).toEqual('custom_table');
+  expect(customDataset['sqlTable']()).toEqual('custom_table');
 });
 
 test('ParseCreateQuery method', () => {
@@ -45,8 +47,8 @@ test('ParseCreateQuery method', () => {
   expect(Dataset.RETAIL_STORE_SALE.parseCreateQuery(
     DataGenerator.DATA_GENERATOR_DATABASE,
     Dataset.RETAIL_STORE_SALE.tableName,
-    Dataset.RETAIL_STORE_SALE.bucket,
-    Dataset.RETAIL_STORE_SALE.key
+    Dataset.RETAIL_STORE_SALE.location.bucketName,
+    Dataset.RETAIL_STORE_SALE.location.objectKey,
   )).toEqual(`CREATE EXTERNAL TABLE IF NOT EXISTS \`${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_STORE_SALE.tableName}\`(
   \`item_id\` bigint,
   \`ticket_id\` bigint,
@@ -74,16 +76,16 @@ STORED AS INPUTFORMAT
 OUTPUTFORMAT
   'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION
-  's3://${Dataset.RETAIL_STORE_SALE.bucket}${Dataset.RETAIL_STORE_SALE.key}/'`)
+  's3://${Dataset.RETAIL_STORE_SALE.location.bucketName}/${Dataset.RETAIL_STORE_SALE.location.objectKey}/'`);
 });
 
 test('ParseGenerateQuery method', () => {
   // Test if generate data statement is correctly parsed
   expect(Dataset.RETAIL_STORE_SALE.parseGenerateQuery(
-      DataGenerator.DATA_GENERATOR_DATABASE,
-      Dataset.RETAIL_STORE_SALE.tableName+'_source',
-      Dataset.RETAIL_STORE_SALE.tableName+'_target'      
-    )
+    DataGenerator.DATA_GENERATOR_DATABASE,
+    Dataset.RETAIL_STORE_SALE.tableName+'_source',
+    Dataset.RETAIL_STORE_SALE.tableName+'_target',
+  ),
   ).toEqual(`INSERT INTO \`${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_STORE_SALE.tableName}`+'_target'+`\` (
   SELECT
     \`item_id\`,
@@ -108,5 +110,5 @@ test('ParseGenerateQuery method', () => {
   FROM \`${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_STORE_SALE.tableName}`+'_source'+`\`
   WHERE 'sale_datetime'
     BETWEEN \`{{MIN}}\` AND \`{{MAX}}\`
-)`)
+)`);
 });

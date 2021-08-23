@@ -26,8 +26,16 @@ def on_event(event, ctx):
 def on_create(event):
     log.info(event)
     statement = event['ResourceProperties']['Statement']
+    result_path = event['ResourceProperties']['ResultPath']
+    # Check if the the result path has trailing slash and add it
+    if not result_path.endswith('/'):
+        log.info('adding / at the end of the result path')
+        result_path += '/'
     response_start = athena.start_query_execution(
-        QueryString= statement,
+        QueryString = statement,
+        ResultConfiguration = {
+            'OutputLocation': result_path
+        }
     )
     log.info(response_start)
     return {
@@ -50,12 +58,14 @@ def is_complete(event, ctx):
     log.info(response_get)
     status = response_get["QueryExecution"]["Status"]["State"]
     # Possible status: QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED
-    log.info(f"Query {query_id} is {status.lower()}.")
-    if status != 'SUCCEEDED':
+    log.info(f"Query {query_id} status is {status.lower()}.")
+    if status == 'QUEUED' or status == 'RUNNING':
         return {
             'IsComplete': False
         }
-    else:
+    elif status == 'SUCCEEDED':
         return {
             'IsComplete': True
         }
+    else:
+        raise RuntimeError('Query execution: %s', status )

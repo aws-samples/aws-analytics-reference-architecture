@@ -25,4 +25,4 @@ STORED AS INPUTFORMAT
 OUTPUTFORMAT
   'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION
-  's3://{{BUCKET}}{{KEY}}/'
+  's3://{{BUCKET}}/{{KEY}}/'

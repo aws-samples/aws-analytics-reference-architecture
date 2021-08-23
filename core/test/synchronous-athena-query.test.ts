@@ -10,7 +10,10 @@ test('CrawlerStartWait', () => {
   // Instantiate a CrawlerStartWait custom resource
   new SynchronousAthenaQuery(synchronousAthenaStack, 'SynchronousAthenaQueryTes', {
     statement: 'SELECT * FROM test.test;',
-    resultPath: '',
+    resultPath: {
+      bucketName: 'log',
+      objectKey: 'query-result',
+    },
   });
 
   expect(synchronousAthenaStack).toHaveResource('AWS::IAM::Role');

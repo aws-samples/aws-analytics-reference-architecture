@@ -91,8 +91,45 @@ export class DataGenerator extends Construct {
 
     // Source table creation in Amazon Athena
     const createSourceTable = new SynchronousAthenaQuery(this, 'createSourceTable', {
-      statement: this.dataset.parseCreateQuery(datageneratorDB.ref, this.dataset.tableName+'_source', this.dataset.bucket, this.dataset.key),
-      resultPath: logBucket.s3UrlForObject(`data-generator/${this.dataset.tableName}/create_source/`),
+      statement: this.dataset.parseCreateQuery(
+        datageneratorDB.ref,
+        this.dataset.tableName+'_source',
+        this.dataset.location.bucketName,
+        this.dataset.location.objectKey),
+      resultPath: {
+        bucketName: logBucket.bucketName,
+        objectKey: `data_generator/${this.dataset.tableName}/create_source`,
+      },
+      executionRoleStatements: [
+        new PolicyStatement({
+          resources: [
+            stack.formatArn({
+              account: Aws.ACCOUNT_ID,
+              region: Aws.REGION,
+              service: 'glue',
+              resource: 'table',
+              resourceName: DataGenerator.DATA_GENERATOR_DATABASE + '/' + this.dataset.tableName + '_source',
+            }),
+            stack.formatArn({
+              account: Aws.ACCOUNT_ID,
+              region: Aws.REGION,
+              service: 'glue',
+              resource: 'catalog',
+            }),
+            stack.formatArn({
+              account: Aws.ACCOUNT_ID,
+              region: Aws.REGION,
+              service: 'glue',
+              resource: 'database',
+              resourceName: DataGenerator.DATA_GENERATOR_DATABASE,
+            }),
+          ],
+          actions: [
+            'glue:CreateTable',
+            'glue:GetTable',
+          ],
+        }),
+      ],
     });
     createSourceTable.node.addDependency(datageneratorDB);
 
@@ -107,7 +144,40 @@ export class DataGenerator extends Construct {
         this.dataset.tableName+'_target',
         arn.resource,
         this.dataset.tableName),
-      resultPath: logBucket.s3UrlForObject(`data-generator/${this.dataset.tableName}/create_target/`),
+      resultPath: {
+        bucketName: logBucket.bucketName,
+        objectKey: `data_generator/${this.dataset.tableName}/create_target`,
+      },
+      executionRoleStatements: [
+        new PolicyStatement({
+          resources: [
+            stack.formatArn({
+              account: Aws.ACCOUNT_ID,
+              region: Aws.REGION,
+              service: 'glue',
+              resource: 'table',
+              resourceName: DataGenerator.DATA_GENERATOR_DATABASE + '/' + this.dataset.tableName + '_target',
+            }),
+            stack.formatArn({
+              account: Aws.ACCOUNT_ID,
+              region: Aws.REGION,
+              service: 'glue',
+              resource: 'catalog',
+            }),
+            stack.formatArn({
+              account: Aws.ACCOUNT_ID,
+              region: Aws.REGION,
+              service: 'glue',
+              resource: 'database',
+              resourceName: DataGenerator.DATA_GENERATOR_DATABASE,
+            }),
+          ],
+          actions: [
+            'glue:CreateTable',
+            'glue:GetTable',
+          ],
+        }),
+      ],
     });
     createTargetTable.node.addDependency(datageneratorDB);
 
@@ -227,7 +297,7 @@ export class DataGenerator extends Construct {
       resultConfiguration: {
         outputLocation: {
           bucketName: SingletonBucket.getOrCreate(this, 'log').bucketName,
-          objectKey: `data-generator/${this.dataset.tableName}/generate/`,
+          objectKey: `data_generator/${this.dataset.tableName}/generate/`,
         },
       },
     });

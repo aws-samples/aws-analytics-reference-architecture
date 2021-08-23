@@ -15,10 +15,10 @@ const predefinedGenerator = new DataGenerator(dataGeneratorStack, 'predefinedGen
 
 test('Predefined source Amazon S3 Bucket', () => {
   // Test if the Amazon S3 Bucket for the source is correct
-  expect(predefinedGenerator.dataset.bucket).toEqual(Dataset.RETAIL_STORE_SALE.bucket);
+  expect(predefinedGenerator.dataset.location.bucketName).toEqual(Dataset.RETAIL_STORE_SALE.location.bucketName);
 });
 
 test('Predefined source Amazon S3 prefix', () => {
   // Test if the Amazon S3 Prefix for the source is correct
-  expect(predefinedGenerator.dataset.key).toEqual(Dataset.RETAIL_STORE_SALE.key);
+  expect(predefinedGenerator.dataset.location.objectKey).toEqual(Dataset.RETAIL_STORE_SALE.location.objectKey);
 });

@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT-0
 
 import { readFileSync } from 'fs';
+import { Location } from '@aws-cdk/aws-s3';
+
 
 export interface DatasetProps {
   /**
@@ -9,13 +11,10 @@ export interface DatasetProps {
    */
   readonly startDatetime: string;
   /**
-  * The Amazon S3 bucket name of the source dataset
+  * The Amazon S3 Location of the source dataset.
+  * It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
   */
-  readonly bucket: string;
-  /**
-  * The Amazon S3 prefix of the source dataset
-  */
-  readonly key: string;
+  readonly location: Location;
   /**
   * The CREATE TABLE DDL command to create the AWS Glue Table
   */
@@ -38,8 +37,10 @@ export class Dataset {
    * The web sale dataset part of retail datasets
    */
   public static readonly RETAIL_WEB_SALE = new Dataset({
-    bucket: Dataset.DATASETS_BUCKET,
-    key: '/datasets/retail/web-sale',
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/web-sale',
+    },
     startDatetime: '',
     createTable: '',
     generateData: '',
@@ -48,8 +49,10 @@ export class Dataset {
    * The store sale dataset part of retail datasets
    */
   public static readonly RETAIL_STORE_SALE = new Dataset({
-    bucket: Dataset.DATASETS_BUCKET,
-    key: 'datasets/retail/store-sale',
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/store-sale',
+    },
     startDatetime: '2021-05-27T21:20:44.000Z',
     createTable: readFileSync('./src/sql/retail-store-sale-create.sql').toString(),
     generateData: readFileSync('./src/sql/retail-store-sale-generate.sql').toString(),
@@ -58,8 +61,10 @@ export class Dataset {
    * The customer dataset part of retail datasets
    */
   public static readonly RETAIL_CUSTOMER = new Dataset({
-    bucket: Dataset.DATASETS_BUCKET,
-    key: '/datasets/retail/customer',
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/customer',
+    },
     startDatetime: '',
     createTable: '',
     generateData: '',
@@ -68,8 +73,10 @@ export class Dataset {
    * The customer address dataset part of retail datasets
    */
   public static readonly RETAIL_ADDRESS = new Dataset({
-    bucket: Dataset.DATASETS_BUCKET,
-    key: '/datasets/retail/address',
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/address',
+    },
     startDatetime: '',
     createTable: '',
     generateData: '',
@@ -78,8 +85,10 @@ export class Dataset {
    * The item dataset part of retail datasets
    */
   public static readonly RETAIL_ITEM = new Dataset({
-    bucket: Dataset.DATASETS_BUCKET,
-    key: '/datasets/retail/item',
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/item',
+    },
     startDatetime: '',
     createTable: '',
     generateData: '',
@@ -88,8 +97,10 @@ export class Dataset {
    * The promotion dataset part of retail datasets
    */
   public static readonly RETAIL_PROMO = new Dataset({
-    bucket: Dataset.DATASETS_BUCKET,
-    key: '/datasets/retail/promo',
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/promo',
+    },
     startDatetime: '',
     createTable: '',
     generateData: '',
@@ -98,8 +109,10 @@ export class Dataset {
    * The warehouse dataset part of retail datasets
    */
   public static readonly RETAIL_WAREHOUSE = new Dataset({
-    bucket: Dataset.DATASETS_BUCKET,
-    key: '/datasets/retail/warehouse',
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/warehouse',
+    },
     startDatetime: '',
     createTable: '',
     generateData: '',
@@ -108,8 +121,10 @@ export class Dataset {
    * The store dataset part of retail datasets
    */
   public static readonly RETAIL_STORE = new Dataset({
-    bucket: Dataset.DATASETS_BUCKET,
-    key: '/datasets/retail/store',
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/store',
+    },
     startDatetime: '',
     createTable: '',
     generateData: '',
@@ -129,13 +144,9 @@ export class Dataset {
    */
   readonly offset: number;
   /**
-   * The Amazon S3 bucket name of the source dataset
+   * The Amazon S3 Location of the source dataset
    */
-  readonly bucket: string;
-  /**
-   * The Amazon S3 prefix of the source dataset
-   */
-  readonly key: string;
+  readonly location: Location;
   /**
    * The name of the SQL table extracted from path
    */
@@ -156,8 +167,7 @@ export class Dataset {
    */
   constructor(props: DatasetProps) {
     this.offset = Dataset.getOffset(props.startDatetime);
-    this.bucket = props.bucket;
-    this.key = props.key;
+    this.location = props.location;
     this.createTable = props.createTable;
     this.generateData = props.generateData;
     this.tableName = this.sqlTable();
@@ -201,11 +211,11 @@ export class Dataset {
   }
 
   /**
-   * Extract the last part of the prefix (with / delimiter) and replace '-' with '_' for SQL compatibility
+   * Extract the last part of the object key (with / delimiter) and replace '-' with '_' for SQL compatibility
    * @access private
    */
   private sqlTable() {
-    const parsedPrefix = this.key.split('/');
+    const parsedPrefix = this.location.objectKey.split('/');
     const re = /\-/gi;
     return parsedPrefix[parsedPrefix.length-1].replace(re, '_');
   }

@@ -436,14 +436,6 @@ import { DatasetProps } from 'aws-analytics-reference-architecture'
 const datasetProps: DatasetProps = { ... }
 ```
 
-##### `bucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.bucket"></a>
-
-- *Type:* `string`
-
-The Amazon S3 bucket name of the source dataset.
-
----
-
 ##### `createTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.createTable"></a>
 
 - *Type:* `string`
@@ -460,11 +452,13 @@ The SELECT query used to generate new data.
 
 ---
 
-##### `key`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.key"></a>
+##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.location"></a>
 
-- *Type:* `string`
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
 
-The Amazon S3 prefix of the source dataset.
+The Amazon S3 Location of the source dataset.
+
+It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
 
 ---
 
@@ -520,9 +514,9 @@ const synchronousAthenaQueryProps: SynchronousAthenaQueryProps = { ... }
 
 ##### `resultPath`<sup>Required</sup> <a name="aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.resultPath"></a>
 
-- *Type:* `string`
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
 
-The Amazon S3 path for the query results.
+The Amazon S3 Location for the query results (without trailing slash).
 
 ---
 
@@ -531,6 +525,15 @@ The Amazon S3 path for the query results.
 - *Type:* `string`
 
 The name of the Athena query to execute.
+
+---
+
+##### `executionRoleStatements`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.executionRoleStatements"></a>
+
+- *Type:* [`@aws-cdk/aws-iam.PolicyStatement`](#@aws-cdk/aws-iam.PolicyStatement)[]
+- *Default:* No Policy Statements are added to the execution role
+
+The Amazon IAM Policy Statements used to run the query.
 
 ---
 
@@ -667,14 +670,6 @@ the target table name to parse.
 
 #### Properties <a name="Properties"></a>
 
-##### `bucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.bucket"></a>
-
-- *Type:* `string`
-
-The Amazon S3 bucket name of the source dataset.
-
----
-
 ##### `createTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.createTable"></a>
 
 - *Type:* `string`
@@ -691,11 +686,11 @@ The SELECT query used to generate new data.
 
 ---
 
-##### `key`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.key"></a>
+##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.location"></a>
 
-- *Type:* `string`
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
 
-The Amazon S3 prefix of the source dataset.
+The Amazon S3 Location of the source dataset.
 
 ---
 
