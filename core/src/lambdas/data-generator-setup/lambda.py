@@ -9,10 +9,15 @@ log = logging.getLogger()
 log.setLevel(logging.INFO)
 
 def handler(event, ctx):
-    offset = int(event['Offset'])
+    offset = event['Offset']
+    log.info('offset: %s', offset)
     frequency = int(event['Frequency'])
+    log.info('frequency: %s', frequency)
     statement = event['Statement']
+    log.info('statement: %s', statement)
     now = datetime.datetime.now()
-    min = (now - datetime.timedelta(seconds = frequency + offset)).isoformat(sep='T', timespec='milliseconds') + 'Z'
-    max = (now - datetime.timedelta(seconds = offset)).isoformat(sep='T', timespec='milliseconds') + 'Z'
-    return statement.replace('\{\{MIN\}\}', min).replace('\{\{MAX\}\}', max)
+    min = (now - datetime.timedelta(seconds = frequency + int(offset))).isoformat(sep='T', timespec='milliseconds') + 'Z'
+    max = (now - datetime.timedelta(seconds = int(offset))).isoformat(sep='T', timespec='milliseconds') + 'Z'
+    new_statement = statement.replace('{{OFFSET}}', offset).replace('{{MIN}}', min).replace('{{MAX}}', max)
+    log.info('new statement: %s', new_statement)
+    return new_statement

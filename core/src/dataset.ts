@@ -130,14 +130,14 @@ export class Dataset {
     generateData: '',
   });
   /**
-   * Calculate the offset in Seconds from the min datetime value and the current datetime
+   * Calculate the offset in Seconds from the startDatetime value and the current datetime
    * @param {string} startDatetime the min datetime value used as reference for offset
    * @access private
    */
   private static getOffset(startDatetime: string) {
-    const now = new Date().getSeconds();
-    const minDatetime = new Date(startDatetime).getSeconds();
-    return now - minDatetime;
+    const now = new Date().getTime();
+    const minDatetime = new Date(startDatetime).getTime();
+    return Math.floor((now - minDatetime) / 1000);
   }
   /**
    * The offset of the Dataset (difference between min datetime and now) in Seconds

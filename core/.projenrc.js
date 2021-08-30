@@ -18,7 +18,7 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.119',
+  cdkVersion: '1.119.0',
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',
@@ -43,6 +43,8 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-glue',
     '@aws-cdk/aws-stepfunctions',
     '@aws-cdk/aws-stepfunctions-tasks',
+    '@aws-cdk/aws-events',
+    '@aws-cdk/aws-events-targets',
   ],
 
   python: {

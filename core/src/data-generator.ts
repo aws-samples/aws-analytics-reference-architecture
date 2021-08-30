@@ -1,13 +1,15 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+import { Rule, Schedule } from '@aws-cdk/aws-events';
+import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
 import { CfnDatabase } from '@aws-cdk/aws-glue';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { SingletonFunction, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket } from '@aws-cdk/aws-s3'
 ;
-import { StateMachine, IntegrationPattern } from '@aws-cdk/aws-stepfunctions';
+import { StateMachine, IntegrationPattern, TaskInput, JsonPath } from '@aws-cdk/aws-stepfunctions';
 import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfunctions-tasks';
 import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
@@ -181,9 +183,6 @@ export class DataGenerator extends Construct {
     });
     createTargetTable.node.addDependency(datageneratorDB);
 
-    // Calculate offset between now and the min datetime in the dataset
-    const offset = this.dataset.offset.toString();
-
     // AWS Custom Resource to store the datetime offset only on creation
     const offsetCreate = new AwsCustomResource(this, 'offsetCreate', {
       onCreate: {
@@ -192,7 +191,7 @@ export class DataGenerator extends Construct {
         physicalResourceId: PhysicalResourceId.of(this.dataset.tableName + '_offset'),
         parameters: {
           Name: this.dataset.tableName + '_offset',
-          Value: offset,
+          Value: this.dataset.offset.toString(),
           Type: 'String',
         },
       },
@@ -276,36 +275,83 @@ export class DataGenerator extends Construct {
     // AWS Step Functions task to prepare data generation
     const querySetupTask = new LambdaInvoke(this, 'querySetupTask', {
       lambdaFunction: querySetupFn,
-      inputPath: `$.{
-        'Offset': ${offsetGet.getResponseField('Parameter.Value')},
-        'Frequency': ${this.frequency},
-        'Statement': ${this.dataset.parseGenerateQuery(
-    DataGenerator.DATA_GENERATOR_DATABASE,
-    this.dataset.tableName+'_source',
-    this.dataset.tableName+'_target',
-  )}
-      }`,
-      outputPath: '$.Statement',
+      payload: TaskInput.fromObject({
+        Offset: offsetGet.getResponseField('Parameter.Value'),
+        Frequency: this.frequency,
+        Statement: this.dataset.parseGenerateQuery(
+          DataGenerator.DATA_GENERATOR_DATABASE,
+          this.dataset.tableName+'_source',
+          this.dataset.tableName+'_target',
+        ),
+      },
+      ),
+      outputPath: '$.Payload',
     });
 
     // AWS Step Functions Task to run an Amazon Athena Query for data generation
     const athenaQueryTask = new AthenaStartQueryExecution(this, 'dataGeneratorQuery', {
-      queryString: '$.Statement',
+      queryString: JsonPath.stringAt('$'),
       timeout: Duration.minutes(5),
       workGroup: 'primary',
       integrationPattern: IntegrationPattern.RUN_JOB,
       resultConfiguration: {
         outputLocation: {
           bucketName: SingletonBucket.getOrCreate(this, 'log').bucketName,
-          objectKey: `data_generator/${this.dataset.tableName}/generate/`,
+          objectKey: `data_generator/${this.dataset.tableName}/generate`,
         },
+      },
+      queryExecutionContext: {
+        databaseName: DataGenerator.DATA_GENERATOR_DATABASE,
       },
     });
 
     // AWS Step Functions State Machine to generate data
-    new StateMachine(this, 'dataGenerator', {
+    const generatorStepFunctions = new StateMachine(this, 'dataGenerator', {
       definition: querySetupTask.next(athenaQueryTask),
       timeout: Duration.minutes(7),
+    });
+
+    // Add permissions for executing the INSERT INTO SELECT query
+    generatorStepFunctions.addToRolePolicy(new PolicyStatement({
+      resources: [
+        stack.formatArn({
+          account: Aws.ACCOUNT_ID,
+          region: Aws.REGION,
+          service: 'glue',
+          resource: 'table',
+          resourceName: DataGenerator.DATA_GENERATOR_DATABASE + '/' + this.dataset.tableName + '_target',
+        }),
+        stack.formatArn({
+          account: Aws.ACCOUNT_ID,
+          region: Aws.REGION,
+          service: 'glue',
+          resource: 'table',
+          resourceName: DataGenerator.DATA_GENERATOR_DATABASE + '/' + this.dataset.tableName + '_source',
+        }),
+        stack.formatArn({
+          account: Aws.ACCOUNT_ID,
+          region: Aws.REGION,
+          service: 'glue',
+          resource: 'catalog',
+        }),
+        stack.formatArn({
+          account: Aws.ACCOUNT_ID,
+          region: Aws.REGION,
+          service: 'glue',
+          resource: 'database',
+          resourceName: DataGenerator.DATA_GENERATOR_DATABASE,
+        }),
+      ],
+      actions: [
+        'glue:GetDatabase',
+        'glue:GetTable',
+      ],
+    }));
+
+    // Amazon EventBridge Rule to trigger the AWS Step Functions
+    new Rule(this, 'dataGeneratorTrigger', {
+      schedule: Schedule.cron({ minute: `0/${Math.round(this.frequency/60)}` }),
+      targets: [new SfnStateMachine(generatorStepFunctions, {})],
     });
   }
 }

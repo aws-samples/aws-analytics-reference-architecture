@@ -22,4 +22,6 @@ test('CrawlerStartWait', () => {
 
   expect(synchronousAthenaStack).toHaveResource('AWS::CloudFormation::CustomResource');
 
+  // TODO: add testing
+
 });
