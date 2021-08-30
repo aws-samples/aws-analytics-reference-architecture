@@ -34,26 +34,26 @@
   },
   "devDependencies": {
     "@aws-cdk/assert": "^1.119.0",
-    "@types/jest": "^26.0.24",
+    "@types/jest": "^27.0.1",
     "@types/node": "^10.17.0",
-    "@typescript-eslint/eslint-plugin": "^4.29.1",
-    "@typescript-eslint/parser": "^4.29.1",
+    "@typescript-eslint/eslint-plugin": "^4.30.0",
+    "@typescript-eslint/parser": "^4.30.0",
     "eslint": "^7.32.0",
-    "eslint-import-resolver-node": "^0.3.5",
+    "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^2.4.0",
-    "eslint-plugin-import": "^2.24.0",
-    "jest": "^27.0.6",
+    "eslint-plugin-import": "^2.24.2",
+    "jest": "^27.1.0",
     "jest-junit": "^12",
-    "jsii": "^1.32.0",
-    "jsii-diff": "^1.32.0",
-    "jsii-docgen": "^3.2.22",
-    "jsii-pacmak": "^1.32.0",
+    "jsii": "^1.34.0",
+    "jsii-diff": "^1.34.0",
+    "jsii-docgen": "^3.3.8",
+    "jsii-pacmak": "^1.34.0",
     "json-schema": "^0.3.0",
     "npm-check-updates": "^11",
     "projen": "^0.19.1",
     "standard-version": "^9",
-    "ts-jest": "^27.0.4",
-    "typescript": "^4.3.5"
+    "ts-jest": "^27.0.5",
+    "typescript": "^4.4.2"
   },
   "peerDependencies": {
     "@aws-cdk/aws-athena": "^1.119.0",
@@ -84,9 +84,12 @@
     "@aws-cdk/aws-stepfunctions": "^1.119.0",
     "@aws-cdk/aws-stepfunctions-tasks": "^1.119.0",
     "@aws-cdk/core": "^1.119.0",
-    "@aws-cdk/custom-resources": "^1.119.0"
+    "@aws-cdk/custom-resources": "^1.119.0",
+    "xmldom": "github:xmldom/xmldom#0.7.0"
   },
-  "bundledDependencies": [],
+  "bundledDependencies": [
+    "xmldom"
+  ],
   "keywords": [
     "analytics",
     "aws",
@@ -142,8 +145,8 @@
     "outdir": "dist",
     "targets": {
       "python": {
-        "distName": "aws-analytics-reference-architecture",
-        "module": "aws-analytics-reference-architecture"
+        "distName": "aws_analytics_reference_architecture",
+        "module": "aws_analytics_reference_architecture"
       }
     },
     "tsc": {

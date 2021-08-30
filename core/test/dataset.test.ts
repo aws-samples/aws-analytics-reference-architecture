@@ -39,7 +39,7 @@ test('custom Dataset createTable', () => {
 
 test('Table name SQL compatible', () => {
   // Test if the table name extracted from an Amazon S3 prefix is correct
-  expect(customDataset['sqlTable']()).toEqual('custom_table');
+  expect(customDataset.sqlTable()).toEqual('custom_table');
 });
 
 test('ParseCreateQuery method', () => {

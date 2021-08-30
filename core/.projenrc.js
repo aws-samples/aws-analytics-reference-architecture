@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
 const project = new AwsCdkConstructLibrary({
 
@@ -17,7 +18,6 @@ const project = new AwsCdkConstructLibrary({
     'cdk',
     'analytics',
   ],
-
   cdkVersion: '1.119.0',
   defaultReleaseBranch: 'main',
   license: 'MIT',
@@ -46,10 +46,13 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-events',
     '@aws-cdk/aws-events-targets',
   ],
+  bundledDeps: [
+    'xmldom@github:xmldom/xmldom#0.7.0',
+  ],
 
   python: {
-    distName: 'aws-analytics-reference-architecture',
-    module: 'aws-analytics-reference-architecture',
+    distName: 'aws_analytics_reference_architecture',
+    module: 'aws_analytics_reference_architecture',
   },
 
   stability: 'experimental',

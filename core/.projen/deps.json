@@ -91,6 +91,11 @@
       "type": "build"
     },
     {
+      "name": "xmldom",
+      "version": "github:xmldom/xmldom#0.7.0",
+      "type": "bundled"
+    },
+    {
       "name": "@aws-cdk/aws-athena",
       "version": "^1.119.0",
       "type": "peer"
