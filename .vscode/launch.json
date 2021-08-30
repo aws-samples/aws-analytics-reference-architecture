@@ -1,0 +1,34 @@
+{
+    "configurations": [
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "data-generator-crawler-start-wait:crawler-start-wait.on_update (python3.8)",
+            "invokeTarget": {
+                "target": "code",
+                "projectRoot": "${workspaceFolder}/core/src/lambdas/data-generator-crawler-start-wait",
+                "lambdaHandler": "crawler-start-wait.on_update"
+            },
+            "lambda": {
+                "runtime": "python3.8",
+                "payload": {},
+                "environmentVariables": {}
+            }
+        },
+        {
+            "type": "aws-sam",
+            "request": "direct-invoke",
+            "name": "data-generator-crawler-start-wait:crawler-start-wait.on_update (python3.8)",
+            "invokeTarget": {
+                "target": "code",
+                "projectRoot": "${workspaceFolder}/core/src/lambdas/data-generator-crawler-start-wait",
+                "lambdaHandler": "crawler-start-wait.on_update"
+            },
+            "lambda": {
+                "runtime": "python3.8",
+                "payload": {},
+                "environmentVariables": {}
+            }
+        }
+    ]
+}

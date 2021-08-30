@@ -9,7 +9,7 @@ test('dataLakeStorage', () => {
 
   const dataLakeStorageStack = new Stack();
 
-  // Instantiate Example Construct with customer Props
+  // Instantiate DataLakeStorage Construct with custom Props
   new DataLakeStorage(dataLakeStorageStack, 'DataLakeStorageTest', {
     rawInfrequentAccessDelay: 1,
     rawArchiveDelay: 2,

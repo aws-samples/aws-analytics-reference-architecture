@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Bucket, StorageClass, BucketEncryption } from '@aws-cdk/aws-s3';
-import { Construct, Stack, RemovalPolicy, Duration } from '@aws-cdk/core';
+import { Construct, Aws, RemovalPolicy, Duration } from '@aws-cdk/core';
 
 /**
  * Properties for the DataLakeStorage Construct
@@ -65,15 +65,11 @@ export class DataLakeStorage extends Construct {
      * @param {Construct} scope the Scope of the CDK Construct
      * @param {string} id the ID of the CDK Construct
      * @param {DataLakeStorageProps} props the DataLakeStorageProps properties
-     * @since 1.0.0
      * @access public
      */
 
   constructor(scope: Construct, id: string, props: DataLakeStorageProps) {
     super(scope, id);
-
-    // Get the account ID from the stack, is used for S3 buckets unique naming
-    const accountId = Stack.of(this).account;
 
     // Prepare Amazon S3 Lifecycle Rules for raw data
     const rawTransitions = [
@@ -88,8 +84,8 @@ export class DataLakeStorage extends Construct {
     ];
 
     // Create the raw data bucket with the raw transitions
-    this.rawBucket = new Bucket(scope, 'RawBucket', {
-      bucketName: 'ara-raw' + accountId,
+    this.rawBucket = new Bucket(this, 'RawBucket', {
+      bucketName: 'ara-raw' + Aws.ACCOUNT_ID,
       encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -118,8 +114,8 @@ export class DataLakeStorage extends Construct {
     }
 
     // Create the clean data bucket
-    this.cleanBucket = new Bucket(scope, 'CleanBucket', {
-      bucketName: 'ara-clean' + accountId,
+    this.cleanBucket = new Bucket(this, 'CleanBucket', {
+      bucketName: 'ara-clean' + Aws.ACCOUNT_ID,
       encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -148,8 +144,8 @@ export class DataLakeStorage extends Construct {
     }
 
     // Create the transform data bucket
-    this.transformBucket = new Bucket(scope, 'TransformBucket', {
-      bucketName: 'ara-transform' + accountId,
+    this.transformBucket = new Bucket(this, 'TransformBucket', {
+      bucketName: 'ara-transform' + Aws.ACCOUNT_ID,
       encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
