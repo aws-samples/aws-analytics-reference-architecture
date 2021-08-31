@@ -37,11 +37,6 @@ test('custom Dataset createTable', () => {
   expect(customDataset.generateData).toEqual('UNLOAD');
 });
 
-test('Table name SQL compatible', () => {
-  // Test if the table name extracted from an Amazon S3 prefix is correct
-  expect(customDataset['sqlTable']()).toEqual('custom_table');
-});
-
 test('ParseCreateQuery method', () => {
   // Test if create table statement is correctly parsed
   expect(Dataset.RETAIL_STORE_SALE.parseCreateQuery(
