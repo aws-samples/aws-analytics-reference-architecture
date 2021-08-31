@@ -129,7 +129,7 @@ export async function isComplete(event: any) {
 
     switch (data.endpoint.state) {
       case EndpointState.ACTIVE:
-        return { isComplete: true, Data: {} };
+        return { isComplete: true, Data: data.endpoint };
       case EndpointState.TERMINATED:
       case EndpointState.TERMINATED_WITH_ERRORS:
       case EndpointState.TERMINATING:
@@ -147,9 +147,9 @@ export async function isComplete(event: any) {
 }
 
 export async function getOrCreateCertificate(): Promise<string | undefined> {
-  const client = new ACMClient({});
+  const clientAcm = new ACMClient({});
 
-  const getCerts = await client.send(
+  const getCerts = await clientAcm.send(
     new ListCertificatesCommand({
       MaxItems: 50,
       Includes: {
@@ -183,7 +183,9 @@ export async function getOrCreateCertificate(): Promise<string | undefined> {
         readFileSync("file:///tmp/privateKey.pem", "iso-8859-1")
       ),
     });
-    const response: ImportCertificateCommandOutput = await client.send(command);
+    const response: ImportCertificateCommandOutput = await clientAcm.send(
+      command
+    );
     return response.CertificateArn;
   } catch (error) {
     const { requestId, cfId, extendedRequestId, httpStatusCode } =
