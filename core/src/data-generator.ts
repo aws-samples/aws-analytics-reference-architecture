@@ -1,14 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+import * as path from 'path';
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
 import { CfnDatabase } from '@aws-cdk/aws-glue';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { SingletonFunction, Runtime, Code } from '@aws-cdk/aws-lambda';
+import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
-import { Bucket } from '@aws-cdk/aws-s3'
-;
+import { Bucket } from '@aws-cdk/aws-s3';
 import { StateMachine, IntegrationPattern, TaskInput, JsonPath } from '@aws-cdk/aws-stepfunctions';
 import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfunctions-tasks';
 import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
@@ -263,11 +263,10 @@ export class DataGenerator extends Construct {
     offsetGet.node.addDependency(offsetCreate);
 
     // AWS Lambda function to prepare data generation
-    const querySetupFn = new SingletonFunction(this, 'querySetupFn', {
-      uuid: '91aeec93-2570-465b-a25f-a776b8a9b792',
-      runtime: Runtime.PYTHON_3_8,
-      code: Code.fromAsset('./src/lambdas/data-generator-setup'),
-      handler: 'lambda.handler',
+    const querySetupFn = new Function(this, 'querySetupFn', {
+      runtime: Runtime.NODEJS_12_X,
+      code: Code.fromAsset(path.join(__dirname, 'lambdas/data-generator-setup-ts/.build')),
+      handler: 'index.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(30),
     });

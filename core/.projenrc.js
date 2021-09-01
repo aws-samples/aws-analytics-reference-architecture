@@ -18,7 +18,7 @@ const project = new AwsCdkConstructLibrary({
     'cdk',
     'analytics',
   ],
-  cdkVersion: '1.119.0',
+  cdkVersion: '1.121.0',
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',
@@ -30,12 +30,14 @@ const project = new AwsCdkConstructLibrary({
   depsUpgrade: DependenciesUpgradeMechanism.NONE,
   stale: false,
   pullRequestTemplate: false,
+  cdkVersionPinning: true,
 
   cdkDependencies: [
     '@aws-cdk/core',
     '@aws-cdk/custom-resources',
     '@aws-cdk/aws-logs',
     '@aws-cdk/aws-lambda',
+    '@aws-cdk/aws-lambda-python',
     '@aws-cdk/aws-s3',
     '@aws-cdk/aws-kinesis',
     '@aws-cdk/aws-iam',
@@ -48,6 +50,11 @@ const project = new AwsCdkConstructLibrary({
   ],
   bundledDeps: [
     'xmldom@github:xmldom/xmldom#0.7.0',
+    '@aws-sdk/client-athena',
+  ],
+
+  devDeps: [
+    'esbuild',
   ],
 
   python: {
@@ -66,5 +73,12 @@ project.addTask('test:deploy', {
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',
 });
+
+project.buildTask.prependExec(
+  'esbuild src/lambdas/synchronous-athena-query-ts/index.ts --bundle --platform=node --target=node12 --external:aws-sdk --outfile=src/lambdas/synchronous-athena-query-ts/.build/index.js',
+);
+project.buildTask.prependExec(
+  'esbuild src/lambdas/data-generator-setup-ts/index.ts --bundle --platform=node --target=node12 --external:aws-sdk --outfile=src/lambdas/data-generator-setup-ts/.build/index.js',
+);
 
 project.synth();

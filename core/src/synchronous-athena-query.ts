@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+import * as path from 'path';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
@@ -51,11 +52,11 @@ export class SynchronousAthenaQuery extends Construct {
 
     const stack = Stack.of(this);
 
-    // AWS Lambda function for the AWS CDK Custom Resource responsible to start crawler
+    // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
     const athenaQueryStartFn = new Function(this, 'athenaQueryStartFn', {
-      runtime: Runtime.PYTHON_3_8,
-      code: Code.fromAsset('./src/lambdas/synchronous-athena-query'),
-      handler: 'lambda.on_event',
+      runtime: Runtime.NODEJS_12_X,
+      code: Code.fromAsset(path.join(__dirname, 'lambdas/synchronous-athena-query-ts/.build')),
+      handler: 'index.onEvent',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),
     });
@@ -117,11 +118,11 @@ export class SynchronousAthenaQuery extends Construct {
       ],
     }));
 
-    // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for crawler completion
+    // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
     const athenaQueryWaitFn = new Function(this, 'athenaQueryStartWaitFn', {
-      runtime: Runtime.PYTHON_3_8,
-      code: Code.fromAsset('./src/lambdas/synchronous-athena-query'),
-      handler: 'lambda.is_complete',
+      runtime: Runtime.NODEJS_12_X,
+      code: Code.fromAsset(path.join(__dirname, 'lambdas/synchronous-athena-query-ts/.build')),
+      handler: 'index.isComplete',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),
     });
