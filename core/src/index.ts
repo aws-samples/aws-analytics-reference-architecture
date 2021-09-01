@@ -8,3 +8,4 @@ export { DatasetProps, Dataset } from './dataset';
 export { DataGeneratorProps, DataGenerator } from './data-generator';
 export { SynchronousAthenaQueryProps, SynchronousAthenaQuery } from './synchronous-athena-query';
 export { SingletonBucket } from './singleton-bucket';
+export { Ec2SsmRole } from './ec2-ssm-role';

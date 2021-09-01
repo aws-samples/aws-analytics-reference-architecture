@@ -11,6 +11,6 @@ const stack = new Stack(mockApp, 'testing-stack');
 const lake = new DataLakeStorage(stack, 'testing-lake', {});
 new DataGenerator(stack, 'testing-generator', {
   sinkArn: lake.rawBucket.bucketArn,
-  dataset: Dataset.RETAIL_STORE_SALE,
+  dataset: Dataset.RETAIL_1GB_STORE_SALE,
   frequency: 30,
 });
