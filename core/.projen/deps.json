@@ -2,7 +2,7 @@
   "dependencies": [
     {
       "name": "@aws-cdk/assert",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "build"
     },
     {
@@ -20,6 +20,10 @@
     },
     {
       "name": "@typescript-eslint/parser",
+      "type": "build"
+    },
+    {
+      "name": "esbuild",
       "type": "build"
     },
     {
@@ -91,73 +95,82 @@
       "type": "build"
     },
     {
+      "name": "@aws-sdk/client-athena",
+      "type": "bundled"
+    },
+    {
       "name": "xmldom",
       "version": "github:xmldom/xmldom#0.7.0",
       "type": "bundled"
     },
     {
       "name": "@aws-cdk/aws-athena",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-events-targets",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-events",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-glue",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-iam",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-kinesis",
-      "version": "^1.119.0",
+      "version": "1.121.0",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-lambda-python",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-lambda",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-logs",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-s3",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions-tasks",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/custom-resources",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "peer"
     },
     {
@@ -167,67 +180,72 @@
     },
     {
       "name": "@aws-cdk/aws-athena",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-events-targets",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-events",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-glue",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-iam",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-kinesis",
-      "version": "^1.119.0",
+      "version": "1.121.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-lambda-python",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-lambda",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-logs",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-s3",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions-tasks",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/custom-resources",
-      "version": "^1.119.0",
+      "version": "1.121.0",
       "type": "runtime"
     }
   ],
