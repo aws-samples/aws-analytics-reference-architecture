@@ -137,6 +137,44 @@ the DataLakeStorageProps properties.
 ---
 
 
+### Ec2SsmRole <a name="aws-analytics-reference-architecture.Ec2SsmRole"></a>
+
+#### Initializer <a name="aws-analytics-reference-architecture.Ec2SsmRole.Initializer"></a>
+
+```typescript
+import { Ec2SsmRole } from 'aws-analytics-reference-architecture'
+
+new Ec2SsmRole(scope: Construct, id: string, props: RoleProps)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Ec2SsmRole.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Ec2SsmRole.parameter.id"></a>
+
+- *Type:* `string`
+
+the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Ec2SsmRole.parameter.props"></a>
+
+- *Type:* [`@aws-cdk/aws-iam.RoleProps`](#@aws-cdk/aws-iam.RoleProps)
+
+the RoleProps properties.
+
+---
+
+
+
+
+
 ### Example <a name="aws-analytics-reference-architecture.Example"></a>
 
 Example Construct to help onboarding contributors.
@@ -720,67 +758,131 @@ The bucket name of the AWS Analytics Reference Architecture datasets.
 
 ---
 
-##### `RETAIL_ADDRESS` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_ADDRESS"></a>
+##### `RETAIL_100GB_CUSTOMER` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
-The customer address dataset part of retail datasets.
+The customer dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_CUSTOMER` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_CUSTOMER"></a>
+##### `RETAIL_100GB_CUSTOMER_ADDRESS` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER_ADDRESS"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
-The customer dataset part of retail datasets.
+The customer address dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_ITEM` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_ITEM"></a>
+##### `RETAIL_100GB_ITEM` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_ITEM"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
-The item dataset part of retail datasets.
+The item dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_PROMO` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_PROMO"></a>
+##### `RETAIL_100GB_PROMO` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_PROMO"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
-The promotion dataset part of retail datasets.
+The promotion dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_STORE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_STORE"></a>
+##### `RETAIL_100GB_STORE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
-The store dataset part of retail datasets.
+The store dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_STORE_SALE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_STORE_SALE"></a>
+##### `RETAIL_100GB_STORE_SALE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE_SALE"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
-The store sale dataset part of retail datasets.
+The store sale dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_WAREHOUSE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_WAREHOUSE"></a>
+##### `RETAIL_100GB_WAREHOUSE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WAREHOUSE"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
-The warehouse dataset part of retail datasets.
+The warehouse dataset part 100GB of retail datasets.
 
 ---
 
-##### `RETAIL_WEB_SALE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_WEB_SALE"></a>
+##### `RETAIL_100GB_WEB_SALE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WEB_SALE"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
-The web sale dataset part of retail datasets.
+The web sale dataset part of 100GB retail datasets.
+
+---
+
+##### `RETAIL_1GB_CUSTOMER` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_CUSTOMER"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
+
+The customer dataset part of 1GB retail datasets.
+
+---
+
+##### `RETAIL_1GB_CUSTOMER_ADDRESS` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_CUSTOMER_ADDRESS"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
+
+The customer address dataset part of 1GB retail datasets.
+
+---
+
+##### `RETAIL_1GB_ITEM` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_ITEM"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
+
+The item dataset part of 1GB retail datasets.
+
+---
+
+##### `RETAIL_1GB_PROMO` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_PROMO"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
+
+The promotion dataset part of 1GB retail datasets.
+
+---
+
+##### `RETAIL_1GB_STORE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_STORE"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
+
+The store dataset part of 1GB retail datasets.
+
+---
+
+##### `RETAIL_1GB_STORE_SALE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_STORE_SALE"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
+
+The store sale dataset part of 1GB retail datasets.
+
+---
+
+##### `RETAIL_1GB_WAREHOUSE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_WAREHOUSE"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
+
+The warehouse dataset part of 1GB retail datasets.
+
+---
+
+##### `RETAIL_1GB_WEB_SALE` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_WEB_SALE"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
+
+The web sale dataset part of 1GB retail datasets.
 
 ---
 

@@ -1,9 +1,15 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { readFileSync } from 'fs';
 import { Location } from '@aws-cdk/aws-s3';
-
+import { retailCustomerCreate, retailCustomerGenerate } from './datasets/retail-customer';
+import { retailCustomerAddressCreate, retailCustomerAddressGenerate } from './datasets/retail-customer-address';
+import { retailItemCreate, retailItemGenerate } from './datasets/retail-item';
+import { retailPromoCreate, retailPromoGenerate } from './datasets/retail-promo';
+import { retailStoreCreate, retailStoreGenerate } from './datasets/retail-store';
+import { retailStoreSaleCreate, retailStoreSaleGenerate } from './datasets/retail-store-sale';
+import { retailWarehouseCreate, retailWarehouseGenerate } from './datasets/retail-warehouse';
+import { retailWebSaleCreate, retailWebSaleGenerate } from './datasets/retail-web-sale';
 
 export interface DatasetProps {
   /**
@@ -34,100 +40,196 @@ export class Dataset {
    */
   public static readonly DATASETS_BUCKET = 'aws-analytics-reference-architecture';
   /**
-   * The web sale dataset part of retail datasets
+   * The web sale dataset part of 1GB retail datasets
    */
-  public static readonly RETAIL_WEB_SALE = new Dataset({
+  public static readonly RETAIL_1GB_WEB_SALE = new Dataset({
     location: {
       bucketName: Dataset.DATASETS_BUCKET,
-      objectKey: 'datasets/retail/web-sale',
+      objectKey: 'datasets/retail/1GB/web-sale',
     },
-    startDatetime: '',
-    createTable: '',
-    generateData: '',
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailWebSaleCreate,
+    generateData: retailWebSaleGenerate,
   });
   /**
-   * The store sale dataset part of retail datasets
+   * The store sale dataset part of 1GB retail datasets
    */
-  public static readonly RETAIL_STORE_SALE = new Dataset({
+  public static readonly RETAIL_1GB_STORE_SALE = new Dataset({
     location: {
       bucketName: Dataset.DATASETS_BUCKET,
-      objectKey: 'datasets/retail/store-sale',
+      objectKey: 'datasets/retail/1GB/store-sale',
     },
-    startDatetime: '2021-05-27T21:20:44.000Z',
-    createTable: readFileSync('./src/sql/retail-store-sale-create.sql').toString(),
-    generateData: readFileSync('./src/sql/retail-store-sale-generate.sql').toString(),
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailStoreSaleCreate,
+    generateData: retailStoreSaleGenerate,
   });
   /**
-   * The customer dataset part of retail datasets
+   * The customer dataset part of 1GB retail datasets
    */
-  public static readonly RETAIL_CUSTOMER = new Dataset({
+  public static readonly RETAIL_1GB_CUSTOMER = new Dataset({
     location: {
       bucketName: Dataset.DATASETS_BUCKET,
-      objectKey: 'datasets/retail/customer',
+      objectKey: 'datasets/retail/1GB/customer',
     },
-    startDatetime: '',
-    createTable: '',
-    generateData: '',
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailCustomerCreate,
+    generateData: retailCustomerGenerate,
   });
   /**
-   * The customer address dataset part of retail datasets
+   * The customer address dataset part of 1GB retail datasets
    */
-  public static readonly RETAIL_ADDRESS = new Dataset({
+  public static readonly RETAIL_1GB_CUSTOMER_ADDRESS = new Dataset({
     location: {
       bucketName: Dataset.DATASETS_BUCKET,
-      objectKey: 'datasets/retail/address',
+      objectKey: 'datasets/retail/1GB/customer-address',
     },
-    startDatetime: '',
-    createTable: '',
-    generateData: '',
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailCustomerAddressCreate,
+    generateData: retailCustomerAddressGenerate,
   });
   /**
-   * The item dataset part of retail datasets
+   * The item dataset part of 1GB retail datasets
    */
-  public static readonly RETAIL_ITEM = new Dataset({
+  public static readonly RETAIL_1GB_ITEM = new Dataset({
     location: {
       bucketName: Dataset.DATASETS_BUCKET,
-      objectKey: 'datasets/retail/item',
+      objectKey: 'datasets/retail/1GB/item',
     },
-    startDatetime: '',
-    createTable: '',
-    generateData: '',
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailItemCreate,
+    generateData: retailItemGenerate,
   });
   /**
-   * The promotion dataset part of retail datasets
+   * The promotion dataset part of 1GB retail datasets
    */
-  public static readonly RETAIL_PROMO = new Dataset({
+  public static readonly RETAIL_1GB_PROMO = new Dataset({
     location: {
       bucketName: Dataset.DATASETS_BUCKET,
-      objectKey: 'datasets/retail/promo',
+      objectKey: 'datasets/retail/1GB/promo',
     },
-    startDatetime: '',
-    createTable: '',
-    generateData: '',
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailPromoCreate,
+    generateData: retailPromoGenerate,
   });
   /**
-   * The warehouse dataset part of retail datasets
+   * The warehouse dataset part of 1GB retail datasets
    */
-  public static readonly RETAIL_WAREHOUSE = new Dataset({
+  public static readonly RETAIL_1GB_WAREHOUSE = new Dataset({
     location: {
       bucketName: Dataset.DATASETS_BUCKET,
-      objectKey: 'datasets/retail/warehouse',
+      objectKey: 'datasets/retail/1GB/warehouse',
     },
-    startDatetime: '',
-    createTable: '',
-    generateData: '',
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailWarehouseCreate,
+    generateData: retailWarehouseGenerate,
   });
   /**
-   * The store dataset part of retail datasets
+   * The store dataset part of 1GB retail datasets
    */
-  public static readonly RETAIL_STORE = new Dataset({
+  public static readonly RETAIL_1GB_STORE = new Dataset({
     location: {
       bucketName: Dataset.DATASETS_BUCKET,
-      objectKey: 'datasets/retail/store',
+      objectKey: 'datasets/retail/1GB/store',
     },
-    startDatetime: '',
-    createTable: '',
-    generateData: '',
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailStoreCreate,
+    generateData: retailStoreGenerate,
+  });
+  /**
+   * The web sale dataset part of 100GB retail datasets
+   */
+  public static readonly RETAIL_100GB_WEB_SALE = new Dataset({
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/100GB/web-sale',
+    },
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailWebSaleCreate,
+    generateData: retailWebSaleGenerate,
+  });
+  /**
+     * The store sale dataset part of 100GB retail datasets
+     */
+  public static readonly RETAIL_100GB_STORE_SALE = new Dataset({
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/100GB/store-sale',
+    },
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailStoreSaleCreate,
+    generateData: retailStoreSaleGenerate,
+  });
+  /**
+     * The customer dataset part of 100GB retail datasets
+     */
+  public static readonly RETAIL_100GB_CUSTOMER = new Dataset({
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/100GB/customer',
+    },
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailCustomerCreate,
+    generateData: retailCustomerGenerate,
+  });
+  /**
+     * The customer address dataset part of 100GB retail datasets
+     */
+  public static readonly RETAIL_100GB_CUSTOMER_ADDRESS = new Dataset({
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/100GB/customer-address',
+    },
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailCustomerAddressCreate,
+    generateData: retailCustomerAddressGenerate,
+  });
+  /**
+     * The item dataset part of 100GB retail datasets
+     */
+  public static readonly RETAIL_100GB_ITEM = new Dataset({
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/100GB/item',
+    },
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailItemCreate,
+    generateData: retailItemGenerate,
+  });
+  /**
+     * The promotion dataset part of 100GB retail datasets
+     */
+  public static readonly RETAIL_100GB_PROMO = new Dataset({
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/100GB/promo',
+    },
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailPromoCreate,
+    generateData: retailPromoGenerate,
+  });
+  /**
+     * The warehouse dataset part 100GB of retail datasets
+     */
+  public static readonly RETAIL_100GB_WAREHOUSE = new Dataset({
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/100GB/warehouse',
+    },
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailWarehouseCreate,
+    generateData: retailWarehouseGenerate,
+  });
+  /**
+     * The store dataset part of 100GB retail datasets
+     */
+  public static readonly RETAIL_100GB_STORE = new Dataset({
+    location: {
+      bucketName: Dataset.DATASETS_BUCKET,
+      objectKey: 'datasets/retail/100GB/store',
+    },
+    startDatetime: '2021-01-01T00:00:00.000Z',
+    createTable: retailStoreCreate,
+    generateData: retailStoreGenerate,
   });
   /**
    * Calculate the offset in Seconds from the startDatetime value and the current datetime
