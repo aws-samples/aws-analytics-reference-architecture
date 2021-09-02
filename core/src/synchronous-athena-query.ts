@@ -55,7 +55,7 @@ export class SynchronousAthenaQuery extends Construct {
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
     const athenaQueryStartFn = new Function(this, 'athenaQueryStartFn', {
       runtime: Runtime.NODEJS_12_X,
-      code: Code.fromAsset(path.join(__dirname, 'lambdas/synchronous-athena-query-ts/.build')),
+      code: Code.fromAsset(path.join(__dirname, 'lambdas/synchronous-athena-query-ts/')),
       handler: 'index.onEvent',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),
@@ -121,7 +121,7 @@ export class SynchronousAthenaQuery extends Construct {
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
     const athenaQueryWaitFn = new Function(this, 'athenaQueryStartWaitFn', {
       runtime: Runtime.NODEJS_12_X,
-      code: Code.fromAsset(path.join(__dirname, 'lambdas/synchronous-athena-query-ts/.build')),
+      code: Code.fromAsset(path.join(__dirname, 'lambdas/synchronous-athena-query-ts')),
       handler: 'index.isComplete',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),

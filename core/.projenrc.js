@@ -74,11 +74,4 @@ project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',
 });
 
-project.buildTask.prependExec(
-  'esbuild src/lambdas/synchronous-athena-query-ts/index.ts --bundle --platform=node --target=node12 --external:aws-sdk --outfile=src/lambdas/synchronous-athena-query-ts/.build/index.js',
-);
-project.buildTask.prependExec(
-  'esbuild src/lambdas/data-generator-setup-ts/index.ts --bundle --platform=node --target=node12 --external:aws-sdk --outfile=src/lambdas/data-generator-setup-ts/.build/index.js',
-);
-
 project.synth();

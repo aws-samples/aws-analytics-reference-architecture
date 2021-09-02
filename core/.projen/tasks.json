@@ -81,12 +81,6 @@
       "description": "Full release build (test+compile)",
       "steps": [
         {
-          "exec": "esbuild src/lambdas/data-generator-setup-ts/index.ts --bundle --platform=node --target=node12 --external:aws-sdk --outfile=src/lambdas/data-generator-setup-ts/.build/index.js"
-        },
-        {
-          "exec": "esbuild src/lambdas/synchronous-athena-query-ts/index.ts --bundle --platform=node --target=node12 --external:aws-sdk --outfile=src/lambdas/synchronous-athena-query-ts/.build/index.js"
-        },
-        {
           "exec": "npx projen"
         },
         {

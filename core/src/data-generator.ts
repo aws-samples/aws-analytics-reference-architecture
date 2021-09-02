@@ -265,7 +265,7 @@ export class DataGenerator extends Construct {
     // AWS Lambda function to prepare data generation
     const querySetupFn = new Function(this, 'querySetupFn', {
       runtime: Runtime.NODEJS_12_X,
-      code: Code.fromAsset(path.join(__dirname, 'lambdas/data-generator-setup-ts/.build')),
+      code: Code.fromAsset(path.join(__dirname, 'lambdas/data-generator-setup-ts')),
       handler: 'index.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(30),
