@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import * as path from 'path';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
@@ -52,11 +51,14 @@ export class SynchronousAthenaQuery extends Construct {
 
     const stack = Stack.of(this);
 
+    // Amazon S3 IBucket containing the AWS Lambda code for custom resources
+    const binaryBucket = Bucket.fromBucketArn(this, 'binaryBucket', 'arn:aws:s3:::aws-analytics-reference-architecture');
+
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
     const athenaQueryStartFn = new Function(this, 'athenaQueryStartFn', {
-      runtime: Runtime.NODEJS_12_X,
-      code: Code.fromAsset(path.join(__dirname, 'lambdas/synchronous-athena-query-ts/')),
-      handler: 'index.onEvent',
+      runtime: Runtime.PYTHON_3_8,
+      code: Code.fromBucket(binaryBucket, 'binaries/custom-resources/synchronous-athena-query.zip'),
+      handler: 'lambda.on_event',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),
     });
@@ -120,9 +122,9 @@ export class SynchronousAthenaQuery extends Construct {
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
     const athenaQueryWaitFn = new Function(this, 'athenaQueryStartWaitFn', {
-      runtime: Runtime.NODEJS_12_X,
-      code: Code.fromAsset(path.join(__dirname, 'lambdas/synchronous-athena-query-ts')),
-      handler: 'index.isComplete',
+      runtime: Runtime.PYTHON_3_8,
+      code: Code.fromBucket(binaryBucket, 'binaries/custom-resources/synchronous-athena-query.zip'),
+      handler: 'lambda.is_complete',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),
     });
@@ -149,7 +151,7 @@ export class SynchronousAthenaQuery extends Construct {
       onEventHandler: athenaQueryStartFn,
       isCompleteHandler: athenaQueryWaitFn,
       queryInterval: Duration.seconds(10),
-      totalTimeout: Duration.minutes(props.timeout || 60),
+      totalTimeout: Duration.minutes(props.timeout || 1),
       logRetention: RetentionDays.ONE_DAY,
     });
 
