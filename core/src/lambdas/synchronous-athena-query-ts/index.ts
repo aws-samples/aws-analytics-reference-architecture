@@ -1,12 +1,9 @@
-import {
-  AthenaClient,
-  StartQueryExecutionCommand,
-  GetQueryExecutionCommand,
-  StartQueryExecutionCommandOutput,
-  GetQueryExecutionCommandOutput,
-} from '@aws-sdk/client-athena';
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
 
-const athena = new AthenaClient({ region: process.env.AWS_REGION });
+import * as AWS from 'aws-sdk';
+
+const athena = new AWS.Athena({ region: process.env.AWS_REGION });
 
 export async function onEvent(event: any) {
   console.log(event);
@@ -27,23 +24,27 @@ export async function onCreate(event: any) {
   if (!resultPath.endsWith('/')) {
     console.log('adding trailing slash to the resultPath');
     resultPath = resultPath.concat('/');
+  } else {
+    console.log('trailing slash already present');
   }
-  const command = new StartQueryExecutionCommand({
+  // Build the command
+  const command = {
     QueryString: event.ResourceProperties.Statement,
     ResultConfiguration: {
       OutputLocation: resultPath,
     },
-  });
+  };
+  console.log(command);
+
   try {
-    const responseStart = await athena.send(command);
+    const responseStart = await athena.startQueryExecution(command).promise();
     return {
       PhysicalResourceId: responseStart.QueryExecutionId,
       Data: responseStart,
     };
 
   } catch (error) {
-    const { requestId, cfId, extendedRequestId, httpStatusCode } = (error as StartQueryExecutionCommandOutput).$metadata;
-    console.log({ requestId, cfId, extendedRequestId, httpStatusCode });
+    console.log(error);
     return false;
   }
 }
@@ -58,16 +59,15 @@ export async function onDelete(event: any) {
 
 export async function isComplete(event: any) {
   console.log(event);
-
   if (event.RequestType == 'Delete') return { isComplete: true };
-
-  const command = new GetQueryExecutionCommand({
+  const command = {
     QueryExecutionId: event.PhysicalResourceId,
-  });
+  };
+  console.log(command);
   try {
-    const responseGet = await athena.send(command);
-    console.log(responseGet);
+    const responseGet = await athena.getQueryExecution(command).promise();
     if (!responseGet.QueryExecution) return { isComplete: false };
+    console.log(responseGet.QueryExecution);
     switch (responseGet.QueryExecution.Status) {
       case 'QUEUED' || 'RUNNING':
         return { isComplete: false };
@@ -77,8 +77,7 @@ export async function isComplete(event: any) {
         throw new Error(`Athena query error: ${responseGet.QueryExecution.Status}`);
     }
   } catch (error) {
-    const { requestId, cfId, extendedRequestId, httpStatusCode } = (error as GetQueryExecutionCommandOutput).$metadata;
-    console.log({ requestId, cfId, extendedRequestId, httpStatusCode });
+    console.log(error);
     return false;
   }
 }

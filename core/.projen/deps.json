@@ -78,7 +78,6 @@
     },
     {
       "name": "projen",
-      "version": "^0.19.1",
       "type": "build"
     },
     {
@@ -95,7 +94,7 @@
       "type": "build"
     },
     {
-      "name": "@aws-sdk/client-athena",
+      "name": "aws-sdk",
       "type": "bundled"
     },
     {

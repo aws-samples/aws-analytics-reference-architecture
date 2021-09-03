@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import * as path from 'path';
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
 import { CfnDatabase } from '@aws-cdk/aws-glue';
@@ -74,6 +73,9 @@ export class DataGenerator extends Construct {
 
   constructor(scope: Construct, id: string, props: DataGeneratorProps) {
     super(scope, id);
+
+    // Amazon S3 IBucket containing the AWS Lambda code for custom resources
+    const binaryBucket = Bucket.fromBucketArn(this, 'binaryBucket', 'arn:aws:s3:::aws-analytics-reference-architecture')
 
     const stack = Stack.of(this);
     this.sinkArn = props.sinkArn;
@@ -264,9 +266,9 @@ export class DataGenerator extends Construct {
 
     // AWS Lambda function to prepare data generation
     const querySetupFn = new Function(this, 'querySetupFn', {
-      runtime: Runtime.NODEJS_12_X,
-      code: Code.fromAsset(path.join(__dirname, 'lambdas/data-generator-setup-ts')),
-      handler: 'index.handler',
+      runtime: Runtime.PYTHON_3_8,
+      code: Code.fromBucket(binaryBucket,'binaries/custom-resources/data-generator-setup.zip'),
+      handler: 'lambda.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(30),
     });

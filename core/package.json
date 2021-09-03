@@ -15,17 +15,20 @@
     "test:update": "npx projen test:update",
     "bump": "npx projen bump",
     "unbump": "npx projen unbump",
+    "publish:github": "npx projen publish:github",
     "upgrade-projen": "npx projen upgrade-projen",
     "default": "npx projen default",
     "watch": "npx projen watch",
     "package": "npx projen package",
     "eslint": "npx projen eslint",
     "compat": "npx projen compat",
+    "publish:npm": "npx projen publish:npm",
+    "publish:pypi": "npx projen publish:pypi",
     "docgen": "npx projen docgen",
     "test:deploy": "npx projen test:deploy",
     "test:destroy": "npx projen test:destroy",
-    "projen": "npx projen",
-    "start": "npx projen start"
+    "release": "npx projen release",
+    "projen": "npx projen"
   },
   "author": {
     "name": "Amazon Web Services",
@@ -51,7 +54,7 @@
     "jsii-pacmak": "^1.34.0",
     "json-schema": "^0.3.0",
     "npm-check-updates": "^11",
-    "projen": "^0.19.1",
+    "projen": "^0.27.40",
     "standard-version": "^9",
     "ts-jest": "^27.0.5",
     "typescript": "^4.4.2"
@@ -88,11 +91,11 @@
     "@aws-cdk/aws-stepfunctions-tasks": "1.121.0",
     "@aws-cdk/core": "1.121.0",
     "@aws-cdk/custom-resources": "1.121.0",
-    "@aws-sdk/client-athena": "^3.28.0",
+    "aws-sdk": "^2.981.0",
     "xmldom": "github:xmldom/xmldom#0.7.0"
   },
   "bundledDependencies": [
-    "@aws-sdk/client-athena",
+    "aws-sdk",
     "xmldom"
   ],
   "keywords": [

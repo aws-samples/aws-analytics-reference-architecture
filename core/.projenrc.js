@@ -50,7 +50,7 @@ const project = new AwsCdkConstructLibrary({
   ],
   bundledDeps: [
     'xmldom@github:xmldom/xmldom#0.7.0',
-    '@aws-sdk/client-athena',
+    'aws-sdk',
   ],
 
   devDeps: [
