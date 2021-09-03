@@ -75,7 +75,7 @@ export class DataGenerator extends Construct {
     super(scope, id);
 
     // Amazon S3 IBucket containing the AWS Lambda code for custom resources
-    const binaryBucket = Bucket.fromBucketArn(this, 'binaryBucket', 'arn:aws:s3:::aws-analytics-reference-architecture')
+    const binaryBucket = Bucket.fromBucketArn(this, 'binaryBucket', 'arn:aws:s3:::aws-analytics-reference-architecture');
 
     const stack = Stack.of(this);
     this.sinkArn = props.sinkArn;
@@ -267,7 +267,7 @@ export class DataGenerator extends Construct {
     // AWS Lambda function to prepare data generation
     const querySetupFn = new Function(this, 'querySetupFn', {
       runtime: Runtime.PYTHON_3_8,
-      code: Code.fromBucket(binaryBucket,'binaries/custom-resources/data-generator-setup.zip'),
+      code: Code.fromBucket(binaryBucket, 'binaries/custom-resources/data-generator-setup.zip'),
       handler: 'lambda.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(30),
