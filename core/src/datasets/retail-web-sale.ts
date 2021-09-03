@@ -26,7 +26,12 @@ export const retailWebSaleCreate = `CREATE EXTERNAL TABLE IF NOT EXISTS {{DATABA
   ship_carrier string,
   sale_datetime string
 )
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+ROW FORMAT DELIMITED 
+  FIELDS TERMINATED BY ',' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION
   's3://{{BUCKET}}/{{KEY}}/'
 TBLPROPERTIES (
