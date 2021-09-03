@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Location } from '@aws-cdk/aws-s3';
-import { retailCustomerCreate, retailCustomerGenerate } from './datasets/retail-customer';
-import { retailCustomerAddressCreate, retailCustomerAddressGenerate } from './datasets/retail-customer-address';
+import { retailCustomerCreate, retailCustomerCreateTarget, retailCustomerGenerate } from './datasets/retail-customer';
+import { retailCustomerAddressCreate, retailCustomerAddressCreateTarget, retailCustomerAddressGenerate } from './datasets/retail-customer-address';
 import { retailItemCreate, retailItemGenerate } from './datasets/retail-item';
 import { retailPromoCreate, retailPromoGenerate } from './datasets/retail-promo';
 import { retailStoreCreate, retailStoreGenerate } from './datasets/retail-store';
@@ -22,9 +22,14 @@ export interface DatasetProps {
   */
   readonly location: Location;
   /**
-  * The CREATE TABLE DDL command to create the AWS Glue Table
+  * The CREATE TABLE DDL command to create the source AWS Glue Table
   */
-  readonly createTable: string;
+  readonly createSourceTable: string;
+  /**
+  * The CREATE TABLE DDL command to create the target AWS Glue Table
+  * @default - Use the same DDL as the source table
+  */
+  readonly createTargetTable?: string;
   /**
   * The SELECT query used to generate new data
   */
@@ -48,7 +53,7 @@ export class Dataset {
       objectKey: 'datasets/retail/1GB/web-sale',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailWebSaleCreate,
+    createSourceTable: retailWebSaleCreate,
     generateData: retailWebSaleGenerate,
   });
   /**
@@ -60,7 +65,7 @@ export class Dataset {
       objectKey: 'datasets/retail/1GB/store-sale',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailStoreSaleCreate,
+    createSourceTable: retailStoreSaleCreate,
     generateData: retailStoreSaleGenerate,
   });
   /**
@@ -72,7 +77,8 @@ export class Dataset {
       objectKey: 'datasets/retail/1GB/customer',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailCustomerCreate,
+    createSourceTable: retailCustomerCreate,
+    createTargetTable: retailCustomerCreateTarget,
     generateData: retailCustomerGenerate,
   });
   /**
@@ -84,7 +90,8 @@ export class Dataset {
       objectKey: 'datasets/retail/1GB/customer-address',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailCustomerAddressCreate,
+    createSourceTable: retailCustomerAddressCreate,
+    createTargetTable: retailCustomerAddressCreateTarget,
     generateData: retailCustomerAddressGenerate,
   });
   /**
@@ -96,7 +103,7 @@ export class Dataset {
       objectKey: 'datasets/retail/1GB/item',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailItemCreate,
+    createSourceTable: retailItemCreate,
     generateData: retailItemGenerate,
   });
   /**
@@ -108,7 +115,7 @@ export class Dataset {
       objectKey: 'datasets/retail/1GB/promo',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailPromoCreate,
+    createSourceTable: retailPromoCreate,
     generateData: retailPromoGenerate,
   });
   /**
@@ -120,7 +127,7 @@ export class Dataset {
       objectKey: 'datasets/retail/1GB/warehouse',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailWarehouseCreate,
+    createSourceTable: retailWarehouseCreate,
     generateData: retailWarehouseGenerate,
   });
   /**
@@ -132,7 +139,7 @@ export class Dataset {
       objectKey: 'datasets/retail/1GB/store',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailStoreCreate,
+    createSourceTable: retailStoreCreate,
     generateData: retailStoreGenerate,
   });
   /**
@@ -144,7 +151,7 @@ export class Dataset {
       objectKey: 'datasets/retail/100GB/web-sale',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailWebSaleCreate,
+    createSourceTable: retailWebSaleCreate,
     generateData: retailWebSaleGenerate,
   });
   /**
@@ -156,7 +163,7 @@ export class Dataset {
       objectKey: 'datasets/retail/100GB/store-sale',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailStoreSaleCreate,
+    createSourceTable: retailStoreSaleCreate,
     generateData: retailStoreSaleGenerate,
   });
   /**
@@ -168,7 +175,8 @@ export class Dataset {
       objectKey: 'datasets/retail/100GB/customer',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailCustomerCreate,
+    createSourceTable: retailCustomerCreate,
+    createTargetTable: retailCustomerCreateTarget,
     generateData: retailCustomerGenerate,
   });
   /**
@@ -180,7 +188,8 @@ export class Dataset {
       objectKey: 'datasets/retail/100GB/customer-address',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailCustomerAddressCreate,
+    createSourceTable: retailCustomerAddressCreate,
+    createTargetTable: retailCustomerAddressCreateTarget,
     generateData: retailCustomerAddressGenerate,
   });
   /**
@@ -192,7 +201,7 @@ export class Dataset {
       objectKey: 'datasets/retail/100GB/item',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailItemCreate,
+    createSourceTable: retailItemCreate,
     generateData: retailItemGenerate,
   });
   /**
@@ -204,7 +213,7 @@ export class Dataset {
       objectKey: 'datasets/retail/100GB/promo',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailPromoCreate,
+    createSourceTable: retailPromoCreate,
     generateData: retailPromoGenerate,
   });
   /**
@@ -216,7 +225,7 @@ export class Dataset {
       objectKey: 'datasets/retail/100GB/warehouse',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailWarehouseCreate,
+    createSourceTable: retailWarehouseCreate,
     generateData: retailWarehouseGenerate,
   });
   /**
@@ -228,7 +237,7 @@ export class Dataset {
       objectKey: 'datasets/retail/100GB/store',
     },
     startDatetime: '2021-01-01T00:00:00.000Z',
-    createTable: retailStoreCreate,
+    createSourceTable: retailStoreCreate,
     generateData: retailStoreGenerate,
   });
   /**
@@ -254,9 +263,13 @@ export class Dataset {
    */
   readonly tableName: string;
   /**
-   * The CREATE TABLE DDL command to create the AWS Glue Table
+   * The CREATE TABLE DDL command to create the source AWS Glue Table
    */
-  readonly createTable: string;
+  readonly createSourceTable: string;
+  /**
+   * The CREATE TABLE DDL command to create the target AWS Glue Table
+   */
+  readonly createTargetTable: string;
   /**
    * The SELECT query used to generate new data
    */
@@ -270,33 +283,38 @@ export class Dataset {
   constructor(props: DatasetProps) {
     this.offset = Dataset.getOffset(props.startDatetime);
     this.location = props.location;
-    this.createTable = props.createTable;
+    this.createSourceTable = props.createSourceTable;
+    this.createTargetTable = props.createTargetTable ? props.createTargetTable : props.createSourceTable;
     this.generateData = props.generateData;
     this.tableName = this.sqlTable();
   }
 
   /**
-   * Parse the CREATE TABLE statement template
+   * Parse the CREATE TABLE statement template for the source
    * @param {string} database the database name to parse
    * @param {string} table the table name to parse
    * @param {string} bucket the bucket name to parse
    * @param {string} key the key to parse
    * @access public
    */
-  public parseCreateQuery(database: string, table: string, bucket: string, key: string) {
-    const dbRe = /{{DATABASE}}/gi;
-    const tableRe = /{{TABLE}}/gi;
-    const bucketRe = /{{BUCKET}}/gi;
-    const keyRe = /{{KEY}}/gi;
-    return this.createTable
-      .replace(dbRe, database)
-      .replace(tableRe, table)
-      .replace(bucketRe, bucket)
-      .replace(keyRe, key);
+  public parseCreateSourceQuery( database: string, table: string, bucket: string, key: string) {
+    return this.parseCreateQuery(this.createSourceTable, database, table, bucket, key);
   }
 
   /**
-   * Parse the CREATE TABLE statement template
+   * Parse the CREATE TABLE statement template for the source
+   * @param {string} database the database name to parse
+   * @param {string} table the table name to parse
+   * @param {string} bucket the bucket name to parse
+   * @param {string} key the key to parse
+   * @access public
+   */
+  public parseCreateTargetQuery( database: string, table: string, bucket: string, key: string) {
+    return this.parseCreateQuery(this.createTargetTable, database, table, bucket, key);
+  }
+
+  /**
+   * Parse the CREATE TABLE statement template for the target
    * @param {string} database the database name to parse
    * @param {string} sourceTable the source table name to parse
    * @param {string} targetTable the target table name to parse
@@ -320,5 +338,26 @@ export class Dataset {
     const parsedPrefix = this.location.objectKey.split('/');
     const re = /\-/gi;
     return parsedPrefix[parsedPrefix.length-1].replace(re, '_');
+  }
+
+  /**
+   * Parse the CREATE TABLE statement template
+   * @param {string} query the CREATE TABLE query statement
+   * @param {string} database the database name to parse
+   * @param {string} table the table name to parse
+   * @param {string} bucket the bucket name to parse
+   * @param {string} key the key to parse
+   * @access private
+   */
+  private parseCreateQuery(query: string, database: string, table: string, bucket: string, key: string) {
+    const dbRe = /{{DATABASE}}/gi;
+    const tableRe = /{{TABLE}}/gi;
+    const bucketRe = /{{BUCKET}}/gi;
+    const keyRe = /{{KEY}}/gi;
+    return query
+      .replace(dbRe, database)
+      .replace(tableRe, table)
+      .replace(bucketRe, bucket)
+      .replace(keyRe, key);
   }
 }

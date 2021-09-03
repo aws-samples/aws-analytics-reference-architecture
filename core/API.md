@@ -474,11 +474,11 @@ import { DatasetProps } from 'aws-analytics-reference-architecture'
 const datasetProps: DatasetProps = { ... }
 ```
 
-##### `createTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.createTable"></a>
+##### `createSourceTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.createSourceTable"></a>
 
 - *Type:* `string`
 
-The CREATE TABLE DDL command to create the AWS Glue Table.
+The CREATE TABLE DDL command to create the source AWS Glue Table.
 
 ---
 
@@ -505,6 +505,15 @@ It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
 - *Type:* `string`
 
 The minimum datetime value in the dataset used to calculate time offset.
+
+---
+
+##### `createTargetTable`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.createTargetTable"></a>
+
+- *Type:* `string`
+- *Default:* Use the same DDL as the source table
+
+The CREATE TABLE DDL command to create the target AWS Glue Table.
 
 ---
 
@@ -637,10 +646,48 @@ the DatasetProps.
 
 #### Methods <a name="Methods"></a>
 
-##### `parseCreateQuery` <a name="aws-analytics-reference-architecture.Dataset.parseCreateQuery"></a>
+##### `parseCreateSourceQuery` <a name="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery"></a>
 
 ```typescript
-public parseCreateQuery(database: string, table: string, bucket: string, key: string)
+public parseCreateSourceQuery(database: string, table: string, bucket: string, key: string)
+```
+
+###### `database`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.database"></a>
+
+- *Type:* `string`
+
+the database name to parse.
+
+---
+
+###### `table`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.table"></a>
+
+- *Type:* `string`
+
+the table name to parse.
+
+---
+
+###### `bucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.bucket"></a>
+
+- *Type:* `string`
+
+the bucket name to parse.
+
+---
+
+###### `key`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.key"></a>
+
+- *Type:* `string`
+
+the key to parse.
+
+---
+
+##### `parseCreateTargetQuery` <a name="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery"></a>
+
+```typescript
+public parseCreateTargetQuery(database: string, table: string, bucket: string, key: string)
 ```
 
 ###### `database`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.database"></a>
@@ -708,11 +755,19 @@ the target table name to parse.
 
 #### Properties <a name="Properties"></a>
 
-##### `createTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.createTable"></a>
+##### `createSourceTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.createSourceTable"></a>
 
 - *Type:* `string`
 
-The CREATE TABLE DDL command to create the AWS Glue Table.
+The CREATE TABLE DDL command to create the source AWS Glue Table.
+
+---
+
+##### `createTargetTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.createTargetTable"></a>
+
+- *Type:* `string`
+
+The CREATE TABLE DDL command to create the target AWS Glue Table.
 
 ---
 

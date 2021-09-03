@@ -13,7 +13,8 @@ const customDataset = new Dataset({
     objectKey: 'custom-prefix/custom-table',
   },
   startDatetime: '2021-06-27T21:20:44.000Z',
-  createTable: 'CREATE TABLE',
+  createSourceTable: 'CREATE TABLE',
+  createTargetTable: 'CREATE A DIFFERENT TABLE',
   generateData: 'UNLOAD',
 });
 
@@ -27,9 +28,14 @@ test('custom Dataset location', () => {
   expect(customDataset.location.objectKey).toEqual('custom-prefix/custom-table');
 });
 
-test('custom Dataset createTable', () => {
+test('custom Dataset createSourceTable', () => {
   // Test if datetime parameter is right
-  expect(customDataset.createTable).toEqual('CREATE TABLE');
+  expect(customDataset.createSourceTable).toEqual('CREATE TABLE');
+});
+
+test('custom Dataset createTargetTable', () => {
+  // Test if datetime parameter is right
+  expect(customDataset.createTargetTable).toEqual('CREATE A DIFFERENT TABLE');
 });
 
 test('custom Dataset createTable', () => {
@@ -37,9 +43,9 @@ test('custom Dataset createTable', () => {
   expect(customDataset.generateData).toEqual('UNLOAD');
 });
 
-test('ParseCreateQuery method', () => {
+test('ParseCreateSourceQuery method', () => {
   // Test if create table statement is correctly parsed
-  expect(Dataset.RETAIL_1GB_STORE_SALE.parseCreateQuery(
+  expect(Dataset.RETAIL_1GB_STORE_SALE.parseCreateSourceQuery(
     DataGenerator.DATA_GENERATOR_DATABASE,
     Dataset.RETAIL_1GB_STORE_SALE.tableName,
     Dataset.RETAIL_1GB_STORE_SALE.location.bucketName,
@@ -65,7 +71,12 @@ test('ParseCreateQuery method', () => {
   promo_id string,
   sale_datetime string
 )
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+ROW FORMAT DELIMITED 
+  FIELDS TERMINATED BY ',' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION
   's3://${Dataset.RETAIL_1GB_STORE_SALE.location.bucketName}/${Dataset.RETAIL_1GB_STORE_SALE.location.objectKey}/'
 TBLPROPERTIES (

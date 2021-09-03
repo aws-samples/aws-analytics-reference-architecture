@@ -3,7 +3,6 @@
 
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
-import { CfnDatabase } from '@aws-cdk/aws-glue';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
@@ -14,6 +13,7 @@ import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
 import { Dataset } from './dataset';
 import { SingletonBucket } from './singleton-bucket';
+import { SingletonGlueDatabase } from './singleton-glue-database';
 import { SynchronousAthenaQuery } from './synchronous-athena-query';
 
 
@@ -83,20 +83,15 @@ export class DataGenerator extends Construct {
     this.frequency = props.frequency || 1800;
 
     // AWS Glue Database to store source Tables
-    const datageneratorDB = new CfnDatabase(this, 'database', {
-      catalogId: Aws.ACCOUNT_ID,
-      databaseInput: {
-        name: DataGenerator.DATA_GENERATOR_DATABASE,
-      },
-    });
+    const datageneratorDB = SingletonGlueDatabase.getOrCreate(this, DataGenerator.DATA_GENERATOR_DATABASE);
 
     // Singleton Amazon S3 bucket for Amazon Athena Query logs
     const logBucket = SingletonBucket.getOrCreate(this, 'log');
 
     // Source table creation in Amazon Athena
     const createSourceTable = new SynchronousAthenaQuery(this, 'createSourceTable', {
-      statement: this.dataset.parseCreateQuery(
-        datageneratorDB.ref,
+      statement: this.dataset.parseCreateSourceQuery(
+        datageneratorDB.databaseName,
         this.dataset.tableName+'_source',
         this.dataset.location.bucketName,
         this.dataset.location.objectKey),
@@ -143,8 +138,8 @@ export class DataGenerator extends Construct {
 
     // Target table creation in Amazon Athena
     const createTargetTable = new SynchronousAthenaQuery(this, 'createTargetTable', {
-      statement: this.dataset.parseCreateQuery(
-        datageneratorDB.ref,
+      statement: this.dataset.parseCreateTargetQuery(
+        datageneratorDB.databaseName,
         this.dataset.tableName+'_target',
         arn.resource,
         this.dataset.tableName),
@@ -297,7 +292,7 @@ export class DataGenerator extends Construct {
       integrationPattern: IntegrationPattern.RUN_JOB,
       resultConfiguration: {
         outputLocation: {
-          bucketName: SingletonBucket.getOrCreate(this, 'log').bucketName,
+          bucketName: logBucket.bucketName,
           objectKey: `data_generator/${this.dataset.tableName}/generate`,
         },
       },
@@ -349,9 +344,27 @@ export class DataGenerator extends Construct {
       ],
     }));
 
+    generatorStepFunctions.addToRolePolicy(new PolicyStatement({
+      resources: [
+        stack.formatArn({
+          account: '',
+          region: '',
+          service: 's3',
+          resource: arn.resource,
+          resourceName: this.dataset.tableName + '/*',
+        }),
+      ],
+      actions: [
+        's3:AbortMultipartUpload',
+        's3:ListBucketMultipartUploads',
+        's3:ListMultipartUploadParts',
+        's3:PutObject',
+      ],
+    }));
+
     // Amazon EventBridge Rule to trigger the AWS Step Functions
     new Rule(this, 'dataGeneratorTrigger', {
-      schedule: Schedule.cron({ minute: `0/${Math.round(this.frequency/60)}` }),
+      schedule: Schedule.cron({ minute: `0/${Math.ceil(this.frequency/60)}` }),
       targets: [new SfnStateMachine(generatorStepFunctions, {})],
     });
   }
