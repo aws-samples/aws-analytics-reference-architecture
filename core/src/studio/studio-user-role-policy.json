@@ -1,0 +1,131 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowEMRBasicActions",
+      "Action": [
+        "elasticmapreduce:CreateEditor",
+        "elasticmapreduce:DescribeEditor",
+        "elasticmapreduce:ListEditors",
+        "elasticmapreduce:StartEditor",
+        "elasticmapreduce:StopEditor",
+        "elasticmapreduce:DeleteEditor",
+        "elasticmapreduce:OpenEditorInConsole",
+        "elasticmapreduce:AttachEditor",
+        "elasticmapreduce:DetachEditor",
+        "elasticmapreduce:CreateRepository",
+        "elasticmapreduce:DescribeRepository",
+        "elasticmapreduce:DeleteRepository",
+        "elasticmapreduce:ListRepositories",
+        "elasticmapreduce:LinkRepository",
+        "elasticmapreduce:UnlinkRepository",
+        "elasticmapreduce:DescribeCluster",
+        "elasticmapreduce:ListInstanceGroups",
+        "elasticmapreduce:ListBootstrapActions",
+        "elasticmapreduce:ListClusters",
+        "elasticmapreduce:ListSteps",
+        "elasticmapreduce:CreatePersistentAppUI",
+        "elasticmapreduce:DescribePersistentAppUI",
+        "elasticmapreduce:GetPersistentAppUIPresignedURL",
+        "elasticmapreduce:GetOnClusterAppUIPresignedURL"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowEMRContainersBasicActions",
+      "Action": [
+        "emr-containers:DescribeVirtualCluster",
+        "emr-containers:ListVirtualClusters",
+        "emr-containers:DescribeManagedEndpoint",
+        "emr-containers:ListManagedEndpoints",
+        "emr-containers:CreateAccessTokenForManagedEndpoint",
+        "emr-containers:DescribeJobRun",
+        "emr-containers:ListJobRuns"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowSecretManagerListSecrets",
+      "Action": [
+        "secretsmanager:ListSecrets"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowSecretCreationWithEMRTagsAndEMRStudioPrefix",
+      "Effect": "Allow",
+      "Action": "secretsmanager:CreateSecret",
+      "Resource": "arn:aws:secretsmanager:*:*:secret:emr-studio-*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/for-use-with-amazon-emr-managed-policies": "true"
+        }
+      }
+    },
+    {
+      "Sid": "AllowAddingTagsOnSecretsWithEMRStudioPrefix",
+      "Effect": "Allow",
+      "Action": "secretsmanager:TagResource",
+      "Resource": "arn:aws:secretsmanager:*:*:secret:emr-studio-*"
+    },
+    {
+      "Sid": "AllowClusterTemplateRelatedIntermediateActions",
+      "Action": [
+        "servicecatalog:DescribeProduct",
+        "servicecatalog:DescribeProductView",
+        "servicecatalog:DescribeProvisioningParameters",
+        "servicecatalog:ProvisionProduct",
+        "servicecatalog:SearchProducts",
+        "servicecatalog:UpdateProvisionedProduct",
+        "servicecatalog:ListProvisioningArtifacts",
+        "servicecatalog:ListLaunchPaths",
+        "servicecatalog:DescribeRecord",
+        "cloudformation:DescribeStackResources"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowEMRCreateClusterAdvancedActions",
+      "Action": [
+        "elasticmapreduce:RunJobFlow"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowPassingServiceRoleForWorkspaceCreation",
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::*:role/<your-emr-studio-service-role>",
+        "arn:aws:iam::*:role/EMR_DefaultRole",
+        "arn:aws:iam::*:role/EMR_EC2_DefaultRole"
+      ],
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowS3ListAndLocationPermissions",
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": "arn:aws:s3:::*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowS3ReadOnlyAccessToLogs",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": [
+
+        "arn:aws:s3:::aws-logs-<aws-account-id>-<region>/elasticmapreduce/*"
+      ],
+      "Effect": "Allow"
+    }
+  ]
+}

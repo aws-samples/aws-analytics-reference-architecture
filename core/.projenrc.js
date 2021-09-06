@@ -47,6 +47,8 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-stepfunctions-tasks',
     '@aws-cdk/aws-events',
     '@aws-cdk/aws-events-targets',
+    '@aws-cdk/aws-emr',
+    '@aws-cdk/aws-ec2',
   ],
   bundledDeps: [
     'xmldom@github:xmldom/xmldom#0.7.0',
