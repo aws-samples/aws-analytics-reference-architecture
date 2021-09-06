@@ -200,13 +200,17 @@ export class DataPlatformNotebook extends Construct {
       workspaceSecurityGroupId: this.workspaceSecurityGroup.securityGroupId,
     });
 
-    //set the Studio URL to be return as CfnOutput later
+    //Set the Studio URL and Studio Id to return as CfnOutput later
     this.studioUrl = this.studioInstance.attrUrl;
     this.studioId = this.studioInstance.attrStudioId;
   }
 
-  //method to add users, take a list of userDefintion and will create a session Policy
-  //then assign a user to the created studio
+  /**
+   * method to add users, take a list of userDefintion and will create a session Policy
+   * then assign a user to the created studio
+   * @param {StudioUserDefinition} userList list of users
+   * @access public
+   */
   public addUsers(userList: StudioUserDefinition[]) {
     for (let user of userList) {
       let sessionPolicyArn = this.createUserSessionPolicy(user);
@@ -221,8 +225,11 @@ export class DataPlatformNotebook extends Construct {
     }
   }
 
-  //Create a session policy for each user
-  //Return the ARN of the policy created
+  /**
+   * @hidden
+   * Create a session policy for each user
+   * @returns Return the ARN of the policy created
+   */
   private createUserSessionPolicy(user: StudioUserDefinition) {
     let policy = JSON.parse(readFileSync('./src/studio/studio-user-role-policy.json', 'utf8'));
 
@@ -247,8 +254,11 @@ export class DataPlatformNotebook extends Construct {
     return userSessionPolicy.managedPolicyArn;
   }
 
-  //Create a policy for the EMR Service Role
-  //Return the ARN of the policy created
+  /**
+   * @hidden
+   * Create a policy for the EMR Service Role
+   * @returns Return the ARN of the policy created
+   */
   private createStudioServiceRolePolicy(bucketName: string, studioName: string) {
     let policy = JSON.parse(readFileSync('./src/studio/studio-service-role-policy.json', 'utf8'));
     policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
@@ -260,8 +270,11 @@ export class DataPlatformNotebook extends Construct {
     return serviceRolePolicy.managedPolicyArn;
   }
 
-  //Create a policy for the EMR USER Role
-  //Return the ARN of the policy created
+  /**
+   * @hidden
+   * Create a policy for the EMR USER Role
+   * @returns Return the ARN of the policy created
+   */
   private createStudioUserRolePolicy(studioName: string) {
     let policy = JSON.parse(readFileSync('./src/studio/studio-user-role-policy.json', 'utf8'));
     //replace the <your-emr-studio-service-role> with the service role created above
