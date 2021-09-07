@@ -18,7 +18,7 @@ export interface DataPlatformNotebooksProps {
   readonly vpcId?: string;
 
   /**
-   * Security Group Id of the EMR Cluser
+   * Security Group Id of the EMR Cluster
    * It must be provided if the virtual cluster is provided or
    * It is created if no cluster is provided
    * */
@@ -58,12 +58,12 @@ export interface StudioUserDefinition {
   /**
    * Name of the identity as it appears in SSO console
    * */
-  identityName: string;
+  readonly mappingIdentityName: string;
 
   /**
    * Type of the identity either GROUP or USER
    * */
-  identityType: string;
+  readonly mappingIdentityType: string;
 
 }
 
@@ -215,9 +215,9 @@ export class DataPlatformNotebook extends Construct {
     for (let user of userList) {
       let sessionPolicyArn = this.createUserSessionPolicy(user);
 
-      new CfnStudioSessionMapping(this, 'studioUser' + user.identityName, {
-        identityName: user.identityName,
-        identityType: user.identityType,
+      new CfnStudioSessionMapping(this, 'studioUser' + user.mappingIdentityName, {
+        identityName: user.mappingIdentityName,
+        identityType: user.mappingIdentityType,
         sessionPolicyArn: sessionPolicyArn,
         studioId: this.studioId,
       });
@@ -244,10 +244,10 @@ export class DataPlatformNotebook extends Construct {
 
     //sanitize the userName from any special characters, userName used to name the session policy
     //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
-    let userName = user.identityName.replace(/[^\w\s]/gi, '');
+    let userName = user.mappingIdentityName.replace(/[^\w\s]/gi, '');
 
     //create the policy
-    let userSessionPolicy = new ManagedPolicy(this, 'studioSessionPolicy' + user.identityName, {
+    let userSessionPolicy = new ManagedPolicy(this, 'studioSessionPolicy' + user.mappingIdentityName, {
       document: PolicyDocument.fromJson(policy),
       managedPolicyName: 'studioSessionPolicy' + userName + this.studioId,
     });
