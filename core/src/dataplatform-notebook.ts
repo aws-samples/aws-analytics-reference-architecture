@@ -1,9 +1,10 @@
-import { readFileSync } from 'fs';
 import { SecurityGroup, ISecurityGroup, IVpc, Peer, Port, Vpc } from '@aws-cdk/aws-ec2';
 import { CfnStudioSessionMapping, CfnStudio } from '@aws-cdk/aws-emr';
 import { Role, IManagedPolicy, ManagedPolicy, ServicePrincipal, PolicyDocument } from '@aws-cdk/aws-iam';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { Construct, Tags, Aws } from '@aws-cdk/core';
+import * as studioServiceRolePolicy from './studio/studio-service-role-policy.json';
+import * as studioUserPolicy from './studio/studio-user-role-policy.json';
 
 /**
  * The properties for DataPlatformNotebooks Construct.
@@ -231,7 +232,9 @@ export class DataPlatformNotebook extends Construct {
    * @returns Return the ARN of the policy created
    */
   private createUserSessionPolicy(user: StudioUserDefinition) {
-    let policy = JSON.parse(readFileSync('./src/studio/studio-user-role-policy.json', 'utf8'));
+
+    // @ts-ignore
+    let policy = JSON.parse(JSON.stringify(studioUserPolicy));
 
     //replace the <your-emr-studio-service-role> with the service role created above
     policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<your-emr-studio-service-role>/gi, this.studioServiceRoleName);
@@ -260,7 +263,9 @@ export class DataPlatformNotebook extends Construct {
    * @returns Return the ARN of the policy created
    */
   private createStudioServiceRolePolicy(bucketName: string, studioName: string) {
-    let policy = JSON.parse(readFileSync('./src/studio/studio-service-role-policy.json', 'utf8'));
+
+    let policy = JSON.parse(JSON.stringify(studioServiceRolePolicy));
+
     policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
     policy.Statement[12].Resource[1] = policy.Statement[12].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
     let serviceRolePolicy = new ManagedPolicy(this, 'studioServicePolicy' + studioName, {
@@ -276,7 +281,9 @@ export class DataPlatformNotebook extends Construct {
    * @returns Return the ARN of the policy created
    */
   private createStudioUserRolePolicy(studioName: string) {
-    let policy = JSON.parse(readFileSync('./src/studio/studio-user-role-policy.json', 'utf8'));
+
+    let policy = JSON.parse(JSON.stringify(studioUserPolicy));
+
     //replace the <your-emr-studio-service-role> with the service role created above
     policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<your-emr-studio-service-role>/gi, this.studioServiceRoleName);
     //replace the log bucket

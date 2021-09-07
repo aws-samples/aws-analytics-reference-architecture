@@ -3,6 +3,7 @@
 
 
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
+
 const project = new AwsCdkConstructLibrary({
 
   authorName: 'Amazon Web Services',
@@ -65,6 +66,14 @@ const project = new AwsCdkConstructLibrary({
   },
 
   stability: 'experimental',
+
+  tsconfig: {
+    compilerOptions: {
+      resolveJsonModule: true,
+      esModuleInterop: true,
+    },
+    include: ['src/**/*.json', 'src/**/*.ts'],
+  },
 
 });
 
