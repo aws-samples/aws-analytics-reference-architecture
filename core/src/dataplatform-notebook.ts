@@ -1,8 +1,9 @@
 import { SecurityGroup, ISecurityGroup, IVpc, Peer, Port, Vpc } from '@aws-cdk/aws-ec2';
 import { CfnStudioSessionMapping, CfnStudio } from '@aws-cdk/aws-emr';
-import { Role, IManagedPolicy, ManagedPolicy, ServicePrincipal, PolicyDocument } from '@aws-cdk/aws-iam';
+import { Role, IManagedPolicy, ManagedPolicy, ServicePrincipal, PolicyDocument, Policy, IRole } from '@aws-cdk/aws-iam';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { Construct, Tags, Aws } from '@aws-cdk/core';
+import * as studioS3Policy from './studio/emr-studio-s3-policy.json';
 import * as studioServiceRolePolicy from './studio/studio-service-role-policy.json';
 import * as studioUserPolicy from './studio/studio-user-role-policy.json';
 
@@ -47,6 +48,18 @@ export interface DataPlatformNotebooksProps {
    * The Id of EKS cluster, it is used to create EMR virtual cluster if provided
    * */
   readonly eksId?: string;
+
+  /**
+   * The ARN of the service role for EMR studio
+   * */
+  readonly emrStudioServiceRoleArn?: string;
+
+
+  /**
+   * The ARN of the user role for EMR studio
+   * */
+  readonly emrStudioUserRoleArn?: string;
+
 }
 
 /**
@@ -87,8 +100,9 @@ export class DataPlatformNotebook extends Construct {
   private readonly engineSecurityGroup: ISecurityGroup;
   private readonly emrVpc: IVpc;
   private workspacesBucket: Bucket;
-  private studioServiceRole: Role;
-  private studioUserRole: Role;
+  // @ts-ignore
+  private studioServiceRole: Role | IRole;
+  private studioUserRole: Role | IRole;
   private readonly studioServicePolicy: IManagedPolicy [];
   private readonly studioUserPolicy: IManagedPolicy [];
 
@@ -165,17 +179,25 @@ export class DataPlatformNotebook extends Construct {
       enforceSSL: true,
     });
 
-    //Create a Managed policy for Studio service role
-    this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this, 'StudioServiceManagedPolicy', this.createStudioServiceRolePolicy(this.workspacesBucket.bucketName, props.studioName)));
+    if (props.emrStudioServiceRoleArn !== undefined) {
 
-    //Create a role for the Studio
-    this.studioServiceRole = new Role(this, 'studioServiceRole', {
-      assumedBy: new ServicePrincipal(this.studioPrincipal),
-      roleName: 'studioServiceRole',
-      managedPolicies: this.studioServicePolicy,
-    });
+      this.addServiceRoleInlinePolicy(props.emrStudioServiceRoleArn, this.workspacesBucket.bucketName);
 
-    //Set the serviceRole name, to be used by the
+    } else {
+      //Create a Managed policy for Studio service role
+      this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this, 'StudioServiceManagedPolicy', this.createStudioServiceRolePolicy(this.workspacesBucket.bucketName, props.studioName)));
+
+      //Create a role for the Studio
+      this.studioServiceRole = new Role(this, 'studioServiceRole', {
+        assumedBy: new ServicePrincipal(this.studioPrincipal),
+        roleName: 'studioServiceRole',
+        managedPolicies: this.studioServicePolicy,
+      });
+
+    }
+
+    //Set the serviceRole name, to be used by the CfnStudioConstruct
+    // @ts-ignore
     this.studioServiceRoleName = this.studioServiceRole.roleName;
 
     //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
@@ -194,6 +216,7 @@ export class DataPlatformNotebook extends Construct {
       defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
       engineSecurityGroupId: this.engineSecurityGroup.securityGroupId,
       name: props.studioName,
+      // @ts-ignore
       serviceRole: this.studioServiceRole.roleArn,
       subnetIds: this.studioSubnetList,
       userRole: this.studioUserRole.roleArn,
@@ -228,10 +251,69 @@ export class DataPlatformNotebook extends Construct {
 
   /**
    * @hidden
+   * Create a policy for the EMR Service Role
+   * @returns Return the ARN of the policy created
+   */
+  private createStudioServiceRolePolicy(bucketName: string, studioName: string): string {
+
+    let policy = JSON.parse(JSON.stringify(studioServiceRolePolicy));
+
+    policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+    policy.Statement[12].Resource[1] = policy.Statement[12].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+    let serviceRolePolicy = new ManagedPolicy(this, 'studioServicePolicy' + studioName, {
+      document: PolicyDocument.fromJson(policy),
+      managedPolicyName: 'studioServicePolicy',
+    });
+    return serviceRolePolicy.managedPolicyArn;
+  }
+
+  /**
+   * @hidden
+   * Add an inline policy to the role passed by the user
+   */
+  private addServiceRoleInlinePolicy (studioServiceRoleArn: string, bucketName: string): void {
+
+    let policy = JSON.parse(JSON.stringify(studioS3Policy));
+
+    policy.Resource[0] = policy.Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+    policy.Resource[1] = policy.Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+
+    this.studioServiceRole = Role.fromRoleArn(this, 'studioServiceRoleInlinePolicy', studioServiceRoleArn);
+
+    this.studioServiceRole.attachInlinePolicy(new Policy(this, 'studioServiceInlinePolicy', {
+      document: PolicyDocument.fromJson(policy),
+    }));
+
+  }
+
+  /**
+   * @hidden
+   * Create a policy for the EMR USER Role
+   * @returns Return the ARN of the policy created
+   */
+  private createStudioUserRolePolicy(studioName: string): string {
+
+    let policy = JSON.parse(JSON.stringify(studioUserPolicy));
+
+    //replace the <your-emr-studio-service-role> with the service role created above
+    policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<your-emr-studio-service-role>/gi, this.studioServiceRoleName);
+    //replace the log bucket
+    policy.Statement[9].Resource[0] = policy.Statement[9].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
+    policy.Statement[9].Resource[0] = policy.Statement[9].Resource[0].replace(/<region>/gi, Aws.REGION);
+    let userRolePolicy = new ManagedPolicy(this, 'studioUserPolicy' + studioName, {
+      document: PolicyDocument.fromJson(policy),
+      managedPolicyName: 'studioServicePolicy' + studioName,
+    });
+
+    return userRolePolicy.managedPolicyArn;
+  }
+
+  /**
+   * @hidden
    * Create a session policy for each user
    * @returns Return the ARN of the policy created
    */
-  private createUserSessionPolicy(user: StudioUserDefinition) {
+  private createUserSessionPolicy(user: StudioUserDefinition): string {
 
     // @ts-ignore
     let policy = JSON.parse(JSON.stringify(studioUserPolicy));
@@ -256,45 +338,5 @@ export class DataPlatformNotebook extends Construct {
     });
     return userSessionPolicy.managedPolicyArn;
   }
-
-  /**
-   * @hidden
-   * Create a policy for the EMR Service Role
-   * @returns Return the ARN of the policy created
-   */
-  private createStudioServiceRolePolicy(bucketName: string, studioName: string) {
-
-    let policy = JSON.parse(JSON.stringify(studioServiceRolePolicy));
-
-    policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
-    policy.Statement[12].Resource[1] = policy.Statement[12].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
-    let serviceRolePolicy = new ManagedPolicy(this, 'studioServicePolicy' + studioName, {
-      document: PolicyDocument.fromJson(policy),
-      managedPolicyName: 'studioServicePolicy',
-    });
-    return serviceRolePolicy.managedPolicyArn;
-  }
-
-  /**
-   * @hidden
-   * Create a policy for the EMR USER Role
-   * @returns Return the ARN of the policy created
-   */
-  private createStudioUserRolePolicy(studioName: string) {
-
-    let policy = JSON.parse(JSON.stringify(studioUserPolicy));
-
-    //replace the <your-emr-studio-service-role> with the service role created above
-    policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<your-emr-studio-service-role>/gi, this.studioServiceRoleName);
-    //replace the log bucket
-    policy.Statement[9].Resource[0] = policy.Statement[9].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
-    policy.Statement[9].Resource[0] = policy.Statement[9].Resource[0].replace(/<region>/gi, Aws.REGION);
-    let serviceRolePolicy = new ManagedPolicy(this, 'studioUserPolicy' + studioName, {
-      document: PolicyDocument.fromJson(policy),
-      managedPolicyName: 'studioServicePolicy' + studioName,
-    });
-    return serviceRolePolicy.managedPolicyArn;
-  }
-
 
 }
