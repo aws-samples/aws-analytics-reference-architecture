@@ -61,7 +61,7 @@ export class DataLakeStorage extends Construct {
   public readonly transformBucket: Bucket;
 
   /**
-     * Construct a new instance of DataLakeStorage based on S3 buckets with best practices configuration
+     * Construct a new instance of DataLakeStorage based on Amazon S3 buckets with best practices configuration
      * @param {Construct} scope the Scope of the CDK Construct
      * @param {string} id the ID of the CDK Construct
      * @param {DataLakeStorageProps} props the DataLakeStorageProps properties
