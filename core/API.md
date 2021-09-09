@@ -78,6 +78,63 @@ AWS Glue Database name used by the DataGenerator.
 
 ---
 
+### DataLakeCatalog <a name="aws-analytics-reference-architecture.DataLakeCatalog"></a>
+
+A Data Lake Catalog composed of 3 AWS Glue Database configured with AWS best practices:   Databases for Raw/Cleaned/Transformed data,.
+
+#### Initializer <a name="aws-analytics-reference-architecture.DataLakeCatalog.Initializer"></a>
+
+```typescript
+import { DataLakeCatalog } from 'aws-analytics-reference-architecture'
+
+new DataLakeCatalog(scope: Construct, id: string)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.parameter.id"></a>
+
+- *Type:* `string`
+
+the ID of the CDK Construct.
+
+---
+
+
+
+#### Properties <a name="Properties"></a>
+
+##### `cleanDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.property.cleanDatabase"></a>
+
+- *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
+
+AWS Glue Database for Clean data.
+
+---
+
+##### `rawDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.property.rawDatabase"></a>
+
+- *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
+
+AWS Glue Database for Raw data.
+
+---
+
+##### `transformDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.property.transformDatabase"></a>
+
+- *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
+
+AWS Glue Database for Transform data.
+
+---
+
+
 ### DataLakeStorage <a name="aws-analytics-reference-architecture.DataLakeStorage"></a>
 
 A Data Lake Storage composed of 3 Amazon S3 Buckets configured with AWS best practices:   S3 buckets for Raw/Cleaned/Transformed data,   data lifecycle optimization/transitioning to different Amazon S3 storage classes   server side buckets encryption managed by KMS.
