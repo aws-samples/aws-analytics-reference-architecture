@@ -1,6 +1,6 @@
-import { Cluster } from "@aws-cdk/aws-eks";
-import { CfnVirtualCluster } from "@aws-cdk/aws-emrcontainers";
-import { Construct } from "@aws-cdk/core";
+import { Cluster } from '@aws-cdk/aws-eks';
+import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
+import { Construct } from '@aws-cdk/core';
 
 /**
  * @summary The properties for the EmrVirtualCluster Construct class.
@@ -47,15 +47,15 @@ export class EmrVirtualCluster extends Construct {
     scope: Construct,
     id: string,
     eksCluster: Cluster,
-    props: EmrVirtualClusterProps
+    props: EmrVirtualClusterProps,
   ) {
     super(scope, id);
 
-    const virtCluster = new CfnVirtualCluster(this, "EMRClusterEc2", {
+    const virtCluster = new CfnVirtualCluster(this, 'EMRClusterEc2', {
       name: props.name,
       containerProvider: {
         id: eksCluster.clusterName,
-        type: "EKS",
+        type: 'EKS',
         info: { eksInfo: { namespace: props.eksNamespace } },
       },
     });

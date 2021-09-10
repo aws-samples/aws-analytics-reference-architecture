@@ -17,7 +17,7 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.111.0',
+  cdkVersion: '1.121.0',
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',
@@ -38,23 +38,32 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-emrcontainers',
     '@aws-cdk/aws-autoscaling',
     '@aws-cdk/lambda-layer-awscli',
+    '@aws-cdk/aws-lambda',
+    '@aws-cdk/aws-logs',
+    '@aws-cdk/custom-resources',
   ],
 
   devDeps: [
     '@types/js-yaml',
     '@types/jest',
-    '@aws-sdk/types'
   ],
 
   bundledDeps: [
     'js-yaml',
-    '@aws-sdk/client-emr-containers',
-    '@aws-sdk/client-acm'
+    'aws-sdk',
   ],
 
   python: {
     distName: 'aws-analytics-reference-architecture',
     module: 'aws-analytics-reference-architecture',
+  },
+
+  tsconfig: {
+    compilerOptions: {
+      resolveJsonModule: true,
+      esModuleInterop: true,
+    },
+    include: ['src/**/*.json', 'src/**/*.ts'],
   },
 
   stability: 'experimental',

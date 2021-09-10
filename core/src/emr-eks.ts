@@ -1,9 +1,10 @@
-import * as fs from 'fs';
+//import * as fs from "fs";
 import * as eks from '@aws-cdk/aws-eks';
 import * as emrcontainers from '@aws-cdk/aws-emrcontainers';
 import * as iam from '@aws-cdk/aws-iam';
 import * as cdk from '@aws-cdk/core';
 import { EksCluster } from './eks';
+import * as IamPolicyEmrJobRole from './k8s/iam-policy-emr-job-role.json';
 
 /**
  * Config parameters for EmrEksCluster
@@ -122,11 +123,12 @@ export class EmrEksCluster extends cdk.Construct {
     );*/
 
     //Create EMR Worker IAM Role and trust policy
-    const EmrWorkerPolicyDocument = iam.PolicyDocument.fromJson(
-      JSON.parse(
-        fs.readFileSync('./src/k8s/iam-policy-emr-job-role.json', 'utf8'),
-      ),
-    );
+    const EmrWorkerPolicyDocument =
+      iam.PolicyDocument.fromJson(IamPolicyEmrJobRole);
+    /* JSON.parse(
+        IamPolicyEmrJobRole
+      )
+    );*/
     const EmrWorkerIAMPolicy = new iam.ManagedPolicy(
       this,
       'EMRWorkerIAMPolicy',

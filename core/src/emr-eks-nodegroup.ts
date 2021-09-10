@@ -1,6 +1,6 @@
 // add default nodegroups as in here https://github.com/aws-samples/aws-analytics-reference-architecture/blob/feature/data-generator/core/src/data-generator.ts
 
-import { CfnLaunchTemplate, InstanceType } from "@aws-cdk/aws-ec2";
+import { CfnLaunchTemplate, InstanceType } from '@aws-cdk/aws-ec2';
 import {
   NodegroupOptions,
   NodegroupAmiType,
@@ -8,9 +8,9 @@ import {
   CapacityType,
   Cluster,
   Nodegroup,
-} from "@aws-cdk/aws-eks";
-import { ManagedPolicy } from "@aws-cdk/aws-iam";
-import { Construct, Fn } from "@aws-cdk/core";
+} from '@aws-cdk/aws-eks';
+import { ManagedPolicy } from '@aws-cdk/aws-iam';
+import { Construct, Fn } from '@aws-cdk/core';
 
 /**
  * @summary The properties for the EmrEksNodegroup Construct class.
@@ -43,12 +43,12 @@ export class EmrEksNodegroup extends Construct {
    ** Default nodegroup configuration for Kubernetes applications required by EMR on EKS (e.g cert manager and cluster autoscaler)
    */
   public static readonly NODEGROUP_TOOLING: EmrEksNodegroupProps = {
-    id: "tooling",
+    id: 'tooling',
     options: {
-      instanceTypes: [new InstanceType("t3.medium")],
+      instanceTypes: [new InstanceType('t3.medium')],
       minSize: 1,
       maxSize: 50,
-      labels: { role: "tooling" },
+      labels: { role: 'tooling' },
     },
   };
 
@@ -56,20 +56,20 @@ export class EmrEksNodegroup extends Construct {
    ** Default nodegroup configuration for EMR on EKS critical workloads
    */
   public static readonly NODEGROUP_CRITICAL: EmrEksNodegroupProps = {
-    id: "criticalNodeGroup",
+    id: 'criticalNodeGroup',
     mountNvme: true,
     options: {
-      instanceTypes: [new InstanceType("r5d.xlarge")],
+      instanceTypes: [new InstanceType('r5d.xlarge')],
       minSize: 0,
       maxSize: 50,
       labels: {
-        role: "critical",
-        "emr-containers.amazonaws.com/resource.type": "job.run",
+        'role': 'critical',
+        'emr-containers.amazonaws.com/resource.type': 'job.run',
       },
       taints: [
         {
-          key: "role",
-          value: "critical",
+          key: 'role',
+          value: 'critical',
           effect: TaintEffect.NO_SCHEDULE,
         },
       ],
@@ -80,20 +80,20 @@ export class EmrEksNodegroup extends Construct {
    ** Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads
    */
   public static readonly NODEGROUP_SHARED: EmrEksNodegroupProps = {
-    id: "sharedNodeGroup",
+    id: 'sharedNodeGroup',
     mountNvme: true,
     options: {
-      instanceTypes: [new InstanceType("m5.xlarge")],
+      instanceTypes: [new InstanceType('m5.xlarge')],
       minSize: 0,
       maxSize: 50,
       labels: {
-        role: "shared",
-        "emr-containers.amazonaws.com/resource.type": "job.run",
+        'role': 'shared',
+        'emr-containers.amazonaws.com/resource.type': 'job.run',
       },
       taints: [
         {
-          key: "role",
-          value: "shared",
+          key: 'role',
+          value: 'shared',
           effect: TaintEffect.NO_SCHEDULE,
         },
       ],
@@ -104,22 +104,22 @@ export class EmrEksNodegroup extends Construct {
    ** Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS
    */
   public static readonly NODEGROUP_NOTEBOOKS: EmrEksNodegroupProps = {
-    id: "notebooksNodeGroup",
+    id: 'notebooksNodeGroup',
     mountNvme: true,
     options: {
-      instanceTypes: [new InstanceType("t4g.medium")],
+      instanceTypes: [new InstanceType('t4g.medium')],
       amiType: NodegroupAmiType.AL2_ARM_64,
       minSize: 0,
       maxSize: 50,
       capacityType: CapacityType.SPOT,
       labels: {
-        role: "notebook",
-        "emr-containers.amazonaws.com/resource.type": "job.run",
+        'role': 'notebook',
+        'emr-containers.amazonaws.com/resource.type': 'job.run',
       },
       taints: [
         {
-          key: "role",
-          value: "notebook",
+          key: 'role',
+          value: 'notebook',
           effect: TaintEffect.NO_SCHEDULE,
         },
       ],
@@ -149,15 +149,15 @@ export class EmrEksNodegroup extends Construct {
     super(scope, props.id);
 
     const userData = [
-      "yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm",
-      "systemctl enable amazon-ssm-agent",
-      "systemctl start amazon-ssm-agent",
+      'yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm',
+      'systemctl enable amazon-ssm-agent',
+      'systemctl start amazon-ssm-agent',
     ];
 
     if (props.mountNvme) {
       userData.concat([
-        "IDX=1 && for DEV in /dev/disk/by-id/nvme-Amazon_EC2_NVMe_Instance_Storage_*-ns-1; do  mkfs.xfs ${DEV};mkdir -p /pv-disks/local${IDX};echo ${DEV} /pv-disks/local${IDX} xfs defaults,noatime 1 2 >> /etc/fstab; IDX=$((${IDX} + 1)); done",
-        "mount -a",
+        'IDX=1 && for DEV in /dev/disk/by-id/nvme-Amazon_EC2_NVMe_Instance_Storage_*-ns-1; do  mkfs.xfs ${DEV};mkdir -p /pv-disks/local${IDX};echo ${DEV} /pv-disks/local${IDX} xfs defaults,noatime 1 2 >> /etc/fstab; IDX=$((${IDX} + 1)); done',
+        'mount -a',
       ]);
     }
 
@@ -168,11 +168,11 @@ Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 Content-Type: text/x-shellscript; charset="us-ascii"
 
 #!/bin/bash
-${userData.join("\r\n")}
+${userData.join('\r\n')}
 
 --==MYBOUNDARY==--\\
 `;
-    const lt = new CfnLaunchTemplate(this, "LaunchTemplate", {
+    const lt = new CfnLaunchTemplate(this, 'LaunchTemplate', {
       launchTemplateData: {
         userData: Fn.base64(userDataMime),
       },
@@ -192,7 +192,7 @@ ${userData.join("\r\n")}
 
     // Attach IAM Policy for SSM to be able to get shell access to the nodes
     this.eksGroup.role.addManagedPolicy(
-      ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore")
+      ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'),
     );
   }
 }

@@ -1,108 +1,88 @@
-/**
- *  This lambda requires openssl so make sure you have lambda layer that has it installed.
- */
+import * as AWS from 'aws-sdk';
 
-import {
-  EMRContainersClient,
-  CreateManagedEndpointCommand,
-  CreateManagedEndpointCommandOutput,
-  DeleteManagedEndpointCommand,
-  DeleteManagedEndpointCommandOutput,
-  DescribeManagedEndpointCommand,
-  DescribeManagedEndpointCommandOutput,
-  EndpointState,
-} from "@aws-sdk/client-emr-containers";
-
-import {
-  ACMClient,
-  ImportCertificateCommand,
-  ImportCertificateCommandOutput,
-  ListCertificatesCommand,
-} from "@aws-sdk/client-acm";
-
-import { execSync } from "child_process";
-import { readFileSync } from "fs";
-
-const client = new EMRContainersClient({
-  region: process.env.REGION ?? "us-east-1",
+const emrcontainers = new AWS.EMRcontainers({
+  apiVersion: '2020-10-01',
+  region: process.env.REGION ?? 'us-east-1',
 });
 
 const CONFIGURATION_OVERRIDES_DEFAULT = {
   applicationConfiguration: [
     {
-      classification: "spark-defaults",
+      classification: 'spark-defaults',
       properties: {
-        "spark.hadoop.hive.metastore.client.factory.class":
-          "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory",
-        "spark.sql.catalogImplementation": "hive",
+        'spark.hadoop.hive.metastore.client.factory.class':
+          'com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory',
+        'spark.sql.catalogImplementation': 'hive',
       },
     },
   ],
   monitoringConfiguration: {
-    persistentAppUI: "ENABLED",
+    persistentAppUI: 'ENABLED',
     cloudWatchMonitoringConfiguration: {
-      logGroupName: "/emr-containers",
-      logStreamNamePrefix: "emrmanagedendpoint",
+      logGroupName: '/emr-containers',
+      logStreamNamePrefix: 'emrmanagedendpoint',
     },
   },
 };
 
 export async function onEvent(event: any) {
-  let command = null;
-
   switch (event.RequestType) {
-    case "Create":
+    case 'Create':
       //create
-      const certArn = await getOrCreateCertificate();
-      command = new CreateManagedEndpointCommand({
-        virtualClusterId: process.env.CLUSTER_ID,
-        certificateArn: certArn,
-        executionRoleArn: process.env.EXECUTION_ROLE_ARN,
-        configurationOverrides: process.env.CONFIGURATION_OVERRIDES
-          ? JSON.parse(process.env.CONFIGURATION_OVERRIDES)
-          : CONFIGURATION_OVERRIDES_DEFAULT,
-        releaseLabel: process.env.RELEASE_LABEL,
-        name: process.env.ENDPOINT_NAME,
-        type: "JYPITER_ENTERPRISE_GATEWAY",
-      });
+      //const certArn = await getOrCreateCertificate();
+
       try {
-        const data: CreateManagedEndpointCommandOutput = await client.send(
-          command
+        const response = await emrcontainers
+          .createManagedEndpoint({
+            clientToken: 'emr-managed-endpoint',
+            virtualClusterId: String(process.env.CLUSTER_ID),
+            certificateArn: String(process.env.ACM_CERTIFICATE_ARN),
+            executionRoleArn: String(process.env.EXECUTION_ROLE_ARN),
+            configurationOverrides: process.env.CONFIGURATION_OVERRIDES
+              ? JSON.parse(process.env.CONFIGURATION_OVERRIDES)
+              : CONFIGURATION_OVERRIDES_DEFAULT,
+            releaseLabel: process.env.RELEASE_LABEL ?? 'emr-6.2.0-latest',
+            name: String(process.env.ENDPOINT_NAME),
+            type: 'JUPYTER_ENTERPRISE_GATEWAY',
+          })
+          .promise();
+
+        console.log(
+          ` create managed endpoint ${response.id} ${response.name} ${response.virtualClusterId}`,
         );
+
         return {
-          PhysicalResourceId: data.id,
-          Data: data,
+          PhysicalResourceId: response.id,
         };
       } catch (error) {
-        const { requestId, cfId, extendedRequestId, httpStatusCode } =
-          error.$metadata;
-        console.log({ requestId, cfId, extendedRequestId, httpStatusCode });
+        console.log(String(error.message));
+        throw new Error(
+          `error creating new managed endpoint ${error.message} `,
+        );
+
         return false;
       }
-    case "Update":
-      console.log("update not implemented");
+    case 'Update':
+      console.log('update not implemented');
       return {
         PhysicalResourceId: event.PhysicalResourceId,
         Data: event.ResourceProperties,
       };
 
-    case "Delete":
-      command = new DeleteManagedEndpointCommand({
-        id: event.PhysicalResourceId,
-        virtualClusterId: process.env.CLUSTER_ID,
-      });
+    case 'Delete':
       try {
-        const data: DeleteManagedEndpointCommandOutput = await client.send(
-          command
-        );
+        const data = await emrcontainers
+          .deleteManagedEndpoint({
+            id: event.PhysicalResourceId,
+            virtualClusterId: String(process.env.CLUSTER_ID),
+          })
+          .promise();
 
         return {
           PhysicalResourceId: data.id,
         };
       } catch (error) {
-        const { requestId, cfId, extendedRequestId, httpStatusCode } =
-          error.$metadata;
-        console.log({ requestId, cfId, extendedRequestId, httpStatusCode });
+        console.log(error);
         return false;
       }
   }
@@ -110,57 +90,55 @@ export async function onEvent(event: any) {
 }
 
 export async function isComplete(event: any) {
-  if (event.RequestType == "Delete") return { isComplete: true };
+  if (event.RequestType == 'Delete') return { IsComplete: true };
 
-  const { virtualClusterId } = event.ResourceProperties;
   const endpoint_id = event.PhysicalResourceId;
 
-  const command = new DescribeManagedEndpointCommand({
-    id: endpoint_id,
-    virtualClusterId: virtualClusterId,
-  });
   try {
-    const data: DescribeManagedEndpointCommandOutput = await client.send(
-      command
-    );
-    if (!data.endpoint) return { isComplete: false };
+    const data = await emrcontainers
+      .describeManagedEndpoint({
+        id: endpoint_id,
+        virtualClusterId: String(process.env.CLUSTER_ID),
+      })
+      .promise();
+    if (!data.endpoint) return { IsComplete: false };
 
     console.log(`current endpoint ${data.endpoint.id}`);
 
     switch (data.endpoint.state) {
-      case EndpointState.ACTIVE:
-        return { isComplete: true, Data: data.endpoint };
-      case EndpointState.TERMINATED:
-      case EndpointState.TERMINATED_WITH_ERRORS:
-      case EndpointState.TERMINATING:
-        throw new Error("managed endpoint failed to create");
-      case EndpointState.CREATING:
-        return { isComplete: false };
+      case 'ACTIVE':
+        return { IsComplete: true, Data: data.endpoint };
+      case 'TERMINATED':
+      case 'TERMINATED_WITH_ERRORS':
+      case 'TERMINATING':
+        throw new Error('managed endpoint failed to create');
+      case 'CREATING':
+        return { IsComplete: false };
     }
   } catch (error) {
-    const { requestId, cfId, extendedRequestId, httpStatusCode } =
-      error.$metadata;
-    console.log({ requestId, cfId, extendedRequestId, httpStatusCode });
-    throw new Error("failed to describe managed endpoint");
+    console.log(error);
+    throw new Error('failed to describe managed endpoint');
   }
-  return { isComplete: false };
+  return { IsComplete: false };
 }
-
+/*
 export async function getOrCreateCertificate(): Promise<string | undefined> {
-  const clientAcm = new ACMClient({});
+  const clientAcm = new AWS.ACM(
+    { apiVersion: '2015-12-08', region: process.env.REGION ?? 'us-east-1' },
 
-  const getCerts = await clientAcm.send(
-    new ListCertificatesCommand({
-      MaxItems: 50,
-      Includes: {
-        keyTypes: ["RSA_1024"],
-      },
-    })
   );
+
+  const getCerts = await clientAcm.listCertificates({
+    MaxItems: 50,
+    Includes: {
+      keyTypes: ['RSA_1024'],
+    },
+  },
+  ).promise();
 
   if (getCerts.CertificateSummaryList) {
     const existingCert = getCerts.CertificateSummaryList.find(
-      (itm) => itm.DomainName == "*.emreksanalyticsframework.com"
+      (itm) => itm.DomainName == '*.emreksanalyticsframework.com',
     );
 
     if (existingCert) return existingCert.CertificateArn;
@@ -168,29 +146,27 @@ export async function getOrCreateCertificate(): Promise<string | undefined> {
 
   try {
     execSync(
-      'openssl req -x509 -newkey rsa:1024 -keyout /tmp/privateKey.pem  -out /tmp/certificateChain.pem -days 365 -nodes -subj "/C=US/ST=Washington/L=Seattle/O=MyOrg/OU=MyDept/CN=*.emreksanalyticsframework.com"'
+      'openssl req -x509 -newkey rsa:1024 -keyout /tmp/privateKey.pem  -out /tmp/certificateChain.pem -days 365 -nodes -subj "/C=US/ST=Washington/L=Seattle/O=MyOrg/OU=MyDept/CN=*.emreksanalyticsframework.com"',
     );
   } catch (error) {
     throw new Error(`Error generating certificate ${error.message}`);
   }
 
   try {
-    const command = new ImportCertificateCommand({
+    const command = {
       Certificate: Buffer.from(
-        readFileSync("file:///tmp/certificateChain.pem", "iso-8859-1")
+        readFileSync('file:///tmp/certificateChain.pem', 'iso-8859-1'),
       ),
       PrivateKey: Buffer.from(
-        readFileSync("file:///tmp/privateKey.pem", "iso-8859-1")
+        readFileSync('file:///tmp/privateKey.pem', 'iso-8859-1'),
       ),
-    });
-    const response: ImportCertificateCommandOutput = await clientAcm.send(
-      command
-    );
+    };
+    const response = await clientAcm.importCertificate(
+      command,
+    ).promise();
     return response.CertificateArn;
   } catch (error) {
-    const { requestId, cfId, extendedRequestId, httpStatusCode } =
-      error.$metadata;
-    console.log({ requestId, cfId, extendedRequestId, httpStatusCode });
+    console.log(error);
     throw new Error(`error importing certificate ${error.message}`);
   }
-}
+}*/
