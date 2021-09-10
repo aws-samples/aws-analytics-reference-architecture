@@ -179,6 +179,9 @@ export class DataPlatformNotebook extends Construct {
       enforceSSL: true,
     });
 
+    //Check if the construct prop has an EMRStudio Service Role ARN
+    //update the role with an inline policy to allow access to the S3 bucket created above
+    //If no ARN is supplied construct creates a new role
     if (props.emrStudioServiceRoleArn !== undefined) {
 
       this.addServiceRoleInlinePolicy(props.emrStudioServiceRoleArn, this.workspacesBucket.bucketName);
@@ -275,8 +278,8 @@ export class DataPlatformNotebook extends Construct {
 
     let policy = JSON.parse(JSON.stringify(studioS3Policy));
 
-    policy.Resource[0] = policy.Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
-    policy.Resource[1] = policy.Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+    policy.Statement[0].Resource[0] = policy.Statement[0].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+    policy.Statement[0].Resource[1] = policy.Statement[0].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
 
     this.studioServiceRole = Role.fromRoleArn(this, 'studioServiceRoleInlinePolicy', studioServiceRoleArn);
 
