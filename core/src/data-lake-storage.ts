@@ -85,7 +85,7 @@ export class DataLakeStorage extends Construct {
 
     // Create the raw data bucket with the raw transitions
     this.rawBucket = new Bucket(this, 'RawBucket', {
-      bucketName: 'ara-raw' + Aws.ACCOUNT_ID,
+      bucketName: 'ara-raw-' + Aws.ACCOUNT_ID,
       encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -115,7 +115,7 @@ export class DataLakeStorage extends Construct {
 
     // Create the clean data bucket
     this.cleanBucket = new Bucket(this, 'CleanBucket', {
-      bucketName: 'ara-clean' + Aws.ACCOUNT_ID,
+      bucketName: 'ara-clean-' + Aws.ACCOUNT_ID,
       encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -145,7 +145,7 @@ export class DataLakeStorage extends Construct {
 
     // Create the transform data bucket
     this.transformBucket = new Bucket(this, 'TransformBucket', {
-      bucketName: 'ara-transform' + Aws.ACCOUNT_ID,
+      bucketName: 'ara-transform-' + Aws.ACCOUNT_ID,
       encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,

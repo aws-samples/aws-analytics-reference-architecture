@@ -36,15 +36,15 @@ export class DataLakeCatalog extends Construct {
     super(scope, id);
 
     this.rawDatabase = new Database(this, 'raw-database', {
-      databaseName: 'ara-raw',
+      databaseName: 'ara_raw',
     });
 
     this.cleanDatabase = new Database(this, 'clean-database', {
-      databaseName: 'ara-clean',
+      databaseName: 'ara_clean',
     });
 
     this.transformDatabase = new Database(this, 'transform-database', {
-      databaseName: 'ara-transform',
+      databaseName: 'ara_transform',
     });
   }
 }

@@ -27,7 +27,7 @@ test('dataLakeStorage', () => {
       'Fn::Join': [
         '',
         [
-          'ara-raw',
+          'ara-raw-',
           {
             Ref: 'AWS::AccountId',
           },
@@ -67,7 +67,7 @@ test('dataLakeStorage', () => {
       'Fn::Join': [
         '',
         [
-          'ara-clean',
+          'ara-clean-',
           {
             Ref: 'AWS::AccountId',
           },
@@ -107,7 +107,7 @@ test('dataLakeStorage', () => {
       'Fn::Join': [
         '',
         [
-          'ara-transform',
+          'ara-transform-',
           {
             Ref: 'AWS::AccountId',
           },
