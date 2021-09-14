@@ -1,54 +1,54 @@
-import * as AWS from 'aws-sdk';
+import * as AWS from "aws-sdk";
 
 const emrcontainers = new AWS.EMRcontainers({
-  apiVersion: '2020-10-01',
-  region: process.env.REGION ?? 'us-east-1',
+  apiVersion: "2020-10-01",
+  region: process.env.REGION ?? "us-east-1",
 });
 
 const CONFIGURATION_OVERRIDES_DEFAULT = {
   applicationConfiguration: [
     {
-      classification: 'spark-defaults',
+      classification: "spark-defaults",
       properties: {
-        'spark.hadoop.hive.metastore.client.factory.class':
-          'com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory',
-        'spark.sql.catalogImplementation': 'hive',
+        "spark.hadoop.hive.metastore.client.factory.class":
+          "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory",
+        "spark.sql.catalogImplementation": "hive",
       },
     },
   ],
   monitoringConfiguration: {
-    persistentAppUI: 'ENABLED',
+    persistentAppUI: "ENABLED",
     cloudWatchMonitoringConfiguration: {
-      logGroupName: '/emr-containers',
-      logStreamNamePrefix: 'emrmanagedendpoint',
+      logGroupName: "/emr-containers",
+      logStreamNamePrefix: "emrmanagedendpoint",
     },
   },
 };
 
 export async function onEvent(event: any) {
   switch (event.RequestType) {
-    case 'Create':
+    case "Create":
       //create
       //const certArn = await getOrCreateCertificate();
 
       try {
         const response = await emrcontainers
           .createManagedEndpoint({
-            clientToken: 'emr-managed-endpoint',
+            clientToken: "emr-managed-endpoint",
             virtualClusterId: String(process.env.CLUSTER_ID),
             certificateArn: String(process.env.ACM_CERTIFICATE_ARN),
             executionRoleArn: String(process.env.EXECUTION_ROLE_ARN),
             configurationOverrides: process.env.CONFIGURATION_OVERRIDES
               ? JSON.parse(process.env.CONFIGURATION_OVERRIDES)
               : CONFIGURATION_OVERRIDES_DEFAULT,
-            releaseLabel: process.env.RELEASE_LABEL ?? 'emr-6.2.0-latest',
+            releaseLabel: process.env.RELEASE_LABEL ?? "emr-6.2.0-latest",
             name: String(process.env.ENDPOINT_NAME),
-            type: 'JUPYTER_ENTERPRISE_GATEWAY',
+            type: "JUPYTER_ENTERPRISE_GATEWAY",
           })
           .promise();
 
         console.log(
-          ` create managed endpoint ${response.id} ${response.name} ${response.virtualClusterId}`,
+          ` create managed endpoint ${response.id} ${response.name} ${response.virtualClusterId}`
         );
 
         return {
@@ -57,19 +57,19 @@ export async function onEvent(event: any) {
       } catch (error) {
         console.log(String(error.message));
         throw new Error(
-          `error creating new managed endpoint ${error.message} `,
+          `error creating new managed endpoint ${error.message} `
         );
 
         return false;
       }
-    case 'Update':
-      console.log('update not implemented');
+    case "Update":
+      console.log("update not implemented");
       return {
         PhysicalResourceId: event.PhysicalResourceId,
         Data: event.ResourceProperties,
       };
 
-    case 'Delete':
+    case "Delete":
       try {
         const data = await emrcontainers
           .deleteManagedEndpoint({
@@ -90,7 +90,7 @@ export async function onEvent(event: any) {
 }
 
 export async function isComplete(event: any) {
-  if (event.RequestType == 'Delete') return { IsComplete: true };
+  if (event.RequestType == "Delete") return { IsComplete: true };
 
   const endpoint_id = event.PhysicalResourceId;
 
@@ -106,18 +106,18 @@ export async function isComplete(event: any) {
     console.log(`current endpoint ${data.endpoint.id}`);
 
     switch (data.endpoint.state) {
-      case 'ACTIVE':
+      case "ACTIVE":
         return { IsComplete: true, Data: data.endpoint };
-      case 'TERMINATED':
-      case 'TERMINATED_WITH_ERRORS':
-      case 'TERMINATING':
-        throw new Error('managed endpoint failed to create');
-      case 'CREATING':
+      case "TERMINATED":
+      case "TERMINATED_WITH_ERRORS":
+      case "TERMINATING":
+        throw new Error("managed endpoint failed to create");
+      case "CREATING":
         return { IsComplete: false };
     }
   } catch (error) {
     console.log(error);
-    throw new Error('failed to describe managed endpoint');
+    throw new Error("failed to describe managed endpoint");
   }
   return { IsComplete: false };
 }
