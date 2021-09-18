@@ -50,17 +50,27 @@ export class Kfstream extends cdk.Construct {
           logGroupName: logGroup.logGroupName,
           logStreamName: firehoseLogStream.logStreamName
         },
-        roleArn: role.roleArn,
+      roleArn: role.roleArn,
         errorOutputPrefix: 'failed-data/',
         prefix: 'ingest-data/',
         compressionFormat: 'snappy',
         s3BackupMode: 'Disabled',
         dataFormatConversionConfiguration: {
           enabled: true,
+          inputFormatConfiguration: {
+            deserializer: openXJsonSerDe
+         },
+          outputFormatConfiguration: {
+            serializer: orcSerDe
+         },
           schemaConfiguration: {
-            roleArn: role.roleArn
+            roleArn: role.roleArn,
+            catalogId: '674187611322',
+            databaseName: 'default',
+            region: 'us-east-1',
+            tableName: 'call_center'
           }
-             
+
         }
       }
     });
