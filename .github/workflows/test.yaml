@@ -14,10 +14,10 @@ jobs:
         run: |
           release=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/aws-samples/aws-analytics-reference-architecture/releases/latest)
           echo $release
-          echo "::set-env name=LATEST::$release"
+          echo "::set-output name=latest::test"
       - name: test
         run: |
-          echo "release: ${{ env.LATEST }}"
+          echo "release: ${{ steps.last-release.outputs.latest }}"
       - name: publish release info to slack
         env:
           VERSION: ${{ steps.latest_release.outputs.name }}
