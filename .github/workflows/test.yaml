@@ -15,7 +15,7 @@ jobs:
       - name: test
         env:
           OUPUT: ${{ steps.latest_release.outputs.latest }}
-        run: 'echo $output'
+        run: 'echo $OUTPUT'
       - name: publish release info to slack
         env:
           VERSION: ${{ steps.latest_release.outputs.name }}
