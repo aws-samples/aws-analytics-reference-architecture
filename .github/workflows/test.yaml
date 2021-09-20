@@ -2,7 +2,7 @@ name: test
 on:
   push:
     branches:
-      - main
+      - ci/slack-integration
   workflow_dispatch: {}
 jobs:
   slack:
