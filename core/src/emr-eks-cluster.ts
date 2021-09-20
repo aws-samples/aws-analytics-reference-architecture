@@ -1,12 +1,7 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { SecurityGroup, Port, Peer } from '@aws-cdk/aws-ec2';
-import {
-  KubernetesVersion,
-  Cluster,
-  KubernetesManifest,
-} from '@aws-cdk/aws-eks';
+import { KubernetesVersion, Cluster } from '@aws-cdk/aws-eks';
 import {
   PolicyStatement,
   PolicyDocument,
@@ -28,7 +23,6 @@ import {
 } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import * as AWS from 'aws-sdk';
-import * as yaml from 'js-yaml';
 import { EmrEksNodegroup, EmrEksNodegroupProps } from './emr-eks-nodegroup';
 import {
   EmrVirtualClusterProps,
@@ -85,8 +79,7 @@ export interface EmrEksClusterProps {
 
 export class EmrEksCluster extends Construct {
   public readonly eksCluster: Cluster;
-  public readonly emrStudioEngineSecurityGroup: SecurityGroup;
-  public readonly emrStudioWorkspaceSecurityGroup: SecurityGroup;
+
   private readonly eksClusterName: string;
   private readonly eksClusterVersion: KubernetesVersion;
   private readonly emrServiceRole: CfnServiceLinkedRole;
@@ -231,66 +224,56 @@ export class EmrEksCluster extends Construct {
       ),
     });
 
-    //Setup EMRStudio Security Groups
-
-    this.emrStudioEngineSecurityGroup = new SecurityGroup(
-      this,
-      'EmrStudioEngineSg',
-      {
-        vpc: this.eksCluster.vpc,
-        allowAllOutbound: false,
-      },
-    );
-    this.emrStudioEngineSecurityGroup.addIngressRule(
-      Peer.anyIpv4(),
-      Port.tcp(18888),
-      'Allow traffic from any resources in the Workspace security group for EMR Studio.',
-    );
-    Tags.of(this.emrStudioEngineSecurityGroup).add(
-      'for-use-with-amazon-emr-managed-policies',
-      'true',
-    );
-
-    this.emrStudioWorkspaceSecurityGroup = new SecurityGroup(
-      this,
-      'EmrStudioWorkspaceSg',
-      { vpc: this.eksCluster.vpc, allowAllOutbound: false },
-    );
-    this.emrStudioWorkspaceSecurityGroup.addEgressRule(
-      Peer.anyIpv4(),
-      Port.tcp(18888),
-      'Allow traffic to any resources in the Engine security group for EMR Studio.',
-    );
-    this.emrStudioWorkspaceSecurityGroup.addEgressRule(
-      Peer.anyIpv4(),
-      Port.tcp(443),
-      'Allow traffic to the internet to link Git repositories to Workspaces.',
-    );
-    Tags.of(this.emrStudioWorkspaceSecurityGroup).add(
-      'for-use-with-amazon-emr-managed-policies',
-      'true',
-    );
-
     this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_TOOLING);
 
     if (!props.emrEksNodegroups) {
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_CRITICAL);
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_SHARED);
       this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_NOTEBOOKS);
-
-      //add default Emr Cluster
-      /* const emrCluster = this.addEmrVirtualCluster({
-        name: 'emrcluster1',
-        eksNamespace: 'default',
-      });
-      const managedEndpoint = this.addManagedEndpoint(
-        'me1',
-        emrCluster.instance.attrId,
-        props.acmCertificateArn,
-        props.emrOnEksVersion,
-      );
-      managedEndpoint.node.addDependency(emrCluster);*/
     }
+
+    // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
+    const certManager = this.eksCluster.addHelmChart('CertManager', {
+      createNamespace: true,
+
+      namespace: 'cert-manager',
+      chart: 'cert-manager',
+      repository: 'https://charts.jetstack.io',
+      version: 'v1.4.0',
+      timeout: Duration.minutes(14),
+    });
+
+    //Create service account for ALB and install ALB
+    const albPolicyDocument = PolicyDocument.fromJson(IamPolicyAlb);
+    const albIAMPolicy = new Policy(
+      this,
+
+      'AWSLoadBalancerControllerIAMPolicy',
+      { document: albPolicyDocument },
+    );
+
+    const albServiceAccount = this.eksCluster.addServiceAccount('ALB', {
+      name: 'aws-load-balancer-controller',
+      namespace: 'kube-system',
+    });
+    albIAMPolicy.attachToRole(albServiceAccount.role);
+
+    const albService = this.eksCluster.addHelmChart('ALB', {
+      chart: 'aws-load-balancer-controller',
+      repository: 'https://aws.github.io/eks-charts',
+      namespace: 'kube-system',
+
+      timeout: Duration.minutes(14),
+      values: {
+        clusterName: this.eksClusterName,
+        serviceAccount: {
+          name: 'aws-load-balancer-controller',
+          create: false,
+        },
+      },
+    });
+    albService.node.addDependency(albServiceAccount);
+    albService.node.addDependency(certManager);
   }
 
   /**
@@ -390,49 +373,6 @@ export class EmrEksCluster extends Construct {
     virtualClusterId: string,
     props: { acmCertificateArn?: string; emrOnEksVersion?: string },
   ) {
-    // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
-    const certManager = this.eksCluster.addHelmChart('CertManager', {
-      createNamespace: true,
-
-      namespace: 'cert-manager',
-      chart: 'cert-manager',
-      repository: 'https://charts.jetstack.io',
-      version: 'v1.4.0',
-      timeout: Duration.minutes(14),
-    });
-
-    //Create service account for ALB and install ALB
-    const albPolicyDocument = PolicyDocument.fromJson(IamPolicyAlb);
-    const albIAMPolicy = new Policy(
-      this,
-
-      'AWSLoadBalancerControllerIAMPolicy',
-      { document: albPolicyDocument },
-    );
-
-    const albServiceAccount = this.eksCluster.addServiceAccount('ALB', {
-      name: 'aws-load-balancer-controller',
-      namespace: 'kube-system',
-    });
-    albIAMPolicy.attachToRole(albServiceAccount.role);
-
-    const albService = this.eksCluster.addHelmChart('ALB', {
-      chart: 'aws-load-balancer-controller',
-      repository: 'https://aws.github.io/eks-charts',
-      namespace: 'kube-system',
-
-      timeout: Duration.minutes(14),
-      values: {
-        clusterName: this.eksClusterName,
-        serviceAccount: {
-          name: 'aws-load-balancer-controller',
-          create: false,
-        },
-      },
-    });
-    albService.node.addDependency(albServiceAccount);
-    albService.node.addDependency(certManager);
-
     // Create custom resource with async waiter until the data is completed
     const endpointId = `managed-endpoint-${id}`;
     const lambdaPath = 'managed-endpoint-cr';
@@ -565,37 +505,5 @@ export class EmrEksCluster extends Construct {
     };
 
     return cert();
-  }
-
-  /**
-   * Runs K8s manifest optionally replacing placeholders in the yaml file with actual values
-   * ```typescript
-   * const ns = "fargate";
-   * this.loadManifest(
-          "manifest1",
-          "./src/k8s/rbac/emr-containers.yaml",
-          [{ key: "{{NAMESPACE}}", val: ns }]
-        )
-   * ```
-   * @param id CDK resource ID must be unique
-   * @param yamlFile path to K8s manifest file in yaml format.
-   * @param replacementMap Array of key-value objects. For each object the value of 'key' parameter will be replaced with the value of 'val' parameter.
-   * @returns @aws-cdk/aws-eks » KubernetesManifest
-   */
-
-  public loadManifest(
-    id: string,
-    yamlFile: string,
-    replacementMap?: { key: string; val: string }[],
-  ): KubernetesManifest {
-    let manifestYaml = fs.readFileSync(yamlFile, 'utf8');
-    if (replacementMap) {
-      replacementMap.forEach((elem) => {
-        const rg = new RegExp(elem.key, 'g');
-        manifestYaml = manifestYaml.replace(rg, elem.val);
-      });
-    }
-    const manifest = yaml.loadAll(manifestYaml);
-    return this.eksCluster.addManifest(id, ...manifest);
   }
 }
