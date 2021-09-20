@@ -12,14 +12,7 @@ jobs:
       - name: get latest release
         id: latest-release
         run: |
-          release=$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/aws-samples/aws-analytics-reference-architecture/releases/latest)
-          echo $release
-          echo "::set-output name=latest::$(echo test)"
-      - name: test
-        run: |
-          echo "release: ${{ steps.last-release.outputs.latest }}"
-      - name: publish release info to slack
-        env:
-          VERSION: ${{ steps.latest_release.outputs.name }}
-          CONTENT: ${{ steps.latest_release.outputs.body }}
-        run: 'curl --location --request POST ''https://hooks.slack.com/workflows/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'' --header ''Content-Type: application/json'' --data-raw ''{"release-version": $VERSION,"release-content": $CONTENT}'''
+          curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/aws-samples/aws-analytics-reference-architecture/releases/latest) >> release.json
+          VERSION=$( jq '.name' release.json )
+          CONTENT=$( jq '.body' release.json )
+          curl --location --request POST 'https://hooks.slack.com/workflows/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' --header 'Content-Type: application/json' --data-raw '{"release-version": $VERSION,"release-content": $CONTENT}'
