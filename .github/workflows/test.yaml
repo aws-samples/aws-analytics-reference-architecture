@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: get latest release
         id: latest_release
-        run: 'echo "::set-output name=latest::$(curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/aws-samples/aws-analytics-reference-architecture/releases/latest)"'
+        run: "echo ::set-output name=latest::$(curl -H \"Accept: application/vnd.github.v3+json\" https://api.github.com/repos/aws-samples/aws-analytics-reference-architecture/releases/latest)"
       - name: test
         run: |
           echo "release: ${{ steps.last_release.outputs.latest.value }}"
