@@ -16,8 +16,7 @@ jobs:
           cat release.json
           VERSION=$( jq '.name' release.json )
           CONTENT=$( jq '.body' release.json )
-          BODY='{"release-version": "$VERSION","release-content": "$CONTENT"}'
-          echo ${BODY}
-          curl --location --request POST 'https://hooks.slack.com/workflows/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' 
-          --header 'Content-Type: application/json' 
-          --data-raw ${BODY}
+          BODY='{"release-version": "${VERSION}","release-content": "${CONTENT}"}'
+          echo $BODY
+          curl --location --request POST 'https://hooks.slack.com/workflows/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' \
+          --header 'Content-Type: application/json' --data-raw $BODY
