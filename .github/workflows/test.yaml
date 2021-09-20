@@ -19,4 +19,4 @@ jobs:
           jq -n --arg version "$VERSION" --arg content "$CONTENT" '{"release-version": $version, "release-content": $content}' > body.json
           cat body.json
           curl --location --request POST 'https://hooks.slack.com/workflows/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' \
-          --header 'Content-Type: application/json' --data-raw @body.json
+          --header 'Content-Type: application/json' --data @body.json
