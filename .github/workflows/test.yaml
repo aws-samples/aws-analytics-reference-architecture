@@ -11,6 +11,6 @@ jobs:
     steps:
       - name: get latest release
         id: latest_release
-        run: curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/aws-samples/aws-analytics-reference-architecture/releases/latest
+        run: 'curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/aws-samples/aws-analytics-reference-architecture/releases/latest'
       - name: publish release info to slack
-        run: apiResults = $(curl --location --request POST 'https://hooks.slack.com/workflows/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' --header 'Content-Type: application/json' --data-raw '{"release-version": ${{ steps.latest_release.outputs.name }},"release-content": ${{ steps.latest_release.outputs.body }}}'
+        run: apiResults = $(curl --location --request POST 'https://hooks.slack.com/workflows/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' --header 'Content-Type: application/json' --data-raw '{"release-version": ${{ steps.latest_release.outputs.name }},"release-content": ${{ steps.latest_release.outputs.body }}}')
