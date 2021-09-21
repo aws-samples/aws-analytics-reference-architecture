@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 export { ExampleProps, Example } from './example';
 export { DataLakeStorageProps, DataLakeStorage } from './data-lake-storage';
 export { SynchronousCrawlerProps, SynchronousCrawler } from './synchronous-crawler';
@@ -10,3 +7,6 @@ export { SynchronousAthenaQueryProps, SynchronousAthenaQuery } from './synchrono
 export { SingletonBucket } from './singleton-bucket';
 export { Ec2SsmRole } from './ec2-ssm-role';
 export { DataPlatformNotebook, DataPlatformNotebooksProps, StudioUserDefinition } from './dataplatform-notebook';
+export * from './eks';
+export * from './emr-eks';
+export * from './ec2-ssm-role';

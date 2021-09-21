@@ -72,37 +72,10 @@
       "Resource": "arn:aws:secretsmanager:*:*:secret:emr-studio-*"
     },
     {
-      "Sid": "AllowClusterTemplateRelatedIntermediateActions",
-      "Action": [
-        "servicecatalog:DescribeProduct",
-        "servicecatalog:DescribeProductView",
-        "servicecatalog:DescribeProvisioningParameters",
-        "servicecatalog:ProvisionProduct",
-        "servicecatalog:SearchProducts",
-        "servicecatalog:UpdateProvisionedProduct",
-        "servicecatalog:ListProvisioningArtifacts",
-        "servicecatalog:ListLaunchPaths",
-        "servicecatalog:DescribeRecord",
-        "cloudformation:DescribeStackResources"
-      ],
-      "Resource": "*",
-      "Effect": "Allow"
-    },
-    {
-      "Sid": "AllowEMRCreateClusterAdvancedActions",
-      "Action": [
-        "elasticmapreduce:RunJobFlow"
-      ],
-      "Resource": "*",
-      "Effect": "Allow"
-    },
-    {
       "Sid": "AllowPassingServiceRoleForWorkspaceCreation",
       "Action": "iam:PassRole",
       "Resource": [
-        "arn:aws:iam::*:role/<your-emr-studio-service-role>",
-        "arn:aws:iam::*:role/EMR_DefaultRole",
-        "arn:aws:iam::*:role/EMR_EC2_DefaultRole"
+        "arn:aws:iam::*:role/<your-emr-studio-service-role>"
       ],
       "Effect": "Allow"
     },
@@ -122,7 +95,6 @@
         "s3:GetObject"
       ],
       "Resource": [
-
         "arn:aws:s3:::aws-logs-<aws-account-id>-<region>/elasticmapreduce/*"
       ],
       "Effect": "Allow"

@@ -49,14 +49,21 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-events',
     '@aws-cdk/aws-events-targets',
     '@aws-cdk/aws-emr',
+    '@aws-cdk/aws-eks',
     '@aws-cdk/aws-ec2',
+    '@aws-cdk/aws-emrcontainers',
+    '@aws-cdk/aws-autoscaling',
+    '@aws-cdk/lambda-layer-awscli',
   ],
   bundledDeps: [
     'xmldom@github:xmldom/xmldom#0.7.0',
     'aws-sdk',
+    'js-yaml',
   ],
 
   devDeps: [
+    '@types/js-yaml',
+    '@types/jest',
     'esbuild',
   ],
 
