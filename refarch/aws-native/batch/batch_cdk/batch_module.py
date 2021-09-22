@@ -23,20 +23,13 @@ class BatchModule(NestedStack):
             **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        # Create crawlers to crawl raw and clean buckets
+        # Create crawler to crawl raw bucket
         raw_crawler = Crawler(self, 'Raw',
                               name='raw',
                               db=raw_db,
                               bucket=raw_bucket,
                               prefix=''
                               ).crawler
-        clean_crawler = Crawler(self, 'Clean',
-                                name='clean',
-                                db=clean_db,
-                                bucket=clean_bucket,
-                                prefix='',
-                                hudi_exclusions=['store_customer', 'store_customer_address']
-                                ).crawler
 
         # Retrieve existing shared binary bucket
         binary_bucket = Bucket.from_bucket_name(self, 'AraBucketByName', _config.ARA_BUCKET_NAME)
@@ -70,7 +63,7 @@ class BatchModule(NestedStack):
                          script_bucket=binary_bucket, script_location=_config.Raw2CleanConfig.PARQUET_GLUE_SCRIPT_LOCATION,
                          raw_db=raw_db, clean_db=clean_db, raw_bucket=raw_bucket, clean_bucket=clean_bucket)]
 
-        # Create a glue workflow that triggers every 30 minutes to execute crawlers and all jobs
+        # Create a glue workflow that triggers every 30 minutes to execute crawler and all jobs
         raw2clean_wf = CfnWorkflow(self, 'Raw2Clean', name='ara-raw2clean')
 
         CfnTrigger(self, 'Raw2CleanWorkflowStart',
@@ -99,15 +92,6 @@ class BatchModule(NestedStack):
                    predicate={'conditions': [
                        {'crawlerName': raw_crawler.ref, 'crawlState': 'SUCCEEDED', 'logicalOperator': 'EQUALS'}]},
                    actions=pre_job_trigger_actions,
-                   workflow_name=raw2clean_wf.ref
-                   )
-        CfnTrigger(self, 'Raw2CleanFinalCrawler',
-                   name='ara-raw2clean-final-crawler',
-                   description='Trigger that starts the clean crawler',
-                   type='CONDITIONAL',
-                   start_on_creation=True,
-                   predicate={'conditions': post_job_trigger_predicate_conditions, 'logical': 'AND'},
-                   actions=[{'crawlerName': clean_crawler.ref}],
                    workflow_name=raw2clean_wf.ref
                    )
 

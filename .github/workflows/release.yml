@@ -1,86 +1,103 @@
-# name: Release
-# on:
-#   push:
-#     branches:
-#       - main
-#   workflow_dispatch: {}
-# jobs:
-#   release:
-#     runs-on: ubuntu-latest
-#     env:
-#       CI: "true"
-#       RELEASE: "true"
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v2
-#         with:
-#           fetch-depth: 0
-#       - name: Install dependencies
-#         run: cd core && yarn install --check-files --frozen-lockfile
-#       - name: Anti-tamper check
-#         run: git diff --ignore-space-at-eol --exit-code
-#       - name: Set git identity
-#         run: |-
-#           git config user.name "Automation"
-#           git config user.email "github-actions@github.com"
-#       - name: Bump to next version
-#         run: cd core && npx projen bump
-#       - name: Build
-#         run: cd core && npx projen build
-#       - name: Check for new commits
-#         id: git_remote
-#         run: echo ::set-output name=latest_commit::"$(git ls-remote origin -h ${{
-#           github.ref }} | cut -f1)"
-#       - name: Create release
-#         if: ${{ steps.git_remote.outputs.latest_commit == github.sha }}
-#         run: cd core && gh release create v$(node -p "require('./package.json').version") -F
-#           .changelog.tmp.md -t v$(node -p "require('./package.json').version")
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#       - name: Unbump
-#         run: cd core && npx projen unbump
-#       - name: Upload artifact
-#         if: ${{ steps.git_remote.outputs.latest_commit == github.sha }}
-#         uses: actions/upload-artifact@v2.1.1
-#         with:
-#           name: dist
-#           path: core/dist
-#       - name: Anti-tamper check
-#         run: git diff --ignore-space-at-eol --exit-code
-#     container:
-#       image: jsii/superchain
-#   release_npm:
-#     name: Release to NPM
-#     needs: release
-#     runs-on: ubuntu-latest
-#     container:
-#       image: jsii/superchain
-#     steps:
-#       - name: Download build artifacts
-#         uses: actions/download-artifact@v2
-#         with:
-#           name: dist
-#           path: core/dist
-#       - name: Release
-#         run: cd core && npx -p jsii-release@latest jsii-release-npm
-#         env:
-#           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-#           NPM_DIST_TAG: latest
-#           NPM_REGISTRY: registry.npmjs.org
-#   release_pypi:
-#     name: Release to PyPi
-#     needs: release
-#     runs-on: ubuntu-latest
-#     container:
-#       image: jsii/superchain
-#     steps:
-#       - name: Download build artifacts
-#         uses: actions/download-artifact@v2
-#         with:
-#           name: dist
-#           path: core/dist
-#       - name: Release
-#         run: cd core && npx -p jsii-release@latest jsii-release-pypi
-#         env:
-#           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-#           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+name: Release
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      CI: "true"
+      RELEASE: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: cd core && yarn install --check-files --frozen-lockfile
+      - name: Anti-tamper check
+        run: git diff --ignore-space-at-eol --exit-code
+      - name: Set git identity
+        run: |-
+          git config user.name "Automation"
+          git config user.email "github-actions@github.com"
+      - name: Bump to next version
+        run: cd core && npx projen bump
+      - name: Build
+        run: cd core && npx projen build
+      - name: Check for new commits
+        id: git_remote
+        run: echo ::set-output name=latest_commit::"$(git ls-remote origin -h ${{
+          github.ref }} | cut -f1)"
+      - name: Create release
+        if: ${{ steps.git_remote.outputs.latest_commit == github.sha }}
+        run: cd core && gh release create v$(node -p "require('./package.json').version") -F
+          dist/changelog.md -t v$(node -p "require('./package.json').version")
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Unbump
+        run: cd core && npx projen unbump
+      - name: Upload artifact
+        if: ${{ steps.git_remote.outputs.latest_commit == github.sha }}
+        uses: actions/upload-artifact@v2.1.1
+        with:
+          name: dist
+          path: core/dist
+      - name: Anti-tamper check
+        run: git diff --ignore-space-at-eol --exit-code
+    container:
+      image: jsii/superchain
+  release_npm:
+    name: Release to NPM
+    needs: release
+    runs-on: ubuntu-latest
+    container:
+      image: jsii/superchain
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: core/dist
+      - name: Release
+        run: cd core && npx -p jsii-release@latest jsii-release-npm
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_DIST_TAG: latest
+          NPM_REGISTRY: registry.npmjs.org
+  release_pypi:
+    name: Release to PyPi
+    needs: release
+    runs-on: ubuntu-latest
+    container:
+      image: jsii/superchain
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: core/dist
+      - name: Release
+        run: cd core && npx -p jsii-release@latest jsii-release-pypi
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+  slack:
+    name: Publish to slack channel
+    needs: 
+      - release_npm
+      - release_pypi
+    runs-on: ubuntu-latest
+    steps:
+      - name: publish latest release
+        env:
+          SLACK_URL: ${{ secrets.SLACK_URL }}
+        run: |
+          curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/aws-samples/aws-analytics-reference-architecture/releases/latest > release.json
+          VERSION=$( jq -r '.name' release.json )
+          CONTENT=$( jq -r '.body' release.json )
+          jq -n --arg version "$VERSION" --arg content "$CONTENT" '{"release-version": $version, "release-content": $content}' > body.json
+          curl --location --request POST $SLACK_URL \
+          --header 'Content-Type: application/json' --data @body.json

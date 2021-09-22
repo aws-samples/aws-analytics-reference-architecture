@@ -1,3 +1,7 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
 const project = new AwsCdkConstructLibrary({
 
@@ -23,30 +27,57 @@ const project = new AwsCdkConstructLibrary({
   repositoryDirectory: 'core',
   workflow: false,
   buildWorkflow: false,
-  releaseWorkflow: false,
+  releaseWorkflow: true,
   depsUpgrade: DependenciesUpgradeMechanism.NONE,
+  stale: false,
   pullRequestTemplate: false,
-  docgen: true,
+  cdkVersionPinning: true,
 
   cdkDependencies: [
     '@aws-cdk/core',
+    '@aws-cdk/custom-resources',
+    '@aws-cdk/aws-logs',
+    '@aws-cdk/aws-lambda',
+    '@aws-cdk/aws-lambda-python',
     '@aws-cdk/aws-s3',
+    '@aws-cdk/aws-kinesis',
     '@aws-cdk/aws-iam',
     '@aws-cdk/aws-kinesisfirehose',
     '@aws-cdk/aws-kinesisfirehose-destinations',
     '@aws-cdk/aws-kinesis',
     '@aws-cdk/aws-logs',
     '@aws-cdk/aws-glue',
+    '@aws-cdk/aws-athena',
+    '@aws-cdk/aws-glue',
+    '@aws-cdk/aws-stepfunctions',
+    '@aws-cdk/aws-stepfunctions-tasks',
+    '@aws-cdk/aws-events',
+    '@aws-cdk/aws-events-targets',
   ],
+  bundledDeps: [
+    'xmldom@github:xmldom/xmldom#0.7.0',
+    'aws-sdk',
+  ],
+
   devDeps: [
+    'esbuild',
   ],
 
   python: {
-    distName: 'aws-analytics-reference-architecture',
-    module: 'aws-analytics-reference-architecture',
+    distName: 'aws_analytics_reference_architecture',
+    module: 'aws_analytics_reference_architecture',
   },
 
   stability: 'experimental',
 
 });
+
+project.addTask('test:deploy', {
+  exec: 'cdk deploy --app=./lib/integ.default.js',
+});
+
+project.addTask('test:destroy', {
+  exec: 'cdk destroy --app=./lib/integ.default.js',
+});
+
 project.synth();

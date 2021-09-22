@@ -91,9 +91,6 @@
         },
         {
           "spawn": "package"
-        },
-        {
-          "spawn": "docgen"
         }
       ]
     },
@@ -114,6 +111,33 @@
       "steps": [
         {
           "exec": "jest --updateSnapshot"
+        }
+      ]
+    },
+    "bump": {
+      "name": "bump",
+      "category": "20.release",
+      "description": "Bumps version based on latest git tag and generates a changelog entry",
+      "steps": [
+        {
+          "exec": "git -c \"versionsort.suffix=-\" tag --sort=\"-version:refname\" --list \"v*\" | head -n1 > .version.tmp.json"
+        },
+        {
+          "exec": "if [ \"$(cat .version.tmp.json)\" = \"\" ]; then echo \"v0.1.0\" > .version.tmp.json; fi"
+        },
+        {
+          "exec": "npx standard-version@^9"
+        }
+      ],
+      "condition": "! git log --oneline -1 | grep -q \"chore(release):\""
+    },
+    "unbump": {
+      "name": "unbump",
+      "category": "20.release",
+      "description": "Restores version to 0.0.0",
+      "steps": [
+        {
+          "exec": "npx standard-version@^9 -r 0.0.0"
         }
       ]
     },
@@ -173,6 +197,16 @@
         }
       ]
     },
+    "compat": {
+      "name": "compat",
+      "category": "20.release",
+      "description": "Perform API compatibility check against latest version",
+      "steps": [
+        {
+          "exec": "jsii-diff npm:$(node -p \"require('./package.json').name\") -k --ignore-file .compatignore || (echo \"\nUNEXPECTED BREAKING CHANGES: add keys such as 'removed:constructs.Node.of' to .compatignore to skip.\n\" && exit 1)"
+        }
+      ]
+    },
     "docgen": {
       "name": "docgen",
       "category": "20.release",
@@ -183,13 +217,19 @@
         }
       ]
     },
-    "compat": {
-      "name": "compat",
-      "category": "20.release",
-      "description": "Perform API compatibility check against latest version",
+    "test:deploy": {
+      "name": "test:deploy",
       "steps": [
         {
-          "exec": "jsii-diff npm:$(node -p \"require('./package.json').name\") -k --ignore-file .compatignore || (echo \"\nUNEXPECTED BREAKING CHANGES: add keys such as 'removed:constructs.Node.of' to .compatignore to skip.\n\" && exit 1)"
+          "exec": "cdk deploy --app=./lib/integ.default.js"
+        }
+      ]
+    },
+    "test:destroy": {
+      "name": "test:destroy",
+      "steps": [
+        {
+          "exec": "cdk destroy --app=./lib/integ.default.js"
         }
       ]
     }
