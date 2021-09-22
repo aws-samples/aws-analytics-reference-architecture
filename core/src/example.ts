@@ -26,8 +26,8 @@ export class Example extends Construct {
   /**
    * Constructs a new instance of the Example class with CfnOutput.
    * CfnOutput can be customized.
-   * @param {cdk.Construct} scope the Scope of the CDK Construct
-   * @param {string} id the ID of the CDK Construct
+   * @param {Construct} scope the Scope of the AWS CDK Construct
+   * @param {string} id the ID of the AWS CDK Construct
    * @param {ExampleProps} props the ExampleProps [properties]{@link ExampleProps}
    * @since 1.0.0
    * @access public
@@ -37,7 +37,7 @@ export class Example extends Construct {
     super(scope, id);
 
     // add a fake CFN Output to the Stack
-    // use an export name because the output name is defined by CDK
+    // use an export name because the output name is defined by AWS CDK
     new CfnOutput(this, 'message', {
       exportName: props.name ? props.name: 'defaultMessage',
       value: props.value ? props.value: 'defaultValue!',

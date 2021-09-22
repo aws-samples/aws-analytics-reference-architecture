@@ -15,7 +15,7 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1',
+  cdkVersion: '1.124',
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',
@@ -32,6 +32,11 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/core',
     '@aws-cdk/aws-s3',
     '@aws-cdk/aws-iam',
+    '@aws-cdk/aws-kinesisfirehose',
+    '@aws-cdk/aws-kinesisfirehose-destinations',
+    '@aws-cdk/aws-kinesis',
+    '@aws-cdk/aws-logs',
+    '@aws-cdk/aws-glue',
   ],
   devDeps: [
   ],
