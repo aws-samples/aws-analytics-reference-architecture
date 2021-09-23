@@ -90,13 +90,6 @@ export class EmrEksNodegroup extends Construct {
         'role': 'shared',
         'emr-containers.amazonaws.com/resource.type': 'job.run',
       },
-      taints: [
-        {
-          key: 'role',
-          value: 'shared',
-          effect: TaintEffect.NO_SCHEDULE,
-        },
-      ],
     },
   };
 
@@ -107,19 +100,26 @@ export class EmrEksNodegroup extends Construct {
     id: 'notebooksNodeGroup',
     mountNvme: true,
     options: {
-      instanceTypes: [new InstanceType('t4g.medium')],
-      amiType: NodegroupAmiType.AL2_ARM_64,
+      instanceTypes: [new InstanceType('t3.large')],
+      amiType: NodegroupAmiType.AL2_X86_64,
       minSize: 0,
       maxSize: 50,
       capacityType: CapacityType.SPOT,
       labels: {
         'role': 'notebook',
+        'app': 'enterprise-gateway',
+        'spark-role': 'executor',
         'emr-containers.amazonaws.com/resource.type': 'job.run',
       },
       taints: [
         {
-          key: 'role',
-          value: 'notebook',
+          key: 'app',
+          value: 'enterprise-gateway',
+          effect: TaintEffect.NO_SCHEDULE,
+        },
+        {
+          key: 'spark-role',
+          value: 'executor',
           effect: TaintEffect.NO_SCHEDULE,
         },
       ],
