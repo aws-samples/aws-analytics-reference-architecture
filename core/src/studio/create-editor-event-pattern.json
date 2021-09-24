@@ -1,0 +1,16 @@
+{
+  "source": [
+    "aws.elasticmapreduce"
+  ],
+  "detail-type": [
+    "AWS API Call via CloudTrail"
+  ],
+  "detail": {
+    "eventSource": [
+      "elasticmapreduce.amazonaws.com"
+    ],
+    "eventName": [
+      "CreateEditor"
+    ]
+  }
+}

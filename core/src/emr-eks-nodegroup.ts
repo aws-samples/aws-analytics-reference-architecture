@@ -45,7 +45,7 @@ export class EmrEksNodegroup extends Construct {
   public static readonly NODEGROUP_TOOLING: EmrEksNodegroupProps = {
     id: 'tooling',
     options: {
-      instanceTypes: [new InstanceType('t3.medium')],
+      instanceTypes: [new InstanceType('m5.xlarge')],
       minSize: 1,
       maxSize: 50,
       labels: { role: 'tooling' },
@@ -107,8 +107,8 @@ export class EmrEksNodegroup extends Construct {
     id: 'notebooksNodeGroup',
     mountNvme: true,
     options: {
-      instanceTypes: [new InstanceType('t4g.medium')],
-      amiType: NodegroupAmiType.AL2_ARM_64,
+      instanceTypes: [new InstanceType('m5.xlarge')],
+      amiType: NodegroupAmiType.AL2_X86_64,
       minSize: 0,
       maxSize: 50,
       capacityType: CapacityType.SPOT,
@@ -116,13 +116,6 @@ export class EmrEksNodegroup extends Construct {
         'role': 'notebook',
         'emr-containers.amazonaws.com/resource.type': 'job.run',
       },
-      taints: [
-        {
-          key: 'role',
-          value: 'notebook',
-          effect: TaintEffect.NO_SCHEDULE,
-        },
-      ],
     },
   };
 

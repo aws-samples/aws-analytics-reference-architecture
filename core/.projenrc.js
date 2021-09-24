@@ -54,6 +54,8 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-emrcontainers',
     '@aws-cdk/aws-autoscaling',
     '@aws-cdk/lambda-layer-awscli',
+    '@aws-cdk/aws-events',
+    '@aws-cdk/aws-events-targets',
   ],
   bundledDeps: [
     'xmldom@github:xmldom/xmldom#0.7.0',

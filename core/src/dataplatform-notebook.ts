@@ -1,15 +1,21 @@
+import * as path from 'path';
 import { SecurityGroup, ISecurityGroup, IVpc, Peer, Port, Vpc, ISubnet } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnStudioSessionMapping, CfnStudio, CfnStudioProps } from '@aws-cdk/aws-emr';
+import { Rule, IRuleTarget, EventPattern } from '@aws-cdk/aws-events';
+import { LambdaFunction } from '@aws-cdk/aws-events-targets';
 import { Role, IManagedPolicy, ManagedPolicy, ServicePrincipal, PolicyDocument, Policy, IRole } from '@aws-cdk/aws-iam';
+import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { Construct, Tags, Aws } from '@aws-cdk/core';
 import { EmrEksCluster } from './emr-eks-cluster';
 
+import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as studioS3Policy from './studio/emr-studio-s3-policy.json';
 import * as studioServiceRolePolicy from './studio/studio-service-role-policy.json';
 import * as studioUserPolicy from './studio/studio-user-role-policy.json';
 import * as studioSessionPolicy from './studio/studio-user-session-policy.json';
+
 
 /**
  * The properties for DataPlatformNotebooks Construct.
@@ -138,7 +144,7 @@ export class DataPlatformNotebook extends Construct {
     //Create new EKS cluster
     this.emrEks = new EmrEksCluster(this, 'EmrEks', {
       kubernetesVersion: KubernetesVersion.V1_20,
-      eksAdminRoleArn: '<Your EKS admin role>',
+      eksAdminRoleArn: '<EKS Admin Role>',
       eksClusterName: 'EmrEksCluster' + props.studioName,
     });
 
@@ -163,7 +169,7 @@ export class DataPlatformNotebook extends Construct {
         // @ts-ignore
         this.emrVirtCluster.instance.attrId,
         {
-          acmCertificateArn: '<Your ARN Certificate>',
+          acmCertificateArn: '<certificate ARN>',
           emrOnEksVersion: 'emr-6.2.0-latest',
         },
       );
@@ -272,6 +278,31 @@ export class DataPlatformNotebook extends Construct {
     //Set the Studio URL and Studio Id to return as CfnOutput later
     this.studioUrl = this.studioInstance.attrUrl;
     this.studioId = this.studioInstance.attrStudioId;
+
+    let lambdaPath = 'studio';
+
+    let workspaceTaggingLambda = new Function(this, 'CreateTagHandler', {
+      runtime: Runtime.NODEJS_14_X, // execution environment
+      code: Code.fromAsset(path.join(__dirname, lambdaPath)), // code loaded from "lambda" directory
+      handler: 'index.handler', // file is "index", function is "handler"
+    });
+
+    let createTagEventTarget: IRuleTarget [] = [];
+
+    let eventTriggerLambda: LambdaFunction = new LambdaFunction(workspaceTaggingLambda);
+
+    createTagEventTarget.push(eventTriggerLambda);
+
+    let createTagEventPattern: EventPattern = JSON.parse(JSON.stringify(eventPattern));
+
+    let eventRule: Rule = new Rule(this, props.studioName + 'eventRule', {
+      enabled: true,
+      eventPattern: createTagEventPattern,
+      targets: createTagEventTarget,
+    });
+
+    eventRule.node.addDependency(workspaceTaggingLambda);
+
   }
 
   /**
@@ -290,7 +321,7 @@ export class DataPlatformNotebook extends Construct {
         // @ts-ignore
         this.emrVirtCluster.instance.attrId,
         {
-          acmCertificateArn: '<Your ARN Certificate>',
+          acmCertificateArn: '<certificate ARN>',
           emrOnEksVersion: 'emr-6.2.0-latest',
         },
       );
@@ -309,7 +340,7 @@ export class DataPlatformNotebook extends Construct {
 
       let sessionPolicyArn = this.createUserSessionPolicy(user, managedEndpoint.getAttString('arn'), managedEndpoint);
 
-      new CfnStudioSessionMapping(this, 'studioUser' + user.mappingIdentityName, {
+      new CfnStudioSessionMapping(this, 'studioUser' + user.mappingIdentityName + user.mappingIdentityName, {
         identityName: user.mappingIdentityName,
         identityType: user.mappingIdentityType,
         sessionPolicyArn: sessionPolicyArn,
