@@ -66,9 +66,11 @@ const project = new AwsCdkConstructLibrary({
 
 });
 
-project.addTask('test:deploy', {
+const testDeploy = project.addTask('test:deploy', {
   exec: 'cdk deploy --app=./lib/integ.default.js',
 });
+
+testDeploy.prependExec('npx projen build');
 
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',
