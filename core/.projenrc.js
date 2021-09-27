@@ -56,6 +56,7 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/lambda-layer-awscli',
     '@aws-cdk/aws-events',
     '@aws-cdk/aws-events-targets',
+    '@aws-cdk/aws-kms',
   ],
   bundledDeps: [
     'xmldom@github:xmldom/xmldom#0.7.0',

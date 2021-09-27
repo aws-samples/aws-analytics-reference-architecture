@@ -22,9 +22,6 @@ exports.handler = async (event: unknown) => {
 
   console.log(params);
 
-  const response = await emr.addTags(params).promise();
-
-  console.log(response);
-
+  await emr.addTags(params).promise();
 
 };
