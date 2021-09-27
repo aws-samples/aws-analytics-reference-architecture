@@ -25,9 +25,9 @@ jobs:
           git config user.name "Automation"
           git config user.email "github-actions@github.com"
       - name: Install dependencies
-        run: cd core && yarn install --check-files --frozen-lockfile
+        run: yarn install --check-files --frozen-lockfile
       - name: release
-        run: cd core && npx projen release
+        run: npx projen release
       - name: Check for new commits
         id: git_remote
         run: echo ::set-output name=latest_commit::"$(git ls-remote origin -h ${{
@@ -37,7 +37,7 @@ jobs:
         uses: actions/upload-artifact@v2.1.1
         with:
           name: dist
-          path: core/dist
+          path: dist
     container:
       image: jsii/superchain:node14
   release_github:
@@ -52,9 +52,9 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: dist
-          path: core/dist
+          path: dist
       - name: Release
-        run: errout=$(mktemp); cd core && gh release create $(cat dist/releasetag.txt) -R
+        run: errout=$(mktemp); gh release create $(cat dist/releasetag.txt) -R
           $GITHUB_REPOSITORY -F dist/changelog.md -t $(cat dist/releasetag.txt)
           --target $GITHUB_REF 2> $errout && true; exitcode=$?; if [ $exitcode
           -ne 0 ] && ! grep -q "Release.tag_name already exists" $errout; then
@@ -75,9 +75,9 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: dist
-          path: core/dist
+          path: dist
       - name: Release
-        run: cd core && npx -p jsii-release@latest jsii-release-npm
+        run: npx -p jsii-release@latest jsii-release-npm
         env:
           NPM_DIST_TAG: latest
           NPM_REGISTRY: registry.npmjs.org
@@ -96,28 +96,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: dist
-          path: core/dist
+          path: dist
       - name: Release
-        run: cd core && npx -p jsii-release@latest jsii-release-pypi
+        run: npx -p jsii-release@latest jsii-release-pypi
         env:
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
     container:
       image: jsii/superchain:node14
-  slack:
-    name: Publish to slack channel
-    needs: 
-      - release_npm
-      - release_pypi
-    runs-on: ubuntu-latest
-    steps:
-      - name: publish latest release
-        env:
-          SLACK_URL: ${{ secrets.SLACK_URL }}
-        run: |
-          curl -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/aws-samples/aws-analytics-reference-architecture/releases/latest > release.json
-          VERSION=$( jq -r '.name' release.json )
-          CONTENT=$( jq -r '.body' release.json )
-          jq -n --arg version "$VERSION" --arg content "$CONTENT" '{"release-version": $version, "release-content": $content}' > body.json
-          curl --location --request POST $SLACK_URL \
-          --header 'Content-Type: application/json' --data @body.json
