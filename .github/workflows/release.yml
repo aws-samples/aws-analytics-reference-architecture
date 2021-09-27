@@ -98,8 +98,8 @@ jobs:
       - name: Release
         run: cd core && npx -p jsii-release@latest jsii-release-pypi
         env:
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
     container:
       image: jsii/superchain:node14
   slack:
