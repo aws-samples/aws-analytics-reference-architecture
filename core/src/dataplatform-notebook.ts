@@ -8,10 +8,11 @@ import { Role, IManagedPolicy, ManagedPolicy, ServicePrincipal, PolicyDocument, 
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { LogGroup } from '@aws-cdk/aws-logs';
 import { Bucket } from '@aws-cdk/aws-s3';
-import { Construct, Tags, Aws, Duration } from '@aws-cdk/core';
+import { Construct, Tags, Aws, Duration, CustomResource } from '@aws-cdk/core';
 //import { Key } from '@aws-cdk/aws-kms';
 
 import { EmrEksCluster } from './emr-eks-cluster';
+import { EmrVirtualCluster } from './emr-virtual-cluster';
 
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as studioS3Policy from './studio/emr-studio-s3-policy.json';
@@ -85,7 +86,7 @@ export interface DataPlatformNotebooksProps {
   readonly eksAdminRoleArn: string;
 
   /**
-   * ACM Cerficate ARN
+   * ACM Certificate ARN
    */
   readonly acmCertificateArn: string;
 
@@ -118,6 +119,22 @@ export interface StudioUserDefinition {
 
 export class DataPlatformNotebook extends Construct {
 
+  /**
+   * Gets a list of Subnet objects
+   * Create an array of string from the list of Subnet objects
+   * @returns Return the array of string of the subnet
+   */
+  static privateSubnetList (subnetList: ISubnet []): string[] {
+
+    let privateSubnetListId : string[] = [];
+
+    for (let subnet of subnetList) {
+      privateSubnetListId.push(subnet.subnetId);
+    }
+
+    return privateSubnetListId;
+  }
+
   private readonly studioSubnetList: string[] | undefined ;
   private readonly studioServiceRoleName: string;
   public readonly studioUrl: string;
@@ -131,7 +148,6 @@ export class DataPlatformNotebook extends Construct {
   private readonly engineSecurityGroup: ISecurityGroup | undefined;
   private readonly emrVpc: IVpc;
   private workspacesBucket: Bucket;
-  // @ts-ignore
   private studioServiceRole: Role | IRole;
   private studioUserRole: Role | IRole;
   private readonly studioServicePolicy: IManagedPolicy [];
@@ -140,8 +156,8 @@ export class DataPlatformNotebook extends Construct {
   private readonly studioInstance: CfnStudio;
   private readonly emrEks: EmrEksCluster;
 
-  private managedEndpoint: unknown;
-  private readonly emrVirtCluster: unknown;
+  private managedEndpoint: CustomResource;
+  private readonly emrVirtCluster: EmrVirtualCluster;
 
 
   private readonly lambdaNotebookTagOnCreatePolicy: IManagedPolicy [];
@@ -174,31 +190,27 @@ export class DataPlatformNotebook extends Construct {
     });
 
     //Get the list of private subnets in VPC
-    // @ts-ignore
     if (this.emrEks !== undefined) {
-      this.studioSubnetList = this.privateSubnetList(this.emrEks.eksCluster.vpc.privateSubnets);
+      this.studioSubnetList = DataPlatformNotebook.privateSubnetList(this.emrEks.eksCluster.vpc.privateSubnets);
     } else {
       this.studioSubnetList = props.subnetList;
     }
 
     //Create a virtual cluster a give it a name of 'ec2VirtCluster'+studioName provided by user
-    if (this.emrEks !== undefined) {
-      this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
-        createNamespace: false,
-        eksNamespace: 'default',
-        name: 'ec2VirtCluster' + props.studioName,
-      });
+    this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
+      createNamespace: false,
+      eksNamespace: 'default',
+      name: 'ec2VirtCluster' + props.studioName,
+    });
 
-      this.managedEndpoint = this.emrEks.addManagedEndpoint(
-        'endpoint',
-        // @ts-ignore
-        this.emrVirtCluster.instance.attrId,
-        {
-          acmCertificateArn: props.acmCertificateArn,
-          emrOnEksVersion: this.emrOnEksVersion,
-        },
-      );
-    }
+    this.managedEndpoint = this.emrEks.addManagedEndpoint(
+      'endpoint',
+      this.emrVirtCluster.instance.attrId,
+      {
+        acmCertificateArn: props.acmCertificateArn,
+        emrOnEksVersion: this.emrOnEksVersion,
+      },
+    );
 
     //Set Vpc object to be used with SecurityGroup and EMR Studio Creation
     if (props.vpcId !== undefined) {
@@ -209,13 +221,12 @@ export class DataPlatformNotebook extends Construct {
     }
 
     //Create a security group to be attached to the studio workspaces
-    this.workSpaceSecurityGroup = new SecurityGroup(this, 'workspaceSecutiyGroup', {
+    this.workSpaceSecurityGroup = new SecurityGroup(this, 'workspaceSecurityGroup', {
       vpc: this.emrVpc,
       securityGroupName: 'workSpaceSecurityGroup',
       allowAllOutbound: false,
     });
 
-    // @ts-ignore
     this.managedEndpoint.node.addDependency(this.emrVirtCluster);
 
     //Tag workSpaceSecurityGroup to be used with EMR Studio
@@ -227,6 +238,8 @@ export class DataPlatformNotebook extends Construct {
     }
 
     //Get the Engine Security group
+    //This is for future use when customer can bring their own EKS/EMR ManagedEndpoint Security Group
+    //For now it executes the else statement straight
     if (props.engineSecurityGroupId !== undefined) {
 
       //Get the EMR security group object from its security group Id
@@ -238,7 +251,6 @@ export class DataPlatformNotebook extends Construct {
     } else {
       //For testing purpose only. This need to be removed once EKS/EMR construct is ready for use
       //Get the Engine Security group object
-      // @ts-ignore
       this.engineSecurityGroup = SecurityGroup.fromSecurityGroupId(this, 'engineSecurityGroup', this.managedEndpoint.getAttString('securityGroup'));
       //Update security group to allow network traffic to EMR cluster on port 18888 and internet on 443
       this.workSpaceSecurityGroup.addEgressRule(this.engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
@@ -247,8 +259,8 @@ export class DataPlatformNotebook extends Construct {
 
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
-    this.workspacesBucket = new Bucket(this, 'WorksapcesBucket', {
-      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + this.emrVpc.vpcId,
+    this.workspacesBucket = new Bucket(this, 'WorkspacesBucket' + props.studioName, {
+      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + props.studioName.toLowerCase().replace(/[^\w\s]/gi, ''),
       enforceSSL: true,
     });
 
@@ -259,9 +271,14 @@ export class DataPlatformNotebook extends Construct {
 
       this.addServiceRoleInlinePolicy(props.emrStudioServiceRoleArn, this.workspacesBucket.bucketName);
 
+      this.studioServiceRole = Role.fromRoleArn(this, 'StudioServiceManagedPolicy', props.emrStudioServiceRoleArn);
+
     } else {
       //Create a Managed policy for Studio service role
-      this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this, 'StudioServiceManagedPolicy', this.createStudioServiceRolePolicy(this.workspacesBucket.bucketName, props.studioName)));
+      this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
+        'StudioServiceManagedPolicy', this.createStudioServiceRolePolicy(this.workspacesBucket.bucketName,
+          props.studioName),
+      ));
 
       //Create a role for the Studio
       this.studioServiceRole = new Role(this, 'studioServiceRole', {
@@ -273,7 +290,6 @@ export class DataPlatformNotebook extends Construct {
     }
 
     //Set the serviceRole name, to be used by the CfnStudioConstruct
-    // @ts-ignore
     this.studioServiceRoleName = this.studioServiceRole.roleName;
 
     //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
@@ -292,7 +308,6 @@ export class DataPlatformNotebook extends Construct {
       defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
       engineSecurityGroupId: this.engineSecurityGroup.securityGroupId,
       name: props.studioName,
-      // @ts-ignore
       serviceRole: this.studioServiceRole.roleArn,
       subnetIds: this.studioSubnetList,
       userRole: this.studioUserRole.roleArn,
@@ -304,24 +319,31 @@ export class DataPlatformNotebook extends Construct {
     this.studioUrl = this.studioInstance.attrUrl;
     this.studioId = this.studioInstance.attrStudioId;
 
+
+    //Create LogGroup for lambda which tag the EMR Notebook (EMR Studio Workspaces)
     let lambdaNotebookTagOnCreateLog = new LogGroup(this, 'lambdaNotebookTagOnCreateLog' + props.studioName, {
       logGroupName: '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.studioName,
     });
 
+    //Create Policy for Lambda to put logs in LogGroup
+    //Create Policy for Lambda to AddTags to EMR Notebooks
     this.lambdaNotebookTagOnCreatePolicy.push(ManagedPolicy.fromManagedPolicyArn(
       this,
       'lambdaNotebookTagOnCreatePolicy'+ props.studioName,
       this.createLambdaNoteBookAddTagPolicy(lambdaNotebookTagOnCreateLog.logGroupArn, props.studioName)),
     );
 
+    //Create IAM role for Lambda and attach policy
     this.lambdaNotebookAddTagOnCreate = new Role(this, 'addLambdaTagRole' + props.studioName, {
       assumedBy: new ServicePrincipal(this.lambdaPrincipal),
       roleName: 'lambdaRoleNotebookAddTagOnCreate' + props.studioName,
       managedPolicies: this.lambdaNotebookTagOnCreatePolicy,
     });
 
+    //set the path for the lambda code
     let lambdaPath = 'studio';
 
+    //Create lambda to tag EMR notebook with UserID of the IAM principal that created it
     let workspaceTaggingLambda = new Function(this, 'CreateTagHandler', {
       runtime: Runtime.NODEJS_14_X, // execution environment
       code: Code.fromAsset(path.join(__dirname, lambdaPath)), // code loaded from "lambda" directory
@@ -331,29 +353,37 @@ export class DataPlatformNotebook extends Construct {
       functionName: 'lambdaNotebookCreateTagOnCreate' + props.studioName,
     });
 
+    //Create an event Target for event Bridge
     let createTagEventTarget: IRuleTarget [] = [];
 
+    //Create the lambda as a target for event bridge
     let eventTriggerLambda: LambdaFunction = new LambdaFunction(workspaceTaggingLambda);
 
+    //Register the lambda as a target for event bridge
     createTagEventTarget.push(eventTriggerLambda);
 
+    //Create the event pattern to trigger the lambda
+    //Event trigger lambda on the CreateEditor API call
     let createTagEventPattern: EventPattern = JSON.parse(JSON.stringify(eventPattern));
 
+    //Create Event on EventBridge/Cloudwatch Event
     let eventRule: Rule = new Rule(this, props.studioName + 'eventRule', {
       enabled: true,
       eventPattern: createTagEventPattern,
       targets: createTagEventTarget,
     });
 
+    //Event should not be created unless the lambda has been successfully created
     eventRule.node.addDependency(workspaceTaggingLambda);
 
   }
 
   /**
-   * method to add users, take a list of userDefintion and will create a managed endpoint
+   * method to add users, take a list of userDefinition and will create a managed endpoint
    * and create a session Policy scoped to the managed endpoint
    * then assign a user with the created session policy to the created studio
    * @param {StudioUserDefinition} userList list of users
+   * @param {string} studioName The name of the EMR studio where the user should be added
    * @access public
    */
   public addUsers(userList: StudioUserDefinition[], studioName: string) {
@@ -364,7 +394,6 @@ export class DataPlatformNotebook extends Construct {
       //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
       let managedEndpoint = this.emrEks.addManagedEndpoint(
         'endpoint'+ studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
-        // @ts-ignore
         this.emrVirtCluster.instance.attrId,
         {
           acmCertificateArn: this.certificateArn,
@@ -373,18 +402,15 @@ export class DataPlatformNotebook extends Construct {
       );
 
       //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
-      let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this, 'engineSecurityGroup' + studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''), managedEndpoint.getAttString('securityGroup'));
+      let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
+        'engineSecurityGroup' + studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
+        managedEndpoint.getAttString('securityGroup'));
 
       //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
       this.workSpaceSecurityGroup.addEgressRule(engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
 
       //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
       Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
-
-      // session Policy depend on the managed endpoint
-      // should wait for managed endpoint creation
-      // @ts-ignore
-      managedEndpoint.node.addDependency(this.emrVirtCluster);
 
       //Create the session policy and gets its ARN
       let sessionPolicyArn = this.createUserSessionPolicy(user, managedEndpoint.getAttString('arn'), managedEndpoint);
@@ -434,7 +460,7 @@ export class DataPlatformNotebook extends Construct {
     let policy = JSON.parse(JSON.stringify(studioS3Policy));
 
     //Update the service role provided by the user with an inline policy
-    //to acces the S3 bucket and store notebooks
+    //to access the S3 bucket and store notebooks
     policy.Statement[0].Resource[0] = policy.Statement[0].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
     policy.Statement[0].Resource[1] = policy.Statement[0].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
 
@@ -453,7 +479,8 @@ export class DataPlatformNotebook extends Construct {
    */
   private createStudioUserRolePolicy(studioName: string): string {
 
-    let policy = JSON.parse(JSON.stringify(studioUserPolicy));
+    let policyTemplate: string = JSON.stringify(studioUserPolicy);
+    let policy = JSON.parse(policyTemplate);
 
     //replace the <your-emr-studio-service-role> with the service role created above
     policy.Statement[5].Resource[0] = policy.Statement[5].Resource[0].replace(/<your-emr-studio-service-role>/gi, this.studioServiceRoleName);
@@ -475,9 +502,8 @@ export class DataPlatformNotebook extends Construct {
    * Create a session policy for each user scoped down to the managed endpoint
    * @returns Return the ARN of the policy created
    */
-  private createUserSessionPolicy(user: StudioUserDefinition, managedEndpointArn: string, managedEndpoint: unknown): string {
+  private createUserSessionPolicy(user: StudioUserDefinition, managedEndpointArn: string, managedEndpoint: CustomResource): string {
 
-    // @ts-ignore
     let policy = JSON.parse(JSON.stringify(studioSessionPolicy));
 
     //replace the <your-emr-studio-service-role> with the service role created above
@@ -491,7 +517,7 @@ export class DataPlatformNotebook extends Construct {
     policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
     policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<region>/gi, Aws.REGION);
 
-    //add restrictions on the managedEnpoint that user of group is allowed to attach to
+    //add restrictions on the managedEndpoint that user of group is allowed to attach to
     policy.Statement[9].Resource[0] = managedEndpointArn;
     policy.Statement[10].Resource[0] = managedEndpointArn;
 
@@ -505,27 +531,9 @@ export class DataPlatformNotebook extends Construct {
       managedPolicyName: 'studioSessionPolicy' + userName + this.studioId,
     });
 
-    // @ts-ignore
     userSessionPolicy.node.addDependency(managedEndpoint);
 
     return userSessionPolicy.managedPolicyArn;
-  }
-
-  /**
-   * @hidden
-   * Gets a list of Subnet objects
-   * Create an array of string from the list of Subnet objects
-   * @returns Return the array of string of the subnet
-   */
-  private privateSubnetList (subnetList: ISubnet []): string[] {
-
-    let privateSubnetListId : string[] = [];
-
-    for (let subnet of subnetList) {
-      privateSubnetListId.push(subnet.subnetId);
-    }
-
-    return privateSubnetListId;
   }
 
   /**
@@ -542,7 +550,7 @@ export class DataPlatformNotebook extends Construct {
 
     let lambdaPolicy = new ManagedPolicy(this, 'lambdaPolicy', {
       document: PolicyDocument.fromJson(policy),
-      managedPolicyName: 'lamdbaPolicy' + studioName,
+      managedPolicyName: 'lambdaPolicy' + studioName,
     });
 
     return lambdaPolicy.managedPolicyArn;
