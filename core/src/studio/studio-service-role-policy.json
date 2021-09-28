@@ -184,6 +184,18 @@
         "arn:aws:s3:::<your-amazon-s3-bucket>",
         "arn:aws:s3:::<your-amazon-s3-bucket>/*"
       ]
+    },
+    {
+      "Sid": "AllowAccessToS3BucketEncryptionKey",
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt",
+        "kms:GenerateDataKey",
+        "kms:ReEncrypt",
+        "kms:DescribeKey"
+      ],"Resource": [
+        ""
+      ]
     }
   ]
 }

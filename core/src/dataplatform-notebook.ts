@@ -4,23 +4,32 @@ import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnStudioSessionMapping, CfnStudio, CfnStudioProps } from '@aws-cdk/aws-emr';
 import { Rule, IRuleTarget, EventPattern } from '@aws-cdk/aws-events';
 import { LambdaFunction } from '@aws-cdk/aws-events-targets';
-import { Role, IManagedPolicy, ManagedPolicy, ServicePrincipal, PolicyDocument, Policy, IRole } from '@aws-cdk/aws-iam';
+import {
+  Role,
+  IManagedPolicy,
+  ManagedPolicy,
+  ServicePrincipal,
+  PolicyDocument,
+  Policy,
+  IRole,
+  FederatedPrincipal, PolicyStatement,
+} from '@aws-cdk/aws-iam';
+import { Key } from '@aws-cdk/aws-kms';
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
-import { LogGroup } from '@aws-cdk/aws-logs';
-import { Bucket } from '@aws-cdk/aws-s3';
+import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
+import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Tags, Aws, Duration, CustomResource } from '@aws-cdk/core';
-//import { Key } from '@aws-cdk/aws-kms';
 
 import { EmrEksCluster } from './emr-eks-cluster';
 import { EmrVirtualCluster } from './emr-virtual-cluster';
 
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as studioS3Policy from './studio/emr-studio-s3-policy.json';
+import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
 import * as lambdaNotebookTagPolicy from './studio/notenook-add-tag-on-create-lambda-policy.json';
 import * as studioServiceRolePolicy from './studio/studio-service-role-policy.json';
 import * as studioUserPolicy from './studio/studio-user-role-policy.json';
 import * as studioSessionPolicy from './studio/studio-user-session-policy.json';
-
 
 /**
  * The properties for DataPlatformNotebooks Construct.
@@ -112,7 +121,7 @@ export interface StudioUserDefinition {
   /**
    * execution Role to pass to ManagedEndpoint
    * */
-  readonly executionRoleArn?: string;
+  readonly executionPolicyArn: string;
 
 }
 
@@ -168,7 +177,7 @@ export class DataPlatformNotebook extends Construct {
   private readonly lambdaNotebookTagOnCreatePolicy: IManagedPolicy [];
   private readonly lambdaNotebookAddTagOnCreate: Role;
 
-  //private encryptionKey: Key;
+  private readonly dataPlatformEncryptionKey: Key;
 
   /**
    * Constructs a new instance of the DataGenerator class
@@ -186,6 +195,15 @@ export class DataPlatformNotebook extends Construct {
     this.lambdaNotebookTagOnCreatePolicy = [];
     this.studioSubnetList = [];
     this.certificateArn = props.acmCertificateArn;
+
+
+    //Create encryption key to be used with cloudwatch loggroup and S3 bucket storing notebooks and
+    this.dataPlatformEncryptionKey = new Key(
+      this,
+      'KMS-key-'+ props.studioName.toLowerCase().replace(/[^\w\s]/gi, ''), {
+        alias: props.studioName.toLowerCase().replace(/[^\w\s]/gi, '') + '-Encryption-key',
+      },
+    );
 
     //Create new EKS cluster
     this.emrEks = new EmrEksCluster(this, 'EmrEks', {
@@ -267,7 +285,11 @@ export class DataPlatformNotebook extends Construct {
     this.workspacesBucket = new Bucket(this, 'WorkspacesBucket' + props.studioName, {
       bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + props.studioName.toLowerCase().replace(/[^\w\s]/gi, ''),
       enforceSSL: true,
+      encryptionKey: this.dataPlatformEncryptionKey,
+      encryption: BucketEncryption.KMS,
     });
+
+    this.workspacesBucket.node.addDependency(this.dataPlatformEncryptionKey);
 
     //Check if the construct prop has an EMRStudio Service Role ARN
     //update the role with an inline policy to allow access to the S3 bucket created above
@@ -324,11 +346,33 @@ export class DataPlatformNotebook extends Construct {
     this.studioUrl = this.studioInstance.attrUrl;
     this.studioId = this.studioInstance.attrStudioId;
 
+    /**
+     * The next code block is to tag an EMR notebook to restrict who can access it
+     * once workspaces have the tag-on-create it should be deleted
+     * */
 
     //Create LogGroup for lambda which tag the EMR Notebook (EMR Studio Workspaces)
     let lambdaNotebookTagOnCreateLog = new LogGroup(this, 'lambdaNotebookTagOnCreateLog' + props.studioName, {
       logGroupName: '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.studioName,
+      encryptionKey: this.dataPlatformEncryptionKey,
+      retention: RetentionDays.ONE_MONTH,
     });
+
+    lambdaNotebookTagOnCreateLog.node.addDependency(this.dataPlatformEncryptionKey);
+
+    let kmsLogPolicy = JSON.parse(JSON.stringify(kmsLogPolicyTemplate));
+
+    //Create resource policy for KMS to allow Cloudwatch loggroup access to access the key
+    kmsLogPolicy.Principal.Service = kmsLogPolicy.Principal.Service.replace(/region/gi, Aws.REGION);
+    kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
+        kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/region/gi, Aws.REGION);
+    kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
+        kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/account-id/gi, Aws.ACCOUNT_ID);
+    kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
+        kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/log-group-name/gi, '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.studioName);
+
+    //Applying the policy to the KMS key
+    this.dataPlatformEncryptionKey.addToResourcePolicy(PolicyStatement.fromJson(kmsLogPolicy));
 
     //Create Policy for Lambda to put logs in LogGroup
     //Create Policy for Lambda to AddTags to EMR Notebooks
@@ -403,6 +447,7 @@ export class DataPlatformNotebook extends Construct {
         {
           acmCertificateArn: this.certificateArn,
           emrOnEksVersion: this.emrOnEksVersion,
+          executionRoleArn: this.buildManagedEndpointExecutionRole(user.executionPolicyArn),
         },
       );
 
@@ -445,6 +490,9 @@ export class DataPlatformNotebook extends Construct {
     //Update the policy with the bucketname to scope it down
     policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
     policy.Statement[12].Resource[1] = policy.Statement[12].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+
+    //Update with KMS key ARN encrypting the bucket
+    policy.Statement[13].Resource[0] = this.dataPlatformEncryptionKey.keyArn;
 
     //Create a the policy of service role
     let serviceRolePolicy = new ManagedPolicy(this, 'studioServicePolicy' + studioName, {
@@ -539,6 +587,23 @@ export class DataPlatformNotebook extends Construct {
     userSessionPolicy.node.addDependency(managedEndpoint);
 
     return userSessionPolicy.managedPolicyArn;
+  }
+
+
+  private buildManagedEndpointExecutionRole (policyArn: string): string {
+
+    let managedPolicy = ManagedPolicy.fromManagedPolicyArn(this, 'managedEndpointPolicy' + policyArn, policyArn);
+
+    let managedEndpointExecutionRole = new Role(this, 'EMRWorkerIAMRole'+ policyArn, {
+      assumedBy: new FederatedPrincipal(
+        this.emrEks.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+        [],
+        'sts:AssumeRoleWithWebIdentity',
+      ),
+      managedPolicies: [managedPolicy],
+    });
+
+    return managedEndpointExecutionRole.roleArn;
   }
 
   /**
