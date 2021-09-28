@@ -120,6 +120,7 @@ export class EmrEksCluster extends Construct {
         'AdminRole',
         props.eksAdminRoleArn,
       );
+
       this.eksCluster.awsAuth.addMastersRole(clusterAdmin, 'AdminRole');
     }
 
@@ -268,6 +269,7 @@ export class EmrEksCluster extends Construct {
         clusterName: this.eksClusterName,
         serviceAccount: {
           name: 'aws-load-balancer-controller',
+
           create: false,
         },
       },
@@ -365,13 +367,20 @@ export class EmrEksCluster extends Construct {
    * @param {props} props for the managed endpoint.
    * props.acmCertificateArn - ACM Certificate Arn to be attached to the JEG managed endpoint, @default - creates new ACM Certificate
    * props.emrOnEksVersion - EmrOnEks version to be used. @default - emr-6.2.0-latest
+   * props.executionRoleArn - IAM execution role to attach @default @see https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/creating-job-execution-role.html
+   * props.configurationOverrides
    * @since 1.0.0
    * @access public
    */
   public addManagedEndpoint(
     id: string,
     virtualClusterId: string,
-    props: { acmCertificateArn?: string; emrOnEksVersion?: string },
+    endpointProps: {
+      acmCertificateArn?: string;
+      emrOnEksVersion?: string;
+      executionRoleArn?: string;
+      configurationOverrides?: JSON;
+    },
   ) {
     // Create custom resource with async waiter until the data is completed
     const endpointId = `managed-endpoint-${id}`;
@@ -385,11 +394,16 @@ export class EmrEksCluster extends Construct {
       environment: {
         REGION: Stack.of(this).region,
         CLUSTER_ID: virtualClusterId,
-        EXECUTION_ROLE_ARN: this.emrWorkerIAMRole.roleArn,
+        EXECUTION_ROLE_ARN:
+            endpointProps.executionRoleArn || this.emrWorkerIAMRole.roleArn,
         ENDPOINT_NAME: endpointId,
-        RELEASE_LABEL: props.emrOnEksVersion || 'emr-6.2.0-latest',
+        RELEASE_LABEL: endpointProps.emrOnEksVersion || 'emr-6.2.0-latest',
+        CONFIGURATION_OVERRIDES: endpointProps.configurationOverrides
+          ? JSON.stringify(endpointProps.configurationOverrides)
+          : '',
         ACM_CERTIFICATE_ARN:
-            props.acmCertificateArn || String(this.getOrCreateAcmCertificate()),
+            endpointProps.acmCertificateArn ||
+            String(this.getOrCreateAcmCertificate()),
       },
       initialPolicy: [
         new PolicyStatement({

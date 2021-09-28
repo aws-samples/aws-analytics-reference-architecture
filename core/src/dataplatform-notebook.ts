@@ -109,6 +109,11 @@ export interface StudioUserDefinition {
    * */
   readonly mappingIdentityType: string;
 
+  /**
+   * execution Role to pass to ManagedEndpoint
+   * */
+  readonly executionRoleArn?: string;
+
 }
 
 /**
@@ -147,9 +152,9 @@ export class DataPlatformNotebook extends Construct {
   private readonly workSpaceSecurityGroup: SecurityGroup;
   private readonly engineSecurityGroup: ISecurityGroup | undefined;
   private readonly emrVpc: IVpc;
-  private workspacesBucket: Bucket;
+  private readonly workspacesBucket: Bucket;
   private studioServiceRole: Role | IRole;
-  private studioUserRole: Role | IRole;
+  private readonly studioUserRole: Role | IRole;
   private readonly studioServicePolicy: IManagedPolicy [];
   private readonly studioUserPolicy: IManagedPolicy [];
 
