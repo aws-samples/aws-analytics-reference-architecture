@@ -157,6 +157,7 @@ export class DataPlatformNotebook extends Construct {
   private readonly lambdaPrincipal: string = 'lambda.amazonaws.com';
   private readonly certificateArn: string;
   private readonly emrOnEksVersion: string = 'emr-6.2.0-latest'
+  private readonly studioName: string;
 
   private readonly workSpaceSecurityGroup: SecurityGroup;
   private readonly engineSecurityGroup: ISecurityGroup | undefined;
@@ -329,6 +330,8 @@ export class DataPlatformNotebook extends Construct {
       managedPolicies: this.studioUserPolicy,
     });
 
+    this.studioName = props.studioName;
+
     //create a new instance of EMR studio
     this.studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
       authMode: props.authMode,
@@ -432,17 +435,16 @@ export class DataPlatformNotebook extends Construct {
    * and create a session Policy scoped to the managed endpoint
    * then assign a user with the created session policy to the created studio
    * @param {StudioUserDefinition} userList list of users
-   * @param {string} studioName The name of the EMR studio where the user should be added
    * @access public
    */
-  public addUsers(userList: StudioUserDefinition[], studioName: string) {
+  public addUsers(userList: StudioUserDefinition[]) {
 
     for (let user of userList) {
 
       //For each user or group, create a new managedEndpoint
       //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
       let managedEndpoint = this.emrEks.addManagedEndpoint(
-        'endpoint'+ studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
+        'endpoint'+ this.studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
         this.emrVirtCluster.instance.attrId,
         {
           acmCertificateArn: this.certificateArn,
@@ -453,7 +455,7 @@ export class DataPlatformNotebook extends Construct {
 
       //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
       let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
-        'engineSecurityGroup' + studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
+        'engineSecurityGroup' + this.studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
         managedEndpoint.getAttString('securityGroup'));
 
       //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
