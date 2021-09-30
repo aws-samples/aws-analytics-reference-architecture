@@ -1,4 +1,4 @@
-import { FederatedPrincipal, ManagedPolicy, Policy, PolicyDocument, IRole, Role } from '@aws-cdk/aws-iam';
+import { FederatedPrincipal, IRole, ManagedPolicy, Policy, PolicyDocument, Role } from '@aws-cdk/aws-iam';
 import { Aws, Construct, CustomResource } from '@aws-cdk/core';
 import { StudioUserDefinition } from './dataplatform-notebook';
 import { EmrEksCluster } from './emr-eks-cluster';
@@ -6,8 +6,9 @@ import { EmrEksCluster } from './emr-eks-cluster';
 import * as studioS3Policy from './studio/emr-studio-s3-policy.json';
 import * as lambdaNotebookTagPolicy from './studio/notenook-add-tag-on-create-lambda-policy.json';
 import * as studioServiceRolePolicy from './studio/studio-service-role-policy.json';
-import * as studioUserPolicy from './studio/studio-user-role-policy.json';
+import * as studioUserRolePolicy from './studio/studio-user-iam-role-policy.json';
 import * as studioSessionPolicy from './studio/studio-user-session-policy.json';
+import * as studioUserPolicy from './studio/studio-user-sso-role-policy.json';
 
 export function createLambdaNoteBookAddTagPolicy (scope: Construct, logArn: string, studioName: string): string {
   let policy = JSON.parse(JSON.stringify(lambdaNotebookTagPolicy));
@@ -63,6 +64,7 @@ export function createUserSessionPolicy(scope: Construct, user: StudioUserDefini
 
   //sanitize the userName from any special characters, userName used to name the session policy
   //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
+  // @ts-ignore
   let userName = user.mappingIdentityName.replace(/[^\w\s]/gi, '');
 
   //create the policy
@@ -134,4 +136,63 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
   });
 
   return serviceRolePolicy.managedPolicyArn;
+}
+
+export function createIAMUserPolicy(scope: Construct,
+  user: StudioUserDefinition,
+  studioServiceRoleName: string,
+  managedEndpointArn: string,
+  managedEndpoint: CustomResource,
+  studioId: string): ManagedPolicy {
+
+  let policy = JSON.parse(JSON.stringify(studioUserRolePolicy));
+
+  //replace the <your-emr-studio-service-role> with the service role created above
+  policy.Statement[5].Resource[0] = policy.Statement[5].Resource[0].replace(/<your-emr-studio-service-role>/gi, studioServiceRoleName);
+
+  //replace the region and account for log bucket
+  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
+  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<region>/gi, Aws.REGION);
+
+  //replace the region and account for list virtual cluster
+  policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
+  policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<region>/gi, Aws.REGION);
+
+  //add restrictions on the managedEndpoint that user of group is allowed to attach to
+  policy.Statement[9].Resource[0] = managedEndpointArn;
+  policy.Statement[10].Resource[0] = managedEndpointArn;
+
+  //sanitize the userName from any special characters, userName used to name the session policy
+  //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
+  // @ts-ignore
+  let executionPolicyArn = user.executionPolicyArn.replace(/[^\w\s]/gi, '');
+
+  //create the policy
+  let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + executionPolicyArn, {
+    document: PolicyDocument.fromJson(policy),
+    managedPolicyName: 'studioIAMUserRolePolicy' + executionPolicyArn + studioId,
+  });
+
+  userSessionPolicy.node.addDependency(managedEndpoint);
+
+  return userSessionPolicy;
+}
+
+export function createIAMFederatedRole(scope: Construct,
+  iamRolePolicy: ManagedPolicy,
+  federatedIdPArn: string,
+  executionPolicyArn: string ): Role {
+
+  return new Role(scope, executionPolicyArn.replace(/[^\w\s]/gi, ''), {
+    assumedBy: new FederatedPrincipal(
+      federatedIdPArn,
+      {
+        StringEquals: {
+          'SAML:aud': 'https://signin.aws.amazon.com/saml',
+        },
+      },
+      'sts:AssumeRoleWithSAML',
+    ),
+    managedPolicies: [iamRolePolicy],
+  });
 }

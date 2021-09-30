@@ -1,0 +1,143 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowEMRBasicActions",
+      "Action": [
+        "elasticmapreduce:CreateEditor",
+        "elasticmapreduce:ListEditors",
+        "elasticmapreduce:AttachEditor",
+        "elasticmapreduce:DetachEditor",
+        "elasticmapreduce:CreateRepository",
+        "elasticmapreduce:DescribeRepository",
+        "elasticmapreduce:DeleteRepository",
+        "elasticmapreduce:ListRepositories",
+        "elasticmapreduce:LinkRepository",
+        "elasticmapreduce:UnlinkRepository",
+        "elasticmapreduce:ListInstanceGroups",
+        "elasticmapreduce:ListClusters",
+        "elasticmapreduce:ListSteps",
+        "elasticmapreduce:CreatePersistentAppUI",
+        "elasticmapreduce:DescribePersistentAppUI",
+        "elasticmapreduce:GetPersistentAppUIPresignedURL",
+        "elasticmapreduce:GetOnClusterAppUIPresignedURL"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowEMRContainersBasicActions",
+      "Action": [
+        "emr-containers:DescribeVirtualCluster",
+        "emr-containers:ListVirtualClusters",
+        "emr-containers:ListManagedEndpoints",
+        "emr-containers:DescribeJobRun",
+        "emr-containers:ListJobRuns"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowSecretManagerListSecrets",
+      "Action": [
+        "secretsmanager:ListSecrets"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowSecretCreationWithEMRTagsAndEMRStudioPrefix",
+      "Effect": "Allow",
+      "Action": "secretsmanager:CreateSecret",
+      "Resource": "arn:aws:secretsmanager:*:*:secret:emr-studio-*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/for-use-with-amazon-emr-managed-policies": "true"
+        }
+      }
+    },
+    {
+      "Sid": "AllowAddingTagsOnSecretsWithEMRStudioPrefix",
+      "Effect": "Allow",
+      "Action": "secretsmanager:TagResource",
+      "Resource": "arn:aws:secretsmanager:*:*:secret:emr-studio-*"
+    },
+    {
+      "Sid": "AllowPassingServiceRoleForWorkspaceCreation",
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::*:role/<your-emr-studio-service-role>"
+      ],
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowS3ListAndLocationPermissions",
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": "arn:aws:s3:::*",
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowS3ReadOnlyAccessToLogs",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::aws-logs-<aws-account-id>-<region>/elasticmapreduce/*"
+      ],
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowDescribeVirtualCluster",
+      "Action": [
+        "emr-containers:DescribeVirtualCluster"
+      ],
+      "Resource": ["arn:aws:emr-containers:<region>:<aws-account-id>:/virtualclusters/*"],
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowAccessToken",
+      "Action": [
+        "emr-containers:CreateAccessTokenForManagedEndpoint"
+      ],
+      "Resource": ["arn:aws:emr-containers:<region>:<aws-account-id>:/virtualclusters/<virt-cluster-id>/endpoints/<managed-endpoint-id>"],
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "AllowDescribeManagedEndpoint",
+      "Action": [
+        "emr-containers:DescribeManagedEndpoint"
+      ],
+      "Resource": ["arn:aws:emr-containers:<region>:<aws-account-id>:/virtualclusters/<virt-cluster-id>/endpoints/<managed-endpoint-id>"],
+      "Effect": "Allow"
+    },
+    {
+      "Sid": "ScopeDownWorkspacesToUsers",
+      "Effect": "Allow",
+      "Action": [
+        "elasticmapreduce:DeleteEditor",
+        "elasticmapreduce:StartEditor",
+        "elasticmapreduce:StopEditor",
+        "elasticmapreduce:OpenEditorInConsole",
+        "elasticmapreduce:DescribeEditor"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "elasticmapreduce:ResourceTag/creatorId": "${aws:userId}"
+        }
+      }
+    },
+    {
+      "Sid": "AllowAccesToGivenStudio",
+      "Effect": "Allow",
+      "Action": [
+        "elasticmapreduce:CreateStudioPresignedUrl"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

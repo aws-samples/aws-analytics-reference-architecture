@@ -19,7 +19,7 @@ const project = new AwsCdkConstructLibrary({
     'cdk',
     'analytics',
   ],
-  cdkVersion: '1.121.0',
+  cdkVersion: '1.125.0',
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',

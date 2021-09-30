@@ -29,6 +29,8 @@ import {
   createStudioUserRolePolicy,
   addServiceRoleInlinePolicy,
   createStudioServiceRolePolicy,
+  createIAMFederatedRole,
+  createIAMUserPolicy,
 } from './iamRoleAndPolicyHelper';
 
 import * as eventPattern from './studio/create-editor-event-pattern.json';
@@ -72,7 +74,7 @@ export interface DataPlatformNotebooksProps {
    * Either 'SSO' or 'IAM'
    * For now only SSO is implemented, kept for future compatibility when IAM auth is available
    * */
-  readonly authMode: string;
+  readonly studioAuthMode: string;
 
   /**
    * The Id of EKS cluster, it is used to create EMR virtual cluster if provided
@@ -105,6 +107,25 @@ export interface DataPlatformNotebooksProps {
    */
   readonly acmCertificateArn: string;
 
+  /**
+   * Used for IAM Auth when an IdP is provided
+   * */
+  readonly idpAuthUrl?: string;
+
+  /**
+   * Used for IAM auth when IdP is provided
+   * */
+  readonly idpRelayStateParameterName?: string;
+
+  /**
+   * The name of the identity provider that is going to be used
+   * */
+  readonly idPName?: string;
+
+  /**
+   * The the ARN of the IdP to be used
+   * */
+  readonly idPArn?: string;
 }
 
 /**
@@ -117,12 +138,12 @@ export interface StudioUserDefinition {
   /**
    * Name of the identity as it appears in SSO console
    * */
-  readonly mappingIdentityName: string;
+  readonly mappingIdentityName?: string;
 
   /**
    * Type of the identity either GROUP or USER
    * */
-  readonly mappingIdentityType: string;
+  readonly mappingIdentityType?: string;
 
   /**
    * execution Role to pass to ManagedEndpoint
@@ -170,7 +191,7 @@ export class DataPlatformNotebook extends Construct {
   private readonly emrVpc: IVpc;
   private readonly workspacesBucket: Bucket;
   private studioServiceRole: Role | IRole;
-  private readonly studioUserRole: Role | IRole;
+  private readonly studioUserRole: Role | IRole | undefined;
   private readonly studioServicePolicy: IManagedPolicy [];
   private readonly studioUserPolicy: IManagedPolicy [];
 
@@ -324,30 +345,33 @@ export class DataPlatformNotebook extends Construct {
     //Set the serviceRole name, to be used by the CfnStudioConstruct
     this.studioServiceRoleName = this.studioServiceRole.roleName;
 
-    //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
-    this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this, 'StudioUserManagedPolicy', createStudioUserRolePolicy(this, props.studioName, this.emrVpc.vpcId, this.studioServiceRoleName)));
 
-    //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
-    this.studioUserRole = new Role(this, 'studioUserRole', {
-      assumedBy: new ServicePrincipal(this.studioPrincipal),
-      roleName: 'studioUserRole',
-      managedPolicies: this.studioUserPolicy,
-    });
+    // Create an EMR Studio user role only if the user uses SSO as authentication mode
+    if (props.studioAuthMode === 'SSO') {
+      //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
+      this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
+        'StudioUserManagedPolicy',
+        createStudioUserRolePolicy(this, props.studioName, this.emrVpc.vpcId, this.studioServiceRoleName),
+      ));
+
+      //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
+      this.studioUserRole = new Role(this, 'studioUserRole', {
+        assumedBy: new ServicePrincipal(this.studioPrincipal),
+        roleName: 'studioUserRole',
+        managedPolicies: this.studioUserPolicy,
+      });
+
+      //create a new instance of EMR studio
+      this.studioInstance = this.studioInstanceBuilder(props,
+        this.engineSecurityGroup.securityGroupId,
+        this.studioUserRole.roleArn);
+    } else {
+
+      //create a new instance of EMR studio
+      this.studioInstance = this.studioInstanceBuilder(props, this.engineSecurityGroup.securityGroupId);
+    }
 
     this.studioName = props.studioName;
-
-    //create a new instance of EMR studio
-    this.studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
-      authMode: props.authMode,
-      defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
-      engineSecurityGroupId: this.engineSecurityGroup.securityGroupId,
-      name: props.studioName,
-      serviceRole: this.studioServiceRole.roleArn,
-      subnetIds: this.studioSubnetList,
-      userRole: this.studioUserRole.roleArn,
-      vpcId: this.emrVpc.vpcId,
-      workspaceSecurityGroupId: this.workSpaceSecurityGroup.securityGroupId,
-    });
 
     //Set the Studio URL and Studio Id to return as CfnOutput later
     this.studioUrl = this.studioInstance.attrUrl;
@@ -448,6 +472,7 @@ export class DataPlatformNotebook extends Construct {
       //For each user or group, create a new managedEndpoint
       //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
       let managedEndpoint = this.emrEks.addManagedEndpoint(
+        // @ts-ignore
         'endpoint'+ this.studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
         this.emrVirtCluster.instance.attrId,
         {
@@ -459,6 +484,7 @@ export class DataPlatformNotebook extends Construct {
 
       //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
       let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
+        // @ts-ignore
         'engineSecurityGroup' + this.studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
         managedEndpoint.getAttString('securityGroup'));
 
@@ -474,13 +500,99 @@ export class DataPlatformNotebook extends Construct {
 
       //Map a session to user or group
       new CfnStudioSessionMapping(this, 'studioUser' + user.mappingIdentityName + user.mappingIdentityName, {
+        // @ts-ignore
         identityName: user.mappingIdentityName,
+        // @ts-ignore
         identityType: user.mappingIdentityType,
         sessionPolicyArn: sessionPolicyArn,
         studioId: this.studioId,
       });
 
     }
+  }
+
+  public addFederatedUsers(userList: StudioUserDefinition[], federatedIdpArn: string) {
+
+    for (let user of userList) {
+
+      //For each user or group, create a new managedEndpoint
+      //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
+      let managedEndpoint = this.emrEks.addManagedEndpoint(
+        'endpoint'+ this.studioName + user.executionPolicyArn.replace(/[^\w\s]/gi, ''),
+        this.emrVirtCluster.instance.attrId,
+        {
+          acmCertificateArn: this.certificateArn,
+          emrOnEksVersion: this.emrOnEksVersion,
+          executionRoleArn: buildManagedEndpointExecutionRole(this, user.executionPolicyArn, this.emrEks),
+        },
+      );
+
+      //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
+      let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
+        // @ts-ignore
+        'engineSecurityGroup' + this.studioName + user.executionPolicyArn.replace(/[^\w\s]/gi, ''),
+        managedEndpoint.getAttString('securityGroup'));
+
+      //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
+      this.workSpaceSecurityGroup.addEgressRule(engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
+
+      //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
+      Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
+
+      //Create the role policy and gets its ARN
+      let iamRolePolicy: ManagedPolicy = createIAMUserPolicy(this, user, this.studioServiceRoleName,
+        managedEndpoint.getAttString('arn'), managedEndpoint, this.studioId);
+
+      createIAMFederatedRole(this, iamRolePolicy, federatedIdpArn, user.executionPolicyArn );
+    }
+  }
+
+  private studioInstanceBuilder (props: DataPlatformNotebooksProps, securityGroupId: string, studioUserRoleRoleArn?: string ): CfnStudio {
+
+    let studioInstance;
+
+    if (props.studioAuthMode == 'SSO') {
+      studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
+        authMode: 'SSO',
+        defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
+        engineSecurityGroupId: securityGroupId,
+        name: props.studioName,
+        serviceRole: this.studioServiceRole.roleArn,
+        subnetIds: this.studioSubnetList,
+        userRole: studioUserRoleRoleArn,
+        vpcId: this.emrVpc.vpcId,
+        workspaceSecurityGroupId: this.workSpaceSecurityGroup.securityGroupId,
+      });
+
+    } else if (props.studioAuthMode == 'IAM_FEDERATED') {
+      studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
+        authMode: 'IAM',
+        defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
+        engineSecurityGroupId: securityGroupId,
+        name: props.studioName,
+        serviceRole: this.studioServiceRole.roleArn,
+        subnetIds: this.studioSubnetList,
+        vpcId: this.emrVpc.vpcId,
+        workspaceSecurityGroupId: this.workSpaceSecurityGroup.securityGroupId,
+        idpAuthUrl: props.idpAuthUrl,
+        idpRelayStateParameterName: 'RelayState',
+      });
+
+    } else if (props.studioAuthMode == 'IAM_AUTHENTICATED') {
+      studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
+        authMode: 'IAM',
+        defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
+        engineSecurityGroupId: securityGroupId,
+        name: props.studioName,
+        serviceRole: this.studioServiceRole.roleArn,
+        subnetIds: this.studioSubnetList,
+        vpcId: this.emrVpc.vpcId,
+        workspaceSecurityGroupId: this.workSpaceSecurityGroup.securityGroupId,
+      });
+    }
+
+    // @ts-ignore
+    return studioInstance;
   }
 
 }
