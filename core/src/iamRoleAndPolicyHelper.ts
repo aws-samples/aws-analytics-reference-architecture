@@ -1,0 +1,137 @@
+import { FederatedPrincipal, ManagedPolicy, Policy, PolicyDocument, IRole, Role } from '@aws-cdk/aws-iam';
+import { Aws, Construct, CustomResource } from '@aws-cdk/core';
+import { StudioUserDefinition } from './dataplatform-notebook';
+import { EmrEksCluster } from './emr-eks-cluster';
+
+import * as studioS3Policy from './studio/emr-studio-s3-policy.json';
+import * as lambdaNotebookTagPolicy from './studio/notenook-add-tag-on-create-lambda-policy.json';
+import * as studioServiceRolePolicy from './studio/studio-service-role-policy.json';
+import * as studioUserPolicy from './studio/studio-user-role-policy.json';
+import * as studioSessionPolicy from './studio/studio-user-session-policy.json';
+
+export function createLambdaNoteBookAddTagPolicy (scope: Construct, logArn: string, studioName: string): string {
+  let policy = JSON.parse(JSON.stringify(lambdaNotebookTagPolicy));
+
+  policy.Statement[0].Resource[0] = logArn;
+  policy.Statement[1].Resource[0] = policy.Statement[1].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
+
+  let lambdaPolicy = new ManagedPolicy(scope, 'lambdaPolicy', {
+    document: PolicyDocument.fromJson(policy),
+    managedPolicyName: 'lambdaPolicy' + studioName,
+  });
+
+  return lambdaPolicy.managedPolicyArn;
+}
+
+
+export function buildManagedEndpointExecutionRole (scope: Construct, policyArn: string, emrEks: EmrEksCluster): string {
+
+  let managedPolicy = ManagedPolicy.fromManagedPolicyArn(scope, 'managedEndpointPolicy' + policyArn, policyArn);
+
+  let managedEndpointExecutionRole = new Role(scope, 'EMRWorkerIAMRole'+ policyArn, {
+    assumedBy: new FederatedPrincipal(
+      emrEks.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+      [],
+      'sts:AssumeRoleWithWebIdentity',
+    ),
+    managedPolicies: [managedPolicy],
+  });
+
+  return managedEndpointExecutionRole.roleArn;
+}
+
+export function createUserSessionPolicy(scope: Construct, user: StudioUserDefinition,
+  studioServiceRoleName: string, managedEndpointArn: string,
+  managedEndpoint: CustomResource, studioId: string): string {
+
+  let policy = JSON.parse(JSON.stringify(studioSessionPolicy));
+
+  //replace the <your-emr-studio-service-role> with the service role created above
+  policy.Statement[5].Resource[0] = policy.Statement[5].Resource[0].replace(/<your-emr-studio-service-role>/gi, studioServiceRoleName);
+
+  //replace the region and account for log bucket
+  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
+  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<region>/gi, Aws.REGION);
+
+  //replace the region and account for list virtual cluster
+  policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
+  policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<region>/gi, Aws.REGION);
+
+  //add restrictions on the managedEndpoint that user of group is allowed to attach to
+  policy.Statement[9].Resource[0] = managedEndpointArn;
+  policy.Statement[10].Resource[0] = managedEndpointArn;
+
+  //sanitize the userName from any special characters, userName used to name the session policy
+  //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
+  let userName = user.mappingIdentityName.replace(/[^\w\s]/gi, '');
+
+  //create the policy
+  let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + user.mappingIdentityName, {
+    document: PolicyDocument.fromJson(policy),
+    managedPolicyName: 'studioSessionPolicy' + userName + studioId,
+  });
+
+  userSessionPolicy.node.addDependency(managedEndpoint);
+
+  return userSessionPolicy.managedPolicyArn;
+}
+
+export function createStudioUserRolePolicy(scope: Construct, studioName: string, vpcId: string, studioServiceRoleName: string): string {
+
+  let policyTemplate: string = JSON.stringify(studioUserPolicy);
+  let policy = JSON.parse(policyTemplate);
+
+  //replace the <your-emr-studio-service-role> with the service role created above
+  policy.Statement[5].Resource[0] = policy.Statement[5].Resource[0].replace(/<your-emr-studio-service-role>/gi, studioServiceRoleName);
+
+  //replace the log bucket
+  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
+  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<region>/gi, Aws.REGION);
+
+  let userRolePolicy = new ManagedPolicy(scope, 'studioUserPolicy' + studioName, {
+    document: PolicyDocument.fromJson(policy),
+    managedPolicyName: 'studioUserPolicy' + studioName + vpcId,
+  });
+
+  return userRolePolicy.managedPolicyArn;
+}
+
+export function addServiceRoleInlinePolicy (scope: Construct, studioServiceRoleArn: string, bucketName: string ): IRole {
+
+  //Get policy from a JSON template
+  let policy = JSON.parse(JSON.stringify(studioS3Policy));
+
+  //Update the service role provided by the user with an inline policy
+  //to access the S3 bucket and store notebooks
+  policy.Statement[0].Resource[0] = policy.Statement[0].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+  policy.Statement[0].Resource[1] = policy.Statement[0].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+
+  let studioServiceRole = Role.fromRoleArn(scope, 'studioServiceRoleInlinePolicy', studioServiceRoleArn);
+
+  studioServiceRole.attachInlinePolicy(new Policy(scope, 'studioServiceInlinePolicy', {
+    document: PolicyDocument.fromJson(policy),
+  }));
+
+  return studioServiceRole;
+}
+
+export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, bucketName: string, studioName: string, vpcId: string): string {
+
+  //Get policy from a JSON template
+  let policy = JSON.parse(JSON.stringify(studioServiceRolePolicy));
+
+  //Update the policy with the bucketname to scope it down
+  policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+  policy.Statement[12].Resource[1] = policy.Statement[12].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+
+  //Update with KMS key ARN encrypting the bucket
+  policy.Statement[13].Resource[0] = keyArn;
+
+  //Create a the policy of service role
+  let serviceRolePolicy = new ManagedPolicy(scope, 'studioServicePolicy' + studioName, {
+    document: PolicyDocument.fromJson(policy),
+    managedPolicyName: 'studioServicePolicy' + vpcId,
+  });
+
+  return serviceRolePolicy.managedPolicyArn;
+}
