@@ -1,7 +1,10 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import { Construct, CfnOutput } from '@aws-cdk/core';
 
 /**
- * @summary The properties for the Example Construct class.
+ * The properties for the Example Construct class.
  */
 
 export interface ExampleProps {
@@ -18,7 +21,9 @@ export interface ExampleProps {
 }
 
 /**
- * @Summary Example Construct to help onboarding contributors.
+ * Example Construct to help onboarding contributors.
+ * This example includes best practices for code comment/documentation generation,
+ * and for default parameters pattern in CDK using Props with Optional properties
  */
 
 export class Example extends Construct {
@@ -26,10 +31,9 @@ export class Example extends Construct {
   /**
    * Constructs a new instance of the Example class with CfnOutput.
    * CfnOutput can be customized.
-   * @param {cdk.Construct} scope the Scope of the CDK Construct
+   * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {ExampleProps} props the ExampleProps [properties]{@link ExampleProps}
-   * @since 1.0.0
+   * @param {ExampleProps} props the ExampleProps properties
    * @access public
    */
 

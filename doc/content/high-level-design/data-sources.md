@@ -4,9 +4,9 @@ MyStore's analytics platform is consuming various data sources from its operatio
 
 Here is the current list of data sources:
 
-* Web sale: sales coming from the Web channel. It contains one row per item that can be group by order ID
+* Web sale: sales coming from the Web channel. It contains one row per item that can be grouped by order ID
 * Store sale: sales coming from the Store channel. It contains 2 different formats coming from different operational systems:
-  * One row per item that can be group by ticket ID
+  * One row per item that can be grouped by ticket ID
   * One JSON object per sale (identified by a ticket ID) with all the items of the sale in nested array. This data is not yet consumed by the analytics platform.
 * Web customer: customers from the Web channel identified by their unique ID. When customers update their personal information, they keep the same ID
 * Web customer address: customer addresses coming from the Web channel including Customer demographics and Household demographics. They are identified by a Customer Address ID. Each update in the address of customers generate a new ID

@@ -20,7 +20,10 @@ refarch/aws-native/dwh/dwh_cdk/bootstrap_lambda_layer
 refarch/aws-native/dwh/dwh_loader_layer
 refarch/aws-native/streaming/streaming_cdk/lambda-layer
 refarch/aws-native/streaming/stream-processing/target
-/node_modules/
+core/node_modules/
 *.log
 doc/site
 __init__.py
+core/.github/*
+.vscode
+.idea

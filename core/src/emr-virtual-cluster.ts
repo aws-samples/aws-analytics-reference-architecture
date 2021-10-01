@@ -3,7 +3,7 @@ import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { Construct } from '@aws-cdk/core';
 
 /**
- * @summary The properties for the EmrVirtualCluster Construct class.
+ * The properties for the EmrVirtualCluster Construct class.
  */
 export interface EmrVirtualClusterProps {
   /**
@@ -29,7 +29,6 @@ export interface EmrVirtualClusterProps {
 export class EmrVirtualCluster extends Construct {
   /**
    * reference to the CfnVirtualCluster created
-   * @since 1.0.0
    * @access public
    */
   public readonly instance: CfnVirtualCluster;
@@ -40,7 +39,6 @@ export class EmrVirtualCluster extends Construct {
    * @param {string} id the ID of the CDK Construct
    * @param {Cluster} EKS Cluster instance
    * @param {EmrVirtualClusterProps} props the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}
-   * @since 1.0.0
    * @access public
    */
   constructor(

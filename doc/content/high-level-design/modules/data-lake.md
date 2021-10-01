@@ -6,7 +6,7 @@ For example, the Streaming module reads Raw layer data to enrich its stream of e
 also writes back curated data to the data lake after the processing for cold analytics from the data lake.
 
 The data lake storage is implemented with [Amazon S3](https://aws.amazon.com/s3/), a durable, 
-scalable and cost effective object storage that is fully integrated with analytics tools.
+scalable and cost-effective object storage that is fully integrated with analytics tools.
 
 The following storage architecture explain how the data lake storage is designed.
 
@@ -23,7 +23,7 @@ The data lake is organized in multiple [Amazon S3 Buckets](https://docs.aws.amaz
    A good example is the Data Warehouse which may require the data in a specific multi-dimensional model. 
    With lake house design, the Data Warehouse could directly access the data lake curated layer.
    
-There are actually 3 different S3 buckets, one for each layer but it can extended to multiple buckets in multiple accounts in the future.
+There are actually 3 different S3 buckets, one for each layer, but it can be extended to multiple buckets in multiple accounts in the future.
 
 
 ## Data Lake governance

@@ -1,0 +1,10 @@
+Resources:
+  datageneratorcrawlerstartwait:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: crawler-start-wait.on_update
+      CodeUri: >-
+        /Users/gromav/Local/aws-analytics-reference-architecture/core/src/lambdas/data-generator-crawler-start-wait
+      Runtime: python3.8
+      Environment:
+        Variables: {}

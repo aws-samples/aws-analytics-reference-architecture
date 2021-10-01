@@ -30,7 +30,7 @@ MyStore also wants to improve its analytics platform in the future with AI/ML pr
 MyStore provides both code and documentation about its analytics platform:
  
  * Documentation is available on this website and decomposed into two different parts:
-    * The [high level design](./high-level-design/architecture) describes the overall data platform implemented by MyStore and the different components involved. This is the recommended entry point to discover the solution
-    * The [analytics solutions](./solutions/data-lake) provide fine-grained solutions to the challenges MyStore met during the project. These technical patterns can help you choose the right solution for common challenges in analytics area
+    * The [high level design](high-level-design/architecture.md) describes the overall data platform implemented by MyStore, and the different components involved. This is the recommended entry point to discover the solution
+    * The [analytics solutions](solutions/data-lake.md) provide fine-grained solutions to the challenges MyStore met during the project. These technical patterns can help you choose the right solution for common challenges in analytics area
  * Code is publicly available [here](https://github.com/aws-samples/aws-analytics-reference-architecture) and can be reused as an example for other analytics platform implementations (it should not be reused as-is in production). The code can be deployed in an AWS account following the [getting started](https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/README.md#getting-started---deploying-the-project) guide
 

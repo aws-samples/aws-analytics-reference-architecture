@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism, Semver } = require('projen');
 
@@ -19,19 +22,26 @@ const project = new AwsCdkConstructLibrary({
 
   cdkVersion: '1.124.0',
   defaultReleaseBranch: 'main',
-  license: 'MIT',
+  license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
   repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
   repositoryDirectory: 'core',
   workflow: false,
   buildWorkflow: false,
-  releaseWorkflow: false,
+  releaseWorkflow: true,
   depsUpgrade: DependenciesUpgradeMechanism.NONE,
+  stale: false,
   pullRequestTemplate: false,
+  cdkVersionPinning: true,
 
   cdkDependencies: [
     '@aws-cdk/core',
+    '@aws-cdk/custom-resources',
+    '@aws-cdk/aws-logs',
+    '@aws-cdk/aws-lambda',
+    '@aws-cdk/aws-lambda-python',
     '@aws-cdk/aws-s3',
+    '@aws-cdk/aws-kinesis',
     '@aws-cdk/aws-iam',
     '@aws-cdk/aws-eks',
     '@aws-cdk/aws-ec2',
@@ -41,21 +51,30 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-lambda',
     '@aws-cdk/aws-logs',
     '@aws-cdk/custom-resources',
+    '@aws-cdk/aws-athena',
+    '@aws-cdk/aws-glue',
+    '@aws-cdk/aws-stepfunctions',
+    '@aws-cdk/aws-stepfunctions-tasks',
+    '@aws-cdk/aws-events',
+    '@aws-cdk/aws-events-targets',
   ],
 
   devDeps: [
     '@types/js-yaml',
     '@types/jest',
+    'esbuild',
   ],
 
   bundledDeps: [
     'js-yaml',
+    'uuid',
+    'xmldom@github:xmldom/xmldom#0.7.0',
     'aws-sdk',
   ],
 
   python: {
-    distName: 'aws-analytics-reference-architecture',
-    module: 'aws-analytics-reference-architecture',
+    distName: 'aws_analytics_reference_architecture',
+    module: 'aws_analytics_reference_architecture',
   },
 
   tsconfig: {
@@ -69,4 +88,15 @@ const project = new AwsCdkConstructLibrary({
   stability: 'experimental',
 
 });
+
+const testDeploy = project.addTask('test:deploy', {
+  exec: 'cdk deploy --app=./lib/integ.default.js',
+});
+
+testDeploy.prependExec('npx projen build');
+
+project.addTask('test:destroy', {
+  exec: 'cdk destroy --app=./lib/integ.default.js',
+});
+
 project.synth();

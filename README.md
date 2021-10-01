@@ -8,16 +8,19 @@ This repository contains the codebase and getting started instructions of the AW
 <!-- TODO: Update the link in the next line -->
 The background of this project, the description of the business cases, architecture, and individual patterns can be found in the [documentation](https://aws-samples.github.io/aws-analytics-reference-architecture/).
 
+![Architecture ref](https://aws-samples.github.io/aws-analytics-reference-architecture/resources/global-design.png)
+
 ## Table of Contents
 
-1. [Documentation](#getting-started---deploying-the-project-a-namegettingstarteda)
-1. [Getting started - Deploying the Project](#getting-started---deploying-the-project-a-namegettingstarteda)
+1. [Documentation](#getting-started---deploying-the-project)
+1. [Getting started - Deploying the Project](#getting-started---deploying-the-project)
     1. [Prerequisites](#prerequisites)
     1. [Deployment](#deployment)
     1. [Adding users to Kibana](#adding-users-to-kibana)
     1. [Connecting to Amazon Redshift](#connecting-to-amazon-redshift)
          1. [psql](#psql)
    1. [Clean up](#clean-up)
+1. [Contributing](#contributing)
 
 
 ## Documentation
@@ -33,8 +36,9 @@ This section describes all steps that have to be performed to deploy the AWS Ana
 Before starting the deployment, ensure that the following steps are completed.
 
 1. [Create an AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
-2. [Subscribe to Amazon QuickSight](https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html) (if you plan to deploy the data visualization module)
-3. Install the following components with the specified version on the machine from which the deployment will be executed:
+2. The Analytics Reference Architecture can only be deployed in **eu-west-1** for the moment
+3. [Subscribe to Amazon QuickSight](https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html) (if you plan to deploy the data visualization module)
+4. Install the following components with the specified version on the machine from which the deployment will be executed:
     1. Python [3.8-3.9.2]
     2. Node [<15.6]
     3. Git
@@ -217,6 +221,10 @@ psql -h localhost -p 5400 -U dwsuser -d dev
    cdk destroy
    # confirm "Are you sure you want to delete: ara (y/n)?" with y
    ```
+
+## Contributing
+
+Please refer to the [contributing guidelines](CONTRIBUTING.md) for details.
 
 # License Summary
 

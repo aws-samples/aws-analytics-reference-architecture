@@ -29,4 +29,4 @@ Finally, it stores the result partitioned by event date in Parquet format into t
 The crawler stores and updates the extracted metadata in the *clean* database in the AWS Glue Data Catalog.
 The *clean* database can be leveraged by the data lake downstream consumers.
  
-A more detailed description of the batch processing challenges and how to solve them can be found in the [Batch Analytics Solutions](../../../solutions/data-preparation) section.
+A more detailed description of the batch processing challenges and how to solve them can be found in the [Batch Analytics Solutions](../../solutions/data-preparation.md) section.
