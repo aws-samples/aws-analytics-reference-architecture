@@ -162,6 +162,8 @@ export function createIAMUserPolicy(scope: Construct,
   policy.Statement[9].Resource[0] = managedEndpointArn;
   policy.Statement[10].Resource[0] = managedEndpointArn;
 
+  policy.Statement[12].Resource[0] = studioId;
+
   //sanitize the userName from any special characters, userName used to name the session policy
   //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
   // @ts-ignore

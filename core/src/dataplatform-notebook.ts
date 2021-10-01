@@ -518,7 +518,7 @@ export class DataPlatformNotebook extends Construct {
       //For each user or group, create a new managedEndpoint
       //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
       let managedEndpoint = this.emrEks.addManagedEndpoint(
-        'endpoint'+ this.studioName + user.executionPolicyArn.replace(/[^\w\s]/gi, ''),
+        'endpoint'+ this.studioName + user.executionPolicyArn.split('/')[1].replace(/[^\w\s]/gi, ''),
         this.emrVirtCluster.instance.attrId,
         {
           acmCertificateArn: this.certificateArn,
@@ -543,7 +543,7 @@ export class DataPlatformNotebook extends Construct {
       let iamRolePolicy: ManagedPolicy = createIAMUserPolicy(this, user, this.studioServiceRoleName,
         managedEndpoint.getAttString('arn'), managedEndpoint, this.studioId);
 
-      createIAMFederatedRole(this, iamRolePolicy, federatedIdpArn, user.executionPolicyArn );
+      createIAMFederatedRole(this, iamRolePolicy, federatedIdpArn, user.executionPolicyArn);
     }
   }
 
@@ -551,7 +551,7 @@ export class DataPlatformNotebook extends Construct {
 
     let studioInstance;
 
-    if (props.studioAuthMode == 'SSO') {
+    if (props.studioAuthMode === 'SSO') {
       studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
         authMode: 'SSO',
         defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
@@ -564,7 +564,7 @@ export class DataPlatformNotebook extends Construct {
         workspaceSecurityGroupId: this.workSpaceSecurityGroup.securityGroupId,
       });
 
-    } else if (props.studioAuthMode == 'IAM_FEDERATED') {
+    } else if (props.studioAuthMode === 'IAM_FEDERATED') {
       studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
         authMode: 'IAM',
         defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
@@ -578,7 +578,7 @@ export class DataPlatformNotebook extends Construct {
         idpRelayStateParameterName: 'RelayState',
       });
 
-    } else if (props.studioAuthMode == 'IAM_AUTHENTICATED') {
+    } else if (props.studioAuthMode === 'IAM_AUTHENTICATED') {
       studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
         authMode: 'IAM',
         defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
