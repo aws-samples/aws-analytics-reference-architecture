@@ -6,7 +6,7 @@ export { DataGeneratorProps, DataGenerator } from './data-generator';
 export { SynchronousAthenaQueryProps, SynchronousAthenaQuery } from './synchronous-athena-query';
 export { SingletonBucket } from './singleton-bucket';
 export { Ec2SsmRole } from './ec2-ssm-role';
-export { DataPlatformNotebook, DataPlatformNotebooksProps, StudioUserDefinition } from './dataplatform-notebook';
+export { DataPlatformNotebook, DataPlatformNotebooksProps, StudioUserDefinition, StudioAuthMode } from './dataplatform-notebook';
 export * from './eks';
 export * from './emr-eks';
 export * from './ec2-ssm-role';

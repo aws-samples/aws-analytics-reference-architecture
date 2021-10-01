@@ -1,7 +1,7 @@
 import { App, Stack, CfnOutput } from '@aws-cdk/core';
 import { DataPlatformNotebook, StudioUserDefinition } from './dataplatform-notebook';
 
-const envInteg = { account: '372775283473', region: 'eu-west-1' };
+const envInteg = { account: '', region: '' };
 
 const mockApp = new App();
 const stack = new Stack(mockApp, 'integration-testing-dataplatform-notebook-kms-encryption', { env: envInteg });
