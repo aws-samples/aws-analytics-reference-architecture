@@ -152,6 +152,12 @@ export interface StudioUserDefinition {
 
 }
 
+
+export enum StudioAuthMode {
+  IAM_FEDERATED = 'IAM_FEDERATED',
+  IAM_AUTHENTICATED = 'IAM_AUTHENTICATED',
+  SSO = 'SSO',
+}
 /**
  * Construct to create an EKS cluster, EMR virtual cluster and EMR Studio
  * Construct can also take as parameters EKS id, VPC Id and list of subnets then create EMR virtual cluster and EMR Studio

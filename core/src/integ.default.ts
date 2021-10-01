@@ -1,16 +1,34 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
+import { App, Stack, CfnOutput } from '@aws-cdk/core';
+import { DataPlatformNotebook, StudioUserDefinition } from './dataplatform-notebook';
 
-import { App, Stack } from '@aws-cdk/core';
-import { DataLakeStorage } from '.';
-import { DataGenerator } from './data-generator';
-import { Dataset } from './dataset';
+const envInteg = { account: '372775283473', region: 'eu-west-1' };
 
 const mockApp = new App();
-const stack = new Stack(mockApp, 'teststack');
-const lake = new DataLakeStorage(stack, 'testlake', {});
-new DataGenerator(stack, 'testing-generator', {
-  sinkArn: lake.rawBucket.bucketArn,
-  dataset: Dataset.RETAIL_1GB_STORE_SALE,
-  frequency: 4,
+const stack = new Stack(mockApp, 'integration-testing-dataplatform-notebook-kms-encryption', { env: envInteg });
+
+const dataPlatform = new DataPlatformNotebook(stack, 'dataplatform', {
+  studioName: '<YOUR-STUDIO-NAME>',
+  studioAuthMode: 'SSO', //Leave it as is
+  eksAdminRoleArn: '<role assigned to admin EKS>',
+  acmCertificateArn: '<ACM certificate ARN>',
+});
+
+let userList: StudioUserDefinition[];
+
+userList = [{
+  mappingIdentityName: '<As it appears in AWS SSO console>',
+  mappingIdentityType: 'USER' || 'GROUP',
+  executionPolicyArn: '<policy to be used with EMR on EKS job execution>',
+},
+{
+  mappingIdentityName: '<As it appears in AWS SSO console>',
+  mappingIdentityType: 'USER' || 'GROUP',
+  executionPolicyArn: '<policy to be used with EMR on EKS job execution>',
+}];
+
+dataPlatform.addSSOUsers(userList);
+
+
+new CfnOutput(stack, 'dataplatformOutput1', {
+  value: dataPlatform.studioUrl,
 });
