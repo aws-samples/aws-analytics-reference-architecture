@@ -472,8 +472,7 @@ export class DataPlatformNotebook extends Construct {
       //For each user or group, create a new managedEndpoint
       //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
       let managedEndpoint = this.emrEks.addManagedEndpoint(
-        // @ts-ignore
-        'endpoint'+ this.studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
+        'endpoint'+ this.studioName + user.mappingIdentityName!.replace(/[^\w\s]/gi, ''),
         this.emrVirtCluster.instance.attrId,
         {
           acmCertificateArn: this.certificateArn,
@@ -484,8 +483,7 @@ export class DataPlatformNotebook extends Construct {
 
       //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
       let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
-        // @ts-ignore
-        'engineSecurityGroup' + this.studioName + user.mappingIdentityName.replace(/[^\w\s]/gi, ''),
+        'engineSecurityGroup' + this.studioName + user.mappingIdentityName!.replace(/[^\w\s]/gi, ''),
         managedEndpoint.getAttString('securityGroup'));
 
       //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
@@ -500,10 +498,8 @@ export class DataPlatformNotebook extends Construct {
 
       //Map a session to user or group
       new CfnStudioSessionMapping(this, 'studioUser' + user.mappingIdentityName + user.mappingIdentityName, {
-        // @ts-ignore
-        identityName: user.mappingIdentityName,
-        // @ts-ignore
-        identityType: user.mappingIdentityType,
+        identityName: user.mappingIdentityName!,
+        identityType: user.mappingIdentityType!,
         sessionPolicyArn: sessionPolicyArn,
         studioId: this.studioId,
       });
@@ -529,7 +525,6 @@ export class DataPlatformNotebook extends Construct {
 
       //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
       let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
-        // @ts-ignore
         'engineSecurityGroup' + this.studioName + user.executionPolicyArn.replace(/[^\w\s]/gi, ''),
         managedEndpoint.getAttString('securityGroup'));
 
@@ -549,7 +544,7 @@ export class DataPlatformNotebook extends Construct {
 
   private studioInstanceBuilder (props: DataPlatformNotebooksProps, securityGroupId: string, studioUserRoleRoleArn?: string ): CfnStudio {
 
-    let studioInstance;
+    let studioInstance: CfnStudio;
 
     if (props.studioAuthMode === 'SSO') {
       studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
@@ -591,8 +586,7 @@ export class DataPlatformNotebook extends Construct {
       });
     }
 
-    // @ts-ignore
-    return studioInstance;
+    return studioInstance!;
   }
 
 }
