@@ -61,7 +61,7 @@ export class DataLakeStorage extends Construct {
   public readonly transformBucket: Bucket;
 
   /**
-     * Construct a new instance of DataLakeStorage based on S3 buckets with best practices configuration
+     * Construct a new instance of DataLakeStorage based on Amazon S3 buckets with best practices configuration
      * @param {Construct} scope the Scope of the CDK Construct
      * @param {string} id the ID of the CDK Construct
      * @param {DataLakeStorageProps} props the DataLakeStorageProps properties
@@ -85,7 +85,7 @@ export class DataLakeStorage extends Construct {
 
     // Create the raw data bucket with the raw transitions
     this.rawBucket = new Bucket(this, 'RawBucket', {
-      bucketName: 'ara-raw' + Aws.ACCOUNT_ID,
+      bucketName: 'ara-raw-' + Aws.ACCOUNT_ID,
       encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -115,7 +115,7 @@ export class DataLakeStorage extends Construct {
 
     // Create the clean data bucket
     this.cleanBucket = new Bucket(this, 'CleanBucket', {
-      bucketName: 'ara-clean' + Aws.ACCOUNT_ID,
+      bucketName: 'ara-clean-' + Aws.ACCOUNT_ID,
       encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -145,7 +145,7 @@ export class DataLakeStorage extends Construct {
 
     // Create the transform data bucket
     this.transformBucket = new Bucket(this, 'TransformBucket', {
-      bucketName: 'ara-transform' + Aws.ACCOUNT_ID,
+      bucketName: 'ara-transform-' + Aws.ACCOUNT_ID,
       encryption: BucketEncryption.KMS_MANAGED,
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,

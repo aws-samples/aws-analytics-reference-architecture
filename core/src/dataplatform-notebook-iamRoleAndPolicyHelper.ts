@@ -161,7 +161,10 @@ export function createIAMUserPolicy(scope: Construct,
   policy.Statement[9].Resource[0] = managedEndpointArn;
   policy.Statement[10].Resource[0] = managedEndpointArn;
 
-  policy.Statement[12].Resource[0] = studioId;
+  //Restrict the studio to which a federated user or iam user can access
+  policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
+  policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<region>/gi, Aws.REGION);
+  policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-studio-id>/gi, studioId);
 
   //sanitize the userName from any special characters, userName used to name the session policy
   //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"

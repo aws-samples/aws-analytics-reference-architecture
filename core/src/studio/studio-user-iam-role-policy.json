@@ -137,7 +137,7 @@
       "Action": [
         "elasticmapreduce:CreateStudioPresignedUrl"
       ],
-      "Resource": ["arn:aws:elasticmapreduce:eu-west-1:372775283473:studio/<your-studio-id>"]
+      "Resource": ["arn:aws:elasticmapreduce:<region>:<aws-account-id>:studio/<your-studio-id>"]
     }
   ]
 }

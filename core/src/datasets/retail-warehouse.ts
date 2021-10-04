@@ -3,14 +3,19 @@ export const retailWarehouseCreate = `CREATE EXTERNAL TABLE IF NOT EXISTS {{DATA
   warehouse_name string,
   street string,
   city string,
-  zip bigint,
+  zip string,
   county string,
   state string,
   country string,
-  gmt_offset double,
+  gmt_offset string,
   warehouse_datetime string
 )
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
+ROW FORMAT DELIMITED 
+  FIELDS TERMINATED BY ',' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION
   's3://{{BUCKET}}/{{KEY}}/'
 TBLPROPERTIES (

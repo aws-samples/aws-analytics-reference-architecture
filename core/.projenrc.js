@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 
-const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
+const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism, Semver } = require('projen');
 
 const project = new AwsCdkConstructLibrary({
 
@@ -19,6 +19,7 @@ const project = new AwsCdkConstructLibrary({
     'cdk',
     'analytics',
   ],
+
   cdkVersion: '1.125.0',
   defaultReleaseBranch: 'main',
   license: 'MIT',
@@ -42,6 +43,14 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-s3',
     '@aws-cdk/aws-kinesis',
     '@aws-cdk/aws-iam',
+    '@aws-cdk/aws-eks',
+    '@aws-cdk/aws-ec2',
+    '@aws-cdk/aws-emrcontainers',
+    '@aws-cdk/aws-autoscaling',
+    '@aws-cdk/lambda-layer-awscli',
+    '@aws-cdk/aws-lambda',
+    '@aws-cdk/aws-logs',
+    '@aws-cdk/custom-resources',
     '@aws-cdk/aws-athena',
     '@aws-cdk/aws-glue',
     '@aws-cdk/aws-stepfunctions',
@@ -58,11 +67,6 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-events-targets',
     '@aws-cdk/aws-kms',
   ],
-  bundledDeps: [
-    'xmldom@github:xmldom/xmldom#0.7.0',
-    'aws-sdk',
-    'js-yaml',
-  ],
 
   devDeps: [
     '@types/js-yaml',
@@ -70,12 +74,23 @@ const project = new AwsCdkConstructLibrary({
     'esbuild',
   ],
 
+  bundledDeps: [
+    'js-yaml',
+    'uuid',
+    'xmldom@github:xmldom/xmldom#0.7.0',
+    'aws-sdk',
+  ],
+
+  devDeps: [
+    'esbuild',
+    '@types/js-yaml',
+    '@types/jest',
+  ],
+
   python: {
     distName: 'aws_analytics_reference_architecture',
     module: 'aws_analytics_reference_architecture',
   },
-
-  stability: 'experimental',
 
   tsconfig: {
     compilerOptions: {
@@ -85,11 +100,15 @@ const project = new AwsCdkConstructLibrary({
     include: ['src/**/*.json', 'src/**/*.ts'],
   },
 
+  stability: 'experimental',
+
 });
 
-project.addTask('test:deploy', {
+const testDeploy = project.addTask('test:deploy', {
   exec: 'cdk deploy --app=./lib/integ.default.js',
 });
+
+testDeploy.prependExec('npx projen build');
 
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',

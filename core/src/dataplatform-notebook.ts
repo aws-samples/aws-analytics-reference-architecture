@@ -38,8 +38,6 @@ import { EmrVirtualCluster } from './emr-virtual-cluster';
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
 
-//import {EmrEksNodegroup} from "./emr-eks-nodegroup";
-
 
 /**
  * The properties for DataPlatformNotebooks Construct.
@@ -265,10 +263,8 @@ export class DataPlatformNotebook extends Construct {
     this.managedEndpoint = this.emrEks.addManagedEndpoint(
       'endpoint',
       this.emrVirtCluster.instance.attrId,
-      {
-        acmCertificateArn: props.acmCertificateArn,
-        emrOnEksVersion: this.emrOnEksVersion,
-      },
+      props.acmCertificateArn,
+      this.emrOnEksVersion,
     );
 
     //Set Vpc object to be used with SecurityGroup and EMR Studio Creation
@@ -485,11 +481,9 @@ export class DataPlatformNotebook extends Construct {
       let managedEndpoint = this.emrEks.addManagedEndpoint(
         'endpoint'+ this.studioName + user.mappingIdentityName!.replace(/[^\w\s]/gi, ''),
         this.emrVirtCluster.instance.attrId,
-        {
-          acmCertificateArn: this.certificateArn,
-          emrOnEksVersion: this.emrOnEksVersion,
-          executionRoleArn: buildManagedEndpointExecutionRole(this, user.executionPolicyArn, this.emrEks),
-        },
+        this.certificateArn,
+        this.emrOnEksVersion,
+        buildManagedEndpointExecutionRole(this, user.executionPolicyArn, this.emrEks),
       );
 
       //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
@@ -527,11 +521,9 @@ export class DataPlatformNotebook extends Construct {
       let managedEndpoint = this.emrEks.addManagedEndpoint(
         'endpoint'+ this.studioName + user.executionPolicyArn.split('/')[1].replace(/[^\w\s]/gi, ''),
         this.emrVirtCluster.instance.attrId,
-        {
-          acmCertificateArn: this.certificateArn,
-          emrOnEksVersion: this.emrOnEksVersion,
-          executionRoleArn: buildManagedEndpointExecutionRole(this, user.executionPolicyArn, this.emrEks),
-        },
+        this.certificateArn,
+        this.emrOnEksVersion,
+        buildManagedEndpointExecutionRole(this, user.executionPolicyArn, this.emrEks),
       );
 
       //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
