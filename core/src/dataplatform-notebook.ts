@@ -19,9 +19,7 @@ import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Tags, Aws, Duration, CustomResource } from '@aws-cdk/core';
 
-import { EmrEksCluster } from './emr-eks-cluster';
-import { EmrVirtualCluster } from './emr-virtual-cluster';
-
+import { stringSanitizer } from './dataplatform-notebook-helper';
 import {
   createLambdaNoteBookAddTagPolicy,
   buildManagedEndpointExecutionRole,
@@ -31,7 +29,11 @@ import {
   createStudioServiceRolePolicy,
   createIAMFederatedRole,
   createIAMUserPolicy,
-} from './iamRoleAndPolicyHelper';
+} from './dataplatform-notebook-iamRoleAndPolicyHelper';
+
+import { EmrEksCluster } from './emr-eks-cluster';
+import { EmrVirtualCluster } from './emr-virtual-cluster';
+
 
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
@@ -234,7 +236,7 @@ export class DataPlatformNotebook extends Construct {
     //Create encryption key to be used with cloudwatch loggroup and S3 bucket storing notebooks and
     this.dataPlatformEncryptionKey = new Key(
       this,
-      'KMS-key-'+ props.studioName.toLowerCase().replace(/[^\w\s]/gi, ''), {
+      'KMS-key-'+ stringSanitizer(props.studioName), {
         alias: props.studioName.toLowerCase().replace(/[^\w\s]/gi, '') + '-Encryption-key',
       },
     );
@@ -317,7 +319,7 @@ export class DataPlatformNotebook extends Construct {
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
     this.workspacesBucket = new Bucket(this, 'WorkspacesBucket' + props.studioName, {
-      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + props.studioName.toLowerCase().replace(/[^\w\s]/gi, ''),
+      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + stringSanitizer(props.studioName),
       enforceSSL: true,
       encryptionKey: this.dataPlatformEncryptionKey,
       encryption: BucketEncryption.KMS,
@@ -401,10 +403,13 @@ export class DataPlatformNotebook extends Construct {
 
     //Create resource policy for KMS to allow Cloudwatch loggroup access to access the key
     kmsLogPolicy.Principal.Service = kmsLogPolicy.Principal.Service.replace(/region/gi, Aws.REGION);
+
     kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
         kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/region/gi, Aws.REGION);
+
     kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
         kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/account-id/gi, Aws.ACCOUNT_ID);
+
     kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
         kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/log-group-name/gi, '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.studioName);
 
