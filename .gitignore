@@ -25,3 +25,4 @@ core/node_modules/
 doc/site
 __init__.py
 core/.github/*
+.vscode

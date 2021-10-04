@@ -79,6 +79,9 @@
           "exec": "npx projen"
         },
         {
+          "exec": "npx projen bundle"
+        },
+        {
           "spawn": "test"
         },
         {
@@ -149,27 +152,6 @@
       "steps": [
         {
           "exec": "errout=$(mktemp); gh release create $(cat dist/releasetag.txt) -R $GITHUB_REPOSITORY -F dist/changelog.md -t $(cat dist/releasetag.txt) --target $GITHUB_REF 2> $errout && true; exitcode=$?; if [ $exitcode -ne 0 ] && ! grep -q \"Release.tag_name already exists\" $errout; then cat $errout; exit $exitcode; fi"
-        }
-      ]
-    },
-    "upgrade-projen": {
-      "name": "upgrade-projen",
-      "description": "upgrade projen",
-      "env": {
-        "CI": "0"
-      },
-      "steps": [
-        {
-          "exec": "npm-check-updates --upgrade --target=minor --filter='projen'"
-        },
-        {
-          "exec": "yarn install --check-files"
-        },
-        {
-          "exec": "yarn upgrade projen"
-        },
-        {
-          "exec": "npx projen"
         }
       ]
     },
@@ -273,6 +255,63 @@
           "exec": "cdk destroy --app=./lib/integ.default.js"
         }
       ]
+    },
+    "bundle": {
+      "name": "bundle",
+      "description": "Bundle all lambda functions",
+      "steps": [
+        {
+          "spawn": "bundle:data-generator-setup"
+        },
+        {
+          "spawn": "bundle:synchronous-crawler"
+        }
+      ],
+      "cwd": "resources/lambdas"
+    },
+    "bundle:data-generator-setup": {
+      "name": "bundle:data-generator-setup",
+      "description": "Install dependency and package Python file into for Lambda function:data-generator-setup",
+      "steps": [
+        {
+          "exec": "rm -rf data-generator-setup.zip"
+        },
+        {
+          "exec": "rm -rf build/data-generator-setup"
+        },
+        {
+          "exec": "cp -r data-generator-setup build/"
+        },
+        {
+          "exec": "docker run -v $PWD/build/data-generator-setup:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"pip install -r requirements.txt -t ./; exit\""
+        },
+        {
+          "exec": "cd build/data-generator-setup && zip -q -r ../../data-generator-setup.zip ."
+        }
+      ],
+      "cwd": "resources/lambdas"
+    },
+    "bundle:synchronous-crawler": {
+      "name": "bundle:synchronous-crawler",
+      "description": "Install dependency and package Python file into for Lambda function:synchronous-crawler",
+      "steps": [
+        {
+          "exec": "rm -rf synchronous-crawler.zip"
+        },
+        {
+          "exec": "rm -rf build/synchronous-crawler"
+        },
+        {
+          "exec": "cp -r synchronous-crawler build/"
+        },
+        {
+          "exec": "docker run -v $PWD/build/synchronous-crawler:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"pip install -r requirements.txt -t ./; exit\""
+        },
+        {
+          "exec": "cd build/synchronous-crawler && zip -q -r ../../synchronous-crawler.zip ."
+        }
+      ],
+      "cwd": "resources/lambdas"
     },
     "release": {
       "name": "release",

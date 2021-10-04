@@ -22,3 +22,4 @@ tsconfig.tsbuildinfo
 /.eslintrc.json
 /tsconfig.eslint.json
 !.jsii
+resources/lambdas/build
