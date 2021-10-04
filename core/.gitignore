@@ -45,4 +45,6 @@ junit.xml
 .jsii
 tsconfig.json
 !/API.md
+resources/lambdas/build
+resources/lambdas/*.zip
 !/.github/workflows/release.yml
