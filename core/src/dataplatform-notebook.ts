@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { SecurityGroup, ISecurityGroup, IVpc, Peer, Port, Vpc, ISubnet } from '@aws-cdk/aws-ec2';
+import { SecurityGroup, ISecurityGroup, IVpc, Peer, Port, Vpc, SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnStudioSessionMapping, CfnStudio, CfnStudioProps } from '@aws-cdk/aws-emr';
 import { Rule, IRuleTarget, EventPattern } from '@aws-cdk/aws-events';
@@ -32,6 +32,7 @@ import {
 } from './dataplatform-notebook-iamRoleAndPolicyHelper';
 
 import { EmrEksCluster } from './emr-eks-cluster';
+import { EmrEksNodegroup } from './emr-eks-nodegroup';
 import { EmrVirtualCluster } from './emr-virtual-cluster';
 
 
@@ -166,22 +167,6 @@ export enum StudioAuthMode {
 
 export class DataPlatformNotebook extends Construct {
 
-  /**
-   * Gets a list of Subnet objects
-   * Create an array of string from the list of Subnet objects
-   * @returns Return the array of string of the subnet
-   */
-  static privateSubnetList (subnetList: ISubnet []): string[] {
-
-    let privateSubnetListId : string[] = [];
-
-    for (let subnet of subnetList) {
-      privateSubnetListId.push(subnet.subnetId);
-    }
-
-    return privateSubnetListId;
-  }
-
   private readonly studioSubnetList: string[] | undefined ;
   private readonly studioServiceRoleName: string;
   public readonly studioUrl: string;
@@ -248,7 +233,10 @@ export class DataPlatformNotebook extends Construct {
 
     //Get the list of private subnets in VPC
     if (this.emrEks !== undefined) {
-      this.studioSubnetList = DataPlatformNotebook.privateSubnetList(this.emrEks.eksCluster.vpc.privateSubnets);
+      this.studioSubnetList = this.emrEks.eksCluster.vpc.selectSubnets({
+        onePerAz: true,
+        subnetType: SubnetType.PRIVATE_WITH_NAT,
+      }).subnetIds;
     } else {
       this.studioSubnetList = props.subnetList;
     }
@@ -260,6 +248,11 @@ export class DataPlatformNotebook extends Construct {
       name: 'ec2VirtCluster' + props.studioName,
     });
 
+    //Add a nodegroup for notebooks
+    this.emrEks.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_DRIVER);
+    this.emrEks.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+
+    //Add a managed endpoint, used to populate the engineSG in EMR Studio
     this.managedEndpoint = this.emrEks.addManagedEndpoint(
       'endpoint',
       this.emrVirtCluster.instance.attrId,

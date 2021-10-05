@@ -5,8 +5,8 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { SubnetType } from '@aws-cdk/aws-ec2';
-import { KubernetesVersion, Cluster, CapacityType } from '@aws-cdk/aws-eks';
-import { PolicyStatement, PolicyDocument, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole, ServicePrincipal } from '@aws-cdk/aws-iam';
+import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
+import { PolicyStatement, PolicyDocument, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
 import * as lambda from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn } from '@aws-cdk/core';
@@ -21,7 +21,6 @@ import * as IamPolicyEmrJobRole from './k8s/iam-policy-emr-job-role.json';
 import * as K8sRoleBinding from './k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './k8s/rbac/emr-containers-role.json';
 import { SingletonCfnLaunchTemplate } from './singleton-launch-template';
-import { Utils } from './utils';
 
 
 /**
@@ -35,10 +34,9 @@ export interface EmrEksClusterProps {
    */
   readonly eksClusterName?: string;
   /**
-   * Amazon IAM Role to be added to Amazon EKS master roles that will give you the access to kubernetes cluster from AWS console UI
-   * @default -  The Amazon IAM role used by AWS CDK
+   * Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI
    */
-  readonly eksAdminRoleArn?: string;
+  readonly eksAdminRoleArn: string;
   /**
    * List of EmrEksNodegroup to create in the cluster
    * @default -  Create a default set of EmrEksNodegroup
@@ -88,22 +86,17 @@ export class EmrEksCluster extends Construct {
   Construct, id: string, props: EmrEksClusterProps) {
     super(scope, id);
 
-    this.eksClusterName = props.eksClusterName ?? Utils.randomize('emr-eks-cluster');
+    this.eksClusterName = props.eksClusterName ?? 'emr-eks-cluster';
 
     // create an Amazon EKS CLuster with default paramaters if not provided in the properties
-    this.eksCluster = new Cluster(scope, 'eksCluster', {
+    this.eksCluster = new Cluster(scope, this.eksClusterName, {
       defaultCapacity: 0,
       clusterName: this.eksClusterName,
       version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
     });
 
-    // Add the provided Amazon IAM Role as Amazon EKS Admin or create a new one
-    var clusterAdmin = (props.eksAdminRoleArn) ?
-      Role.fromRoleArn( this, 'AdminRole', props.eksAdminRoleArn ) :
-      new Role( this, 'AdminRole', {
-        assumedBy: new ServicePrincipal('emr-containers.amazonaws.com'),
-      });
-    this.eksCluster.awsAuth.addMastersRole(clusterAdmin, 'AdminRole');
+    // Add the provided Amazon IAM Role as Amazon EKS Admin
+    this.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( this, 'AdminRole', props.eksAdminRoleArn ), 'AdminRole');
 
     // Create a Kubernetes Service Account for the Cluster Autoscaler with Amazon IAM Role
     const AutoscalerServiceAccount = this.eksCluster.addServiceAccount('Autoscaler', {
@@ -182,12 +175,12 @@ export class EmrEksCluster extends Construct {
     });
 
     // Create the Nodegroup for tooling
-    this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_TOOLING);
+    this.addSsmNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
     // If no Nodegroup is provided, create Nodegroups for each type in one subnet of each AZ
     if (!props.emrEksNodegroups) {
-      this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_CRITICAL);
-      this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_SHARED);
-      this.addEmrEksNodegroup(EmrEksNodegroup.NODEGROUP_NOTEBOOKS);
+      this.addEmrEksNodegroup(EmrEksNodegroup.CRITICAL_ALL);
+      this.addEmrEksNodegroup(EmrEksNodegroup.SHARED_DRIVER);
+      this.addEmrEksNodegroup(EmrEksNodegroup.SHARED_EXECUTOR);
     }
 
     // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
@@ -235,21 +228,21 @@ export class EmrEksCluster extends Construct {
   }
 
   /**
-   * Add a new Amazon EKS Nodegroup to the cluster with Amazon EMR on EKS best practices and configured for Cluster Autoscaler
-   * CfnOutput can be customized.
+   * Add a new Amazon EKS Nodegroup to the cluster with Amazon EMR on EKS best practices and configured for Cluster Autoscaler.
+   * CfnOutput can be customized. If no subnet is provided, it adds one nodegroup per private subnet in the Amazon EKS Cluster
    * @param {Props} props the EmrEksNodegroupOptions [properties]{@link EmrEksNodegroupOptions}
    * @access public
    */
   public addEmrEksNodegroup(props: EmrEksNodegroupOptions) {
 
     // Get the subnet from Properties or one private subnet for each AZ
-    const subnetList = [props.subnet] || this.eksCluster.vpc.selectSubnets({
+    const subnetList = props.subnet ? [props.subnet] : this.eksCluster.vpc.selectSubnets({
       onePerAz: true,
       subnetType: SubnetType.PRIVATE_WITH_NAT,
     }).subnets;
 
     // Create one Nodegroup per subnet
-    subnetList.forEach( (subnet) => {
+    subnetList.forEach( (subnet, index) => {
 
       // Add Amazon SSM agent to the user data
       const userData = [
@@ -257,14 +250,14 @@ export class EmrEksCluster extends Construct {
         'systemctl enable amazon-ssm-agent',
         'systemctl start amazon-ssm-agent',
       ];
-      var launchTemplateName = 'EmrEksLaunch';
+      var launchTemplateName = `EmrEksLaunch-${this.eksClusterName}`;
       // If the Nodegroup uses NVMe, add user data to configure them
       if (props.mountNvme) {
         userData.concat([
           'IDX=1 && for DEV in /dev/disk/by-id/nvme-Amazon_EC2_NVMe_Instance_Storage_*-ns-1; do  mkfs.xfs ${DEV};mkdir -p /pv-disks/local${IDX};echo ${DEV} /pv-disks/local${IDX} xfs defaults,noatime 1 2 >> /etc/fstab; IDX=$((${IDX} + 1)); done',
           'mount -a',
         ]);
-        launchTemplateName = 'EmrEksNvmeLaunch';
+        launchTemplateName = `EmrEksNvmeLaunch-${this.eksClusterName}`;
       }
 
       // Add headers and footers to user data
@@ -280,6 +273,9 @@ ${userData.join('\r\n')}
 --==MYBOUNDARY==--\\
 `);
 
+      // Make the ID unique across AZ using the index of subnet in the subnet list
+      const id = `${props.id}-${index}`;
+
       // Create a new LaunchTemplate or reuse existing one
       const lt = SingletonCfnLaunchTemplate.getOrCreate(this, launchTemplateName, userDataMime);
 
@@ -291,13 +287,13 @@ ${userData.join('\r\n')}
             id: lt.ref,
             version: lt.attrLatestVersionNumber,
           },
+          // Default nodegroupName should be the ID (according to CDK documentation)
+          nodegroupName: id,
         },
       };
-      // Add a UUID to the ID to make it unique across AZ
-      const id = Utils.randomize(props.id);
 
       // Create the Amazon EKS Nodegroup
-      const emrNodeGroup = this.eksCluster.addNodegroupCapacity(id, nodeGroupParameters);
+      const emrNodeGroup = this.addSsmNodegroupCapacity(id, nodeGroupParameters);
 
       // Add tags for the Cluster Autoscaler management
       Tags.of(emrNodeGroup).add(
@@ -362,9 +358,7 @@ ${userData.join('\r\n')}
    * @access public
    */
 
-  public addEmrVirtualCluster(
-    props: EmrVirtualClusterProps,
-  ): EmrVirtualCluster {
+  public addEmrVirtualCluster(props: EmrVirtualClusterProps): EmrVirtualCluster {
     const eksNamespace = props.eksNamespace ?? 'default';
     const ns = props.createNamespace
       ? this.eksCluster.addManifest('eksNamespace', {
@@ -575,5 +569,13 @@ ${userData.join('\r\n')}
     };
 
     return cert();
+  }
+
+  public addSsmNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions): Nodegroup {
+    // Create the Nodegroup for tooling
+    const nodegroup = this.eksCluster.addNodegroupCapacity(nodegroupId, options);
+    // Adding the Amazon SSM policy
+    nodegroup.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
+    return nodegroup;
   }
 }
