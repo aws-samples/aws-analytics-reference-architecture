@@ -44,7 +44,14 @@ export class EmrVirtualCluster extends Construct {
   constructor(scope: Construct, id: string, eksCluster: Cluster, props: EmrVirtualClusterProps) {
     super(scope, id);
 
-    // TODO create the namespace
+    // Create the namespace
+    if (props.createNamespace && props.eksNamespace) {
+      eksCluster.addManifest(props.eksNamespace, {
+        apiVersion: 'v1',
+        kind: 'Namespace',
+        metadata: { name: props.eksNamespace },
+      });
+    }
 
     const virtCluster = new CfnVirtualCluster(this, 'EMRClusterEc2', {
       name: props.name,

@@ -175,7 +175,7 @@ export class EmrEksCluster extends Construct {
     });
 
     // Create the Nodegroup for tooling
-    this.addSsmNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
+    this.addNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
     // If no Nodegroup is provided, create Nodegroups for each type in one subnet of each AZ
     if (!props.emrEksNodegroups) {
       this.addEmrEksNodegroup(EmrEksNodegroup.CRITICAL_ALL);
@@ -287,13 +287,11 @@ ${userData.join('\r\n')}
             id: lt.ref,
             version: lt.attrLatestVersionNumber,
           },
-          // Default nodegroupName should be the ID (according to CDK documentation)
-          nodegroupName: id,
         },
       };
 
       // Create the Amazon EKS Nodegroup
-      const emrNodeGroup = this.addSsmNodegroupCapacity(id, nodeGroupParameters);
+      const emrNodeGroup = this.addNodegroupCapacity(id, nodeGroupParameters);
 
       // Add tags for the Cluster Autoscaler management
       Tags.of(emrNodeGroup).add(
@@ -340,7 +338,7 @@ ${userData.join('\r\n')}
       if (props.taints) {
         props.taints.forEach( (taint) => {
           Tags.of(emrNodeGroup).add(
-            `k8s.io/cluster-autoscaler/node-template/label/${taint.key}`,
+            `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
             `${taint.value}:${taint.effect}`,
             {
               applyToLaunchedInstances: true,
@@ -571,9 +569,17 @@ ${userData.join('\r\n')}
     return cert();
   }
 
-  public addSsmNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions): Nodegroup {
-    // Create the Nodegroup for tooling
-    const nodegroup = this.eksCluster.addNodegroupCapacity(nodegroupId, options);
+  public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions): Nodegroup {
+
+    const nodeGroupParameters = {
+      ...options,
+      ...{
+        // Default nodegroupName should be the ID (according to CDK documentation)
+        nodegroupName: nodegroupId,
+      },
+    };
+
+    const nodegroup = this.eksCluster.addNodegroupCapacity(nodegroupId, nodeGroupParameters);
     // Adding the Amazon SSM policy
     nodegroup.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
     return nodegroup;
