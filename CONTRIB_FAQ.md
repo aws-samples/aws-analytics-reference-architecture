@@ -73,9 +73,19 @@ See the `Dataset` class using static variables call the class constructor [here]
 
 ### How to implement Singleton pattern for an AWS CDK resource
 
+A singleton resource can have different scope:
+ * Across stacks: if you don't need to version it and it's the same resource across all AWS CDK Applications
+ * Within stacks: if the resource can evolve across versions, it's preferable to scope it to a stack and assign a unique ID
+
+#### Within stacks
+
 The singleton pattern can be implemented using the unique ID of the AWS CDK node. Instead of creating a new resource from the AWS CDK Construct, a static `getOrCreate` method is used to retrieve the resource by search for the unique ID in the AWS CDK Scope. If no resource exists, the method creates a new one.
 
 See the `SingletonBucket` Construct [here](./core/src/singleton-bucket.ts).
+
+#### Across stacks
+
+TO BE DEFINED
 
 ## Testing
 

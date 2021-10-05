@@ -12,12 +12,12 @@ export interface EmrVirtualClusterProps {
   readonly name: string;
   /**
    * name of the  EKS namespace to be linked to the EMR virtual Cluster
-   * @default default
+   * @default - Use the default namespace
    */
-  readonly eksNamespace: string;
+  readonly eksNamespace?: string;
   /**
    * creates EKS namespace
-   * @default false
+   * @default - Do not create the namespace
    */
   readonly createNamespace?: boolean;
 }
@@ -41,20 +41,17 @@ export class EmrVirtualCluster extends Construct {
    * @param {EmrVirtualClusterProps} props the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}
    * @access public
    */
-  constructor(
-    scope: Construct,
-    id: string,
-    eksCluster: Cluster,
-    props: EmrVirtualClusterProps,
-  ) {
+  constructor(scope: Construct, id: string, eksCluster: Cluster, props: EmrVirtualClusterProps) {
     super(scope, id);
+
+    // TODO create the namespace
 
     const virtCluster = new CfnVirtualCluster(this, 'EMRClusterEc2', {
       name: props.name,
       containerProvider: {
         id: eksCluster.clusterName,
         type: 'EKS',
-        info: { eksInfo: { namespace: props.eksNamespace } },
+        info: { eksInfo: { namespace: props.eksNamespace || 'default' } },
       },
     });
     this.instance = virtCluster;

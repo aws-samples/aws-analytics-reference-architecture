@@ -431,6 +431,24 @@ The JSON configuration override for Amazon EMR Managed Endpoint,.
 
 ---
 
+##### `addSsmNodegroupCapacity` <a name="aws-analytics-reference-architecture.EmrEksCluster.addSsmNodegroupCapacity"></a>
+
+```typescript
+public addSsmNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions)
+```
+
+###### `nodegroupId`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.nodegroupId"></a>
+
+- *Type:* `string`
+
+---
+
+###### `options`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.options"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
 
 #### Properties <a name="Properties"></a>
 
@@ -937,6 +955,18 @@ import { EmrEksClusterProps } from 'aws-analytics-reference-architecture'
 const emrEksClusterProps: EmrEksClusterProps = { ... }
 ```
 
+##### `eksAdminRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn"></a>
+
+```typescript
+public readonly eksAdminRoleArn: string;
+```
+
+- *Type:* `string`
+
+Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
+
+---
+
 ##### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.acmCertificateArn"></a>
 
 ```typescript
@@ -947,19 +977,6 @@ public readonly acmCertificateArn: string;
 - *Default:* attempt to generate and import certificate using locally installed openssl utility
 
 ACM Certificate ARN used with EMR on EKS managed endpoint.
-
----
-
-##### `eksAdminRoleArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn"></a>
-
-```typescript
-public readonly eksAdminRoleArn: string;
-```
-
-- *Type:* `string`
-- *Default:* The Amazon IAM role used by AWS CDK
-
-Amazon IAM Role to be added to Amazon EKS master roles that will give you the access to kubernetes cluster from AWS console UI.
 
 ---
 
@@ -1354,19 +1371,6 @@ import { EmrVirtualClusterProps } from 'aws-analytics-reference-architecture'
 const emrVirtualClusterProps: EmrVirtualClusterProps = { ... }
 ```
 
-##### `eksNamespace`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.eksNamespace"></a>
-
-```typescript
-public readonly eksNamespace: string;
-```
-
-- *Type:* `string`
-- *Default:* default
-
-name of the  EKS namespace to be linked to the EMR virtual Cluster.
-
----
-
 ##### `name`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.name"></a>
 
 ```typescript
@@ -1386,9 +1390,22 @@ public readonly createNamespace: boolean;
 ```
 
 - *Type:* `boolean`
-- *Default:* false
+- *Default:* Do not create the namespace
 
 creates EKS namespace.
+
+---
+
+##### `eksNamespace`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.eksNamespace"></a>
+
+```typescript
+public readonly eksNamespace: string;
+```
+
+- *Type:* `string`
+- *Default:* Use the default namespace
+
+name of the  EKS namespace to be linked to the EMR virtual Cluster.
 
 ---
 
@@ -1887,25 +1904,37 @@ new EmrEksNodegroup()
 
 #### Constants <a name="Constants"></a>
 
-##### `NODEGROUP_CRITICAL` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.NODEGROUP_CRITICAL"></a>
+##### `CRITICAL_ALL` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.CRITICAL_ALL"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
 
 ---
 
-##### `NODEGROUP_NOTEBOOKS` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.NODEGROUP_NOTEBOOKS"></a>
+##### `NOTEBOOK_DRIVER` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_DRIVER"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
 
 ---
 
-##### `NODEGROUP_SHARED` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.NODEGROUP_SHARED"></a>
+##### `NOTEBOOK_EXECUTOR` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_EXECUTOR"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
 
 ---
 
-##### `NODEGROUP_TOOLING` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.NODEGROUP_TOOLING"></a>
+##### `SHARED_DRIVER` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+##### `SHARED_EXECUTOR` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_EXECUTOR"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+##### `TOOLING_ALL` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.TOOLING_ALL"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
 
