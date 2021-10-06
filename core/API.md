@@ -431,10 +431,10 @@ The JSON configuration override for Amazon EMR Managed Endpoint,.
 
 ---
 
-##### `addSsmNodegroupCapacity` <a name="aws-analytics-reference-architecture.EmrEksCluster.addSsmNodegroupCapacity"></a>
+##### `addNodegroupCapacity` <a name="aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity"></a>
 
 ```typescript
-public addSsmNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions)
+public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions)
 ```
 
 ###### `nodegroupId`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.nodegroupId"></a>
@@ -1034,9 +1034,12 @@ Kubernetes version for Amazon EKS cluster that will be created.
 
 ### EmrEksNodegroupOptions <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions"></a>
 
-The Options for addNodeGroup() method.
+The Options for adding EmrEksNodegroup to an EmrEksCluster.
 
-LaunchTemplate spec is overriden. subnetList is overriden by either the subnet parameter.
+Some of the Amazon EKS Nodegroup parameters are overriden:
+-  NodegroupName by the id and an index per AZ
+-  LaunchTemplate spec
+-  SubnetList by either the subnet parameter or one subnet per Amazon EKS Cluster AZ.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
