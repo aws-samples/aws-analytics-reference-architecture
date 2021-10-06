@@ -245,7 +245,7 @@ export class DataPlatformNotebook extends Construct {
     this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
       createNamespace: false,
       eksNamespace: 'default',
-      name: 'ec2VirtCluster' + props.studioName,
+      name: 'EmrVC' + props.studioName,
     });
 
     //Add a nodegroup for notebooks
@@ -275,15 +275,11 @@ export class DataPlatformNotebook extends Construct {
       allowAllOutbound: false,
     });
 
-    this.managedEndpoint.node.addDependency(this.emrVirtCluster);
-
     //Tag workSpaceSecurityGroup to be used with EMR Studio
     Tags.of(this.workSpaceSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
-    //Subnets list can be either shared by user or created by EKS cluster
-    if (props.subnetList != null) {
-      this.studioSubnetList = props.subnetList;
-    }
+    //Wait until the EMR Virtual cluster is deployed then create a managedendpoint
+    this.managedEndpoint.node.addDependency(this.emrVirtCluster);
 
     //Get the Engine Security group
     //This is for future use when customer can bring their own EKS/EMR ManagedEndpoint Security Group
@@ -421,7 +417,7 @@ export class DataPlatformNotebook extends Construct {
     });
 
     //set the path for the lambda code
-    let lambdaPath = 'studio';
+    let lambdaPath = 'lambdas/studio-workspace-tag-on-create';
 
     //Create lambda to tag EMR notebook with UserID of the IAM principal that created it
     let workspaceTaggingLambda = new Function(this, 'CreateTagHandler', {
@@ -512,7 +508,7 @@ export class DataPlatformNotebook extends Construct {
       //For each user or group, create a new managedEndpoint
       //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
       let managedEndpoint = this.emrEks.addManagedEndpoint(
-        'endpoint'+ this.studioName + user.executionPolicyArn.split('/')[1].replace(/[^\w\s]/gi, ''),
+        this.studioName + stringSanitizer(user.mappingIdentityName!),
         this.emrVirtCluster.instance.attrId,
         this.certificateArn,
         this.emrOnEksVersion,
