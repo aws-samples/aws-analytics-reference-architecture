@@ -415,6 +415,10 @@ ${userData.join('\r\n')}
     configurationOverrides?: string,
   ) {
 
+    if (id.length > 64) {
+      throw new Error(`error managedendpoint name length is greater than 64 ${id}`);
+    }
+
     if (emrOnEksVersion && ! EmrEksCluster.EMR_VERSIONS.includes(emrOnEksVersion)) {
       throw new Error(`error unsupported EMR version ${emrOnEksVersion}`);
     }
