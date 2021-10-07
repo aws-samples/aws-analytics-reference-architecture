@@ -228,7 +228,7 @@ export class DataPlatformNotebook extends Construct {
     this.emrEks = new EmrEksCluster(this, 'EmrEks', {
       kubernetesVersion: KubernetesVersion.V1_20,
       eksAdminRoleArn: props.eksAdminRoleArn,
-      eksClusterName: 'EmrEksCluster' + props.studioName,
+      eksClusterName: 'multi-stack' + props.studioName,
     });
 
     //Get the list of private subnets in VPC
@@ -245,7 +245,7 @@ export class DataPlatformNotebook extends Construct {
     this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
       createNamespace: false,
       eksNamespace: 'default',
-      name: 'virtualCluster-' + props.studioName,
+      name: 'multi-stack-' + props.studioName,
     });
 
     //Add a nodegroup for notebooks
@@ -326,13 +326,13 @@ export class DataPlatformNotebook extends Construct {
       //Create a Managed policy for Studio service role
       this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
         'StudioServiceManagedPolicy', createStudioServiceRolePolicy(this, this.dataPlatformEncryptionKey.keyArn, this.workspacesBucket.bucketName,
-          props.studioName, this.emrVpc.vpcId),
+          props.studioName),
       ));
 
       //Create a role for the Studio
       this.studioServiceRole = new Role(this, 'studioServiceRole', {
         assumedBy: new ServicePrincipal(this.studioPrincipal),
-        roleName: 'studioServiceRole'+ this.emrVpc.vpcId,
+        roleName: 'studioServiceRole+' + stringSanitizer(props.studioName),
         managedPolicies: this.studioServicePolicy,
       });
 
@@ -347,13 +347,13 @@ export class DataPlatformNotebook extends Construct {
       //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
       this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
         'StudioUserManagedPolicy',
-        createStudioUserRolePolicy(this, props.studioName, this.emrVpc.vpcId, this.studioServiceRoleName),
+        createStudioUserRolePolicy(this, props.studioName, this.studioServiceRoleName),
       ));
 
       //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
       this.studioUserRole = new Role(this, 'studioUserRole', {
         assumedBy: new ServicePrincipal(this.studioPrincipal),
-        roleName: 'studioUserRole',
+        roleName: 'studioUserRole+' + stringSanitizer(props.studioName),
         managedPolicies: this.studioUserPolicy,
       });
 
@@ -513,7 +513,7 @@ export class DataPlatformNotebook extends Construct {
       //For each user or group, create a new managedEndpoint
       //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
       let managedEndpoint = this.emrEks.addManagedEndpoint(
-        this.studioName + stringSanitizer(user.mappingIdentityName!),
+        this.studioName + '-' + stringSanitizer(user.mappingIdentityName!),
         this.emrVirtCluster.instance.attrId,
         this.certificateArn,
         this.emrOnEksVersion,

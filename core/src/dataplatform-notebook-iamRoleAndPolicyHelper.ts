@@ -77,7 +77,7 @@ export function createUserSessionPolicy(scope: Construct, user: StudioUserDefini
   return userSessionPolicy.managedPolicyArn;
 }
 
-export function createStudioUserRolePolicy(scope: Construct, studioName: string, vpcId: string, studioServiceRoleName: string): string {
+export function createStudioUserRolePolicy(scope: Construct, studioName: string, studioServiceRoleName: string): string {
 
   let policyTemplate: string = JSON.stringify(studioUserPolicy);
   let policy = JSON.parse(policyTemplate);
@@ -91,7 +91,7 @@ export function createStudioUserRolePolicy(scope: Construct, studioName: string,
 
   let userRolePolicy = new ManagedPolicy(scope, 'studioUserPolicy' + studioName, {
     document: PolicyDocument.fromJson(policy),
-    managedPolicyName: 'studioUserPolicy' + studioName + vpcId,
+    managedPolicyName: 'studioUserPolicy' + studioName,
   });
 
   return userRolePolicy.managedPolicyArn;
@@ -116,7 +116,7 @@ export function addServiceRoleInlinePolicy (scope: Construct, studioServiceRoleA
   return studioServiceRole;
 }
 
-export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, bucketName: string, studioName: string, vpcId: string): string {
+export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, bucketName: string, studioName: string): string {
 
   //Get policy from a JSON template
   let policy = JSON.parse(JSON.stringify(studioServiceRolePolicy));
@@ -131,7 +131,7 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
   //Create a the policy of service role
   let serviceRolePolicy = new ManagedPolicy(scope, 'studioServicePolicy' + studioName, {
     document: PolicyDocument.fromJson(policy),
-    managedPolicyName: 'studioServicePolicy' + vpcId,
+    managedPolicyName: 'studioServicePolicy' + studioName,
   });
 
   return serviceRolePolicy.managedPolicyArn;

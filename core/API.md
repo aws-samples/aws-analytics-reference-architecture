@@ -2,6 +2,45 @@
 
 ## Constructs <a name="Constructs"></a>
 
+### AthenaDefaultSetup <a name="aws-analytics-reference-architecture.AthenaDefaultSetup"></a>
+
+AthenaDefaultSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box usage.
+
+#### Initializer <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.Initializer"></a>
+
+```typescript
+import { AthenaDefaultSetup } from 'aws-analytics-reference-architecture'
+
+new AthenaDefaultSetup(scope: Construct, id: string)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.parameter.id"></a>
+
+- *Type:* `string`
+
+the ID of the CDK Construct.
+
+---
+
+
+
+#### Properties <a name="Properties"></a>
+
+##### `resultBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.property.resultBucket"></a>
+
+- *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
+
+---
+
+
 ### DataGenerator <a name="aws-analytics-reference-architecture.DataGenerator"></a>
 
 DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime Target can be an Amazon S3 bucket or an Amazon Kinesis Data Stream.
@@ -77,6 +116,63 @@ Sink Arn to receive the generated data.
 AWS Glue Database name used by the DataGenerator.
 
 ---
+
+### DataLakeCatalog <a name="aws-analytics-reference-architecture.DataLakeCatalog"></a>
+
+A Data Lake Catalog composed of 3 AWS Glue Database configured with AWS best practices:   Databases for Raw/Cleaned/Transformed data,.
+
+#### Initializer <a name="aws-analytics-reference-architecture.DataLakeCatalog.Initializer"></a>
+
+```typescript
+import { DataLakeCatalog } from 'aws-analytics-reference-architecture'
+
+new DataLakeCatalog(scope: Construct, id: string)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.parameter.id"></a>
+
+- *Type:* `string`
+
+the ID of the CDK Construct.
+
+---
+
+
+
+#### Properties <a name="Properties"></a>
+
+##### `cleanDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.property.cleanDatabase"></a>
+
+- *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
+
+AWS Glue Database for Clean data.
+
+---
+
+##### `rawDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.property.rawDatabase"></a>
+
+- *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
+
+AWS Glue Database for Raw data.
+
+---
+
+##### `transformDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.property.transformDatabase"></a>
+
+- *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
+
+AWS Glue Database for Transform data.
+
+---
+
 
 ### DataLakeStorage <a name="aws-analytics-reference-architecture.DataLakeStorage"></a>
 
@@ -167,12 +263,226 @@ the ID of the CDK Construct.
 
 - *Type:* [`@aws-cdk/aws-iam.RoleProps`](#@aws-cdk/aws-iam.RoleProps)
 
-the RoleProps properties.
+the RoleProps [properties]{@link RoleProps}.
 
 ---
 
 
 
+
+
+### EmrEksCluster <a name="aws-analytics-reference-architecture.EmrEksCluster"></a>
+
+EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
+
+#### Initializer <a name="aws-analytics-reference-architecture.EmrEksCluster.Initializer"></a>
+
+```typescript
+import { EmrEksCluster } from 'aws-analytics-reference-architecture'
+
+new EmrEksCluster(scope: Construct, id: string, props: EmrEksClusterProps)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
+
+- *Type:* `string`
+
+the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksClusterProps`](#aws-analytics-reference-architecture.EmrEksClusterProps)
+
+the EmrEksClusterProps [properties]{@link EmrEksClusterProps}.
+
+---
+
+#### Methods <a name="Methods"></a>
+
+##### `addEmrEksNodegroup` <a name="aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup"></a>
+
+```typescript
+public addEmrEksNodegroup(props: EmrEksNodegroupOptions)
+```
+
+###### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+the EmrEksNodegroupOptions [properties]{@link EmrEksNodegroupOptions}.
+
+---
+
+##### `addEmrVirtualCluster` <a name="aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster"></a>
+
+```typescript
+public addEmrVirtualCluster(props: EmrVirtualClusterProps)
+```
+
+###### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrVirtualClusterProps`](#aws-analytics-reference-architecture.EmrVirtualClusterProps)
+
+the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}.
+
+---
+
+##### `addManagedEndpoint` <a name="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint"></a>
+
+```typescript
+public addManagedEndpoint(id: string, virtualClusterId: string, acmCertificateArn?: string, emrOnEksVersion?: string, executionRoleArn?: string, configurationOverrides?: string)
+```
+
+###### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
+
+- *Type:* `string`
+
+unique id for endpoint.
+
+---
+
+###### `virtualClusterId`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.virtualClusterId"></a>
+
+- *Type:* `string`
+
+Amazon Emr Virtual Cluster Id.
+
+---
+
+###### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.acmCertificateArn"></a>
+
+- *Type:* `string`
+
+ACM Certificate Arn to be attached to the JEG managed endpoint,.
+
+---
+
+###### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.emrOnEksVersion"></a>
+
+- *Type:* `string`
+
+EmrOnEks version to be used.
+
+---
+
+###### `executionRoleArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.executionRoleArn"></a>
+
+- *Type:* `string`
+
+IAM execution role to attach.
+
+---
+
+###### `configurationOverrides`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.configurationOverrides"></a>
+
+- *Type:* `string`
+
+The JSON configuration override for Amazon EMR Managed Endpoint,.
+
+---
+
+##### `addNodegroupCapacity` <a name="aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity"></a>
+
+```typescript
+public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions)
+```
+
+###### `nodegroupId`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.nodegroupId"></a>
+
+- *Type:* `string`
+
+---
+
+###### `options`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.options"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+
+#### Properties <a name="Properties"></a>
+
+##### `eksCluster`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.Cluster`](#@aws-cdk/aws-eks.Cluster)
+
+---
+
+#### Constants <a name="Constants"></a>
+
+##### `DEFAULT_EKS_VERSION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EKS_VERSION"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
+
+---
+
+##### `DEFAULT_EMR_VERSION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EMR_VERSION"></a>
+
+- *Type:* `string`
+
+---
+
+### EmrVirtualCluster <a name="aws-analytics-reference-architecture.EmrVirtualCluster"></a>
+
+#### Initializer <a name="aws-analytics-reference-architecture.EmrVirtualCluster.Initializer"></a>
+
+```typescript
+import { EmrVirtualCluster } from 'aws-analytics-reference-architecture'
+
+new EmrVirtualCluster(scope: Construct, id: string, eksCluster: Cluster, props: EmrVirtualClusterProps)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.id"></a>
+
+- *Type:* `string`
+
+the ID of the CDK Construct.
+
+---
+
+##### `eksCluster`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.eksCluster"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.Cluster`](#@aws-cdk/aws-eks.Cluster)
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrVirtualClusterProps`](#aws-analytics-reference-architecture.EmrVirtualClusterProps)
+
+the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}.
+
+---
+
+
+
+#### Properties <a name="Properties"></a>
+
+##### `instance`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.property.instance"></a>
+
+- *Type:* [`@aws-cdk/aws-emrcontainers.CfnVirtualCluster`](#@aws-cdk/aws-emrcontainers.CfnVirtualCluster)
+
+reference to the CfnVirtualCluster created.
+
+---
 
 
 ### Example <a name="aws-analytics-reference-architecture.Example"></a>
@@ -355,6 +665,18 @@ the CrawlerStartWait [properties]{@link SynchronousCrawlerProps}.
 
 ## Structs <a name="Structs"></a>
 
+### AthenaDefaultSetupProps <a name="aws-analytics-reference-architecture.AthenaDefaultSetupProps"></a>
+
+The properties for AthenaDefaultSetup Construct.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { AthenaDefaultSetupProps } from 'aws-analytics-reference-architecture'
+
+const athenaDefaultSetupProps: AthenaDefaultSetupProps = { ... }
+```
+
 ### DataGeneratorProps <a name="aws-analytics-reference-architecture.DataGeneratorProps"></a>
 
 The properties for DataGenerator Construct.
@@ -474,11 +796,11 @@ import { DatasetProps } from 'aws-analytics-reference-architecture'
 const datasetProps: DatasetProps = { ... }
 ```
 
-##### `createTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.createTable"></a>
+##### `createSourceTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.createSourceTable"></a>
 
 - *Type:* `string`
 
-The CREATE TABLE DDL command to create the AWS Glue Table.
+The CREATE TABLE DDL command to create the source AWS Glue Table.
 
 ---
 
@@ -505,6 +827,364 @@ It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
 - *Type:* `string`
 
 The minimum datetime value in the dataset used to calculate time offset.
+
+---
+
+##### `createTargetTable`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.createTargetTable"></a>
+
+- *Type:* `string`
+- *Default:* Use the same DDL as the source table
+
+The CREATE TABLE DDL command to create the target AWS Glue Table.
+
+---
+
+### EmrEksClusterProps <a name="aws-analytics-reference-architecture.EmrEksClusterProps"></a>
+
+The properties for the EmrEksCluster Construct class.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { EmrEksClusterProps } from 'aws-analytics-reference-architecture'
+
+const emrEksClusterProps: EmrEksClusterProps = { ... }
+```
+
+##### `eksAdminRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn"></a>
+
+- *Type:* `string`
+
+Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
+
+---
+
+##### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.acmCertificateArn"></a>
+
+- *Type:* `string`
+- *Default:* attempt to generate and import certificate using locally installed openssl utility
+
+ACM Certificate ARN used with EMR on EKS managed endpoint.
+
+---
+
+##### `eksClusterName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName"></a>
+
+- *Type:* `string`
+- *Default:* automatically generated cluster name
+
+Name of the Amazon EKS cluster to be created.
+
+---
+
+##### `emrEksNodegroups`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroup`](#aws-analytics-reference-architecture.EmrEksNodegroup)[]
+- *Default:* Create a default set of EmrEksNodegroup
+
+List of EmrEksNodegroup to create in the cluster.
+
+---
+
+##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.emrOnEksVersion"></a>
+
+- *Type:* `string`
+- *Default:* emr-6.3.0-latest
+
+EMR on EKS managed endpoint version.
+
+---
+
+##### `kubernetesVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
+- *Default:* v1.20 version is used
+
+Kubernetes version for Amazon EKS cluster that will be created.
+
+---
+
+### EmrEksNodegroupOptions <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions"></a>
+
+The Options for adding EmrEksNodegroup to an EmrEksCluster.
+
+Some of the Amazon EKS Nodegroup parameters are overriden:
+-  NodegroupName by the id and an index per AZ
+-  LaunchTemplate spec
+-  SubnetList by either the subnet parameter or one subnet per Amazon EKS Cluster AZ.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { EmrEksNodegroupOptions } from 'aws-analytics-reference-architecture'
+
+const emrEksNodegroupOptions: EmrEksNodegroupOptions = { ... }
+```
+
+##### `amiType`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.amiType"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.NodegroupAmiType`](#@aws-cdk/aws-eks.NodegroupAmiType)
+- *Default:* auto-determined from the instanceTypes property.
+
+The AMI type for your node group.
+
+---
+
+##### `capacityType`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.capacityType"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.CapacityType`](#@aws-cdk/aws-eks.CapacityType)
+- *Default:* ON_DEMAND
+
+The capacity type of the nodegroup.
+
+---
+
+##### `desiredSize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.desiredSize"></a>
+
+- *Type:* `number`
+- *Default:* 2
+
+The current number of worker nodes that the managed node group should maintain.
+
+If not specified,
+the nodewgroup will initially create `minSize` instances.
+
+---
+
+##### `diskSize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.diskSize"></a>
+
+- *Type:* `number`
+- *Default:* 20
+
+The root device disk size (in GiB) for your node group instances.
+
+---
+
+##### `forceUpdate`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.forceUpdate"></a>
+
+- *Type:* `boolean`
+- *Default:* true
+
+Force the update if the existing node group's pods are unable to be drained due to a pod disruption budget issue.
+
+If an update fails because pods could not be drained, you can force the update after it fails to terminate the old
+node whether or not any pods are
+running on the node.
+
+---
+
+##### ~~`instanceType`~~<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.instanceType"></a>
+
+- *Deprecated:* Use `instanceTypes` instead.
+
+- *Type:* [`@aws-cdk/aws-ec2.InstanceType`](#@aws-cdk/aws-ec2.InstanceType)
+- *Default:* t3.medium
+
+The instance type to use for your node group.
+
+Currently, you can specify a single instance type for a node group.
+The default value for this parameter is `t3.medium`. If you choose a GPU instance type, be sure to specify the
+`AL2_x86_64_GPU` with the amiType parameter.
+
+---
+
+##### `instanceTypes`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.instanceTypes"></a>
+
+- *Type:* [`@aws-cdk/aws-ec2.InstanceType`](#@aws-cdk/aws-ec2.InstanceType)[]
+- *Default:* t3.medium will be used according to the cloudformation document.
+
+The instance types to use for your node group.
+
+> - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-nodegroup.html#cfn-eks-nodegroup-instancetypes
+
+---
+
+##### `labels`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.labels"></a>
+
+- *Type:* {[ key: string ]: `string`}
+- *Default:* None
+
+The Kubernetes labels to be applied to the nodes in the node group when they are created.
+
+---
+
+##### `launchTemplateSpec`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.launchTemplateSpec"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.LaunchTemplateSpec`](#@aws-cdk/aws-eks.LaunchTemplateSpec)
+- *Default:* no launch template
+
+Launch template specification used for the nodegroup.
+
+> - https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html
+
+---
+
+##### `maxSize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.maxSize"></a>
+
+- *Type:* `number`
+- *Default:* desiredSize
+
+The maximum number of worker nodes that the managed node group can scale out to.
+
+Managed node groups can support up to 100 nodes by default.
+
+---
+
+##### `minSize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.minSize"></a>
+
+- *Type:* `number`
+- *Default:* 1
+
+The minimum number of worker nodes that the managed node group can scale in to.
+
+This number must be greater than or equal to zero.
+
+---
+
+##### `nodegroupName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.nodegroupName"></a>
+
+- *Type:* `string`
+- *Default:* resource ID
+
+Name of the Nodegroup.
+
+---
+
+##### `nodeRole`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.nodeRole"></a>
+
+- *Type:* [`@aws-cdk/aws-iam.IRole`](#@aws-cdk/aws-iam.IRole)
+- *Default:* None. Auto-generated if not specified.
+
+The IAM role to associate with your node group.
+
+The Amazon EKS worker node kubelet daemon
+makes calls to AWS APIs on your behalf. Worker nodes receive permissions for these API calls through
+an IAM instance profile and associated policies. Before you can launch worker nodes and register them
+into a cluster, you must create an IAM role for those worker nodes to use when they are launched.
+
+---
+
+##### `releaseVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.releaseVersion"></a>
+
+- *Type:* `string`
+- *Default:* The latest available AMI version for the node group's current Kubernetes version is used.
+
+The AMI version of the Amazon EKS-optimized AMI to use with your node group (for example, `1.14.7-YYYYMMDD`).
+
+---
+
+##### `remoteAccess`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.remoteAccess"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.NodegroupRemoteAccess`](#@aws-cdk/aws-eks.NodegroupRemoteAccess)
+- *Default:* disabled
+
+The remote access (SSH) configuration to use with your node group.
+
+Disabled by default, however, if you
+specify an Amazon EC2 SSH key but do not specify a source security group when you create a managed node group,
+then port 22 on the worker nodes is opened to the internet (0.0.0.0/0)
+
+---
+
+##### `subnets`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.subnets"></a>
+
+- *Type:* [`@aws-cdk/aws-ec2.SubnetSelection`](#@aws-cdk/aws-ec2.SubnetSelection)
+- *Default:* private subnets
+
+The subnets to use for the Auto Scaling group that is created for your node group.
+
+By specifying the
+SubnetSelection, the selected subnets will automatically apply required tags i.e.
+`kubernetes.io/cluster/CLUSTER_NAME` with a value of `shared`, where `CLUSTER_NAME` is replaced with
+the name of your cluster.
+
+---
+
+##### `tags`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.tags"></a>
+
+- *Type:* {[ key: string ]: `string`}
+- *Default:* None
+
+The metadata to apply to the node group to assist with categorization and organization.
+
+Each tag consists of
+a key and an optional value, both of which you define. Node group tags do not propagate to any other resources
+associated with the node group, such as the Amazon EC2 instances or subnets.
+
+---
+
+##### `taints`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.taints"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.TaintSpec`](#@aws-cdk/aws-eks.TaintSpec)[]
+- *Default:* None
+
+The Kubernetes taints to be applied to the nodes in the node group when they are created.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.id"></a>
+
+- *Type:* `string`
+
+Nodegroup ID.
+
+---
+
+##### `mountNvme`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.mountNvme"></a>
+
+- *Type:* `boolean`
+- *Default:* false
+
+Set to true if using instance types with local NVMe drives to mount them automatically at boot time.
+
+---
+
+##### `subnet`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.subnet"></a>
+
+- *Type:* [`@aws-cdk/aws-ec2.ISubnet`](#@aws-cdk/aws-ec2.ISubnet)
+- *Default:* One NodeGroup is deployed per cluster AZ
+
+Configure the Amazon EKS NodeGroup in this subnet.
+
+Use this setting for resource dependencies like an Amazon RD
+
+---
+
+### EmrVirtualClusterProps <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps"></a>
+
+The properties for the EmrVirtualCluster Construct class.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { EmrVirtualClusterProps } from 'aws-analytics-reference-architecture'
+
+const emrVirtualClusterProps: EmrVirtualClusterProps = { ... }
+```
+
+##### `name`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.name"></a>
+
+- *Type:* `string`
+
+name of the  EmrVirtualCluster to be created.
+
+---
+
+##### `createNamespace`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.createNamespace"></a>
+
+- *Type:* `boolean`
+- *Default:* Do not create the namespace
+
+creates EKS namespace.
+
+---
+
+##### `eksNamespace`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.eksNamespace"></a>
+
+- *Type:* `string`
+- *Default:* Use the default namespace
+
+name of the  EKS namespace to be linked to the EMR virtual Cluster.
 
 ---
 
@@ -637,10 +1317,48 @@ the DatasetProps.
 
 #### Methods <a name="Methods"></a>
 
-##### `parseCreateQuery` <a name="aws-analytics-reference-architecture.Dataset.parseCreateQuery"></a>
+##### `parseCreateSourceQuery` <a name="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery"></a>
 
 ```typescript
-public parseCreateQuery(database: string, table: string, bucket: string, key: string)
+public parseCreateSourceQuery(database: string, table: string, bucket: string, key: string)
+```
+
+###### `database`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.database"></a>
+
+- *Type:* `string`
+
+the database name to parse.
+
+---
+
+###### `table`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.table"></a>
+
+- *Type:* `string`
+
+the table name to parse.
+
+---
+
+###### `bucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.bucket"></a>
+
+- *Type:* `string`
+
+the bucket name to parse.
+
+---
+
+###### `key`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.key"></a>
+
+- *Type:* `string`
+
+the key to parse.
+
+---
+
+##### `parseCreateTargetQuery` <a name="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery"></a>
+
+```typescript
+public parseCreateTargetQuery(database: string, table: string, bucket: string, key: string)
 ```
 
 ###### `database`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.parameter.database"></a>
@@ -708,11 +1426,19 @@ the target table name to parse.
 
 #### Properties <a name="Properties"></a>
 
-##### `createTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.createTable"></a>
+##### `createSourceTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.createSourceTable"></a>
 
 - *Type:* `string`
 
-The CREATE TABLE DDL command to create the AWS Glue Table.
+The CREATE TABLE DDL command to create the source AWS Glue Table.
+
+---
+
+##### `createTargetTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.createTargetTable"></a>
+
+- *Type:* `string`
+
+The CREATE TABLE DDL command to create the target AWS Glue Table.
 
 ---
 
@@ -883,6 +1609,57 @@ The warehouse dataset part of 1GB retail datasets.
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
 The web sale dataset part of 1GB retail datasets.
+
+---
+
+### EmrEksNodegroup <a name="aws-analytics-reference-architecture.EmrEksNodegroup"></a>
+
+#### Initializer <a name="aws-analytics-reference-architecture.EmrEksNodegroup.Initializer"></a>
+
+```typescript
+import { EmrEksNodegroup } from 'aws-analytics-reference-architecture'
+
+new EmrEksNodegroup()
+```
+
+
+
+
+#### Constants <a name="Constants"></a>
+
+##### `CRITICAL_ALL` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.CRITICAL_ALL"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+##### `NOTEBOOK_DRIVER` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_DRIVER"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+##### `NOTEBOOK_EXECUTOR` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_EXECUTOR"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+##### `SHARED_DRIVER` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+##### `SHARED_EXECUTOR` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_EXECUTOR"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+##### `TOOLING_ALL` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.TOOLING_ALL"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
 
 ---
 
