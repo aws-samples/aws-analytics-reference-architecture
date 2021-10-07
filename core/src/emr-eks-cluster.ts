@@ -175,7 +175,7 @@ export class EmrEksCluster extends Construct {
     });
 
     // Create the Nodegroup for tooling
-    this.addSsmNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
+    this.addNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
     // If no Nodegroup is provided, create Nodegroups for each type in one subnet of each AZ
     if (!props.emrEksNodegroups) {
       this.addEmrEksNodegroup(EmrEksNodegroup.CRITICAL_ALL);
@@ -225,6 +225,53 @@ export class EmrEksCluster extends Construct {
     });
     albService.node.addDependency(albServiceAccount);
     albService.node.addDependency(certManager);
+
+    // Add the kubernetes dashboard from helm chart
+    this.eksCluster.addHelmChart('KubernetesDashboard', {
+      createNamespace: false,
+      namespace: 'default',
+      chart: 'kubernetes-dashboard',
+      repository: 'https://kubernetes.github.io/dashboard/',
+      version: 'v5.0.1',
+      timeout: Duration.minutes(2),
+      values: {
+        resources: {
+          limits: {
+            memory: '600Mi',
+          },
+        },
+      },
+    });
+
+    // Add the kubernetes dashboard service account
+    this.eksCluster.addManifest('kubedashboard', {
+      apiVersion: 'v1',
+      kind: 'ServiceAccount',
+      metadata: {
+        name: 'eks-admin',
+        namespace: 'kube-system',
+      },
+    });
+    // Add the kubernetes dashboard cluster role binding
+    this.eksCluster.addManifest('kubedashboardrolebinding', {
+      apiVersion: 'rbac.authorization.k8s.io/v1beta1',
+      kind: 'ClusterRoleBinding',
+      metadata: {
+        name: 'eks-admin',
+      },
+      roleRef: {
+        apiGroup: 'rbac.authorization.k8s.io',
+        kind: 'ClusterRole',
+        name: 'cluster-admin',
+      },
+      subjects: [
+        {
+          kind: 'ServiceAccount',
+          name: 'eks-admin',
+          namespace: 'kube-system',
+        },
+      ],
+    });
   }
 
   /**
@@ -287,67 +334,14 @@ ${userData.join('\r\n')}
             id: lt.ref,
             version: lt.attrLatestVersionNumber,
           },
-          // Default nodegroupName should be the ID (according to CDK documentation)
-          nodegroupName: id,
+          subnets: {
+            subnets: [subnet],
+          },
         },
       };
 
       // Create the Amazon EKS Nodegroup
-      const emrNodeGroup = this.addSsmNodegroupCapacity(id, nodeGroupParameters);
-
-      // Add tags for the Cluster Autoscaler management
-      Tags.of(emrNodeGroup).add(
-        `k8s.io/cluster-autoscaler/${this.eksClusterName}`,
-        'owned',
-        { applyToLaunchedInstances: true },
-      );
-      Tags.of(emrNodeGroup).add(
-        'k8s.io/cluster-autoscaler/enabled',
-        'true',
-        {
-          applyToLaunchedInstances: true,
-        },
-      );
-      // Add tag for the AZ
-      Tags.of(emrNodeGroup).add(
-        'k8s.io/cluster-autoscaler/node-template/label/topology.kubernetes.io/zone',
-        subnet ? subnet.availabilityZone : '',
-        {
-          applyToLaunchedInstances: true,
-        },
-      );
-      Tags.of(emrNodeGroup).add(
-        'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle',
-        (props.capacityType == CapacityType.SPOT) ? 'spot' : 'on-demand',
-        {
-          applyToLaunchedInstances: true,
-        },
-      );
-      // Iterate over labels and add appropriate tags
-      if (props.labels) {
-        for (const [key, value] of Object.entries(props.labels)) {
-          Tags.of(emrNodeGroup).add(
-            `k8s.io/cluster-autoscaler/node-template/label/${key}`,
-            value,
-            {
-              applyToLaunchedInstances: true,
-            },
-          );
-        }
-      }
-
-      // Iterate over taints and add appropriate tags
-      if (props.taints) {
-        props.taints.forEach( (taint) => {
-          Tags.of(emrNodeGroup).add(
-            `k8s.io/cluster-autoscaler/node-template/label/${taint.key}`,
-            `${taint.value}:${taint.effect}`,
-            {
-              applyToLaunchedInstances: true,
-            },
-          );
-        });
-      }
+      this.addNodegroupCapacity(id, nodeGroupParameters);
     });
   }
 
@@ -420,6 +414,10 @@ ${userData.join('\r\n')}
     executionRoleArn?: string,
     configurationOverrides?: string,
   ) {
+
+    if (id.length > 64) {
+      throw new Error(`error managedendpoint name length is greater than 64 ${id}`);
+    }
 
     if (emrOnEksVersion && ! EmrEksCluster.EMR_VERSIONS.includes(emrOnEksVersion)) {
       throw new Error(`error unsupported EMR version ${emrOnEksVersion}`);
@@ -571,11 +569,75 @@ ${userData.join('\r\n')}
     return cert();
   }
 
-  public addSsmNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions): Nodegroup {
-    // Create the Nodegroup for tooling
-    const nodegroup = this.eksCluster.addNodegroupCapacity(nodegroupId, options);
+  public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions): Nodegroup {
+
+    const nodeGroupParameters = {
+      ...options,
+      ...{
+        // Default nodegroupName should be the ID (according to CDK documentation)
+        nodegroupName: nodegroupId,
+      },
+    };
+
+    const nodegroup = this.eksCluster.addNodegroupCapacity(nodegroupId, nodeGroupParameters);
     // Adding the Amazon SSM policy
     nodegroup.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
+
+    // Add tags for the Cluster Autoscaler management
+    Tags.of(nodegroup).add(
+      `k8s.io/cluster-autoscaler/${this.eksClusterName}`,
+      'owned',
+      { applyToLaunchedInstances: true },
+    );
+    Tags.of(nodegroup).add(
+      'k8s.io/cluster-autoscaler/enabled',
+      'true',
+      {
+        applyToLaunchedInstances: true,
+      },
+    );
+    // Add tag for the AZ
+    if (options.subnets && options.subnets.subnets) {
+      Tags.of(nodegroup).add(
+        'k8s.io/cluster-autoscaler/node-template/label/topology.kubernetes.io/zone',
+        options.subnets.subnets[0].availabilityZone,
+        {
+          applyToLaunchedInstances: true,
+        },
+      );
+    };
+    Tags.of(nodegroup).add(
+      'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle',
+      (options.capacityType == CapacityType.SPOT) ? 'spot' : 'on-demand',
+      {
+        applyToLaunchedInstances: true,
+      },
+    );
+    // Iterate over labels and add appropriate tags
+    if (options.labels) {
+      for (const [key, value] of Object.entries(options.labels)) {
+        Tags.of(nodegroup).add(
+          `k8s.io/cluster-autoscaler/node-template/label/${key}`,
+          value,
+          {
+            applyToLaunchedInstances: true,
+          },
+        );
+      }
+    }
+    // Iterate over taints and add appropriate tags
+    if (options.taints) {
+      options.taints.forEach( (taint) => {
+        Tags.of(nodegroup).add(
+          `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
+          `${taint.value}:${taint.effect}`,
+          {
+            applyToLaunchedInstances: true,
+          },
+        );
+      });
+    }
+
     return nodegroup;
   }
 }

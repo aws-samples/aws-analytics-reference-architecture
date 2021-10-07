@@ -5,7 +5,10 @@ import { InstanceType,  ISubnet } from '@aws-cdk/aws-ec2';
 import { NodegroupOptions, TaintEffect, CapacityType, NodegroupAmiType } from '@aws-cdk/aws-eks';
 
 /**
- * The Options for addNodeGroup() method. LaunchTemplate spec is overriden. subnetList is overriden by either the subnet parameter.
+ * The Options for adding EmrEksNodegroup to an EmrEksCluster. Some of the Amazon EKS Nodegroup parameters are overriden:
+ * -  NodegroupName by the id and an index per AZ
+ * -  LaunchTemplate spec
+ * -  SubnetList by either the subnet parameter or one subnet per Amazon EKS Cluster AZ.
  */
 
 export interface EmrEksNodegroupOptions extends NodegroupOptions {
@@ -84,6 +87,7 @@ export class EmrEksNodegroup {
     instanceTypes: [new InstanceType('m6g.2xlarge'), new InstanceType('m6gd.2xlarge')],
     minSize: 0,
     maxSize: 50,
+    capacityType: CapacityType.SPOT,
     amiType: NodegroupAmiType.AL2_ARM_64,
     labels: {
       'role': 'shared',
