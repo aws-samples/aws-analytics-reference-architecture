@@ -245,7 +245,7 @@ export class DataPlatformNotebook extends Construct {
     this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
       createNamespace: false,
       eksNamespace: 'default',
-      name: 'EmrVC' + props.studioName,
+      name: 'virtualCluster-' + props.studioName,
     });
 
     //Add a nodegroup for notebooks
@@ -259,6 +259,9 @@ export class DataPlatformNotebook extends Construct {
       props.acmCertificateArn,
       this.emrOnEksVersion,
     );
+
+    //Wait until the EMR Virtual cluster is deployed then create a managedendpoint
+    this.managedEndpoint.node.addDependency(this.emrVirtCluster);
 
     //Set Vpc object to be used with SecurityGroup and EMR Studio Creation
     if (props.vpcId !== undefined) {
@@ -277,9 +280,6 @@ export class DataPlatformNotebook extends Construct {
 
     //Tag workSpaceSecurityGroup to be used with EMR Studio
     Tags.of(this.workSpaceSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
-
-    //Wait until the EMR Virtual cluster is deployed then create a managedendpoint
-    this.managedEndpoint.node.addDependency(this.emrVirtCluster);
 
     //Get the Engine Security group
     //This is for future use when customer can bring their own EKS/EMR ManagedEndpoint Security Group
@@ -311,6 +311,9 @@ export class DataPlatformNotebook extends Construct {
     });
 
     this.workspacesBucket.node.addDependency(this.dataPlatformEncryptionKey);
+
+    //Wait until the EMR Virtual cluster is deployed then create an S3 bucket
+    this.workspacesBucket.node.addDependency(this.emrVirtCluster);
 
     //Check if the construct prop has an EMRStudio Service Role ARN
     //update the role with an inline policy to allow access to the S3 bucket created above
@@ -382,7 +385,9 @@ export class DataPlatformNotebook extends Construct {
       retention: RetentionDays.ONE_MONTH,
     });
 
+    //Wait until the EMR virtual cluser and kms key are succefully created before creating the LogGroup
     lambdaNotebookTagOnCreateLog.node.addDependency(this.dataPlatformEncryptionKey);
+    lambdaNotebookTagOnCreateLog.node.addDependency(this.emrVirtCluster);
 
     let kmsLogPolicy = JSON.parse(JSON.stringify(kmsLogPolicyTemplate));
 

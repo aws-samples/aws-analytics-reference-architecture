@@ -103,6 +103,13 @@ test('EKS should have a helm chart for deploying the AWS load balancer controlle
   });
 });
 
+test('EKS should have a helm chart for deploying the Kubernetes Dashboard', () => {
+  expect(emrEksClusterStack).toHaveResource('Custom::AWSCDK-EKS-HelmChart', {
+    Chart: 'kubernetes-dashboard',
+    Repository: 'https://kubernetes.github.io/dashboard/',
+  });
+});
+
 test('EKS cluster should have the default Nodegroups', () => {
 
   expect(emrEksClusterStack).toCountResources('AWS::EKS::Nodegroup', 7);
@@ -118,6 +125,11 @@ test('EKS cluster should have the default Nodegroups', () => {
       MaxSize: 50,
       MinSize: 1,
     },
+    Tags: assertCDK.objectLike({
+      'k8s.io/cluster-autoscaler/emr-eks-cluster': 'owned',
+      'k8s.io/cluster-autoscaler/enabled': 'true',
+      'k8s.io/cluster-autoscaler/node-template/label/role': 'tooling',
+    }),
   });
 
   expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
