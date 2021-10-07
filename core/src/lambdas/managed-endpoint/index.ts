@@ -28,6 +28,7 @@ const CONFIGURATION_OVERRIDES_DEFAULT = {
 export async function onEvent(event: any) {
   switch (event.RequestType) {
     case 'Create':
+    case 'Update':
       //create
       //const certArn = await getOrCreateCertificate();
 
@@ -56,18 +57,14 @@ export async function onEvent(event: any) {
         };
       } catch (error) {
         console.log(String(error));
-        throw new Error(
-          `error creating new managed endpoint ${error} `,
-        );
-
-        return false;
+        throw new Error(`error creating new managed endpoint ${error} `);
       }
-    case 'Update':
+      /*case 'Update':
       console.log('update not implemented');
       return {
         PhysicalResourceId: event.PhysicalResourceId,
         Data: event.ResourceProperties,
-      };
+      };*/
 
     case 'Delete':
       try {
@@ -90,7 +87,8 @@ export async function onEvent(event: any) {
 }
 
 export async function isComplete(event: any) {
-  if (event.RequestType == 'Delete') return { IsComplete: true };
+  const requestType =
+    event.RequestType == 'Delete' ? '_DELETE' : '_CREATEUPDATE';
 
   const endpoint_id = event.PhysicalResourceId;
 
@@ -105,21 +103,24 @@ export async function isComplete(event: any) {
 
     console.log(`current endpoint ${data.endpoint.id}`);
 
-    switch (data.endpoint.state) {
-      case 'ACTIVE':
+    switch (data.endpoint.state + requestType) {
+      case 'ACTIVE_CREATEUPDATE':
+      case 'TERMINATED_DELETE':
         return { IsComplete: true, Data: data.endpoint };
-      case 'TERMINATED':
-      case 'TERMINATED_WITH_ERRORS':
-      case 'TERMINATING':
-        throw new Error('managed endpoint failed to create');
-      case 'CREATING':
+      case 'TERMINATED_CREATEUPDATE':
+      case 'TERMINATED_WITH_ERRORS_CREATEUPDATE':
+      case 'TERMINATED_WITH_ERRORS_DELETE':
+      case 'TERMINATING_CREATEUPDATE':
+        throw new Error(
+          `managed endpoint failed. Request=${data.endpoint.state} ${requestType}`,
+        );
+      default:
         return { IsComplete: false };
     }
   } catch (error) {
     console.log(error);
     throw new Error('failed to describe managed endpoint');
   }
-  return { IsComplete: false };
 }
 /*
 export async function getOrCreateCertificate(): Promise<string | undefined> {
