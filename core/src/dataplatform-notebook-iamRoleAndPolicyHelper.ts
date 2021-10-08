@@ -29,7 +29,7 @@ export function buildManagedEndpointExecutionRole (scope: Construct, policyArn: 
 
   let managedPolicy = ManagedPolicy.fromManagedPolicyArn(scope, 'managedEndpointPolicy' + policyArn, policyArn);
 
-  let managedEndpointExecutionRole = new Role(scope, 'EMRWorkerIAMRole'+ policyArn, {
+  let managedEndpointExecutionRole: Role = new Role(scope, 'EMRWorkerIAMRole'+ policyArn, {
     assumedBy: new FederatedPrincipal(
       emrEks.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
       [],

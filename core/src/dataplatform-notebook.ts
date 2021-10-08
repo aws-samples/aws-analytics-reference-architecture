@@ -228,7 +228,7 @@ export class DataPlatformNotebook extends Construct {
     this.emrEks = new EmrEksCluster(this, 'EmrEks', {
       kubernetesVersion: KubernetesVersion.V1_20,
       eksAdminRoleArn: props.eksAdminRoleArn,
-      eksClusterName: 'multi-permission-' + props.studioName,
+      eksClusterName: 'job-test-' + props.studioName,
     });
 
     //Get the list of private subnets in VPC
@@ -473,6 +473,7 @@ export class DataPlatformNotebook extends Construct {
     for (let user of userList) {
 
       for ( let executionPolicyArn of user.executionPolicyArn ) {
+
         //For each user or group, create a new managedEndpoint
         //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
         let managedEndpoint = this.emrEks.addManagedEndpoint(
