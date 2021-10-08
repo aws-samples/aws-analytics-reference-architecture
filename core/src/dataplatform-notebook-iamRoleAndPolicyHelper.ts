@@ -1,5 +1,5 @@
 import { FederatedPrincipal, IRole, ManagedPolicy, Policy, PolicyDocument, Role } from '@aws-cdk/aws-iam';
-import { Aws, Construct, CustomResource } from '@aws-cdk/core';
+import { Aws, Construct } from '@aws-cdk/core';
 import { StudioUserDefinition } from './dataplatform-notebook';
 import { EmrEksCluster } from './emr-eks-cluster';
 
@@ -42,8 +42,8 @@ export function buildManagedEndpointExecutionRole (scope: Construct, policyArn: 
 }
 
 export function createUserSessionPolicy(scope: Construct, user: StudioUserDefinition,
-  studioServiceRoleName: string, managedEndpointArn: string,
-  managedEndpoint: CustomResource, studioId: string): string {
+  studioServiceRoleName: string,
+  managedEndpointArns: string [], studioId: string): string {
 
   let policy = JSON.parse(JSON.stringify(studioSessionPolicy));
 
@@ -59,8 +59,11 @@ export function createUserSessionPolicy(scope: Construct, user: StudioUserDefini
   policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<region>/gi, Aws.REGION);
 
   //add restrictions on the managedEndpoint that user of group is allowed to attach to
-  policy.Statement[9].Resource[0] = managedEndpointArn;
-  policy.Statement[10].Resource[0] = managedEndpointArn;
+  for (let managedEndpointArn of managedEndpointArns) {
+    policy.Statement[9].Resource[managedEndpointArns.indexOf(managedEndpointArn)] = managedEndpointArn;
+    policy.Statement[10].Resource[managedEndpointArns.indexOf(managedEndpointArn)] = managedEndpointArn;
+  }
+
 
   //sanitize the userName from any special characters, userName used to name the session policy
   //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
@@ -72,7 +75,6 @@ export function createUserSessionPolicy(scope: Construct, user: StudioUserDefini
     managedPolicyName: 'studioSessionPolicy' + userName + studioId,
   });
 
-  userSessionPolicy.node.addDependency(managedEndpoint);
 
   return userSessionPolicy.managedPolicyArn;
 }
@@ -140,8 +142,7 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
 export function createIAMUserPolicy(scope: Construct,
   user: StudioUserDefinition,
   studioServiceRoleName: string,
-  managedEndpointArn: string,
-  managedEndpoint: CustomResource,
+  managedEndpointArns: string [],
   studioId: string): ManagedPolicy {
 
   let policy = JSON.parse(JSON.stringify(studioUserRolePolicy));
@@ -158,8 +159,10 @@ export function createIAMUserPolicy(scope: Construct,
   policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<region>/gi, Aws.REGION);
 
   //add restrictions on the managedEndpoint that user of group is allowed to attach to
-  policy.Statement[9].Resource[0] = managedEndpointArn;
-  policy.Statement[10].Resource[0] = managedEndpointArn;
+  for (let managedEndpointArn of managedEndpointArns) {
+    policy.Statement[9].Resource.push(managedEndpointArn);
+    policy.Statement[10].Resource.push(managedEndpointArn);
+  }
 
   //Restrict the studio to which a federated user or iam user can access
   policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
@@ -168,17 +171,14 @@ export function createIAMUserPolicy(scope: Construct,
 
   //sanitize the userName from any special characters, userName used to name the session policy
   //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
-  let executionPolicyArn = user.executionPolicyArn!.replace(/[^\w\s]/gi, '');
+  let executionPolicyArn = user.executionPolicyArn[0]!.replace(/[^\w\s]/gi, '');
 
   //create the policy
-  let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + executionPolicyArn, {
+  return new ManagedPolicy(scope, 'studioSessionPolicy' + executionPolicyArn, {
     document: PolicyDocument.fromJson(policy),
     managedPolicyName: 'studioIAMUserRolePolicy' + executionPolicyArn + studioId,
   });
 
-  userSessionPolicy.node.addDependency(managedEndpoint);
-
-  return userSessionPolicy;
 }
 
 export function createIAMFederatedRole(scope: Construct,

@@ -3,9 +3,10 @@
 
 import { CfnLaunchTemplate } from '@aws-cdk/aws-ec2';
 import { Construct, Stack } from '@aws-cdk/core';
+//import BlockDeviceMappingProperty = CfnLaunchTemplate.BlockDeviceMappingProperty;
 
 /**
- * An Amazon S3 Bucket implementing the singleton pattern
+ * A LaunchTemplate implementing the singleton pattern
  */
 export class SingletonCfnLaunchTemplate extends CfnLaunchTemplate {
 
@@ -19,4 +20,16 @@ export class SingletonCfnLaunchTemplate extends CfnLaunchTemplate {
       },
     });
   }
+
+  //  blockDeviceMappings: this.ebsProperty,
+
+  //Commented out while we fix the device name and size
+  /**
+   * private static readonly ebsProperty: BlockDeviceMappingProperty [] = [{
+   *  ebs: {
+   *   volumeType: 'gp3',
+   * },
+   * }];
+   */
+
 }
