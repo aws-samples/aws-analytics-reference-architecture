@@ -3,32 +3,27 @@ import { Code, Function, FunctionProps } from '@aws-cdk/aws-lambda';
 import * as cdk from '@aws-cdk/core';
 
 /**
- * Extends existing FunctionProps as optional (as we don't need `Code` prop)
- * and require `codePath` prop.
+ * Extends existing FunctionProps as optional using `Partial`
+ *(as we don't require `Code` prop)
  */
 export interface PreBundledFunctionProps extends Partial<FunctionProps>{
   codePath: string;
 }
 
-// const PACKAGE_NAME = 'aws-analytics-reference-architecture';
-
 /**
- * Wrapper of lambda.Function construct.
- * It changes of the code path by adding the prefix `node_modules/${PACKAGE_NAME}`
- * and suffix `.zip`.
- *
+ * Wrapper of lambda.Function construct for prebunded file.
+ * It changes of the code path by based on the environment that `cdk synth` is running on.
+ * 
  * This class is used together with a Projen custom task "bundle:<lambda-function>".
  * The tasks will generate a zip file that can be referred to for `Code.fromAsset()`.
  * However, the zip fille will be under `node_modules` when installed as a 3rd party library.
- * Thus, we need to add prefix and suffix .zip.
+ * Thus, so this wrapper change tha path and add suffix .zip.
  */
 export class PreBundledFunction extends Function {
   constructor(scope: cdk.Construct, id: string, props: PreBundledFunctionProps) {
 
-
     if (props.code) {
       throw new Error('Pass "codePath" prop instead of "code" . See CONTRIBUTING.md on how to create prebundled Lambda function.');
-      // TODO: update CONTRIBUTING.md
     }
 
     let functionProps:any = { ...props };
