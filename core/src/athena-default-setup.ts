@@ -38,6 +38,7 @@ export class AthenaDefaultSetup extends Construct {
 
     new CfnWorkGroup(this, 'athenaDefaultWorkgroup', {
       name: 'default',
+      recursiveDeleteOption: true,
       workGroupConfiguration: {
         publishCloudWatchMetricsEnabled: false,
         resultConfiguration: {
