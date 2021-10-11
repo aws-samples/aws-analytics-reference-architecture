@@ -469,6 +469,10 @@ ${userData.join('\r\n')}
           resources: ['*'],
           actions: ['ec2:*'],
         }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['kms:*'],
+        }),
       ],
     });
 
@@ -508,9 +512,12 @@ ${userData.join('\r\n')}
       totalTimeout: Duration.minutes(30),
       queryInterval: Duration.seconds(10),
     });
-    return new CustomResource(this, id, {
+    const cr = new CustomResource(this, id, {
       serviceToken: myProvider.serviceToken,
     });
+    cr.node.addDependency(this.eksCluster);
+
+    return cr;
   }
 
   private getOrCreateAcmCertificate(): any {
