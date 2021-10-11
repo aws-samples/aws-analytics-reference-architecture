@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import * as assertCDK from '@aws-cdk/assert';
 import '@aws-cdk/assert/jest';
 import { Stack } from '@aws-cdk/core';
