@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Role, ServicePrincipal, PolicyStatement, ManagedPolicy } from '@aws-cdk/aws-iam';
-import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
+import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
+import { PreBundledFunction } from './pre-bundled-function';
 
 /**
  * The properties for SynchronousCrawler Construct.
@@ -64,9 +65,9 @@ export class SynchronousCrawler extends Construct {
     crawlerStartWaitFnRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start crawler
-    const crawlerStartFn = new Function(this, 'crawlerStartFn', {
+    const crawlerStartFn = new PreBundledFunction(this, 'crawlerStartFn', {
       runtime: Runtime.PYTHON_3_8,
-      code: Code.fromAsset('./src/lambdas/synchronous-crawler'),
+      codePath: 'resources/lambdas/synchronous-crawler',
       handler: 'lambda.on_event',
       role: crawlerStartWaitFnRole,
       logRetention: RetentionDays.ONE_DAY,
@@ -74,9 +75,9 @@ export class SynchronousCrawler extends Construct {
     });
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for crawler completion
-    const crawlerWaitFn = new Function(this, 'crawlerWaitFn', {
+    const crawlerWaitFn = new PreBundledFunction(this, 'crawlerWaitFn', {
       runtime: Runtime.PYTHON_3_8,
-      code: Code.fromAsset('./src/lambdas/synchronous-crawler'),
+      codePath: 'resources/lambdas/synchronous-crawler',
       handler: 'lambda.is_complete',
       role: crawlerStartWaitFnRole,
       logRetention: RetentionDays.ONE_DAY,

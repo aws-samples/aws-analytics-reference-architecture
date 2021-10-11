@@ -43,6 +43,10 @@
       "type": "build"
     },
     {
+      "name": "glob",
+      "type": "build"
+    },
+    {
       "name": "jest",
       "type": "build"
     },
@@ -92,6 +96,10 @@
     {
       "name": "typescript",
       "type": "build"
+    },
+    {
+      "name": "@types/node",
+      "type": "bundled"
     },
     {
       "name": "aws-sdk",
