@@ -264,6 +264,9 @@
           "spawn": "bundle:data-generator-setup"
         },
         {
+          "spawn": "bundle:synchronous-athena-query"
+        },
+        {
           "spawn": "bundle:synchronous-crawler"
         }
       ],
@@ -287,6 +290,28 @@
         },
         {
           "exec": "cd build/data-generator-setup && zip -q -r ../../data-generator-setup.zip ."
+        }
+      ],
+      "cwd": "resources/lambdas"
+    },
+    "bundle:synchronous-athena-query": {
+      "name": "bundle:synchronous-athena-query",
+      "description": "Install dependency and package Python file into for Lambda function:synchronous-athena-query",
+      "steps": [
+        {
+          "exec": "rm -rf synchronous-athena-query.zip"
+        },
+        {
+          "exec": "rm -rf build/synchronous-athena-query"
+        },
+        {
+          "exec": "cp -r synchronous-athena-query build/"
+        },
+        {
+          "exec": "docker run -v $PWD/build/synchronous-athena-query:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"pip install -r requirements.txt -t ./; exit\""
+        },
+        {
+          "exec": "cd build/synchronous-athena-query && zip -q -r ../../synchronous-athena-query.zip ."
         }
       ],
       "cwd": "resources/lambdas"

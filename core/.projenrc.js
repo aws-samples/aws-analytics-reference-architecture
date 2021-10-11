@@ -99,7 +99,7 @@ for (const dirPath of paths) {
   console.log(`Add task "${taskName}" as a part of "bundle" target`);
   bundleAllLambdaTask.spawn(lambdaBundleTask);
 }
-// console.log(`Prepend task "bundle" as a part of "build" target`);
+
 /**
  * By default, Build tasks have these steps
  * project.buildTask.steps [
@@ -111,12 +111,10 @@ for (const dirPath of paths) {
  * We will add 'bundle' in the second step.
  * By the time we run tests, the bundle file should be there.
  */
-console.log('project.buildTask.steps', project.buildTask.steps);
 project.buildTask.steps = project.buildTask._steps.splice(1, 0, {
   exec: 'npx projen bundle',
 });
-// project.buildTask.prependExec('npx projen bundle');
-console.log('project.buildTask.steps', project.buildTask.steps.slice());
+console.log('Modified build task to include "bundle" step:\n', project.buildTask.steps);
 
 
 // Ignore all build files (Python dependencies, Lambda package zip file )

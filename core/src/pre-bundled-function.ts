@@ -13,7 +13,7 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
 /**
  * Wrapper of lambda.Function construct for prebunded file.
  * It changes of the code path by based on the environment that `cdk synth` is running on.
- * 
+ *
  * This class is used together with a Projen custom task "bundle:<lambda-function>".
  * The tasks will generate a zip file that can be referred to for `Code.fromAsset()`.
  * However, the zip fille will be under `node_modules` when installed as a 3rd party library.
