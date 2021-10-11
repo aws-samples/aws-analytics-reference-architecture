@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import * as path from 'path';
 
 import { SecurityGroup, ISecurityGroup, IVpc, Peer, Port, Vpc, SubnetType } from '@aws-cdk/aws-ec2';
@@ -19,7 +22,7 @@ import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Tags, Aws, Duration, CustomResource } from '@aws-cdk/core';
 
-import { stringSanitizer } from './dataplatform-notebook-helper';
+import { Utils } from './utils';
 import {
   createLambdaNoteBookAddTagPolicy,
   buildManagedEndpointExecutionRole,
@@ -29,7 +32,7 @@ import {
   createStudioServiceRolePolicy,
   createIAMFederatedRole,
   createIAMUserPolicy,
-} from './dataplatform-notebook-iamRoleAndPolicyHelper';
+} from './dataplatform-notebook-helpers';
 
 import { EmrEksCluster } from './emr-eks-cluster';
 import { EmrEksNodegroup } from './emr-eks-nodegroup';
@@ -46,98 +49,86 @@ import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
 
 export interface DataPlatformNotebooksProps {
   /**
-   *The Id of the VPC where EKS is deployed
-   * If not provided the construct will create a VPC, an EKS cluster, EMR virtual cluster
-   * Then create an EMR Studio and assign users
+   * The Id of the VPC where Amazon EKS is deployed
+   * @default - Create a VPC, an Amazon EKS cluster, Amazon EMR virtual cluster
+   * Then create an Amazon EMR Studio and assign users
    **/
   readonly vpcId?: string;
-
   /**
-   * Security Group Id of the EMR Cluster
+   * The Security Group Id of the Amazon EMR Cluster
    * It must be provided if the virtual cluster is provided or
-   * It is created if no cluster is provided
+   * @default - Create a new security group
    * */
   readonly engineSecurityGroupId?: string;
-
   /**
-   * List of subnets where EMR Studio can deploy the workspaces
+   * List of subnets where Amazon EMR Studio can deploy the workspaces
    * Must be provided if VPC Id is provided
    * */
   readonly subnetList?: string[];
-
   /**
-   * The name of EMR Studio
+   * The name of Amazon EMR Studio
    * */
   readonly studioName: string;
-
   /**
-   * Required the authentication mode of EMR Studio
+   * Required the authentication mode of Amazon EMR Studio
    * Either 'SSO' or 'IAM'
-   * For now only SSO is implemented, kept for future compatibility when IAM auth is available
+   * For now only SSO is implemented, kept for future compatibility when Amazon IAM auth is available
    * */
   readonly studioAuthMode: string;
-
   /**
-   * The Id of EKS cluster, it is used to create EMR virtual cluster if provided
+   * The Id of Amazon EKS cluster, it is used to create Amazon EMR virtual cluster if provided
+   * @default - Create a new Amazon EKS cluster
    * */
   readonly eksId?: string;
-
   /**
-   * The ARN of the service role for EMR studio
+   * The ARN of the service role for Amazon EMR studio
+   * @default - Create a new Amazon IAM Role
    * */
   readonly emrStudioServiceRoleArn?: string;
-
-
   /**
-   * The ARN of the user role for EMR studio
+   * The ARN of the user role for Amazon EMR studio
    * */
   readonly emrStudioUserRoleArn?: string;
-
   /**
-   * The version of kubernete to deploy
+   * The version of kubernetes to deploy
+   * @default - v1.20 version is used
    * */
   readonly kubernetesVersion?: string;
-
   /**
-   * EKS Admin Role
+   * Amazon EKS Admin Role
    * */
   readonly eksAdminRoleArn: string;
-
   /**
-   * ACM Certificate ARN
+   * Amazon ACM Certificate ARN
    */
   readonly acmCertificateArn: string;
-
   /**
-   * Used for IAM Auth when an IdP is provided
+   * Used for Amazon IAM Auth when an IdP is provided
    * */
   readonly idpAuthUrl?: string;
-
   /**
-   * Used for IAM auth when IdP is provided
+   * Used for Amazon IAM auth when IdP is provided
    * */
   readonly idpRelayStateParameterName?: string;
-
   /**
    * The name of the identity provider that is going to be used
    * */
   readonly idPName?: string;
-
   /**
-   * The the ARN of the IdP to be used
+   * The ARN of the IdP to be used
    * */
   readonly idPArn?: string;
 }
 
 /**
  * The properties for defining a user.
- * The interface is used to create assign a user or a group to a Studio
+ * The interface is used to create and assign a user or a group to a Amazon EMR Studio
  * used in {@linkcode addUser}
  */
 
 export interface StudioUserDefinition {
   /**
-   * Name of the identity as it appears in SSO console
+   * Name of the identity as it appears in AWS SSO console
    * */
   readonly mappingIdentityName?: string;
 
@@ -160,8 +151,8 @@ export enum StudioAuthMode {
   SSO = 'SSO',
 }
 /**
- * Construct to create an EKS cluster, EMR virtual cluster and EMR Studio
- * Construct can also take as parameters EKS id, VPC Id and list of subnets then create EMR virtual cluster and EMR Studio
+ * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
+ * Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio
  * Construct is then used to assign users to the create EMR Studio with {@linkcode addUsers}
  */
 
@@ -174,7 +165,7 @@ export class DataPlatformNotebook extends Construct {
   private readonly studioPrincipal: string = 'elasticmapreduce.amazonaws.com';
   private readonly lambdaPrincipal: string = 'lambda.amazonaws.com';
   private readonly certificateArn: string;
-  private readonly emrOnEksVersion: string = 'emr-6.2.0-latest'
+  private readonly emrOnEksVersion: string = 'emr-6.3.0-latest'
   private readonly studioName: string;
 
   private readonly workSpaceSecurityGroup: SecurityGroup;
@@ -200,8 +191,8 @@ export class DataPlatformNotebook extends Construct {
 
   /**
    * Constructs a new instance of the DataGenerator class
-   * @param {Construct} scope the Scope of the CDK Construct
-   * @param {string} id the ID of the CDK Construct
+   * @param {Construct} scope the Scope of the AWS CDK Construct
+   * @param {string} id the ID of the AWS CDK Construct
    * @param {DataPlatformNotebooksProps} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebooksProps}
    * @access public
    */
@@ -219,12 +210,12 @@ export class DataPlatformNotebook extends Construct {
     //Create encryption key to be used with cloudwatch loggroup and S3 bucket storing notebooks and
     this.dataPlatformEncryptionKey = new Key(
       this,
-      'KMS-key-'+ stringSanitizer(props.studioName), {
+      'KMS-key-'+ Utils.stringSanitizer(props.studioName), {
         alias: props.studioName.toLowerCase().replace(/[^\w\s]/gi, '') + '-Encryption-key',
       },
     );
 
-    //Create new EKS cluster
+    //Create new Amazon EKS cluster for Amazon EMR
     this.emrEks = new EmrEksCluster(this, 'EmrEks', {
       kubernetesVersion: KubernetesVersion.V1_20,
       eksAdminRoleArn: props.eksAdminRoleArn,
@@ -304,7 +295,7 @@ export class DataPlatformNotebook extends Construct {
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
     this.workspacesBucket = new Bucket(this, 'WorkspacesBucket' + props.studioName, {
-      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + stringSanitizer(props.studioName),
+      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + Utils.stringSanitizer(props.studioName),
       enforceSSL: true,
       encryptionKey: this.dataPlatformEncryptionKey,
       encryption: BucketEncryption.KMS,
@@ -332,7 +323,7 @@ export class DataPlatformNotebook extends Construct {
       //Create a role for the Studio
       this.studioServiceRole = new Role(this, 'studioServiceRole', {
         assumedBy: new ServicePrincipal(this.studioPrincipal),
-        roleName: 'studioServiceRole+' + stringSanitizer(props.studioName),
+        roleName: 'studioServiceRole+' + Utils.stringSanitizer(props.studioName),
         managedPolicies: this.studioServicePolicy,
       });
 
@@ -353,7 +344,7 @@ export class DataPlatformNotebook extends Construct {
       //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
       this.studioUserRole = new Role(this, 'studioUserRole', {
         assumedBy: new ServicePrincipal(this.studioPrincipal),
-        roleName: 'studioUserRole+' + stringSanitizer(props.studioName),
+        roleName: 'studioUserRole+' + Utils.stringSanitizer(props.studioName),
         managedPolicies: this.studioUserPolicy,
       });
 
@@ -528,7 +519,7 @@ export class DataPlatformNotebook extends Construct {
         //For each user or group, create a new managedEndpoint
         //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
         let managedEndpoint = this.emrEks.addManagedEndpoint(
-          this.studioName + '-' + stringSanitizer(user.mappingIdentityName!),
+          this.studioName + '-' + Utils.stringSanitizer(user.mappingIdentityName!),
           this.emrVirtCluster.instance.attrId,
           this.certificateArn,
           this.emrOnEksVersion,

@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import { FederatedPrincipal, IRole, ManagedPolicy, Policy, PolicyDocument, Role } from '@aws-cdk/aws-iam';
 import { Aws, Construct } from '@aws-cdk/core';
 import { StudioUserDefinition } from './dataplatform-notebook';
