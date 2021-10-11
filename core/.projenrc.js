@@ -3,7 +3,7 @@
 const { basename, join, dirname, relative } = require('path');
 const glob = require('glob');
 
-const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
+const { AwsCdkConstructLibrary } = require('projen');
 const project = new AwsCdkConstructLibrary({
 
   authorName: 'Amazon Web Services',
@@ -28,7 +28,7 @@ const project = new AwsCdkConstructLibrary({
   workflow: false,
   buildWorkflow: false,
   releaseWorkflow: true,
-  depsUpgrade: DependenciesUpgradeMechanism.NONE,
+  depsUpgrade: false,
   stale: false,
   pullRequestTemplate: false,
   cdkVersionPinning: true,
@@ -52,7 +52,6 @@ const project = new AwsCdkConstructLibrary({
   bundledDeps: [
     'xmldom@github:xmldom/xmldom#0.7.0',
     'aws-sdk',
-    '@types/node',
   ],
 
   devDeps: [

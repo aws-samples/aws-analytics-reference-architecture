@@ -155,27 +155,6 @@
         }
       ]
     },
-    "upgrade-projen": {
-      "name": "upgrade-projen",
-      "description": "upgrade projen",
-      "env": {
-        "CI": "0"
-      },
-      "steps": [
-        {
-          "exec": "npm-check-updates --upgrade --target=minor --filter='projen'"
-        },
-        {
-          "exec": "yarn install --check-files"
-        },
-        {
-          "exec": "yarn upgrade projen"
-        },
-        {
-          "exec": "npx projen"
-        }
-      ]
-    },
     "default": {
       "name": "default",
       "steps": [
