@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import * as AWS from 'aws-sdk';
 
 const emrcontainers = new AWS.EMRcontainers({
