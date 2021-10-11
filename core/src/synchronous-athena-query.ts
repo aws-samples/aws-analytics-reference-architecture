@@ -7,6 +7,7 @@ import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
+import { PreBundledFunction } from './pre-bundled-function';
 
 /**
  * The properties for SynchronousAthenaQuery Construct.
@@ -55,9 +56,9 @@ export class SynchronousAthenaQuery extends Construct {
     const binaryBucket = Bucket.fromBucketArn(this, 'binaryBucket', 'arn:aws:s3:::aws-analytics-reference-architecture');
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
-    const athenaQueryStartFn = new Function(this, 'athenaQueryStartFn', {
+    const athenaQueryStartFn = new PreBundledFunction(this, 'athenaQueryStartFn', {
       runtime: Runtime.PYTHON_3_8,
-      code: Code.fromBucket(binaryBucket, 'binaries/custom-resources/synchronous-athena-query.zip'),
+      codePath: 'resources/lambdas/synchronous-athena-query',
       handler: 'lambda.on_event',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),

@@ -28,6 +28,7 @@
     "test:destroy": "npx projen test:destroy",
     "bundle": "npx projen bundle",
     "bundle:data-generator-setup": "npx projen bundle:data-generator-setup",
+    "bundle:synchronous-athena-query": "npx projen bundle:synchronous-athena-query",
     "bundle:synchronous-crawler": "npx projen bundle:synchronous-crawler",
     "release": "npx projen release",
     "projen": "npx projen"
