@@ -56,12 +56,6 @@
       "steps": [
         {
           "exec": "tsc --noEmit --project tsconfig.jest.json"
-        },
-        {
-          "exec": "npx projen copy-resources"
-        },
-        {
-          "exec": "npx projen pip-install"
         }
       ]
     },

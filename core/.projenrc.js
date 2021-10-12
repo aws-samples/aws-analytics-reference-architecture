@@ -108,7 +108,7 @@ for (const dirPath of findAllPythonLambdaDir('src')) {
   const dirPathInLib = dirPath.replace('src', 'lib');
   const target = dirname(dirPathInLib);
   const pipCmd = `pip install -r ${dirPathInLib} --target ${target}`;
-  
+
   pipInstallTask.exec(pipCmd);
 }
 
@@ -117,8 +117,8 @@ for (const dirPath of findAllPythonLambdaDir('src')) {
  */
 project.compileTask.exec('npx projen copy-resources');
 project.compileTask.exec('npx projen pip-install');
-project.testCompileTask.exec('npx projen copy-resources');
-project.testCompileTask.exec('npx projen pip-install');
+// project.testCompileTask.exec('npx projen copy-resources');
+// project.testCompileTask.exec('npx projen pip-install');
 
 /**
  * Find all directory that has a Python package.
