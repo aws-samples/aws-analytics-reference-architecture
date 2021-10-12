@@ -286,7 +286,7 @@
           "exec": "cp -r data-generator-setup build/"
         },
         {
-          "exec": "[ -f build/data-generator-setup/requirements.txt ] && docker run -v $PWD/build/data-generator-setup:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"pip install -r requirements.txt -t ./; exit\""
+          "exec": "docker run -v $PWD/build/data-generator-setup:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"pip install -r requirements.txt -t ./; exit\""
         },
         {
           "exec": "cd build/data-generator-setup && zip -q -r ../../data-generator-setup.zip ."
@@ -308,7 +308,7 @@
           "exec": "cp -r synchronous-athena-query build/"
         },
         {
-          "exec": "[ -f build/synchronous-athena-query/requirements.txt ] && docker run -v $PWD/build/synchronous-athena-query:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"pip install -r requirements.txt -t ./; exit\""
+          "exec": "docker run -v $PWD/build/synchronous-athena-query:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"pip install -r requirements.txt -t ./; exit\""
         },
         {
           "exec": "cd build/synchronous-athena-query && zip -q -r ../../synchronous-athena-query.zip ."
@@ -330,7 +330,7 @@
           "exec": "cp -r synchronous-crawler build/"
         },
         {
-          "exec": "[ -f build/synchronous-crawler/requirements.txt ] && docker run -v $PWD/build/synchronous-crawler:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"pip install -r requirements.txt -t ./; exit\""
+          "exec": "docker run -v $PWD/build/synchronous-crawler:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"pip install -r requirements.txt -t ./; exit\""
         },
         {
           "exec": "cd build/synchronous-crawler && zip -q -r ../../synchronous-crawler.zip ."
