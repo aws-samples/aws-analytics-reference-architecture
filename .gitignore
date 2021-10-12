@@ -24,4 +24,3 @@ core/node_modules/
 *.log
 doc/site
 __init__.py
-core/.github/*
