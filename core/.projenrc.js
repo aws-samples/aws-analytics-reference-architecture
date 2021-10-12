@@ -65,14 +65,14 @@ const project = new AwsCdkConstructLibrary({
 
   stability: 'experimental',
 
-  releaseWorkflowSetupSteps: [
+  workflowBootstrapSteps: [
+    // Construct library requires NodeJS12, we need to set it up before yarn isntall
     {
-      name: 'Setup NodeJS 12 (required by construct lib',
+      name: 'Setup NodeJS 12',
       uses: 'actions/setup-node@v2',
       with: {
         nodeVersion: '12',
       },
-
     },
   ],
 

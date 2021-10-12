@@ -24,12 +24,12 @@ jobs:
         run: |-
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-      - name: Install dependencies
-        run: yarn install --check-files --frozen-lockfile
-      - name: Setup NodeJS 12 (required by construct lib
+      - name: Setup NodeJS 12
         uses: actions/setup-node@v2
         with:
           nodeVersion: "12"
+      - name: Install dependencies
+        run: yarn install --check-files --frozen-lockfile
       - name: release
         run: npx projen release
       - name: Check for new commits
