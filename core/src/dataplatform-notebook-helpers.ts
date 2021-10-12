@@ -174,7 +174,7 @@ export function createIAMUserPolicy(scope: Construct,
 
   //sanitize the userName from any special characters, userName used to name the session policy
   //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
-  let executionPolicyArn = user.executionPolicyArn[0]!.replace(/[^\w\s]/gi, '');
+  let executionPolicyArn = user.executionPolicyArns[0]!.replace(/[^\w\s]/gi, '');
 
   //create the policy
   return new ManagedPolicy(scope, 'studioSessionPolicy' + executionPolicyArn, {

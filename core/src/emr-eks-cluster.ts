@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { SubnetType } from '@aws-cdk/aws-ec2';
-import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
+import { KubernetesVersion, Cluster, CapacityType, Nodegroup, HelmChart } from '@aws-cdk/aws-eks';
 import { PolicyStatement, PolicyDocument, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
 import * as lambda from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
@@ -73,6 +73,7 @@ export class EmrEksCluster extends Construct {
   private readonly eksClusterName: string;
   public readonly eksCluster: Cluster;
   private emrWorkerIAMRole: Role;
+  private readonly albService: HelmChart;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -208,7 +209,7 @@ export class EmrEksCluster extends Construct {
     });
     albIAMPolicy.attachToRole(albServiceAccount.role);
 
-    const albService = this.eksCluster.addHelmChart('ALB', {
+    this.albService = this.eksCluster.addHelmChart('ALB', {
       chart: 'aws-load-balancer-controller',
       repository: 'https://aws.github.io/eks-charts',
       namespace: 'kube-system',
@@ -223,8 +224,8 @@ export class EmrEksCluster extends Construct {
         },
       },
     });
-    albService.node.addDependency(albServiceAccount);
-    albService.node.addDependency(certManager);
+    this.albService.node.addDependency(albServiceAccount);
+    this.albService.node.addDependency(certManager);
 
     // Add the kubernetes dashboard from helm chart
     this.eksCluster.addHelmChart('KubernetesDashboard', {
@@ -413,7 +414,7 @@ ${userData.join('\r\n')}
     emrOnEksVersion?: string,
     executionRoleArn?: string,
     configurationOverrides?: string,
-  ) {
+  ): CustomResource {
 
     if (id.length > 64) {
       throw new Error(`error managedendpoint name length is greater than 64 ${id}`);
@@ -508,9 +509,14 @@ ${userData.join('\r\n')}
       totalTimeout: Duration.minutes(30),
       queryInterval: Duration.seconds(10),
     });
-    return new CustomResource(this, id, {
+
+    var managedEndpoint: CustomResource = new CustomResource(this, id, {
       serviceToken: myProvider.serviceToken,
     });
+
+    managedEndpoint.node.addDependency(this.albService);
+
+    return managedEndpoint;
   }
 
   private getOrCreateAcmCertificate(): any {

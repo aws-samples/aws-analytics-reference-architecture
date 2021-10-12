@@ -23,6 +23,7 @@ import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Tags, Aws, Duration, CustomResource } from '@aws-cdk/core';
 
 import { Utils } from './utils';
+
 import {
   createLambdaNoteBookAddTagPolicy,
   buildManagedEndpointExecutionRole,
@@ -140,7 +141,7 @@ export interface StudioUserDefinition {
   /**
    * execution Role to pass to ManagedEndpoint
    * */
-  readonly executionPolicyArn: string [];
+  readonly executionPolicyArns: string [];
 
 }
 
@@ -180,7 +181,7 @@ export class DataPlatformNotebook extends Construct {
   private readonly studioInstance: CfnStudio;
   private readonly emrEks: EmrEksCluster;
 
-  private managedEndpoint: CustomResource;
+  private readonly managedEndpoint: CustomResource;
   private readonly emrVirtCluster: EmrVirtualCluster;
 
 
@@ -206,8 +207,7 @@ export class DataPlatformNotebook extends Construct {
     this.studioSubnetList = [];
     this.certificateArn = props.acmCertificateArn;
 
-
-    //Create encryption key to be used with cloudwatch loggroup and S3 bucket storing notebooks and
+    //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
     this.dataPlatformEncryptionKey = new Key(
       this,
       'KMS-key-'+ Utils.stringSanitizer(props.studioName), {
@@ -272,6 +272,17 @@ export class DataPlatformNotebook extends Construct {
     //Tag workSpaceSecurityGroup to be used with EMR Studio
     Tags.of(this.workSpaceSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
+
+    //This is used for troubleshooting
+    /*this.engineSecurityGroup = new SecurityGroup(this, 'engineSecurityGroup', {
+      vpc: this.emrVpc,
+      securityGroupName: 'engineTempSecurityGroup',
+      allowAllOutbound: false,
+    });
+
+    //Tag workSpaceSecurityGroup to be used with EMR Studio
+    Tags.of(this.workSpaceSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');*/
+
     //Get the Engine Security group
     //This is for future use when customer can bring their own EKS/EMR ManagedEndpoint Security Group
     //For now it executes the else statement straight
@@ -284,7 +295,6 @@ export class DataPlatformNotebook extends Construct {
       this.workSpaceSecurityGroup.addEgressRule(this.engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
       this.workSpaceSecurityGroup.addEgressRule(Peer.anyIpv4(), Port.tcp(443), 'Allow outbound traffic to internet, can be used for github');
     } else {
-      //For testing purpose only. This need to be removed once EKS/EMR construct is ready for use
       //Get the Engine Security group object
       this.engineSecurityGroup = SecurityGroup.fromSecurityGroupId(this, 'engineSecurityGroup', this.managedEndpoint.getAttString('securityGroup'));
       //Update security group to allow network traffic to EMR cluster on port 18888 and internet on 443
@@ -352,6 +362,9 @@ export class DataPlatformNotebook extends Construct {
       this.studioInstance = this.studioInstanceBuilder(props,
         this.engineSecurityGroup.securityGroupId,
         this.studioUserRole.roleArn);
+
+      this.studioInstance.node.addDependency(this.managedEndpoint);
+
     } else {
 
       //create a new instance of EMR studio
@@ -378,7 +391,7 @@ export class DataPlatformNotebook extends Construct {
 
     //Wait until the EMR virtual cluser and kms key are succefully created before creating the LogGroup
     lambdaNotebookTagOnCreateLog.node.addDependency(this.dataPlatformEncryptionKey);
-    lambdaNotebookTagOnCreateLog.node.addDependency(this.emrVirtCluster);
+    //lambdaNotebookTagOnCreateLog.node.addDependency(this.managedEndpoint);
 
     let kmsLogPolicy = JSON.parse(JSON.stringify(kmsLogPolicyTemplate));
 
@@ -463,14 +476,14 @@ export class DataPlatformNotebook extends Construct {
 
     for (let user of userList) {
 
-      for ( let executionPolicyArn of user.executionPolicyArn ) {
+      for ( let executionPolicyArn of user.executionPolicyArns ) {
 
         //For each user or group, create a new managedEndpoint
         //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
         let managedEndpoint = this.emrEks.addManagedEndpoint(
           this.studioName + + '-' +
             user.mappingIdentityName!.replace(/[^\w\s]/gi, '') +
-            user.executionPolicyArn.indexOf(executionPolicyArn).toString(),
+            user.executionPolicyArns.indexOf(executionPolicyArn).toString(),
           this.emrVirtCluster.instance.attrId,
           this.certificateArn,
           this.emrOnEksVersion,
@@ -479,7 +492,7 @@ export class DataPlatformNotebook extends Construct {
 
         //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
         let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
-          'engineSecurityGroup' + this.studioName + user.mappingIdentityName!.replace(/[^\w\s]/gi, ''),
+          'engineSecurityGroup' + this.studioName + user.mappingIdentityName!.replace(/[^\w\s]/gi, '') + user.executionPolicyArns.indexOf(executionPolicyArn).toString(),
           managedEndpoint.getAttString('securityGroup'));
 
         //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
@@ -514,7 +527,7 @@ export class DataPlatformNotebook extends Construct {
 
     for (let user of userList) {
 
-      for ( let executionPolicyArn of user.executionPolicyArn ) {
+      for ( let executionPolicyArn of user.executionPolicyArns ) {
 
         //For each user or group, create a new managedEndpoint
         //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
@@ -545,7 +558,7 @@ export class DataPlatformNotebook extends Construct {
       iamRolePolicy = createIAMUserPolicy(this, user, this.studioServiceRoleName,
         managedEndpointArns, this.studioId);
 
-      createIAMFederatedRole(this, iamRolePolicy!, federatedIdpArn, user.executionPolicyArn[0]);
+      createIAMFederatedRole(this, iamRolePolicy!, federatedIdpArn, user.executionPolicyArns[0]);
     }
 
   }

@@ -8,7 +8,7 @@ export class Utils {
 
   /**
    * Sanitize a string by removing upper case and replacing special characters except underscore
-   * @param {string} toSanitize the string to sanitize  
+   * @param {string} toSanitize the string to sanitize
    */
   public static stringSanitizer (toSanitize: string ): string {
     return toSanitize.toLowerCase().replace(/[^\w\s]/gi, '');
