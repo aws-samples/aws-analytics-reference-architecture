@@ -169,7 +169,6 @@ function addPythonLambdaFunctionBundleTask(taskName, cwd, dirName) {
 
   // Pip install and compiles dependencies via Docker SAM image
   bundleTask.exec([
-    `[ -f build/${dirName}/requirements.txt ] &&`, // Only build if requirements.txt exists
     'docker run',
     `-v $PWD/build/${dirName}:/var/task`, // Mapping from host full path to Docker container
     '"public.ecr.aws/sam/build-python3.8"', //Image name
