@@ -65,6 +65,8 @@ const project = new AwsCdkConstructLibrary({
 
   stability: 'experimental',
 
+  workflowContainerImage: 'jsii/superchain:node12',
+
 });
 
 const testDeploy = project.addTask('test:deploy', {
@@ -180,5 +182,9 @@ function addPythonLambdaFunctionBundleTask(taskName, cwd, dirName) {
 
   return bundleTask;
 }
+
+// project.release.containerImage = 'jsii/superchain:node12';
+
+console.log('project.release.containerImage', project.release.containerImage);
 
 project.synth();
