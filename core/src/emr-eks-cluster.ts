@@ -482,7 +482,7 @@ ${userData.join('\r\n')}
         REGION: Stack.of(this).region,
         CLUSTER_ID: virtualClusterId,
       },
-      // TODO least priviliges
+      // TODO least privileges
       initialPolicy: [
         new PolicyStatement({
           resources: ['*'],

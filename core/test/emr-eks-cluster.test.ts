@@ -119,14 +119,14 @@ test('EKS cluster should have the default Nodegroups', () => {
 
   expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
     AmiType: 'AL2_x86_64',
-    InstanceTypes: ['t3.large'],
+    InstanceTypes: ['t3.xlarge'],
     Labels: {
       role: 'tooling',
     },
     ScalingConfig: {
-      DesiredSize: 2,
+      DesiredSize: 4,
       MaxSize: 50,
-      MinSize: 2,
+      MinSize: 4,
     },
     Tags: assertCDK.objectLike({
       'k8s.io/cluster-autoscaler/emr-eks-cluster': 'owned',

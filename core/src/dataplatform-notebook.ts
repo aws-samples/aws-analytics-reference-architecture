@@ -3,7 +3,7 @@
 
 import * as path from 'path';
 
-import { SecurityGroup, ISecurityGroup, IVpc, Peer, Port, Vpc, SubnetType } from '@aws-cdk/aws-ec2';
+import { SecurityGroup, ISecurityGroup, IVpc, Port, SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnStudioSessionMapping, CfnStudio, CfnStudioProps } from '@aws-cdk/aws-emr';
 import { Rule, IRuleTarget, EventPattern } from '@aws-cdk/aws-events';
@@ -20,16 +20,14 @@ import { Key } from '@aws-cdk/aws-kms';
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
-import { Construct, Tags, Aws, Duration, CustomResource } from '@aws-cdk/core';
+import { Construct, Tags, Aws, Duration } from '@aws-cdk/core';
 
-import { Utils } from './utils';
 
 import {
   createLambdaNoteBookAddTagPolicy,
   buildManagedEndpointExecutionRole,
   createUserSessionPolicy,
   createStudioUserRolePolicy,
-  addServiceRoleInlinePolicy,
   createStudioServiceRolePolicy,
   createIAMFederatedRole,
   createIAMUserPolicy,
@@ -39,9 +37,9 @@ import { EmrEksCluster } from './emr-eks-cluster';
 import { EmrEksNodegroup } from './emr-eks-nodegroup';
 import { EmrVirtualCluster } from './emr-virtual-cluster';
 
-
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
+import { Utils } from './utils';
 
 
 /**
@@ -49,26 +47,7 @@ import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
  */
 
 export interface DataPlatformNotebooksProps {
-  /**
-   * The Id of the VPC where Amazon EKS is deployed
-   * @default - Create a VPC, an Amazon EKS cluster, Amazon EMR virtual cluster
-   * Then create an Amazon EMR Studio and assign users
-   **/
-  readonly vpcId?: string;
-  /**
-   * The Security Group Id of the Amazon EMR Cluster
-   * It must be provided if the virtual cluster is provided or
-   * @default - Create a new security group
-   * */
-  readonly engineSecurityGroupId?: string;
-  /**
-   * List of subnets where Amazon EMR Studio can deploy the workspaces
-   * Must be provided if VPC Id is provided
-   * */
-  readonly subnetList?: string[];
-  /**
-   * The name of Amazon EMR Studio
-   * */
+
   readonly studioName: string;
   /**
    * Required the authentication mode of Amazon EMR Studio
@@ -77,24 +56,10 @@ export interface DataPlatformNotebooksProps {
    * */
   readonly studioAuthMode: string;
   /**
-   * The Id of Amazon EKS cluster, it is used to create Amazon EMR virtual cluster if provided
-   * @default - Create a new Amazon EKS cluster
-   * */
-  readonly eksId?: string;
-  /**
-   * The ARN of the service role for Amazon EMR studio
-   * @default - Create a new Amazon IAM Role
-   * */
-  readonly emrStudioServiceRoleArn?: string;
-  /**
-   * The ARN of the user role for Amazon EMR studio
-   * */
-  readonly emrStudioUserRoleArn?: string;
-  /**
    * The version of kubernetes to deploy
    * @default - v1.20 version is used
    * */
-  readonly kubernetesVersion?: string;
+  readonly kubernetesVersion?: KubernetesVersion;
   /**
    * Amazon EKS Admin Role
    * */
@@ -112,13 +77,15 @@ export interface DataPlatformNotebooksProps {
    * */
   readonly idpRelayStateParameterName?: string;
   /**
-   * The name of the identity provider that is going to be used
+   * Used for Amazon IAM the name of the identity provider that is going to be used
    * */
   readonly idPName?: string;
   /**
-   * The ARN of the IdP to be used
+   * Used for Amazon IAM the ARN of the IdP to be used, value taken from the IAM console in the Identity providers console
    * */
   readonly idPArn?: string;
+
+  readonly emrOnEksVersion?: string;
 }
 
 /**
@@ -145,7 +112,9 @@ export interface StudioUserDefinition {
 
 }
 
-
+/**
+ * Enum to define authentication mode for Amazon EMR Studio
+ */
 export enum StudioAuthMode {
   IAM_FEDERATED = 'IAM_FEDERATED',
   IAM_AUTHENTICATED = 'IAM_AUTHENTICATED',
@@ -159,15 +128,17 @@ export enum StudioAuthMode {
 
 export class DataPlatformNotebook extends Construct {
 
+  public static readonly DEFAULT_EKS_VERSION: KubernetesVersion = KubernetesVersion.V1_20;
+  public static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
+
   private readonly studioSubnetList: string[] | undefined ;
-  private readonly studioServiceRoleName: string;
   public readonly studioUrl: string;
   public readonly studioId: string;
   private readonly studioPrincipal: string = 'elasticmapreduce.amazonaws.com';
   private readonly lambdaPrincipal: string = 'lambda.amazonaws.com';
   private readonly certificateArn: string;
-  private readonly emrOnEksVersion: string = 'emr-6.3.0-latest'
   private readonly studioName: string;
+  private readonly emrOnEksVersion: string;
 
   private readonly workSpaceSecurityGroup: SecurityGroup;
   private readonly engineSecurityGroup: ISecurityGroup | undefined;
@@ -181,14 +152,14 @@ export class DataPlatformNotebook extends Construct {
   private readonly studioInstance: CfnStudio;
   private readonly emrEks: EmrEksCluster;
 
-  private readonly managedEndpoint: CustomResource;
   private readonly emrVirtCluster: EmrVirtualCluster;
-
 
   private readonly lambdaNotebookTagOnCreatePolicy: IManagedPolicy [];
   private readonly lambdaNotebookAddTagOnCreate: Role;
 
   private readonly dataPlatformEncryptionKey: Key;
+
+  private readonly managedEndpointExcutionPolicyArnMapping: Map<string, string>;
 
   /**
    * Constructs a new instance of the DataGenerator class
@@ -206,6 +177,9 @@ export class DataPlatformNotebook extends Construct {
     this.lambdaNotebookTagOnCreatePolicy = [];
     this.studioSubnetList = [];
     this.certificateArn = props.acmCertificateArn;
+    this.managedEndpointExcutionPolicyArnMapping = new Map<string, string>();
+    this.emrOnEksVersion = props.emrOnEksVersion || DataPlatformNotebook.DEFAULT_EMR_VERSION;
+
 
     //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
     this.dataPlatformEncryptionKey = new Key(
@@ -217,20 +191,17 @@ export class DataPlatformNotebook extends Construct {
 
     //Create new Amazon EKS cluster for Amazon EMR
     this.emrEks = new EmrEksCluster(this, 'EmrEks', {
-      kubernetesVersion: KubernetesVersion.V1_20,
+      kubernetesVersion: props.kubernetesVersion || DataPlatformNotebook.DEFAULT_EKS_VERSION,
       eksAdminRoleArn: props.eksAdminRoleArn,
       eksClusterName: 'job-test-' + props.studioName,
     });
 
     //Get the list of private subnets in VPC
-    if (this.emrEks !== undefined) {
-      this.studioSubnetList = this.emrEks.eksCluster.vpc.selectSubnets({
-        onePerAz: true,
-        subnetType: SubnetType.PRIVATE_WITH_NAT,
-      }).subnetIds;
-    } else {
-      this.studioSubnetList = props.subnetList;
-    }
+    this.studioSubnetList = this.emrEks.eksCluster.vpc.selectSubnets({
+      onePerAz: true,
+      subnetType: SubnetType.PRIVATE_WITH_NAT,
+    }).subnetIds;
+
 
     //Create a virtual cluster a give it a name of 'ec2VirtCluster'+studioName provided by user
     this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
@@ -243,24 +214,8 @@ export class DataPlatformNotebook extends Construct {
     this.emrEks.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_DRIVER);
     this.emrEks.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_EXECUTOR);
 
-    //Add a managed endpoint, used to populate the engineSG in EMR Studio
-    this.managedEndpoint = this.emrEks.addManagedEndpoint(
-      'endpoint',
-      this.emrVirtCluster.instance.attrId,
-      props.acmCertificateArn,
-      this.emrOnEksVersion,
-    );
-
-    //Wait until the EMR Virtual cluster is deployed then create a managedendpoint
-    this.managedEndpoint.node.addDependency(this.emrVirtCluster);
-
     //Set Vpc object to be used with SecurityGroup and EMR Studio Creation
-    if (props.vpcId !== undefined) {
-      //Get the IVpc from the VPC Id of EKS/EMR virtual cluster
-      this.emrVpc = Vpc.fromLookup(this, 'vpcId', { vpcId: props.vpcId });
-    } else {
-      this.emrVpc = this.emrEks.eksCluster.vpc;
-    }
+    this.emrVpc = this.emrEks.eksCluster.vpc;
 
     //Create a security group to be attached to the studio workspaces
     this.workSpaceSecurityGroup = new SecurityGroup(this, 'workspaceSecurityGroup', {
@@ -272,35 +227,14 @@ export class DataPlatformNotebook extends Construct {
     //Tag workSpaceSecurityGroup to be used with EMR Studio
     Tags.of(this.workSpaceSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
-
-    //This is used for troubleshooting
-    /*this.engineSecurityGroup = new SecurityGroup(this, 'engineSecurityGroup', {
+    this.engineSecurityGroup = new SecurityGroup(this, 'engineSecurityGroup', {
       vpc: this.emrVpc,
       securityGroupName: 'engineTempSecurityGroup',
       allowAllOutbound: false,
     });
 
     //Tag workSpaceSecurityGroup to be used with EMR Studio
-    Tags.of(this.workSpaceSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');*/
-
-    //Get the Engine Security group
-    //This is for future use when customer can bring their own EKS/EMR ManagedEndpoint Security Group
-    //For now it executes the else statement straight
-    if (props.engineSecurityGroupId !== undefined) {
-
-      //Get the EMR security group object from its security group Id
-      this.engineSecurityGroup = SecurityGroup.fromSecurityGroupId(this, 'engineSecurityGroup', props.engineSecurityGroupId);
-
-      //Update security group to allow network traffic to EMR cluster on port 18888 and internet on 443
-      this.workSpaceSecurityGroup.addEgressRule(this.engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
-      this.workSpaceSecurityGroup.addEgressRule(Peer.anyIpv4(), Port.tcp(443), 'Allow outbound traffic to internet, can be used for github');
-    } else {
-      //Get the Engine Security group object
-      this.engineSecurityGroup = SecurityGroup.fromSecurityGroupId(this, 'engineSecurityGroup', this.managedEndpoint.getAttString('securityGroup'));
-      //Update security group to allow network traffic to EMR cluster on port 18888 and internet on 443
-      this.workSpaceSecurityGroup.addEgressRule(this.engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
-      this.workSpaceSecurityGroup.addEgressRule(Peer.anyIpv4(), Port.tcp(443), 'Allow outbound traffic to internet, can be used for github');
-    }
+    Tags.of(this.workSpaceSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
@@ -319,36 +253,26 @@ export class DataPlatformNotebook extends Construct {
     //Check if the construct prop has an EMRStudio Service Role ARN
     //update the role with an inline policy to allow access to the S3 bucket created above
     //If no ARN is supplied construct creates a new role
-    if (props.emrStudioServiceRoleArn !== undefined) {
 
-      this.studioServiceRole = addServiceRoleInlinePolicy(this, props.emrStudioServiceRoleArn, this.workspacesBucket.bucketName);
+    //Create a Managed policy for Studio service role
+    this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
+      'StudioServiceManagedPolicy', createStudioServiceRolePolicy(this, this.dataPlatformEncryptionKey.keyArn, this.workspacesBucket.bucketName,
+        props.studioName),
+    ));
 
-    } else {
-      //Create a Managed policy for Studio service role
-      this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
-        'StudioServiceManagedPolicy', createStudioServiceRolePolicy(this, this.dataPlatformEncryptionKey.keyArn, this.workspacesBucket.bucketName,
-          props.studioName),
-      ));
-
-      //Create a role for the Studio
-      this.studioServiceRole = new Role(this, 'studioServiceRole', {
-        assumedBy: new ServicePrincipal(this.studioPrincipal),
-        roleName: 'studioServiceRole+' + Utils.stringSanitizer(props.studioName),
-        managedPolicies: this.studioServicePolicy,
-      });
-
-    }
-
-    //Set the serviceRole name, to be used by the CfnStudioConstruct
-    this.studioServiceRoleName = this.studioServiceRole.roleName;
-
+    //Create a role for the Studio
+    this.studioServiceRole = new Role(this, 'studioServiceRole', {
+      assumedBy: new ServicePrincipal(this.studioPrincipal),
+      roleName: 'studioServiceRole+' + Utils.stringSanitizer(props.studioName),
+      managedPolicies: this.studioServicePolicy,
+    });
 
     // Create an EMR Studio user role only if the user uses SSO as authentication mode
     if (props.studioAuthMode === 'SSO') {
       //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
       this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
         'StudioUserManagedPolicy',
-        createStudioUserRolePolicy(this, props.studioName, this.studioServiceRoleName),
+        createStudioUserRolePolicy(this, props.studioName, this.studioServiceRole.roleName),
       ));
 
       //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
@@ -362,8 +286,6 @@ export class DataPlatformNotebook extends Construct {
       this.studioInstance = this.studioInstanceBuilder(props,
         this.engineSecurityGroup.securityGroupId,
         this.studioUserRole.roleArn);
-
-      this.studioInstance.node.addDependency(this.managedEndpoint);
 
     } else {
 
@@ -478,34 +400,40 @@ export class DataPlatformNotebook extends Construct {
 
       for ( let executionPolicyArn of user.executionPolicyArns ) {
 
-        //For each user or group, create a new managedEndpoint
-        //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
-        let managedEndpoint = this.emrEks.addManagedEndpoint(
-          this.studioName + + '-' +
-            user.mappingIdentityName!.replace(/[^\w\s]/gi, '') +
-            user.executionPolicyArns.indexOf(executionPolicyArn).toString(),
-          this.emrVirtCluster.instance.attrId,
-          this.certificateArn,
-          this.emrOnEksVersion,
-          buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
-        );
+        if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyArn)) {
+          //For each user or group, create a new managedEndpoint
+          //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
+          let managedEndpoint = this.emrEks.addManagedEndpoint(
+            this.studioName + + '-' +
+                user.mappingIdentityName!.replace(/[^\w\s]/gi, '') +
+                user.executionPolicyArns.indexOf(executionPolicyArn).toString(),
+            this.emrVirtCluster.instance.attrId,
+            this.certificateArn,
+            this.emrOnEksVersion,
+            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
+          );
 
-        //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
-        let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
-          'engineSecurityGroup' + this.studioName + user.mappingIdentityName!.replace(/[^\w\s]/gi, '') + user.executionPolicyArns.indexOf(executionPolicyArn).toString(),
-          managedEndpoint.getAttString('securityGroup'));
+          //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
+          let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
+            'engineSecurityGroup' + this.studioName + user.mappingIdentityName!.replace(/[^\w\s]/gi, '') + user.executionPolicyArns.indexOf(executionPolicyArn).toString(),
+            managedEndpoint.getAttString('securityGroup'));
 
-        //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
-        this.workSpaceSecurityGroup.addEgressRule(engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
+          //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
+          this.workSpaceSecurityGroup.addEgressRule(engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
 
-        //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
-        Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
+          //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
+          Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
-        managedEndpointArns.push(managedEndpoint.getAttString('arn'));
+          this.managedEndpointExcutionPolicyArnMapping.set(executionPolicyArn, managedEndpoint.getAttString('arn'));
+
+          managedEndpointArns.push(managedEndpoint.getAttString('arn'));
+        } else {
+          managedEndpointArns.push(<string> this.managedEndpointExcutionPolicyArnMapping.get(executionPolicyArn));
+        }
       }
 
       //Create the session policy and gets its ARN
-      let sessionPolicyArn = createUserSessionPolicy(this, user, this.studioServiceRoleName,
+      let sessionPolicyArn = createUserSessionPolicy(this, user, this.studioServiceRole.roleName,
         managedEndpointArns, this.studioId);
 
       //Map a session to user or group
@@ -555,14 +483,13 @@ export class DataPlatformNotebook extends Construct {
       }
 
       //Create the role policy and gets its ARN
-      iamRolePolicy = createIAMUserPolicy(this, user, this.studioServiceRoleName,
+      iamRolePolicy = createIAMUserPolicy(this, user, this.studioServiceRole.roleName,
         managedEndpointArns, this.studioId);
 
       createIAMFederatedRole(this, iamRolePolicy!, federatedIdpArn, user.executionPolicyArns[0]);
     }
 
   }
-
 
   private studioInstanceBuilder (props: DataPlatformNotebooksProps, securityGroupId: string, studioUserRoleRoleArn?: string ): CfnStudio {
 
