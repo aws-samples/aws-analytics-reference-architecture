@@ -62,6 +62,14 @@ const project = new AwsCdkConstructLibrary({
     module: 'aws_analytics_reference_architecture',
   },
 
+  // tsconfig: {
+  //   compilerOptions: {
+  //     resolveJsonModule: true,
+  //     esModuleInterop: true,
+  //   },
+  //   include: ['src/**/*.json', 'src/**/*.ts'],
+  // },
+
   stability: 'experimental',
 
 });
