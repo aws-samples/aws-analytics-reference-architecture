@@ -11,10 +11,10 @@ import { StateMachine, IntegrationPattern, TaskInput, JsonPath } from '@aws-cdk/
 import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfunctions-tasks';
 import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
-import { Dataset } from './dataset';
-import { SingletonBucket } from './singleton-bucket';
-import { SingletonGlueDatabase } from './singleton-glue-database';
-import { SynchronousAthenaQuery } from './synchronous-athena-query';
+import { Dataset } from '../dataset';
+import { SingletonBucket } from '../singleton-bucket';
+import { SingletonGlueDatabase } from '../singleton-glue-database';
+import { SynchronousAthenaQuery } from '../synchronous-athena-query';
 
 
 /**

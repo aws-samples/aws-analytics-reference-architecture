@@ -1,14 +1,12 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-# SPDX-License-Identifier: MIT-0
-
 import boto3
 import os
+import time
 import logging
 
-athena = boto3.client('athena', os.getenv('AWS_REGION'))
+glue_client = boto3.client('glue', os.getenv('AWS_REGION'))
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
@@ -25,47 +23,50 @@ def on_event(event, ctx):
 
 def on_create(event):
     log.info(event)
-    statement = event['ResourceProperties']['Statement']
-    result_path = event['ResourceProperties']['ResultPath']
-    # Check if the the result path has trailing slash and add it
-    if not result_path.endswith('/'):
-        log.info('adding / at the end of the result path')
-        result_path += '/'
-    response_start = athena.start_query_execution(
-        QueryString = statement,
-        ResultConfiguration = {
-            'OutputLocation': result_path
-        }
-    )
+    crawler_name = event['ResourceProperties']['CrawlerName']
+    response_start = glue_client.start_crawler(Name=crawler_name)
     log.info(response_start)
     return {
-        'PhysicalResourceId': response_start['QueryExecutionId'],
+        'PhysicalResourceId': crawler_name,
+        'Data': {
+            'StartResponse': response_start
+        }
     }
 
 def on_update(event):
-    return on_create(event)
+    log.info(event)
+    crawler_name = event['ResourceProperties']['CrawlerName']
+    return {
+        'PhysicalResourceId': crawler_name
+    }
 
 def on_delete(event):
     log.info(event)
+    crawler_name = event['ResourceProperties']['CrawlerName']
+    response_stop = glue_client.stop_crawler(Name=crawler_name)
+    log.info(response_stop)
     return {
-        'PhysicalResourceId': event['PhysicalResourceId']
+        'PhysicalResourceId': crawler_name,
+        'Data': {
+            'StartResponse': response_stop
+        }
     }
 
-def is_complete(event, ctx):    
+def is_complete(event, ctx):
     log.info(event)
-    query_id = event['PhysicalResourceId']
-    response_get = athena.get_query_execution(QueryExecutionId=query_id)
+    crawler_name = event['ResourceProperties']['CrawlerName']
+    response_get = glue_client.get_crawler(Name=crawler_name)
     log.info(response_get)
-    status = response_get["QueryExecution"]["Status"]["State"]
-    # Possible status: QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED
-    log.info(f"Query {query_id} status is {status.lower()}.")
-    if status == 'QUEUED' or status == 'RUNNING':
+    state = response_get["Crawler"]["State"]
+    status = response_get['Crawler']['LastCrawl']['Status']
+    # Possible states: RUNNING, STOPPING, READY
+    # Possible status: SUCCEEDED, CANCELLED, FAILED
+    log.info(f"Crawler {crawler_name} is {state.lower()}.")
+    if state != 'READY' and status != 'SUCCEEDED': 
         return {
             'IsComplete': False
         }
-    elif status == 'SUCCEEDED':
+    else:
         return {
             'IsComplete': True
         }
-    else:
-        raise RuntimeError('Query execution: %s', status )
