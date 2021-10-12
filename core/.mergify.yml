@@ -12,3 +12,4 @@ pull_request_rules:
     conditions:
       - "#approved-reviews-by>=1"
       - -label~=(do-not-merge)
+      - status-success=build

@@ -26,7 +26,7 @@ const project = new AwsCdkConstructLibrary({
   repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
   repositoryDirectory: 'core',
   workflow: false,
-  buildWorkflow: false,
+  buildWorkflow: true,
   releaseWorkflow: true,
   depsUpgrade: false,
   stale: false,
