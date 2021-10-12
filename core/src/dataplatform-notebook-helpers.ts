@@ -13,6 +13,11 @@ import * as studioUserRolePolicy from './studio/studio-user-iam-role-policy.json
 import * as studioSessionPolicy from './studio/studio-user-session-policy.json';
 import * as studioUserPolicy from './studio/studio-user-sso-role-policy.json';
 
+/**
+ * @hidden
+ * Create a policy for Lambda function
+ * @returns Return a string with IAM policy ARN
+ */
 export function createLambdaNoteBookAddTagPolicy (scope: Construct, logArn: string, studioName: string): string {
   let policy = JSON.parse(JSON.stringify(lambdaNotebookTagPolicy));
 
@@ -27,7 +32,11 @@ export function createLambdaNoteBookAddTagPolicy (scope: Construct, logArn: stri
   return lambdaPolicy.managedPolicyArn;
 }
 
-
+/**
+ * @hidden
+ * Create the role to be used with the ManagedEndpoint
+ * @returns Return a string with Role ARN
+ */
 export function buildManagedEndpointExecutionRole (scope: Construct, policyArn: string, emrEks: EmrEksCluster): string {
 
   let managedPolicy = ManagedPolicy.fromManagedPolicyArn(scope, 'managedEndpointPolicy' + policyArn, policyArn);
@@ -44,6 +53,11 @@ export function buildManagedEndpointExecutionRole (scope: Construct, policyArn: 
   return managedEndpointExecutionRole.roleArn;
 }
 
+/**
+ * @hidden
+ * Create a session policy for each user scoped down to the managed endpoint
+ * @returns Return the ARN of the policy created
+ */
 export function createUserSessionPolicy(scope: Construct, user: StudioUserDefinition,
   studioServiceRoleName: string,
   managedEndpointArns: string [], studioId: string): string {
@@ -82,6 +96,11 @@ export function createUserSessionPolicy(scope: Construct, user: StudioUserDefini
   return userSessionPolicy.managedPolicyArn;
 }
 
+/**
+ * @hidden
+ * Create a policy for the EMR USER Role
+ * @returns Return the ARN of the policy created
+ */
 export function createStudioUserRolePolicy(scope: Construct, studioName: string, studioServiceRoleName: string): string {
 
   let policyTemplate: string = JSON.stringify(studioUserPolicy);
@@ -102,6 +121,10 @@ export function createStudioUserRolePolicy(scope: Construct, studioName: string,
   return userRolePolicy.managedPolicyArn;
 }
 
+/**
+ * @hidden
+ * Add an inline policy to the role passed by the user
+ */
 export function addServiceRoleInlinePolicy (scope: Construct, studioServiceRoleArn: string, bucketName: string ): IRole {
 
   //Get policy from a JSON template
@@ -121,6 +144,12 @@ export function addServiceRoleInlinePolicy (scope: Construct, studioServiceRoleA
   return studioServiceRole;
 }
 
+/**
+ * @hidden
+ * Create a policy for the EMR Service Role
+ * The policy allow access only to a single bucket to store notebooks
+ * @returns Return the ARN of the policy created
+ */
 export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, bucketName: string, studioName: string): string {
 
   //Get policy from a JSON template
@@ -142,6 +171,12 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
   return serviceRolePolicy.managedPolicyArn;
 }
 
+/**
+ * @hidden
+ * Create a policy for the role to which a user federate
+ * Called when working in IAM auth mode with Federated IdP
+ * @returns Return the ARN of the policy created
+ */
 export function createIAMUserPolicy(scope: Construct,
   user: StudioUserDefinition,
   studioServiceRoleName: string,
@@ -183,6 +218,13 @@ export function createIAMUserPolicy(scope: Construct,
   });
 
 }
+
+/**
+ * @hidden
+ * Create the role to which a user federate
+ * Called when working in IAM auth mode with Federated IdP
+ * @returns Return the ARN of the policy created
+ */
 
 export function createIAMFederatedRole(scope: Construct,
   iamRolePolicy: ManagedPolicy,

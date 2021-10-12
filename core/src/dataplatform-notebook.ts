@@ -84,7 +84,10 @@ export interface DataPlatformNotebooksProps {
    * Used for Amazon IAM the ARN of the IdP to be used, value taken from the IAM console in the Identity providers console
    * */
   readonly idPArn?: string;
-
+  /**
+   * The version of Amazon EMR to deploy
+   * @default - v6.3 version is used
+   * */
   readonly emrOnEksVersion?: string;
 }
 
@@ -96,17 +99,18 @@ export interface DataPlatformNotebooksProps {
 
 export interface StudioUserDefinition {
   /**
-   * Name of the identity as it appears in AWS SSO console
+   * Name of the identity as it appears in AWS SSO console, to be used when SSO is used as an authentication mode
    * */
   readonly mappingIdentityName?: string;
 
   /**
-   * Type of the identity either GROUP or USER
+   * Type of the identity either GROUP or USER, to be used when SSO is used as an authentication mode
    * */
   readonly mappingIdentityType?: string;
 
   /**
-   * execution Role to pass to ManagedEndpoint
+   * execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job
+   * Including Amazon S3 buckets, Amazon DynamoDB
    * */
   readonly executionPolicyArns: string [];
 
@@ -123,7 +127,7 @@ export enum StudioAuthMode {
 /**
  * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
  * Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio
- * Construct is then used to assign users to the create EMR Studio with {@linkcode addUsers}
+ * Construct is then used to assign users to the create EMR Studio with {@linkcode addSSOUsers} or {@linkcode addFederatedUsers}
  */
 
 export class DataPlatformNotebook extends Construct {
@@ -245,6 +249,7 @@ export class DataPlatformNotebook extends Construct {
       encryption: BucketEncryption.KMS,
     });
 
+    //Wait until the EKS key is created then create the S3 bucket
     this.workspacesBucket.node.addDependency(this.dataPlatformEncryptionKey);
 
     //Wait until the EMR Virtual cluster is deployed then create an S3 bucket
@@ -293,6 +298,8 @@ export class DataPlatformNotebook extends Construct {
       this.studioInstance = this.studioInstanceBuilder(props, this.engineSecurityGroup.securityGroupId);
     }
 
+    //Set the Studio URL and Studio Id this is used in session Mapping for
+    // EMR Studio when {@linkcode addFederatedUsers} or {@linkcode addSSOUsers} are called
     this.studioName = props.studioName;
 
     //Set the Studio URL and Studio Id to return as CfnOutput later
@@ -394,12 +401,20 @@ export class DataPlatformNotebook extends Construct {
    */
   public addSSOUsers(userList: StudioUserDefinition[]) {
 
+    //Initialize the managedEndpointArns
+    //Used to store the arn of managed endpoints after creation for each users
+    //This is used to update the session policy
     let managedEndpointArns : string [] = [];
 
+    //Loop through each user and create its managed endpoint(s) as defined by the user
     for (let user of userList) {
 
+      //For each policy create a role and then pass it to addManageEndpoint to create an endpoint
       for ( let executionPolicyArn of user.executionPolicyArns ) {
 
+        //Check if the managedendpoint policy has already is already used in role which is created for a managed endpoint
+        //if it there is no managedendpointArn create a new managedendpoint
+        //else get managedendpoint and push it to  @managedEndpointArns
         if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyArn)) {
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
@@ -424,10 +439,16 @@ export class DataPlatformNotebook extends Construct {
           //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
           Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
+          //Add the managedendpointArn to @managedEndpointExcutionPolicyArnMapping
+          //This is to avoid the creation an endpoint with the same policy twice
+          //Save resources and reduce the deployment time
           this.managedEndpointExcutionPolicyArnMapping.set(executionPolicyArn, managedEndpoint.getAttString('arn'));
 
+          //Store the managedendpointArn so it can be used for the session policy
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
+          //get the managedendpointArn from the @managedEndpointExcutionPolicyArnMapping
+          //and store it in managedendpointArn so it can be used for the session policy
           managedEndpointArns.push(<string> this.managedEndpointExcutionPolicyArnMapping.get(executionPolicyArn));
         }
       }
@@ -447,8 +468,19 @@ export class DataPlatformNotebook extends Construct {
     }
   }
 
+  /**
+   * Method to add users when IAM auth with an external IdP is used, take a list of userDefinition and will create a managed endpoint
+   * and create a session Policy scoped to the managed endpoint
+   * then assign a user with the created session policy to the created studio
+   * @param {StudioUserDefinition} userList list of users
+   * @param {federatedIdpArn} the Arn of the IdP provider as it appears in the IAM console
+   * @access public
+   */
   public addFederatedUsers(userList: StudioUserDefinition[], federatedIdpArn: string) {
 
+    //Initialize the managedEndpointArns
+    //Used to store the arn of managed endpoints after creation for each users
+    //This is used to update the session policy
     let managedEndpointArns : string [] = [];
 
     let iamRolePolicy: ManagedPolicy;
@@ -491,6 +523,14 @@ export class DataPlatformNotebook extends Construct {
 
   }
 
+  /**
+   * @hidden
+   * Constructs a new object of CfnStudio
+   * @param {DataPlatformNotebooksProps} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebooksProps}
+   * @param {securityGroupId} engine SecurityGroupId
+   * @param {studioUserRoleRoleArn} if used in SSO mode pass the user role that is by Amazon EMR Studio
+   * @access private
+   */
   private studioInstanceBuilder (props: DataPlatformNotebooksProps, securityGroupId: string, studioUserRoleRoleArn?: string ): CfnStudio {
 
     let studioInstance: CfnStudio;
