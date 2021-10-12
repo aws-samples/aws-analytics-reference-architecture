@@ -26,7 +26,7 @@ const project = new AwsCdkConstructLibrary({
   repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
   repositoryDirectory: 'core',
   workflow: false,
-  buildWorkflow: true,
+  buildWorkflow: false,
   releaseWorkflow: true,
   depsUpgrade: false,
   stale: false,
@@ -64,17 +64,6 @@ const project = new AwsCdkConstructLibrary({
   },
 
   stability: 'experimental',
-
-  workflowBootstrapSteps: [
-    // Construct library requires NodeJS12, we need to set it up before yarn isntall
-    {
-      name: 'Setup NodeJS 12',
-      uses: 'actions/setup-node@v2',
-      with: {
-        nodeVersion: '12',
-      },
-    },
-  ],
 
 });
 
