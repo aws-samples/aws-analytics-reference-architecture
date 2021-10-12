@@ -65,7 +65,16 @@ const project = new AwsCdkConstructLibrary({
 
   stability: 'experimental',
 
-  workflowContainerImage: 'jsii/superchain:node12',
+  releaseWorkflowSetupSteps: [
+    {
+      name: 'Setup NodeJS 12 (required by construct lib',
+      uses: 'actions/setup-node@v2',
+      with: {
+        nodeVersion: '12',
+      },
+
+    },
+  ],
 
 });
 
@@ -171,6 +180,7 @@ function addPythonLambdaFunctionBundleTask(taskName, cwd, dirName) {
 
   // Pip install and compiles dependencies via Docker SAM image
   bundleTask.exec([
+    `[ -f build/${dirName}/requirements.txt ] &&`, // Only build if requirements.txt exists
     'docker run',
     `-v $PWD/build/${dirName}:/var/task`, // Mapping from host full path to Docker container
     '"public.ecr.aws/sam/build-python3.8"', //Image name
@@ -182,9 +192,5 @@ function addPythonLambdaFunctionBundleTask(taskName, cwd, dirName) {
 
   return bundleTask;
 }
-
-// project.release.containerImage = 'jsii/superchain:node12';
-
-console.log('project.release.containerImage', project.release.containerImage);
 
 project.synth();

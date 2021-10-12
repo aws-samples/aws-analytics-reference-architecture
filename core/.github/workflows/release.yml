@@ -26,6 +26,10 @@ jobs:
           git config user.email "github-actions@github.com"
       - name: Install dependencies
         run: yarn install --check-files --frozen-lockfile
+      - name: Setup NodeJS 12 (required by construct lib
+        uses: actions/setup-node@v2
+        with:
+          nodeVersion: "12"
       - name: release
         run: npx projen release
       - name: Check for new commits
@@ -39,7 +43,7 @@ jobs:
           name: dist
           path: dist
     container:
-      image: jsii/superchain:node12
+      image: jsii/superchain:node14
   release_github:
     name: Publish to GitHub Releases
     needs: release
