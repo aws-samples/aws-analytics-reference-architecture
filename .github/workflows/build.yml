@@ -13,6 +13,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Setup NodeJS 12
+        uses: actions/setup-node@v2
+        with:
+          nodeVersion: "12"
       - name: Install dependencies
         run: cd core && yarn install --check-files --frozen-lockfile
       - name: Set git identity
@@ -36,4 +40,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     container:
-      image: jsii/superchain:1-buster-slim-node12
+      image: jsii/superchain
