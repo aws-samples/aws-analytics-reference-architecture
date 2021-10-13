@@ -30,7 +30,7 @@ import {
   createStudioUserRolePolicy,
   createStudioServiceRolePolicy,
   createIAMFederatedRole,
-  createIAMUserPolicy,
+  createIAMRolePolicy,
 } from './dataplatform-notebook-helpers';
 
 import { EmrEksCluster } from './emr-eks-cluster';
@@ -106,12 +106,12 @@ export interface StudioUserDefinition {
   /**
    * Name of the identity as it appears in AWS SSO console, to be used when SSO is used as an authentication mode
    * */
-  readonly mappingIdentityName?: string;
+  readonly identityName: string;
 
   /**
    * Type of the identity either GROUP or USER, to be used when SSO is used as an authentication mode
    * */
-  readonly mappingIdentityType?: string;
+  readonly identityType?: string;
 
   /**
    * execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job
@@ -420,9 +420,7 @@ export class DataPlatformNotebook extends Construct {
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
           let managedEndpoint = this.emrEks.addManagedEndpoint(
-            this.studioName + + '-' +
-                user.mappingIdentityName!.replace(/[^\w\s]/gi, '') +
-                user.executionPolicyArns.indexOf(executionPolicyArn).toString(),
+            this.studioName + '-' + Utils.stringSanitizer(executionPolicyArn.split('/')[1]),
             this.emrVirtCluster.instance.attrId,
             this.certificateArn,
             this.emrOnEksVersion,
@@ -431,7 +429,7 @@ export class DataPlatformNotebook extends Construct {
 
           //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
           let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
-            'engineSecurityGroup' + this.studioName + user.mappingIdentityName!.replace(/[^\w\s]/gi, '') + user.executionPolicyArns.indexOf(executionPolicyArn).toString(),
+            'engineSecurityGroup' + this.studioName + user.identityName!.replace(/[^\w\s]/gi, '') + user.executionPolicyArns.indexOf(executionPolicyArn).toString(),
             managedEndpoint.getAttString('securityGroup'));
 
           //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
@@ -459,9 +457,9 @@ export class DataPlatformNotebook extends Construct {
         managedEndpointArns, this.studioId);
 
       //Map a session to user or group
-      new CfnStudioSessionMapping(this, 'studioUser' + user.mappingIdentityName + user.mappingIdentityName, {
-        identityName: user.mappingIdentityName!,
-        identityType: user.mappingIdentityType!,
+      new CfnStudioSessionMapping(this, 'studioUser' + user.identityName + user.identityName, {
+        identityName: user.identityName!,
+        identityType: user.identityType!,
         sessionPolicyArn: sessionPolicyArn,
         studioId: this.studioId,
       });
@@ -489,37 +487,40 @@ export class DataPlatformNotebook extends Construct {
     for (let user of userList) {
 
       for ( let executionPolicyArn of user.executionPolicyArns ) {
+        if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyArn)) {
+          //For each user or group, create a new managedEndpoint
+          //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
+          let managedEndpoint = this.emrEks.addManagedEndpoint(
+            this.studioName + '-' + Utils.stringSanitizer(executionPolicyArn.split('/')[1]),
+            this.emrVirtCluster.instance.attrId,
+            this.certificateArn,
+            this.emrOnEksVersion,
+            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
+          );
 
-        //For each user or group, create a new managedEndpoint
-        //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
-        let managedEndpoint = this.emrEks.addManagedEndpoint(
-          this.studioName + '-' + Utils.stringSanitizer(user.mappingIdentityName!),
-          this.emrVirtCluster.instance.attrId,
-          this.certificateArn,
-          this.emrOnEksVersion,
-          buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
-        );
+          //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
+          let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
+            'engineSecurityGroup' + this.studioName + executionPolicyArn.replace(/[^\w\s]/gi, ''),
+            managedEndpoint.getAttString('securityGroup'));
 
-        //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
-        let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
-          'engineSecurityGroup' + this.studioName + executionPolicyArn.replace(/[^\w\s]/gi, ''),
-          managedEndpoint.getAttString('securityGroup'));
+          //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
+          this.workSpaceSecurityGroup.addEgressRule(engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
 
-        //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
-        this.workSpaceSecurityGroup.addEgressRule(engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
+          //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
+          Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
-        //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
-        Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
-
-        //Push the managedendpoint arn to be used in to build the policy to attach to it
-        managedEndpointArns.push(managedEndpoint.getAttString('arn'));
+          //Push the managedendpoint arn to be used in to build the policy to attach to it
+          managedEndpointArns.push(managedEndpoint.getAttString('arn'));
+        } else {
+          managedEndpointArns.push(<string> this.managedEndpointExcutionPolicyArnMapping.get(executionPolicyArn));
+        }
       }
 
       //Create the role policy and gets its ARN
-      iamRolePolicy = createIAMUserPolicy(this, user, this.studioServiceRole.roleName,
+      iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
         managedEndpointArns, this.studioId);
 
-      createIAMFederatedRole(this, iamRolePolicy!, federatedIdpArn, user.executionPolicyArns[0]);
+      createIAMFederatedRole(this, iamRolePolicy!, federatedIdpArn, user.identityName, this.studioId);
     }
 
   }

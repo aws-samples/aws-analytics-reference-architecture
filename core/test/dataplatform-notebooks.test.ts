@@ -6,17 +6,17 @@ import {
   StudioUserDefinition,
 } from '../src/dataplatform-notebook';
 
-const stack = new Stack();
+const stacksso = new Stack();
 const stackiam = new Stack();
 
-let dataPlatform = new DataPlatformNotebook(stack, 'dataplatform', {
+let dataPlatformSSO = new DataPlatformNotebook(stacksso, 'dataplatform', {
   studioName: 'nodegroupfix',
   studioAuthMode: StudioAuthMode.SSO,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
   acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
 });
 
-new DataPlatformNotebook(stackiam, 'dataplatform', {
+let dataPlatformIAM = new DataPlatformNotebook(stackiam, 'dataplatform', {
   studioName: 'nodegroupfix-iam',
   studioAuthMode: StudioAuthMode.IAM_FEDERATED,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
@@ -26,7 +26,7 @@ new DataPlatformNotebook(stackiam, 'dataplatform', {
 });
 
 test('Stack should have a KMS encryption key', () => {
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.countResources('AWS::KMS::Key', 1),
   );
 });
@@ -34,11 +34,11 @@ test('Stack should have a KMS encryption key', () => {
 
 test('EKS cluster created with correct version and name', () => {
   // THEN
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.countResources('Custom::AWSCDK-EKS-Cluster', 1),
   );
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('Custom::AWSCDK-EKS-Cluster', {
       Config: assertCDK.objectLike({
         version: '1.20',
@@ -50,7 +50,7 @@ test('EKS cluster created with correct version and name', () => {
 
 test('EKS should have at least 1 private subnet with tags', () => {
   // THEN
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EC2::Subnet', {
       Tags: assertCDK.arrayWith(
         assertCDK.objectLike({
@@ -68,10 +68,10 @@ test('EKS should have at least 1 private subnet with tags', () => {
 
 test('EKS cluster should have the default Nodegroups and two notebooks nodegroup', () => {
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.countResources('AWS::EKS::Nodegroup', 11),
   );
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EKS::Nodegroup', {
       NodegroupName: 'notebook-driver-0',
       InstanceTypes: ['t3.xlarge'],
@@ -97,7 +97,7 @@ test('EKS cluster should have the default Nodegroups and two notebooks nodegroup
     ),
   );
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EKS::Nodegroup', {
       NodegroupName: 'notebook-executor-0',
       InstanceTypes: ['t3.2xlarge',
@@ -132,11 +132,11 @@ test('EKS cluster should have the default Nodegroups and two notebooks nodegroup
 });
 
 test('EMR virtual cluster should be created with proper configuration', () => {
-  assertCDK.expect(stack).to (
+  assertCDK.expect(stacksso).to (
     assertCDK.countResources('AWS::EMRContainers::VirtualCluster', 1),
   );
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EMRContainers::VirtualCluster', {
       ContainerProvider: assertCDK.objectLike({
         Type: 'EKS',
@@ -151,10 +151,10 @@ test('EMR virtual cluster should be created with proper configuration', () => {
   );
 });
 
-
+//TODO ENHANCE THIS TESTS
 test('workspace security group should allow outbound access to port 18888 and to port 443 on TCP', () => {
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EC2::SecurityGroup', {
       GroupName: 'workSpaceSecurityGroup',
       Tags: assertCDK.objectLike([{
@@ -168,9 +168,9 @@ test('workspace security group should allow outbound access to port 18888 and to
   );
 });
 
-test('engine security group should be present, not used with EMR on EKS, but mandatory for EMR Studio', () => {
+test('engine security group should be present, not used with EMR on EKS, but required for EMR Studio', () => {
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EC2::SecurityGroup', {
       GroupName: 'engineSecurityGroup',
       Tags: assertCDK.objectLike([{
@@ -187,11 +187,11 @@ test('engine security group should be present, not used with EMR on EKS, but man
 test('Should find one S3 bucket used for EMR Studio Notebook ', () => {
 
   // Count the number of buckets it should be
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.countResources('AWS::S3::Bucket', 1),
   );
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::S3::Bucket', {
       BucketName: {
         'Fn::Join': [
@@ -225,7 +225,7 @@ test('Should find one S3 bucket used for EMR Studio Notebook ', () => {
 });
 
 test('Should find an IAM role for EMR Studio used as Service Role', () => {
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::IAM::Role', {
       RoleName: 'studioServiceRole+nodegroupfix',
     }),
@@ -235,11 +235,11 @@ test('Should find an IAM role for EMR Studio used as Service Role', () => {
 
 test('Should find a an EMR Studio with SSO Auth Mode', () => {
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.countResources('AWS::EMR::Studio', 1),
   );
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EMR::Studio', {
       AuthMode: 'SSO',
       DefaultS3Location: {
@@ -287,34 +287,49 @@ test('Should find an EMR Studio with IAM Auth Mode', () => {
 test('Should find a mapping between an EMR Studio, a user and a session policy', () => {
 
   let userList_SSO: StudioUserDefinition[] = [{
-    mappingIdentityName: 'lotfi-emr-advanced',
-    mappingIdentityType: 'USER',
+    identityName: 'lotfi-emr-advanced',
+    identityType: 'USER',
     executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint1', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint3'],
   },
   {
-    mappingIdentityName: 'JohnDoe',
-    mappingIdentityType: 'USER',
+    identityName: 'JohnDoe',
+    identityType: 'USER',
     executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint2', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint1'],
   }];
 
-  dataPlatform.addSSOUsers(userList_SSO);
+  dataPlatformSSO.addSSOUsers(userList_SSO);
 
-  assertCDK.expect(stack).to(
+  assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EMR::StudioSessionMapping', {
       IdentityName: 'lotfi-emr-advanced',
     }),
   );
 
-  //TODO uncomment this one IAM Federation is fixed to support multiple role Arns for a single user
-  /*let userList_IAM: StudioUserDefinition[] = [{
+  //Improve this test to test against the policy attached
+  let userList_IAM: StudioUserDefinition[] = [{
+    identityName: 'Toto',
     executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint1', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint3'],
   }];
 
-  dataPlatform_iam.addFederatedUsers(userList_IAM, 'arn:aws:iam::214783019211:saml-provider/AzureAD');
+  dataPlatformIAM.addFederatedUsers(userList_IAM, 'arn:aws:iam::214783019211:saml-provider/AzureAD');
 
   assertCDK.expect(stackiam).to(
-    assertCDK.haveResource('AWS::EMR::StudioSessionMapping', {
-      IdentityName: 'lotfi-emr-advanced',
+    assertCDK.haveResource('AWS::IAM::Role', {
+      RoleName: {
+        'Fn::Join': [
+          '',
+          [
+            'Role-Toto',
+            {
+              'Fn::GetAtt': [
+                'dataplatformStudioECE4B5E6',
+                'StudioId',
+              ],
+            },
+          ],
+        ],
+      },
+
     }),
-  );*/
+  );
 });

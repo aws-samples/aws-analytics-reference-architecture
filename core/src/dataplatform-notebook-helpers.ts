@@ -84,10 +84,10 @@ export function createUserSessionPolicy(scope: Construct, user: StudioUserDefini
 
   //sanitize the userName from any special characters, userName used to name the session policy
   //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
-  let userName = user.mappingIdentityName!.replace(/[^\w\s]/gi, '');
+  let userName = user.identityName!.replace(/[^\w\s]/gi, '');
 
   //create the policy
-  let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + user.mappingIdentityName, {
+  let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + user.identityName, {
     document: PolicyDocument.fromJson(policy),
     managedPolicyName: 'studioSessionPolicy' + userName + studioId,
   });
@@ -177,7 +177,7 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
  * Called when working in IAM auth mode with Federated IdP
  * @returns Return the ARN of the policy created
  */
-export function createIAMUserPolicy(scope: Construct,
+export function createIAMRolePolicy(scope: Construct,
   user: StudioUserDefinition,
   studioServiceRoleName: string,
   managedEndpointArns: string [],
@@ -214,7 +214,7 @@ export function createIAMUserPolicy(scope: Construct,
   //create the policy
   return new ManagedPolicy(scope, 'studioSessionPolicy' + executionPolicyArn, {
     document: PolicyDocument.fromJson(policy),
-    managedPolicyName: 'studioIAMUserRolePolicy' + executionPolicyArn + studioId,
+    managedPolicyName: 'studioIAMRolePolicy-' + executionPolicyArn.split('/')[1] + '-' + studioId,
   });
 
 }
@@ -229,9 +229,10 @@ export function createIAMUserPolicy(scope: Construct,
 export function createIAMFederatedRole(scope: Construct,
   iamRolePolicy: ManagedPolicy,
   federatedIdPArn: string,
-  executionPolicyArn: string ): Role {
+  identityName: string,
+  studioId: string): Role {
 
-  return new Role(scope, executionPolicyArn.replace(/[^\w\s]/gi, ''), {
+  return new Role(scope, identityName.replace(/[^\w\s]/gi, '') + studioId.replace(/[^\w\s]/gi, ''), {
     assumedBy: new FederatedPrincipal(
       federatedIdPArn,
       {
@@ -241,6 +242,7 @@ export function createIAMFederatedRole(scope: Construct,
       },
       'sts:AssumeRoleWithSAML',
     ),
+    roleName: 'Role-' + identityName + studioId,
     managedPolicies: [iamRolePolicy],
   });
 }
