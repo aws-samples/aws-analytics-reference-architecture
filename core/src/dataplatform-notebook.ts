@@ -47,7 +47,9 @@ import { Utils } from './utils';
  */
 
 export interface DataPlatformNotebooksProps {
-
+  /**
+   *
+   * */
   readonly studioName: string;
   /**
    * Required the authentication mode of Amazon EMR Studio
@@ -69,19 +71,22 @@ export interface DataPlatformNotebooksProps {
    */
   readonly acmCertificateArn: string;
   /**
-   * Used for Amazon IAM Auth when an IdP is provided
+   * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
+   * This is is the URL used to sign in the AWS console
    * */
   readonly idpAuthUrl?: string;
   /**
-   * Used for Amazon IAM auth when IdP is provided
+   * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
    * */
   readonly idpRelayStateParameterName?: string;
   /**
-   * Used for Amazon IAM the name of the identity provider that is going to be used
+   * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
+   * this is the name of the identity provider that is going to be used
    * */
   readonly idPName?: string;
   /**
-   * Used for Amazon IAM the ARN of the IdP to be used, value taken from the IAM console in the Identity providers console
+   * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
+   * Value taken from the IAM console in the Identity providers console
    * */
   readonly idPArn?: string;
   /**
@@ -237,8 +242,8 @@ export class DataPlatformNotebook extends Construct {
       allowAllOutbound: false,
     });
 
-    //Tag workSpaceSecurityGroup to be used with EMR Studio
-    Tags.of(this.workSpaceSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
+    //Tag engineSecurityGroup to be used with EMR Studio
+    Tags.of(this.engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
@@ -254,10 +259,6 @@ export class DataPlatformNotebook extends Construct {
 
     //Wait until the EMR Virtual cluster is deployed then create an S3 bucket
     this.workspacesBucket.node.addDependency(this.emrVirtCluster);
-
-    //Check if the construct prop has an EMRStudio Service Role ARN
-    //update the role with an inline policy to allow access to the S3 bucket created above
-    //If no ARN is supplied construct creates a new role
 
     //Create a Managed policy for Studio service role
     this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
