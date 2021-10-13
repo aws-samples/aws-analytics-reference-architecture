@@ -37,7 +37,9 @@ export class PreBundledFunction extends Function {
     } else {
       console.info(`Use prebundled function. process.env.JSII_AGENT =  ${process.env.JSII_AGENT}`);
       console.info('__dirname', __dirname);
-      assetPath = path.join(__dirname, `${props.codePath}`);
+      console.log('process.env', process.env);
+      // __dirname will be in lib/common folder. We need to go up one step.
+      assetPath = path.join(__dirname, `../${props.codePath}`);
     }
 
     functionProps.code = Code.fromAsset(assetPath);

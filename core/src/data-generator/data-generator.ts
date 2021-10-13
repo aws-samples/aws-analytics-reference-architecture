@@ -4,13 +4,14 @@
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
+import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { StateMachine, IntegrationPattern, TaskInput, JsonPath } from '@aws-cdk/aws-stepfunctions';
 import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfunctions-tasks';
 import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
+import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Dataset } from '../dataset';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonGlueDatabase } from '../singleton-glue-database';
@@ -73,9 +74,6 @@ export class DataGenerator extends Construct {
 
   constructor(scope: Construct, id: string, props: DataGeneratorProps) {
     super(scope, id);
-
-    // Amazon S3 IBucket containing the AWS Lambda code for custom resources
-    const binaryBucket = Bucket.fromBucketArn(this, 'binaryBucket', 'arn:aws:s3:::aws-analytics-reference-architecture');
 
     const stack = Stack.of(this);
     this.sinkArn = props.sinkArn;
@@ -260,9 +258,9 @@ export class DataGenerator extends Construct {
     offsetGet.node.addDependency(offsetCreate);
 
     // AWS Lambda function to prepare data generation
-    const querySetupFn = new Function(this, 'querySetupFn', {
+    const querySetupFn = new PreBundledFunction(this, 'querySetupFn', {
       runtime: Runtime.PYTHON_3_8,
-      code: Code.fromBucket(binaryBucket, 'binaries/custom-resources/data-generator-setup.zip'),
+      codePath: 'data-generator/resources/lambdas/setup',
       handler: 'lambda.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(30),
