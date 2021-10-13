@@ -414,6 +414,7 @@ ${userData.join('\r\n')}
     emrOnEksVersion?: string,
     executionRoleArn?: string,
     configurationOverrides?: string,
+    tags?: string,
   ): CustomResource {
 
     if (id.length > 64) {
@@ -451,6 +452,7 @@ ${userData.join('\r\n')}
         ACM_CERTIFICATE_ARN:
           acmCertificateArn ||
           String(this.getOrCreateAcmCertificate()),
+        TAGS: tags || '',
       },
       // TODO least priviliges
       initialPolicy: [
