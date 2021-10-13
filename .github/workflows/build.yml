@@ -43,4 +43,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     container:
       image: jsii/superchain
-      volumes: /__w/aws-analytics-reference-architecture/docker-vol:/var/task
+      volumes: 
+        - /__w/aws-analytics-reference-architecture/docker-vol:/var/task
