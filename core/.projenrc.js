@@ -107,7 +107,7 @@ const pipInstallTask = project.addTask('pip-install', {
 for (const dirPath of findAllPythonLambdaDir('src')) {
   const dirPathInLib = dirPath.replace('src', 'lib');
   const target = dirname(dirPathInLib);
-  const pipCmd = `pip install -r ${dirPathInLib} --target ${target}`;
+  const pipCmd = `pip3 install -r ${dirPathInLib} --target ${target}`;
 
   pipInstallTask.exec(pipCmd);
 }
