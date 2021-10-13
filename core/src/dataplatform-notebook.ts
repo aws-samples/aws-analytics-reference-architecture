@@ -238,7 +238,7 @@ export class DataPlatformNotebook extends Construct {
 
     this.engineSecurityGroup = new SecurityGroup(this, 'engineSecurityGroup', {
       vpc: this.emrVpc,
-      securityGroupName: 'engineTempSecurityGroup',
+      securityGroupName: 'engineSecurityGroup',
       allowAllOutbound: false,
     });
 
