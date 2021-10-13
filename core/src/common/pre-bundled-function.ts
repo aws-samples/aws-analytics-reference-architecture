@@ -18,7 +18,7 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
  * The tasks will ensure that all Python and libraries files are available in "lib" folder
  *
  * However, the files will be under `node_modules` when installed as a 3rd party library.
- * Thus, so this wrapper change tha path.
+ * Thus, so this wrapper changes that path.
  */
 export class PreBundledFunction extends Function {
   constructor(scope: cdk.Construct, id: string, props: PreBundledFunctionProps) {
@@ -29,17 +29,14 @@ export class PreBundledFunction extends Function {
 
     let functionProps:any = { ...props };
 
-    // Running on Python
     let assetPath;
-    if (process.env.NODE_ENV === 'test') {
+    if (process.env.NODE_ENV !== 'test') {
+      // __dirname will be in lib/common folder. We need to go up one step.
+      console.info(`Running in JSII, going to use modified path. process.env.JSII_AGENT =  ${process.env.JSII_AGENT}`);
+      assetPath = path.join(__dirname, `../${props.codePath}`);
+    } else {
       console.info('Running in unit test mode. Refer to the directory in src directly.');
       assetPath = `src/${props.codePath}`;
-    } else {
-      console.info(`Use prebundled function. process.env.JSII_AGENT =  ${process.env.JSII_AGENT}`);
-      console.info('__dirname', __dirname);
-      console.log('process.env', process.env);
-      // __dirname will be in lib/common folder. We need to go up one step.
-      assetPath = path.join(__dirname, `../${props.codePath}`);
     }
 
     functionProps.code = Code.fromAsset(assetPath);
