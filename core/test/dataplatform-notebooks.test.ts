@@ -284,7 +284,7 @@ test('Should find an EMR Studio with IAM Auth Mode', () => {
 });
 
 
-test('Should find a mapping between an EMR Studio, a user and a session policy', () => {
+test('Should find a mapping between an EMR Studio, a user and a session policy for SSO or an IdP identity and a role', () => {
 
   let userList_SSO: StudioUserDefinition[] = [{
     identityName: 'lotfi-emr-advanced',
@@ -309,6 +309,9 @@ test('Should find a mapping between an EMR Studio, a user and a session policy',
   let userList_IAM: StudioUserDefinition[] = [{
     identityName: 'Toto',
     executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint1', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint3'],
+  }, {
+    identityName: 'JaneDoe',
+    executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint1', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint2'],
   }];
 
   dataPlatformIAM.addFederatedUsers(userList_IAM, 'arn:aws:iam::214783019211:saml-provider/AzureAD');

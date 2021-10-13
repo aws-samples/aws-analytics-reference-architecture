@@ -12,6 +12,7 @@ import * as studioServiceRolePolicy from './studio/studio-service-role-policy.js
 import * as studioUserRolePolicy from './studio/studio-user-iam-role-policy.json';
 import * as studioSessionPolicy from './studio/studio-user-session-policy.json';
 import * as studioUserPolicy from './studio/studio-user-sso-role-policy.json';
+import { Utils } from './utils';
 
 /**
  * @hidden
@@ -81,15 +82,10 @@ export function createUserSessionPolicy(scope: Construct, user: StudioUserDefini
     policy.Statement[10].Resource[managedEndpointArns.indexOf(managedEndpointArn)] = managedEndpointArn;
   }
 
-
-  //sanitize the userName from any special characters, userName used to name the session policy
-  //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
-  let userName = user.identityName!.replace(/[^\w\s]/gi, '');
-
   //create the policy
-  let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + user.identityName, {
+  let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName), {
     document: PolicyDocument.fromJson(policy),
-    managedPolicyName: 'studioSessionPolicy' + userName + studioId,
+    managedPolicyName: 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName) + studioId,
   });
 
 
@@ -207,14 +203,10 @@ export function createIAMRolePolicy(scope: Construct,
   policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<region>/gi, Aws.REGION);
   policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-studio-id>/gi, studioId);
 
-  //sanitize the userName from any special characters, userName used to name the session policy
-  //if any special character the sessionMapping will fail with "SessionPolicyArn: failed validation constraint for keyword [pattern]"
-  let executionPolicyArn = user.executionPolicyArns[0]!.replace(/[^\w\s]/gi, '');
-
   //create the policy
-  return new ManagedPolicy(scope, 'studioSessionPolicy' + executionPolicyArn, {
+  return new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName), {
     document: PolicyDocument.fromJson(policy),
-    managedPolicyName: 'studioIAMRolePolicy-' + executionPolicyArn.split('/')[1] + '-' + studioId,
+    managedPolicyName: 'studioIAMRolePolicy-' + Utils.stringSanitizer(user.identityName) + '-' + studioId,
   });
 
 }

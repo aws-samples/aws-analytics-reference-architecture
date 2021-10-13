@@ -509,6 +509,11 @@ export class DataPlatformNotebook extends Construct {
           //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
           Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
+          //Add the managedendpointArn to @managedEndpointExcutionPolicyArnMapping
+          //This is to avoid the creation an endpoint with the same policy twice
+          //Save resources and reduce the deployment time
+          this.managedEndpointExcutionPolicyArnMapping.set(executionPolicyArn, managedEndpoint.getAttString('arn'));
+
           //Push the managedendpoint arn to be used in to build the policy to attach to it
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
