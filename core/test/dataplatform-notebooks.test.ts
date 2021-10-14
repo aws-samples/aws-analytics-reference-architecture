@@ -7,7 +7,8 @@ import {
 } from '../src/dataplatform-notebook';
 
 const stacksso = new Stack();
-const stackiam = new Stack();
+const stackiamfed = new Stack();
+const stackiamauth = new Stack();
 
 let dataPlatformSSO = new DataPlatformNotebook(stacksso, 'dataplatform', {
   studioName: 'nodegroupfix',
@@ -16,13 +17,20 @@ let dataPlatformSSO = new DataPlatformNotebook(stacksso, 'dataplatform', {
   acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
 });
 
-let dataPlatformIAM = new DataPlatformNotebook(stackiam, 'dataplatform', {
+let dataPlatformIAMFed = new DataPlatformNotebook(stackiamfed, 'dataplatform', {
   studioName: 'nodegroupfix-iam',
   studioAuthMode: StudioAuthMode.IAM_FEDERATED,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
   acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
   idpAuthUrl: 'https://myapps.microsoft.com/signin/9b33f8d1-2cdd-4972-97a6-dedfc5a4bb38?tenantId=eb9c8428-db71-4fa4-9cc8-0a49d2c645c5',
   idPArn: 'arn:aws:iam::012345678901:saml-provider/AWS-ARA-Test',
+});
+
+let dataPlatformIAMAuth = new DataPlatformNotebook(stackiamauth, 'dataplatform', {
+  studioName: 'nodegroupfix-auth',
+  studioAuthMode: StudioAuthMode.IAM_AUTHENTICATED,
+  eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
+  acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
 });
 
 test('Stack should have a KMS encryption key', () => {
@@ -260,11 +268,11 @@ test('Should find a an EMR Studio with SSO Auth Mode', () => {
 
 test('Should find an EMR Studio with IAM Auth Mode', () => {
 
-  assertCDK.expect(stackiam).to(
+  assertCDK.expect(stackiamfed).to(
     assertCDK.countResources('AWS::EMR::Studio', 1),
   );
 
-  assertCDK.expect(stackiam).to(
+  assertCDK.expect(stackiamfed).to(
     assertCDK.haveResource('AWS::EMR::Studio', {
       AuthMode: 'IAM',
       DefaultS3Location: {
@@ -314,9 +322,9 @@ test('Should find a mapping between an EMR Studio, a user and a session policy f
     executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint1', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint2'],
   }];
 
-  dataPlatformIAM.addFederatedUsers(userList_IAM, 'arn:aws:iam::214783019211:saml-provider/AzureAD');
+  dataPlatformIAMFed.addFederatedUsers(userList_IAM, 'arn:aws:iam::214783019211:saml-provider/AzureAD');
 
-  assertCDK.expect(stackiam).to(
+  assertCDK.expect(stackiamfed).to(
     assertCDK.haveResource('AWS::IAM::Role', {
       RoleName: {
         'Fn::Join': [
@@ -335,4 +343,12 @@ test('Should find a mapping between an EMR Studio, a user and a session policy f
 
     }),
   );
+
+  dataPlatformIAMAuth.addIAMUsers(userList_IAM);
+
+  assertCDK.expect(stackiamauth).to(
+    assertCDK.haveResource('AWS::IAM::User'),
+  );
+
+
 });

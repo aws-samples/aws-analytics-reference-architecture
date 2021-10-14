@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { FederatedPrincipal, IRole, ManagedPolicy, Policy, PolicyDocument, Role } from '@aws-cdk/aws-iam';
-import { Aws, Construct } from '@aws-cdk/core';
+import { FederatedPrincipal, IRole, ManagedPolicy, Policy, PolicyDocument, Role, User } from '@aws-cdk/aws-iam';
+import { Aws, Construct, SecretValue } from '@aws-cdk/core';
 import { StudioUserDefinition } from './dataplatform-notebook';
 import { EmrEksCluster } from './emr-eks-cluster';
 
@@ -237,4 +237,34 @@ export function createIAMFederatedRole(scope: Construct,
     roleName: 'Role-' + identityName + studioId,
     managedPolicies: [iamRolePolicy],
   });
+}
+
+/**
+ * @hidden
+ * Create an IAM user and its role then attach the policy for the role
+ * Called when working in IAM auth mode with users are authenticated through IAM
+ * @returns {JSON} Return the user created and its password
+ */
+
+export function createIAMUser(scope: Construct,
+  iamRolePolicy: ManagedPolicy,
+  identityName: string,
+  studioId: string): string {
+
+  let userPassword: SecretValue = SecretValue.plainText(Utils.randomize(identityName));
+
+  new Role (scope, 'role' + identityName.replace(/[^\w\s]/gi, '') + studioId.replace(/[^\w\s]/gi, ''), {
+    assumedBy: new User(scope, 'user' + identityName.replace(/[^\w\s]/gi, ''), {
+      userName: identityName,
+      passwordResetRequired: true,
+      password: userPassword,
+    }),
+    roleName: 'Role-' + identityName + studioId,
+    managedPolicies: [iamRolePolicy],
+  });
+
+  return 'userName:' + identityName + ',' +
+    'userPassword:' + userPassword.toString() +
+  '}';
+
 }

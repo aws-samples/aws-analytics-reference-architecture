@@ -31,6 +31,7 @@ import {
   createStudioServiceRolePolicy,
   createIAMFederatedRole,
   createIAMRolePolicy,
+  createIAMUser,
 } from './dataplatform-notebook-helpers';
 
 import { EmrEksCluster } from './emr-eks-cluster';
@@ -469,17 +470,16 @@ export class DataPlatformNotebook extends Construct {
 
   /**
    * Method to add users when IAM auth with an external IdP is used, take a list of userDefinition and will create a managed endpoint
-   * and create a session Policy scoped to the managed endpoint
-   * then assign a user with the created session policy to the created studio
+   * and create an IAM Policy scoped to the list of managed endpoints created for the user
    * @param {StudioUserDefinition} userList list of users
-   * @param {federatedIdpArn} the Arn of the IdP provider as it appears in the IAM console
+   * @param {string} federatedIdpArn the Arn of the IdP provider as it appears in the IAM console
    * @access public
    */
   public addFederatedUsers(userList: StudioUserDefinition[], federatedIdpArn: string) {
 
     //Initialize the managedEndpointArns
     //Used to store the arn of managed endpoints after creation for each users
-    //This is used to update the session policy
+    //This is used to update the IAM policy
     let managedEndpointArns : string [] = [];
 
     let iamRolePolicy: ManagedPolicy;
@@ -531,12 +531,79 @@ export class DataPlatformNotebook extends Construct {
   }
 
   /**
+   * Method to add users when IAM auth is selected, take a list of userDefinition and will create a managed endpoint
+   * and create an IAM Policy scoped to the list managed endpoints
+   * @param {StudioUserDefinition} userList list of users
+   * @return {JSON[]} a list of users that were created and their temporary passwords
+   * @access public
+   */
+
+  public addIAMUsers(userList: StudioUserDefinition[]): string [] {
+
+    //Initialize the managedEndpointArns
+    //Used to store the arn of managed endpoints after creation for each users
+    //This is used to update the IAM policy
+    let managedEndpointArns : string [] = [];
+
+    let iamRolePolicy: ManagedPolicy;
+
+    let iamUserList: string [] = [];
+
+    for (let user of userList) {
+
+      for ( let executionPolicyArn of user.executionPolicyArns ) {
+        if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyArn)) {
+          //For each user or group, create a new managedEndpoint
+          //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
+          let managedEndpoint = this.emrEks.addManagedEndpoint(
+            this.studioName + '-' + Utils.stringSanitizer(executionPolicyArn.split('/')[1]),
+            this.emrVirtCluster.instance.attrId,
+            this.certificateArn,
+            this.emrOnEksVersion,
+            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
+          );
+
+          //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
+          let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
+            'engineSecurityGroup' + this.studioName + executionPolicyArn.replace(/[^\w\s]/gi, ''),
+            managedEndpoint.getAttString('securityGroup'));
+
+          //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
+          this.workSpaceSecurityGroup.addEgressRule(engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
+
+          //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
+          Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
+
+          //Add the managedendpointArn to @managedEndpointExcutionPolicyArnMapping
+          //This is to avoid the creation an endpoint with the same policy twice
+          //Save resources and reduce the deployment time
+          this.managedEndpointExcutionPolicyArnMapping.set(executionPolicyArn, managedEndpoint.getAttString('arn'));
+
+          //Push the managedendpoint arn to be used in to build the policy to attach to it
+          managedEndpointArns.push(managedEndpoint.getAttString('arn'));
+        } else {
+          managedEndpointArns.push(<string> this.managedEndpointExcutionPolicyArnMapping.get(executionPolicyArn));
+        }
+      }
+
+      //Create the role policy and gets its ARN
+      iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
+        managedEndpointArns, this.studioId);
+
+      iamUserList.push(createIAMUser(this, iamRolePolicy!, user.identityName, this.studioId));
+
+    }
+
+    return iamUserList;
+  }
+
+
+  /**
    * @hidden
    * Constructs a new object of CfnStudio
    * @param {DataPlatformNotebooksProps} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebooksProps}
-   * @param {securityGroupId} engine SecurityGroupId
-   * @param {studioUserRoleRoleArn} if used in SSO mode pass the user role that is by Amazon EMR Studio
-   * @access private
+   * @param {string} securityGroupId engine SecurityGroupId
+   * @param {string} studioUserRoleRoleArn if used in SSO mode pass the user role that is by Amazon EMR Studio
    */
   private studioInstanceBuilder (props: DataPlatformNotebooksProps, securityGroupId: string, studioUserRoleRoleArn?: string ): CfnStudio {
 
