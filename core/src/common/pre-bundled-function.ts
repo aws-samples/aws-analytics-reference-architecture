@@ -12,11 +12,11 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
 
 /**
  * A Lambda function with prebundled dependencies
- * 
+ *
  * It changes of the code path by based on the environment that `cdk synth` is running on.
  *
  * This class is used together with a Projen custom task "copy-resources", and "pip-install".
- * The tasks will ensure that all Python and libraries files are available in "lib" folder, 
+ * The tasks will ensure that all Python and libraries files are available in "lib" folder,
  * with the same relative path
  *
  * When this construct is being run in JSII, this file will be in `node_modules` folder
