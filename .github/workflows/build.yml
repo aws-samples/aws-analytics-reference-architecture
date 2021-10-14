@@ -17,8 +17,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '12'
-      # - name: Debug
-      #   run: pwd && ls /var/task && ls /__w/aws-analytics-reference-architecture/docker-vol
       - name: Install dependencies
         run: cd core && yarn install --check-files --frozen-lockfile
       - name: Set git identity
@@ -43,3 +41,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     container:
       image: jsii/superchain
+      # When we spin up a container in Github action, 
+      # the volume binding via "docker run -v" won't work. 
+      # The spun up container will be a sibling container and 
+      # uses the same binding here.
+      # See https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idcontainer for more details.
+      volumes: 
+        - /__w/aws-analytics-reference-architecture/core/build/docker-vol:/var/task

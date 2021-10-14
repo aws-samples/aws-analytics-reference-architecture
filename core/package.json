@@ -28,7 +28,10 @@
     "test:deploy": "npx projen test:deploy",
     "test:destroy": "npx projen test:destroy",
     "copy-resources": "npx projen copy-resources",
-    "pip-install": "npx projen pip-install",
+    "bundle": "npx projen bundle",
+    "bundle:data-generator-setup": "npx projen bundle:data-generator-setup",
+    "bundle:synchronous-athena-query-lambdas": "npx projen bundle:synchronous-athena-query-lambdas",
+    "bundle:synchronous-crawler-lambdas": "npx projen bundle:synchronous-crawler-lambdas",
     "release": "npx projen release",
     "projen": "npx projen"
   },

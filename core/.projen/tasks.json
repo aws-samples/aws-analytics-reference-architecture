@@ -295,18 +295,72 @@
         }
       ]
     },
-    "pip-install": {
-      "name": "pip-install",
+    "bundle": {
+      "name": "bundle",
       "description": "pip install all folders in lib that has requirements.txt",
       "steps": [
         {
-          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup"
+          "spawn": "bundle:data-generator-setup"
         },
         {
-          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas"
+          "spawn": "bundle:synchronous-athena-query-lambdas"
         },
         {
-          "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas"
+          "spawn": "bundle:synchronous-crawler-lambdas"
+        }
+      ]
+    },
+    "bundle:data-generator-setup": {
+      "name": "bundle:data-generator-setup",
+      "description": "Install dependency and package Python file into for Lambda function:src/data-generator/resources/lambdas/setup",
+      "steps": [
+        {
+          "exec": "rm -rf build/docker-vol"
+        },
+        {
+          "exec": "mkdir -p build/docker-vol"
+        },
+        {
+          "exec": "cp -r src/data-generator/resources/lambdas/setup/. build/docker-vol"
+        },
+        {
+          "exec": "docker run -v $PWD/build/docker-vol:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"ls -la; exit\""
+        }
+      ]
+    },
+    "bundle:synchronous-athena-query-lambdas": {
+      "name": "bundle:synchronous-athena-query-lambdas",
+      "description": "Install dependency and package Python file into for Lambda function:src/synchronous-athena-query/resources/lambdas",
+      "steps": [
+        {
+          "exec": "rm -rf build/docker-vol"
+        },
+        {
+          "exec": "mkdir -p build/docker-vol"
+        },
+        {
+          "exec": "cp -r src/synchronous-athena-query/resources/lambdas/. build/docker-vol"
+        },
+        {
+          "exec": "docker run -v $PWD/build/docker-vol:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"ls -la; exit\""
+        }
+      ]
+    },
+    "bundle:synchronous-crawler-lambdas": {
+      "name": "bundle:synchronous-crawler-lambdas",
+      "description": "Install dependency and package Python file into for Lambda function:src/synchronous-crawler/resources/lambdas",
+      "steps": [
+        {
+          "exec": "rm -rf build/docker-vol"
+        },
+        {
+          "exec": "mkdir -p build/docker-vol"
+        },
+        {
+          "exec": "cp -r src/synchronous-crawler/resources/lambdas/. build/docker-vol"
+        },
+        {
+          "exec": "docker run -v $PWD/build/docker-vol:/var/task \"public.ecr.aws/sam/build-python3.8\" /bin/sh -c \"ls -la; exit\""
         }
       ]
     },

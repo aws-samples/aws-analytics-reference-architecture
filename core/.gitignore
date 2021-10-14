@@ -45,4 +45,5 @@ junit.xml
 .jsii
 tsconfig.json
 !/API.md
+build
 !/.github/workflows/release.yml
