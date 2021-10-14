@@ -17,8 +17,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '12'
-      # - name: Debug
-      #   run: pwd && ls /var/task && ls /__w/aws-analytics-reference-architecture/docker-vol
       - name: Install dependencies
         run: cd core && yarn install --check-files --frozen-lockfile
       - name: Set git identity

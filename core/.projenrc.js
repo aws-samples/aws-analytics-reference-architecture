@@ -96,7 +96,7 @@ for (const from of glob.sync('src/**/resources')) {
 }
 
 /**
- * Task to pip install all Python Lambda functions inlib
+ * Task to pip install all Python Lambda functions in lib folder
  */
 
 const pipInstallTask = project.addTask('pip-install', {
@@ -104,6 +104,8 @@ const pipInstallTask = project.addTask('pip-install', {
 });
 
 for (const dirPath of findAllPythonLambdaDir('src')) {
+  // Assume that all folders with 'requirements.txt' have been copied to lib
+  // by the task 'copy-resources'
   const dirPathInLib = dirPath.replace('src', 'lib');
   const target = dirname(dirPathInLib);
   const pipCmd = `pip3 install -r ${dirPathInLib} --target ${target}`;
@@ -116,8 +118,6 @@ for (const dirPath of findAllPythonLambdaDir('src')) {
  */
 project.compileTask.exec('npx projen copy-resources');
 project.compileTask.exec('npx projen pip-install');
-// project.testCompileTask.exec('npx projen copy-resources');
-// project.testCompileTask.exec('npx projen pip-install');
 
 /**
  * Find all directory that has a Python package.

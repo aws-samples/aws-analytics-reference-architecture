@@ -4,21 +4,23 @@ import * as cdk from '@aws-cdk/core';
 
 /**
  * Extends existing FunctionProps as optional using `Partial`
- *(as we don't require `Code` prop)
+ * (as we don't require `Code` prop)
  */
 export interface PreBundledFunctionProps extends Partial<FunctionProps>{
   codePath: string;
 }
 
 /**
- * Wrapper of lambda.Function construct for prebunded file.
+ * A Lambda function with prebundled dependencies
+ * 
  * It changes of the code path by based on the environment that `cdk synth` is running on.
  *
  * This class is used together with a Projen custom task "copy-resources", and "pip-install".
- * The tasks will ensure that all Python and libraries files are available in "lib" folder
+ * The tasks will ensure that all Python and libraries files are available in "lib" folder, 
+ * with the same relative path
  *
- * However, the files will be under `node_modules` when installed as a 3rd party library.
- * Thus, so this wrapper changes that path.
+ * When this construct is being run in JSII, this file will be in `node_modules` folder
+ * (as it's installed as a 3rd party library.) This construct will change the path based on that.
  */
 export class PreBundledFunction extends Function {
   constructor(scope: cdk.Construct, id: string, props: PreBundledFunctionProps) {
@@ -31,11 +33,10 @@ export class PreBundledFunction extends Function {
 
     let assetPath;
     if (process.env.NODE_ENV !== 'test') {
-      // __dirname will be in lib/common folder. We need to go up one step.
       console.info(`Running in JSII, going to use modified path. process.env.JSII_AGENT =  ${process.env.JSII_AGENT}`);
+      // __dirname is where this file is (lib/common). We need to go up one step (to lib).
       assetPath = path.join(__dirname, `../${props.codePath}`);
     } else {
-      console.info('Running in unit test mode. Refer to the directory in src directly.');
       assetPath = `src/${props.codePath}`;
     }
 
