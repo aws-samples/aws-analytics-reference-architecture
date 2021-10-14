@@ -77,6 +77,46 @@ The singleton pattern can be implemented using the unique ID of the AWS CDK node
 
 See the `SingletonBucket` Construct [here](./core/src/singleton-bucket.ts).
 
+### How to create a pre-bundled Python Lambda function?
+
+Place your Lambda function code under `<construct-folder>/resources/lambdas/<lambdan-function-name>` folder. Projen will detect the new folder and bundle that during `npx projen build`. 
+
+It will copy all files to the same path in `lib` folder and install Python dependencies on any folder with `requirements.txt`. Our package will have all dependencies bundle and consumers do not have to install dependencies by themselves.
+
+In the construct, create a Lambda function with `PreBundledFunction` construct to use the prebundled version. All of the parameter is the same as `lambda.Function`. The only difference is passing `codePath` prop instead of `code` with a relative path from `core/src`. The construct will use the right path with all dependencies when consumer is building. 
+
+Here's an example:
+
+```
+new PreBundledFunction(this, 'helloWordNumpy', {
+    runtime: Runtime.PYTHON_3_8,
+    codePath: '<construct-folder>/resources/lambdas/<lambdan-function-name>',
+    handler: 'lambda.handler',
+    logRetention: RetentionDays.ONE_DAY,
+    timeout: Duration.seconds(30),
+});
+```
+### Why do we prebundle Python code for Lambda function?
+
+Most of the data engineering code are written in Python. Even our CDK constructs are in TypeScript, we still use Python a lot in our Lambda functions. 
+
+Normally, construct provider will **defer bundling step to construct consumers**. The provider only packages Python files and `requirements.txt` and distribute them. Consumers have to install and compile dependencies by themselves. The code looks like this:
+
+```
+new PythonFunction(this, 'functionName', {
+    runtime: Runtime.PYTHON_3_8,
+    entry: '<construct-folder>/resources/lambdas/<function-name>',
+    index: 'lambda.py',
+    handler: 'handler',
+});
+```
+
+This code is passed on to consumer. When they run  `cdk synth`, CDK will detect `requirements.txt` and download dependecies. Then CDK uploads the Python files and dependencies to an S3 bucket and create a CloudFormation template with link to it.
+
+With this approach, consumers must set up Docker or their `cdk synth` will fail. Given the variety of audience we have for this reference architecture, we want to avoid additional prerequisite. (And support requests for Docker-related issues). 
+
+Thus, we choose to prebundle Lambda function by installing all dependencies on provider's side. There are extra steps in Projen to copy PYthon files and install depedencies during the build. This way, consumers do not need bundle Lambda packages themselves.
+
 ## Testing
 
 #### How to test CDK Constructs logic with a deployment in AWS Account?
