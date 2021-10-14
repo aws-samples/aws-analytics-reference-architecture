@@ -11,3 +11,4 @@ export { SingletonBucket } from './singleton-bucket';
 export { Ec2SsmRole } from './ec2-ssm-role';
 export { DataLakeCatalog } from './data-lake-catalog';
 export { AthenaDefaultSetup, AthenaDefaultSetupProps } from './athena-default-setup';
+export { SingletonGlueDefaultRole } from './singleton-glue-default-role';
