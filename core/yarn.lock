@@ -1597,6 +1597,11 @@
   resolved "https://registry.npmjs.org/@types/node/-/node-10.17.60.tgz"
   integrity sha512-F0KIgDJfy2nA3zMLmWGKxcH2ZVEtCZXHHdOQs2gSaQ27+lNeEfGxzkIw90aXswATX7AZ33tahPbzy6KAfUreVw==
 
+"@types/node@^14.17.0":
+  version "14.17.26"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.17.26.tgz#47a53c7e7804490155a4646d60c8e194816d073c"
+  integrity sha512-eSTNkK/nfmnC7IKpOJZixDgG0W2/eHz1qyFN7o/rwwwIHsVRp+G9nbh4BrQ77kbQ2zPu286AQRxkuRLPcR3gXw==
+
 "@types/normalize-package-data@^2.4.0":
   version "2.4.1"
   resolved "https://registry.npmjs.org/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz"
