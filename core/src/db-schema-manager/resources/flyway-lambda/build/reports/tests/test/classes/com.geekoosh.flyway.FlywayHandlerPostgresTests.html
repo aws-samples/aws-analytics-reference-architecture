@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class com.geekoosh.flyway.FlywayHandlerPostgresTests</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class com.geekoosh.flyway.FlywayHandlerPostgresTests</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/com.geekoosh.flyway.html">com.geekoosh.flyway</a> &gt; FlywayHandlerPostgresTests</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">3</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">35.656s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard output</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">testMigratePostgres</td>
+<td class="success">5.146s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testMigratePostgresWithS3Folder</td>
+<td class="success">5.162s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testPasswordSecret</td>
+<td class="success">25.348s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::        (v1.5.9.RELEASE)
+
+2021-10-18 06:53:09.572  INFO 40419 --- [    Test worker] o.s.boot.SpringApplication               : Starting application on 88665a14a6c3.ant.amazon.com with PID 40419 (started by chazalf in /Users/chazalf/amazon/aws-analytics-reference-architecture/core/src/db-migration/resources/flyway-lambda)
+2021-10-18 06:53:09.572  INFO 40419 --- [    Test worker] o.s.boot.SpringApplication               : No active profile set, falling back to default profiles: default
+2021-10-18 06:53:09.575  INFO 40419 --- [    Test worker] ationConfigEmbeddedWebApplicationContext : Refreshing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7715b0fe: startup date [Mon Oct 18 06:53:09 CEST 2021]; root of context hierarchy
+2021-10-18 06:53:09.736  INFO 40419 --- [    Test worker] c.a.testing.s3mock.FileStoreController   : Creating initial buckets: []
+2021-10-18 06:53:09.774  INFO 40419 --- [    Test worker] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat initialized with port(s): 9191 (https) 9090 (http)
+2021-10-18 06:53:09.775  INFO 40419 --- [    Test worker] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2021-10-18 06:53:09.775  INFO 40419 --- [    Test worker] org.apache.catalina.core.StandardEngine  : Starting Servlet Engine: Apache Tomcat/8.5.23
+2021-10-18 06:53:09.781  INFO 40419 --- [ost-startStop-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2021-10-18 06:53:09.782  INFO 40419 --- [ost-startStop-1] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 207 ms
+2021-10-18 06:53:09.859  INFO 40419 --- [ost-startStop-1] o.s.b.w.servlet.ServletRegistrationBean  : Mapping servlet: 'dispatcherServlet' to [/]
+2021-10-18 06:53:09.860  INFO 40419 --- [ost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'characterEncodingFilter' to: [/*]
+2021-10-18 06:53:09.860  INFO 40419 --- [ost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+2021-10-18 06:53:09.860  INFO 40419 --- [ost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'httpPutFormContentFilter' to: [/*]
+2021-10-18 06:53:09.860  INFO 40419 --- [ost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'requestContextFilter' to: [/*]
+2021-10-18 06:53:09.860  INFO 40419 --- [ost-startStop-1] o.s.b.w.servlet.FilterRegistrationBean   : Mapping filter: 'kmsFilter' to: [/*]
+2021-10-18 06:53:09.956  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerAdapter : Looking for @ControllerAdvice: org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7715b0fe: startup date [Mon Oct 18 06:53:09 CEST 2021]; root of context hierarchy
+2021-10-18 06:53:09.966  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[GET],produces=[application/x-www-form-urlencoded]}&quot; onto public void com.adobe.testing.s3mock.FileStoreController.getObject(java.lang.String,com.adobe.testing.s3mock.dto.Range,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws java.io.IOException
+2021-10-18 06:53:09.966  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[PUT]}&quot; onto public org.springframework.http.ResponseEntity&lt;java.lang.String&gt; com.adobe.testing.s3mock.FileStoreController.putObject(java.lang.String,javax.servlet.http.HttpServletRequest)
+2021-10-18 06:53:09.966  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{destinationBucket:.+}/**],methods=[PUT],headers=[x-amz-copy-source &amp;&amp; x-amz-server-side-encryption],produces=[application/x-www-form-urlencoded;charset=utf-8]}&quot; onto public com.adobe.testing.s3mock.dto.CopyObjectResult com.adobe.testing.s3mock.FileStoreController.copyObject(java.lang.String,com.adobe.testing.s3mock.dto.ObjectRef,java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws java.io.IOException
+2021-10-18 06:53:09.966  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{destinationBucket:.+}/**],methods=[PUT],headers=[x-amz-copy-source &amp;&amp; !x-amz-server-side-encryption],produces=[application/x-www-form-urlencoded;charset=utf-8]}&quot; onto public com.adobe.testing.s3mock.dto.CopyObjectResult com.adobe.testing.s3mock.FileStoreController.copyObject(java.lang.String,com.adobe.testing.s3mock.dto.ObjectRef,javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse) throws java.io.IOException
+2021-10-18 06:53:09.967  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName}],methods=[DELETE]}&quot; onto public org.springframework.http.ResponseEntity&lt;java.lang.String&gt; com.adobe.testing.s3mock.FileStoreController.deleteBucket(java.lang.String)
+2021-10-18 06:53:09.967  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[DELETE]}&quot; onto public org.springframework.http.ResponseEntity&lt;java.lang.String&gt; com.adobe.testing.s3mock.FileStoreController.deleteObject(java.lang.String,javax.servlet.http.HttpServletRequest)
+2021-10-18 06:53:09.967  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[POST],params=[uploadId]}&quot; onto public org.springframework.http.ResponseEntity&lt;com.adobe.testing.s3mock.dto.CompleteMultipartUploadResult&gt; com.adobe.testing.s3mock.FileStoreController.completeMultipartUpload(java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest) throws java.io.IOException
+2021-10-18 06:53:09.967  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[POST],params=[uploads],headers=[x-amz-server-side-encryption &amp;&amp; x-amz-server-side-encryption-aws-kms-key-id],produces=[application/x-www-form-urlencoded]}&quot; onto public com.adobe.testing.s3mock.dto.InitiateMultipartUploadResult com.adobe.testing.s3mock.FileStoreController.initiateMultipartUpload(java.lang.String,java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest)
+2021-10-18 06:53:09.967  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[POST],params=[uploads],produces=[application/x-www-form-urlencoded]}&quot; onto public com.adobe.testing.s3mock.dto.InitiateMultipartUploadResult com.adobe.testing.s3mock.FileStoreController.initiateMultipartUpload(java.lang.String,javax.servlet.http.HttpServletRequest)
+2021-10-18 06:53:09.967  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName}],methods=[HEAD]}&quot; onto public org.springframework.http.ResponseEntity&lt;java.lang.String&gt; com.adobe.testing.s3mock.FileStoreController.headBucket(java.lang.String)
+2021-10-18 06:53:09.967  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/],methods=[GET],produces=[application/x-www-form-urlencoded]}&quot; onto public com.adobe.testing.s3mock.dto.ListAllMyBucketsResult com.adobe.testing.s3mock.FileStoreController.listBuckets()
+2021-10-18 06:53:09.967  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName}],methods=[POST],params=[delete],produces=[application/x-www-form-urlencoded]}&quot; onto public com.adobe.testing.s3mock.dto.BatchDeleteResponse com.adobe.testing.s3mock.FileStoreController.batchDeleteObjects(java.lang.String,com.adobe.testing.s3mock.dto.BatchDeleteRequest)
+2021-10-18 06:53:09.968  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[POST],params=[uploadId],headers=[x-amz-server-side-encryption &amp;&amp; x-amz-server-side-encryption-aws-kms-key-id]}&quot; onto public org.springframework.http.ResponseEntity&lt;com.adobe.testing.s3mock.dto.CompleteMultipartUploadResult&gt; com.adobe.testing.s3mock.FileStoreController.completeMultipartUploadEncrypted(java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest) throws java.io.IOException
+2021-10-18 06:53:09.968  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{destinationBucket:.+}/**],methods=[PUT],headers=[x-amz-copy-source &amp;&amp; x-amz-copy-source-range &amp;&amp; !x-amz-server-side-encryption]}&quot; onto public org.springframework.http.ResponseEntity&lt;com.adobe.testing.s3mock.dto.CopyPartResult&gt; com.adobe.testing.s3mock.FileStoreController.copyObjectPart(com.adobe.testing.s3mock.dto.ObjectRef,com.adobe.testing.s3mock.dto.Range,java.lang.String,java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest) throws java.io.IOException
+2021-10-18 06:53:09.968  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{destinationBucket:.+}/**],methods=[PUT],headers=[x-amz-copy-source &amp;&amp; x-amz-copy-source-range &amp;&amp; x-amz-server-side-encryption &amp;&amp; x-amz-server-side-encryption-aws-kms-key-id]}&quot; onto public org.springframework.http.ResponseEntity&lt;com.adobe.testing.s3mock.dto.CopyPartResult&gt; com.adobe.testing.s3mock.FileStoreController.copyObjectPart(com.adobe.testing.s3mock.dto.ObjectRef,com.adobe.testing.s3mock.dto.Range,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest) throws java.io.IOException
+2021-10-18 06:53:09.968  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName}/],methods=[GET],produces=[application/x-www-form-urlencoded]}&quot; onto public com.adobe.testing.s3mock.dto.ListBucketResult com.adobe.testing.s3mock.FileStoreController.listObjectsInsideBucket(java.lang.String,java.lang.String,javax.servlet.http.HttpServletResponse) throws java.io.IOException
+2021-10-18 06:53:09.968  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[HEAD]}&quot; onto public org.springframework.http.ResponseEntity&lt;java.lang.String&gt; com.adobe.testing.s3mock.FileStoreController.headObject(java.lang.String,javax.servlet.http.HttpServletRequest)
+2021-10-18 06:53:09.968  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName}],methods=[PUT]}&quot; onto public org.springframework.http.ResponseEntity&lt;java.lang.String&gt; com.adobe.testing.s3mock.FileStoreController.putBucket(java.lang.String)
+2021-10-18 06:53:09.968  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[GET],params=[uploadId &amp;&amp; part-number-marker],produces=[application/x-www-form-urlencoded]}&quot; onto public com.adobe.testing.s3mock.dto.ListPartsResult com.adobe.testing.s3mock.FileStoreController.multipartListParts(java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest)
+2021-10-18 06:53:09.968  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[PUT],params=[uploadId &amp;&amp; partNumber],headers=[!x-amz-copy-source &amp;&amp; !x-amz-copy-source-range &amp;&amp; x-amz-server-side-encryption]}&quot; onto public org.springframework.http.ResponseEntity&lt;com.adobe.testing.s3mock.dto.CopyPartResult&gt; com.adobe.testing.s3mock.FileStoreController.putObjectPart(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest) throws java.io.IOException
+2021-10-18 06:53:09.969  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[PUT],params=[uploadId &amp;&amp; partNumber],headers=[!x-amz-copy-source &amp;&amp; !x-amz-copy-source-range]}&quot; onto public org.springframework.http.ResponseEntity&lt;com.adobe.testing.s3mock.dto.CopyPartResult&gt; com.adobe.testing.s3mock.FileStoreController.putObjectPart(java.lang.String,java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest) throws java.io.IOException
+2021-10-18 06:53:09.969  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/{bucketName:.+}/**],methods=[PUT],headers=[x-amz-server-side-encryption &amp;&amp; x-amz-server-side-encryption-aws-kms-key-id]}&quot; onto public org.springframework.http.ResponseEntity&lt;java.lang.String&gt; com.adobe.testing.s3mock.FileStoreController.putObjectEncrypted(java.lang.String,java.lang.String,java.lang.String,javax.servlet.http.HttpServletRequest) throws java.io.IOException
+2021-10-18 06:53:09.970  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/error]}&quot; onto public org.springframework.http.ResponseEntity&lt;java.util.Map&lt;java.lang.String, java.lang.Object&gt;&gt; org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)
+2021-10-18 06:53:09.970  INFO 40419 --- [    Test worker] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped &quot;{[/error],produces=[text/html]}&quot; onto public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)
+2021-10-18 06:53:09.982  INFO 40419 --- [    Test worker] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/webjars/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2021-10-18 06:53:09.982  INFO 40419 --- [    Test worker] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/**] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2021-10-18 06:53:09.997  INFO 40419 --- [    Test worker] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped URL path [/**/favicon.ico] onto handler of type [class org.springframework.web.servlet.resource.ResourceHttpRequestHandler]
+2021-10-18 06:53:10.057  INFO 40419 --- [    Test worker] o.s.j.e.a.AnnotationMBeanExporter        : Registering beans for JMX exposure on startup
+2021-10-18 06:53:10.067  INFO 40419 --- [    Test worker] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 9191 (https) 9090 (http)
+2021-10-18 06:53:10.069  INFO 40419 --- [    Test worker] o.s.boot.SpringApplication               : Started application in 0.533 seconds (JVM running for 73.147)
+2021-10-18 06:53:10.076  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Pulling docker image: postgres:9.6.12. Please be patient; this may take some time but only needs to be done once.
+2021-10-18 06:53:12.139  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Starting to pull image
+2021-10-18 06:53:12.159  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+2021-10-18 06:53:13.421  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers: 13 pending,  1 downloaded,  0 extracted, (1 KB/? MB)
+2021-10-18 06:53:15.156  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers: 12 pending,  2 downloaded,  0 extracted, (10 MB/? MB)
+2021-10-18 06:53:16.787  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers: 11 pending,  3 downloaded,  0 extracted, (25 MB/? MB)
+2021-10-18 06:53:17.048  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers: 10 pending,  4 downloaded,  0 extracted, (25 MB/? MB)
+2021-10-18 06:53:18.212  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  9 pending,  5 downloaded,  0 extracted, (27 MB/? MB)
+2021-10-18 06:53:18.389  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  9 pending,  5 downloaded,  1 extracted, (28 MB/? MB)
+2021-10-18 06:53:18.411  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  8 pending,  6 downloaded,  1 extracted, (28 MB/? MB)
+2021-10-18 06:53:18.729  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  8 pending,  6 downloaded,  2 extracted, (29 MB/? MB)
+2021-10-18 06:53:18.813  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  8 pending,  6 downloaded,  3 extracted, (30 MB/? MB)
+2021-10-18 06:53:18.962  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  8 pending,  6 downloaded,  4 extracted, (30 MB/? MB)
+2021-10-18 06:53:19.303  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  7 pending,  7 downloaded,  4 extracted, (31 MB/? MB)
+2021-10-18 06:53:19.761  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  6 pending,  8 downloaded,  4 extracted, (33 MB/? MB)
+2021-10-18 06:53:20.350  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  6 pending,  8 downloaded,  5 extracted, (33 MB/? MB)
+2021-10-18 06:53:20.416  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  5 pending,  9 downloaded,  5 extracted, (33 MB/? MB)
+2021-10-18 06:53:20.475  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  5 pending,  9 downloaded,  6 extracted, (34 MB/? MB)
+2021-10-18 06:53:20.554  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  5 pending,  9 downloaded,  7 extracted, (34 MB/? MB)
+2021-10-18 06:53:20.627  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  5 pending,  9 downloaded,  8 extracted, (34 MB/? MB)
+2021-10-18 06:53:20.857  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  4 pending, 10 downloaded,  8 extracted, (34 MB/? MB)
+2021-10-18 06:53:21.531  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  3 pending, 11 downloaded,  8 extracted, (36 MB/? MB)
+2021-10-18 06:53:21.931  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  2 pending, 12 downloaded,  8 extracted, (38 MB/? MB)
+2021-10-18 06:53:22.678  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  1 pending, 13 downloaded,  8 extracted, (41 MB/? MB)
+2021-10-18 06:53:26.694  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  0 pending, 14 downloaded,  8 extracted, (79 MB/80 MB)
+2021-10-18 06:53:29.620  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  0 pending, 14 downloaded,  9 extracted, (80 MB/80 MB)
+2021-10-18 06:53:29.696  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  0 pending, 14 downloaded, 10 extracted, (80 MB/80 MB)
+2021-10-18 06:53:29.767  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  0 pending, 14 downloaded, 11 extracted, (80 MB/80 MB)
+2021-10-18 06:53:29.838  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  0 pending, 14 downloaded, 12 extracted, (80 MB/80 MB)
+2021-10-18 06:53:29.912  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  0 pending, 14 downloaded, 13 extracted, (80 MB/80 MB)
+2021-10-18 06:53:29.981  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pulling image layers:  0 pending, 14 downloaded, 14 extracted, (80 MB/80 MB)
+2021-10-18 06:53:30.004  INFO 40419 --- [stream-35328906] &#x1f433; [postgres:9.6.12]                     : Pull complete. 14 layers, pulled in 17s (downloaded 80 MB at 4 MB/s)
+2021-10-18 06:53:30.006  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Creating container for image: postgres:9.6.12
+2021-10-18 06:53:30.152  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Starting container with ID: 5e41f5fcba5b3705a4cd28b250483031fd4afaae01b4476403183e400eee6ba5
+2021-10-18 06:53:30.495  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Container postgres:9.6.12 is starting: 5e41f5fcba5b3705a4cd28b250483031fd4afaae01b4476403183e400eee6ba5
+2021-10-18 06:53:34.622  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Container postgres:9.6.12 started
+2021-10-18 06:53:34.682  INFO 40419 --- [nio-9191-exec-6] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring FrameworkServlet 'dispatcherServlet'
+2021-10-18 06:53:34.683  INFO 40419 --- [nio-9191-exec-6] o.s.web.servlet.DispatcherServlet        : FrameworkServlet 'dispatcherServlet': initialization started
+2021-10-18 06:53:34.693  INFO 40419 --- [nio-9191-exec-6] o.s.web.servlet.DispatcherServlet        : FrameworkServlet 'dispatcherServlet': initialization completed in 10 ms
+built S3 request with Bucket-3 /// migrations
+2021-10-18 06:53:34  INFO  FlywayHandler:42 - s3Service.isValid()
+2021-10-18 06:53:34  INFO  FlywayHandler:48 - migrationFilesService not null
+2021-10-18 06:53:34  INFO  S3Service:66 - Downloading files from S3 xfer_mgr.downloadDirectory(Bucket-3, migrations, /tmp/Bucket-3)
+2021-10-18 06:53:34  INFO  S3Service:71 - Completed
+2021-10-18 06:53:34  INFO  FlywayService:254 - Running migration
+2021-10-18 06:53:34  INFO  FlywayService:115 - logMigrationFiles Migration folders: /tmp/Bucket-3
+2021-10-18 06:53:34  INFO  FlywayService:74 - Flyway configuration: org.flywaydb.core.api.configuration.ClassicConfiguration@4c451d98[
+  driver=&lt;null&gt;
+  url=jdbc:postgresql://localhost:55015/test?loggerLevel=OFF
+  user=username
+  dataSource=org.flywaydb.core.internal.jdbc.DriverDataSource@35baf9be
+  connectRetries=0
+  initSql=&lt;null&gt;
+  classLoader=jdk.internal.loader.ClassLoaders$AppClassLoader@277050dc
+  locations=org.flywaydb.core.internal.util.Locations@43546f1f
+  encoding=UTF-8
+  defaultSchemaName=&lt;null&gt;
+  schemaNames={}
+  table=flyway_schema_history
+  tablespace=&lt;null&gt;
+  target=&lt;null&gt;
+  cherryPick=&lt;null&gt;
+  placeholderReplacement=true
+  placeholders={}
+  placeholderPrefix=${
+  placeholderSuffix=}
+  sqlMigrationPrefix=V
+  undoSqlMigrationPrefix=U
+  resourceProvider=&lt;null&gt;
+  javaMigrationClassProvider=&lt;null&gt;
+  repeatableSqlMigrationPrefix=R
+  sqlMigrationSeparator=__
+  sqlMigrationSuffixes={.sql}
+  javaMigrations={}
+  ignoreMissingMigrations=false
+  ignoreIgnoredMigrations=false
+  ignorePendingMigrations=false
+  ignoreFutureMigrations=true
+  validateMigrationNaming=false
+  validateOnMigrate=true
+  cleanOnValidationError=false
+  cleanDisabled=false
+  baselineVersion=1
+  baselineDescription=&lt;&lt; Flyway Baseline &gt;&gt;
+  baselineOnMigrate=false
+  outOfOrder=false
+  skipExecutingMigrations=false
+  callbacks=[]
+  skipDefaultCallbacks=false
+  resolvers={}
+  skipDefaultResolvers=false
+  mixed=false
+  group=false
+  installedBy=&lt;null&gt;
+  createSchemas=true
+  errorOverrides={}
+  dryRunOutput=&lt;null&gt;
+  stream=false
+  batch=false
+  outputQueryResults=true
+  licenseKey=&lt;null&gt;
+  lockRetryCount=50
+  jdbcProperties=&lt;null&gt;
+  oracleSqlplus=false
+  oracleSqlplusWarn=false
+  oracleKerberosConfigFile=
+  oracleKerberosCacheFile=
+  conjurUrl=&lt;null&gt;
+  conjurToken=&lt;null&gt;
+  vaultUrl=&lt;null&gt;
+  vaultToken=&lt;null&gt;
+  vaultSecrets=&lt;null&gt;
+  classScanner=org.flywaydb.core.internal.scanner.ClasspathClassScanner@5a4be1a9
+]
+2021-10-18 06:53:34  INFO  FlywayService:227 - Migration scripts from folders: /tmp/Bucket-3
+2021-10-18 06:53:34  INFO  FlywayService:91 - getMigrationFiles Migration folders: /tmp/Bucket-3
+2021-10-18 06:53:34  INFO  FlywayService:96 - getMigrationFiles Migration filenames: 
+2021-10-18 06:53:34  INFO  FlywayService:104 - logMigrationFiles Migration files: 
+2021-10-18 06:53:34.798  INFO 40419 --- [    Test worker] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 7.5.3 by Redgate
+2021-10-18 06:53:34.875  INFO 40419 --- [    Test worker] o.f.c.i.database.base.DatabaseType       : Database: jdbc:postgresql://localhost:55015/test (PostgreSQL 9.6)
+2021-10-18 06:53:34.905  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbValidate     : Successfully validated 1 migration (execution time 00:00.008s)
+2021-10-18 06:53:34.926  INFO 40419 --- [    Test worker] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table &quot;public&quot;.&quot;flyway_schema_history&quot; ...
+2021-10-18 06:53:34.955  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbMigrate      : Current version of schema &quot;public&quot;: &lt;&lt; Empty Schema &gt;&gt;
+2021-10-18 06:53:34.962  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbMigrate      : Migrating schema &quot;public&quot; to version &quot;1 - init&quot;
+2021-10-18 06:53:34.996  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema &quot;public&quot; (execution time 00:00.053s)
+2021-10-18 06:53:35  INFO  FlywayService:115 - logMigrationFiles Migration folders: /tmp/Bucket-3
+2021-10-18 06:53:35  INFO  FlywayService:74 - Flyway configuration: org.flywaydb.core.api.configuration.ClassicConfiguration@34493693[
+  driver=&lt;null&gt;
+  url=jdbc:postgresql://localhost:55015/test?loggerLevel=OFF
+  user=username
+  dataSource=org.flywaydb.core.internal.jdbc.DriverDataSource@7a04482f
+  connectRetries=0
+  initSql=&lt;null&gt;
+  classLoader=jdk.internal.loader.ClassLoaders$AppClassLoader@277050dc
+  locations=org.flywaydb.core.internal.util.Locations@4c2fdaa1
+  encoding=UTF-8
+  defaultSchemaName=&lt;null&gt;
+  schemaNames={}
+  table=flyway_schema_history
+  tablespace=&lt;null&gt;
+  target=&lt;null&gt;
+  cherryPick=&lt;null&gt;
+  placeholderReplacement=true
+  placeholders={}
+  placeholderPrefix=${
+  placeholderSuffix=}
+  sqlMigrationPrefix=V
+  undoSqlMigrationPrefix=U
+  resourceProvider=&lt;null&gt;
+  javaMigrationClassProvider=&lt;null&gt;
+  repeatableSqlMigrationPrefix=R
+  sqlMigrationSeparator=__
+  sqlMigrationSuffixes={.sql}
+  javaMigrations={}
+  ignoreMissingMigrations=false
+  ignoreIgnoredMigrations=false
+  ignorePendingMigrations=false
+  ignoreFutureMigrations=true
+  validateMigrationNaming=false
+  validateOnMigrate=true
+  cleanOnValidationError=false
+  cleanDisabled=false
+  baselineVersion=1
+  baselineDescription=&lt;&lt; Flyway Baseline &gt;&gt;
+  baselineOnMigrate=false
+  outOfOrder=false
+  skipExecutingMigrations=false
+  callbacks=[]
+  skipDefaultCallbacks=false
+  resolvers={}
+  skipDefaultResolvers=false
+  mixed=false
+  group=false
+  installedBy=&lt;null&gt;
+  createSchemas=true
+  errorOverrides={}
+  dryRunOutput=&lt;null&gt;
+  stream=false
+  batch=false
+  outputQueryResults=true
+  licenseKey=&lt;null&gt;
+  lockRetryCount=50
+  jdbcProperties=&lt;null&gt;
+  oracleSqlplus=false
+  oracleSqlplusWarn=false
+  oracleKerberosConfigFile=
+  oracleKerberosCacheFile=
+  conjurUrl=&lt;null&gt;
+  conjurToken=&lt;null&gt;
+  vaultUrl=&lt;null&gt;
+  vaultToken=&lt;null&gt;
+  vaultSecrets=&lt;null&gt;
+  classScanner=org.flywaydb.core.internal.scanner.ClasspathClassScanner@10e7f63c
+]
+2021-10-18 06:53:35.007  INFO 40419 --- [    Test worker] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 7.5.3 by Redgate
+2021-10-18 06:53:35.028  INFO 40419 --- [    Test worker] o.f.c.i.database.base.DatabaseType       : Database: jdbc:postgresql://localhost:55015/test (PostgreSQL 9.6)
+2021-10-18 06:53:35  INFO  Response:53 - Current version: 1
+Applied migrations: 1, (1 [migrations/V1__init.sql])
+Pending migrations: 0, 
+
+2021-10-18 06:53:35.420  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Creating container for image: postgres:9.6.12
+2021-10-18 06:53:35.473  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Starting container with ID: 4c30afee0c84f0eabe68c3b5a713252bed3e5cb8fefc408ae1840690283f7b9f
+2021-10-18 06:53:35.838  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Container postgres:9.6.12 is starting: 4c30afee0c84f0eabe68c3b5a713252bed3e5cb8fefc408ae1840690283f7b9f
+2021-10-18 06:53:39.991  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Container postgres:9.6.12 started
+built S3 request with Bucket-1 /// migrations
+2021-10-18 06:53:40  INFO  FlywayHandler:42 - s3Service.isValid()
+2021-10-18 06:53:40  INFO  FlywayHandler:48 - migrationFilesService not null
+2021-10-18 06:53:40  INFO  S3Service:66 - Downloading files from S3 xfer_mgr.downloadDirectory(Bucket-1, migrations, /tmp/Bucket-1)
+2021-10-18 06:53:40  INFO  S3Service:71 - Completed
+2021-10-18 06:53:40  INFO  FlywayService:254 - Running migration
+2021-10-18 06:53:40  INFO  FlywayService:115 - logMigrationFiles Migration folders: /tmp/Bucket-1
+2021-10-18 06:53:40  INFO  FlywayService:74 - Flyway configuration: org.flywaydb.core.api.configuration.ClassicConfiguration@26edee57[
+  driver=&lt;null&gt;
+  url=jdbc:postgresql://localhost:55016/test?loggerLevel=OFF
+  user=username
+  dataSource=org.flywaydb.core.internal.jdbc.DriverDataSource@3d9acef9
+  connectRetries=0
+  initSql=&lt;null&gt;
+  classLoader=jdk.internal.loader.ClassLoaders$AppClassLoader@277050dc
+  locations=org.flywaydb.core.internal.util.Locations@7cfd645
+  encoding=UTF-8
+  defaultSchemaName=&lt;null&gt;
+  schemaNames={}
+  table=flyway_schema_history
+  tablespace=&lt;null&gt;
+  target=&lt;null&gt;
+  cherryPick=&lt;null&gt;
+  placeholderReplacement=true
+  placeholders={}
+  placeholderPrefix=${
+  placeholderSuffix=}
+  sqlMigrationPrefix=V
+  undoSqlMigrationPrefix=U
+  resourceProvider=&lt;null&gt;
+  javaMigrationClassProvider=&lt;null&gt;
+  repeatableSqlMigrationPrefix=R
+  sqlMigrationSeparator=__
+  sqlMigrationSuffixes={.sql}
+  javaMigrations={}
+  ignoreMissingMigrations=false
+  ignoreIgnoredMigrations=false
+  ignorePendingMigrations=false
+  ignoreFutureMigrations=true
+  validateMigrationNaming=false
+  validateOnMigrate=true
+  cleanOnValidationError=false
+  cleanDisabled=false
+  baselineVersion=1
+  baselineDescription=&lt;&lt; Flyway Baseline &gt;&gt;
+  baselineOnMigrate=false
+  outOfOrder=false
+  skipExecutingMigrations=false
+  callbacks=[]
+  skipDefaultCallbacks=false
+  resolvers={}
+  skipDefaultResolvers=false
+  mixed=false
+  group=false
+  installedBy=&lt;null&gt;
+  createSchemas=true
+  errorOverrides={}
+  dryRunOutput=&lt;null&gt;
+  stream=false
+  batch=false
+  outputQueryResults=true
+  licenseKey=&lt;null&gt;
+  lockRetryCount=50
+  jdbcProperties=&lt;null&gt;
+  oracleSqlplus=false
+  oracleSqlplusWarn=false
+  oracleKerberosConfigFile=
+  oracleKerberosCacheFile=
+  conjurUrl=&lt;null&gt;
+  conjurToken=&lt;null&gt;
+  vaultUrl=&lt;null&gt;
+  vaultToken=&lt;null&gt;
+  vaultSecrets=&lt;null&gt;
+  classScanner=org.flywaydb.core.internal.scanner.ClasspathClassScanner@61280e26
+]
+2021-10-18 06:53:40  INFO  FlywayService:227 - Migration scripts from folders: /tmp/Bucket-1
+2021-10-18 06:53:40  INFO  FlywayService:91 - getMigrationFiles Migration folders: /tmp/Bucket-1
+2021-10-18 06:53:40  INFO  FlywayService:96 - getMigrationFiles Migration filenames: 
+2021-10-18 06:53:40  INFO  FlywayService:104 - logMigrationFiles Migration files: 
+2021-10-18 06:53:40.059  INFO 40419 --- [    Test worker] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 7.5.3 by Redgate
+2021-10-18 06:53:40.087  INFO 40419 --- [    Test worker] o.f.c.i.database.base.DatabaseType       : Database: jdbc:postgresql://localhost:55016/test (PostgreSQL 9.6)
+2021-10-18 06:53:40.129  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbValidate     : Successfully validated 1 migration (execution time 00:00.007s)
+2021-10-18 06:53:40.155  INFO 40419 --- [    Test worker] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table &quot;public&quot;.&quot;flyway_schema_history&quot; ...
+2021-10-18 06:53:40.189  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbMigrate      : Current version of schema &quot;public&quot;: &lt;&lt; Empty Schema &gt;&gt;
+2021-10-18 06:53:40.197  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbMigrate      : Migrating schema &quot;public&quot; to version &quot;1 - init&quot;
+2021-10-18 06:53:40.230  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema &quot;public&quot; (execution time 00:00.052s)
+2021-10-18 06:53:40  INFO  FlywayService:115 - logMigrationFiles Migration folders: /tmp/Bucket-1
+2021-10-18 06:53:40  INFO  FlywayService:74 - Flyway configuration: org.flywaydb.core.api.configuration.ClassicConfiguration@f6adcf8[
+  driver=&lt;null&gt;
+  url=jdbc:postgresql://localhost:55016/test?loggerLevel=OFF
+  user=username
+  dataSource=org.flywaydb.core.internal.jdbc.DriverDataSource@6e58cddb
+  connectRetries=0
+  initSql=&lt;null&gt;
+  classLoader=jdk.internal.loader.ClassLoaders$AppClassLoader@277050dc
+  locations=org.flywaydb.core.internal.util.Locations@212f8e40
+  encoding=UTF-8
+  defaultSchemaName=&lt;null&gt;
+  schemaNames={}
+  table=flyway_schema_history
+  tablespace=&lt;null&gt;
+  target=&lt;null&gt;
+  cherryPick=&lt;null&gt;
+  placeholderReplacement=true
+  placeholders={}
+  placeholderPrefix=${
+  placeholderSuffix=}
+  sqlMigrationPrefix=V
+  undoSqlMigrationPrefix=U
+  resourceProvider=&lt;null&gt;
+  javaMigrationClassProvider=&lt;null&gt;
+  repeatableSqlMigrationPrefix=R
+  sqlMigrationSeparator=__
+  sqlMigrationSuffixes={.sql}
+  javaMigrations={}
+  ignoreMissingMigrations=false
+  ignoreIgnoredMigrations=false
+  ignorePendingMigrations=false
+  ignoreFutureMigrations=true
+  validateMigrationNaming=false
+  validateOnMigrate=true
+  cleanOnValidationError=false
+  cleanDisabled=false
+  baselineVersion=1
+  baselineDescription=&lt;&lt; Flyway Baseline &gt;&gt;
+  baselineOnMigrate=false
+  outOfOrder=false
+  skipExecutingMigrations=false
+  callbacks=[]
+  skipDefaultCallbacks=false
+  resolvers={}
+  skipDefaultResolvers=false
+  mixed=false
+  group=false
+  installedBy=&lt;null&gt;
+  createSchemas=true
+  errorOverrides={}
+  dryRunOutput=&lt;null&gt;
+  stream=false
+  batch=false
+  outputQueryResults=true
+  licenseKey=&lt;null&gt;
+  lockRetryCount=50
+  jdbcProperties=&lt;null&gt;
+  oracleSqlplus=false
+  oracleSqlplusWarn=false
+  oracleKerberosConfigFile=
+  oracleKerberosCacheFile=
+  conjurUrl=&lt;null&gt;
+  conjurToken=&lt;null&gt;
+  vaultUrl=&lt;null&gt;
+  vaultToken=&lt;null&gt;
+  vaultSecrets=&lt;null&gt;
+  classScanner=org.flywaydb.core.internal.scanner.ClasspathClassScanner@5d9bdad7
+]
+2021-10-18 06:53:40.238  INFO 40419 --- [    Test worker] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 7.5.3 by Redgate
+2021-10-18 06:53:40.258  INFO 40419 --- [    Test worker] o.f.c.i.database.base.DatabaseType       : Database: jdbc:postgresql://localhost:55016/test (PostgreSQL 9.6)
+2021-10-18 06:53:40  INFO  Response:53 - Current version: 1
+Applied migrations: 1, (1 [migrations/V1__init.sql])
+Pending migrations: 0, 
+
+2021-10-18 06:53:40.583  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Creating container for image: postgres:9.6.12
+2021-10-18 06:53:40.649  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Starting container with ID: 171af9c90c5f8702346cd10ceab295f7e5c7c8f217c3a04206a4e8087c8be585
+2021-10-18 06:53:41.055  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Container postgres:9.6.12 is starting: 171af9c90c5f8702346cd10ceab295f7e5c7c8f217c3a04206a4e8087c8be585
+2021-10-18 06:53:45.213  INFO 40419 --- [    Test worker] &#x1f433; [postgres:9.6.12]                     : Container postgres:9.6.12 started
+built S3 request with Bucket-2 /// null
+2021-10-18 06:53:45  INFO  FlywayHandler:42 - s3Service.isValid()
+2021-10-18 06:53:45  INFO  FlywayHandler:48 - migrationFilesService not null
+2021-10-18 06:53:45  INFO  S3Service:66 - Downloading files from S3 xfer_mgr.downloadDirectory(Bucket-2, null, /tmp/Bucket-2)
+2021-10-18 06:53:45  INFO  S3Service:71 - Completed
+2021-10-18 06:53:45  INFO  FlywayService:254 - Running migration
+2021-10-18 06:53:45  INFO  FlywayService:115 - logMigrationFiles Migration folders: /tmp/Bucket-2
+2021-10-18 06:53:45  INFO  FlywayService:74 - Flyway configuration: org.flywaydb.core.api.configuration.ClassicConfiguration@23559b46[
+  driver=&lt;null&gt;
+  url=jdbc:postgresql://localhost:55017/test?loggerLevel=OFF
+  user=username
+  dataSource=org.flywaydb.core.internal.jdbc.DriverDataSource@4b2a24f9
+  connectRetries=0
+  initSql=&lt;null&gt;
+  classLoader=jdk.internal.loader.ClassLoaders$AppClassLoader@277050dc
+  locations=org.flywaydb.core.internal.util.Locations@800f7c6
+  encoding=UTF-8
+  defaultSchemaName=&lt;null&gt;
+  schemaNames={}
+  table=flyway_schema_history
+  tablespace=&lt;null&gt;
+  target=&lt;null&gt;
+  cherryPick=&lt;null&gt;
+  placeholderReplacement=true
+  placeholders={}
+  placeholderPrefix=${
+  placeholderSuffix=}
+  sqlMigrationPrefix=V
+  undoSqlMigrationPrefix=U
+  resourceProvider=&lt;null&gt;
+  javaMigrationClassProvider=&lt;null&gt;
+  repeatableSqlMigrationPrefix=R
+  sqlMigrationSeparator=__
+  sqlMigrationSuffixes={.sql}
+  javaMigrations={}
+  ignoreMissingMigrations=false
+  ignoreIgnoredMigrations=false
+  ignorePendingMigrations=false
+  ignoreFutureMigrations=true
+  validateMigrationNaming=false
+  validateOnMigrate=true
+  cleanOnValidationError=false
+  cleanDisabled=false
+  baselineVersion=1
+  baselineDescription=&lt;&lt; Flyway Baseline &gt;&gt;
+  baselineOnMigrate=false
+  outOfOrder=false
+  skipExecutingMigrations=false
+  callbacks=[]
+  skipDefaultCallbacks=false
+  resolvers={}
+  skipDefaultResolvers=false
+  mixed=false
+  group=false
+  installedBy=&lt;null&gt;
+  createSchemas=true
+  errorOverrides={}
+  dryRunOutput=&lt;null&gt;
+  stream=false
+  batch=false
+  outputQueryResults=true
+  licenseKey=&lt;null&gt;
+  lockRetryCount=50
+  jdbcProperties=&lt;null&gt;
+  oracleSqlplus=false
+  oracleSqlplusWarn=false
+  oracleKerberosConfigFile=
+  oracleKerberosCacheFile=
+  conjurUrl=&lt;null&gt;
+  conjurToken=&lt;null&gt;
+  vaultUrl=&lt;null&gt;
+  vaultToken=&lt;null&gt;
+  vaultSecrets=&lt;null&gt;
+  classScanner=org.flywaydb.core.internal.scanner.ClasspathClassScanner@c6635fa
+]
+2021-10-18 06:53:45  INFO  FlywayService:227 - Migration scripts from folders: /tmp/Bucket-2
+2021-10-18 06:53:45  INFO  FlywayService:91 - getMigrationFiles Migration folders: /tmp/Bucket-2
+2021-10-18 06:53:45  INFO  FlywayService:96 - getMigrationFiles Migration filenames: /tmp/Bucket-2/V1__init.sql
+2021-10-18 06:53:45  INFO  FlywayService:104 - logMigrationFiles Migration files: /tmp/Bucket-2/V1__init.sql
+2021-10-18 06:53:45.256  INFO 40419 --- [    Test worker] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 7.5.3 by Redgate
+2021-10-18 06:53:45.280  INFO 40419 --- [    Test worker] o.f.c.i.database.base.DatabaseType       : Database: jdbc:postgresql://localhost:55017/test (PostgreSQL 9.6)
+2021-10-18 06:53:45.309  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbValidate     : Successfully validated 1 migration (execution time 00:00.006s)
+2021-10-18 06:53:45.327  INFO 40419 --- [    Test worker] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table &quot;public&quot;.&quot;flyway_schema_history&quot; ...
+2021-10-18 06:53:45.352  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbMigrate      : Current version of schema &quot;public&quot;: &lt;&lt; Empty Schema &gt;&gt;
+2021-10-18 06:53:45.358  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbMigrate      : Migrating schema &quot;public&quot; to version &quot;1 - init&quot;
+2021-10-18 06:53:45.397  INFO 40419 --- [    Test worker] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema &quot;public&quot; (execution time 00:00.053s)
+2021-10-18 06:53:45  INFO  FlywayService:115 - logMigrationFiles Migration folders: /tmp/Bucket-2
+2021-10-18 06:53:45  INFO  FlywayService:74 - Flyway configuration: org.flywaydb.core.api.configuration.ClassicConfiguration@7d037d39[
+  driver=&lt;null&gt;
+  url=jdbc:postgresql://localhost:55017/test?loggerLevel=OFF
+  user=username
+  dataSource=org.flywaydb.core.internal.jdbc.DriverDataSource@431a1b74
+  connectRetries=0
+  initSql=&lt;null&gt;
+  classLoader=jdk.internal.loader.ClassLoaders$AppClassLoader@277050dc
+  locations=org.flywaydb.core.internal.util.Locations@5da9761
+  encoding=UTF-8
+  defaultSchemaName=&lt;null&gt;
+  schemaNames={}
+  table=flyway_schema_history
+  tablespace=&lt;null&gt;
+  target=&lt;null&gt;
+  cherryPick=&lt;null&gt;
+  placeholderReplacement=true
+  placeholders={}
+  placeholderPrefix=${
+  placeholderSuffix=}
+  sqlMigrationPrefix=V
+  undoSqlMigrationPrefix=U
+  resourceProvider=&lt;null&gt;
+  javaMigrationClassProvider=&lt;null&gt;
+  repeatableSqlMigrationPrefix=R
+  sqlMigrationSeparator=__
+  sqlMigrationSuffixes={.sql}
+  javaMigrations={}
+  ignoreMissingMigrations=false
+  ignoreIgnoredMigrations=false
+  ignorePendingMigrations=false
+  ignoreFutureMigrations=true
+  validateMigrationNaming=false
+  validateOnMigrate=true
+  cleanOnValidationError=false
+  cleanDisabled=false
+  baselineVersion=1
+  baselineDescription=&lt;&lt; Flyway Baseline &gt;&gt;
+  baselineOnMigrate=false
+  outOfOrder=false
+  skipExecutingMigrations=false
+  callbacks=[]
+  skipDefaultCallbacks=false
+  resolvers={}
+  skipDefaultResolvers=false
+  mixed=false
+  group=false
+  installedBy=&lt;null&gt;
+  createSchemas=true
+  errorOverrides={}
+  dryRunOutput=&lt;null&gt;
+  stream=false
+  batch=false
+  outputQueryResults=true
+  licenseKey=&lt;null&gt;
+  lockRetryCount=50
+  jdbcProperties=&lt;null&gt;
+  oracleSqlplus=false
+  oracleSqlplusWarn=false
+  oracleKerberosConfigFile=
+  oracleKerberosCacheFile=
+  conjurUrl=&lt;null&gt;
+  conjurToken=&lt;null&gt;
+  vaultUrl=&lt;null&gt;
+  vaultToken=&lt;null&gt;
+  vaultSecrets=&lt;null&gt;
+  classScanner=org.flywaydb.core.internal.scanner.ClasspathClassScanner@7fb89657
+]
+2021-10-18 06:53:45.405  INFO 40419 --- [    Test worker] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 7.5.3 by Redgate
+2021-10-18 06:53:45.423  INFO 40419 --- [    Test worker] o.f.c.i.database.base.DatabaseType       : Database: jdbc:postgresql://localhost:55017/test (PostgreSQL 9.6)
+2021-10-18 06:53:45  INFO  Response:53 - Current version: 1
+Applied migrations: 1, (1 [V1__init.sql])
+Pending migrations: 0, 
+
+2021-10-18 06:53:45.729  INFO 40419 --- [    Test worker] ationConfigEmbeddedWebApplicationContext : Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@7715b0fe: startup date [Mon Oct 18 06:53:09 CEST 2021]; root of context hierarchy
+2021-10-18 06:53:45.729  INFO 40419 --- [    Test worker] o.s.j.e.a.AnnotationMBeanExporter        : Unregistering JMX-exposed beans on shutdown
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 6.7.1</a> at Oct 18, 2021, 6:53:47 AM</p>
+</div>
+</div>
+</body>
+</html>
