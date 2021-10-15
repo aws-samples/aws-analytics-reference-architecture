@@ -2,7 +2,7 @@
   "dependencies": [
     {
       "name": "@aws-cdk/assert",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "build"
     },
     {
@@ -76,11 +76,6 @@
       "type": "build"
     },
     {
-      "name": "npm-check-updates",
-      "version": "^11",
-      "type": "build"
-    },
-    {
       "name": "projen",
       "type": "build"
     },
@@ -108,72 +103,92 @@
     },
     {
       "name": "@aws-cdk/aws-athena",
-      "version": "1.121.0",
+      "version": "1.125.0",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-ec2",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-events-targets",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-events",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-glue",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-iam",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-kinesis",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-lambda-python",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-lambda",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-logs",
-      "version": "1.121.0",
+      "version": "1.125.0",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-redshift",
+      "version": "1.125.0",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-s3-deployment",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-s3",
-      "version": "1.121.0",
+      "version": "1.125.0",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-secretsmanager",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions-tasks",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/custom-resources",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "peer"
     },
     {
@@ -183,72 +198,92 @@
     },
     {
       "name": "@aws-cdk/aws-athena",
-      "version": "1.121.0",
+      "version": "1.125.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-ec2",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-events-targets",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-events",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-glue",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-iam",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-kinesis",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-lambda-python",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-lambda",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-logs",
-      "version": "1.121.0",
+      "version": "1.125.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-redshift",
+      "version": "1.125.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-s3-deployment",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-s3",
-      "version": "1.121.0",
+      "version": "1.125.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-secretsmanager",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions-tasks",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-stepfunctions",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/core",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/custom-resources",
-      "version": "1.121.0",
+      "version": "1.125.0",
       "type": "runtime"
     }
   ],

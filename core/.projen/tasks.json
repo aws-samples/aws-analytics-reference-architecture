@@ -158,27 +158,6 @@
         }
       ]
     },
-    "upgrade-projen": {
-      "name": "upgrade-projen",
-      "description": "upgrade projen",
-      "env": {
-        "CI": "0"
-      },
-      "steps": [
-        {
-          "exec": "npm-check-updates --upgrade --target=minor --filter='projen'"
-        },
-        {
-          "exec": "yarn install --check-files"
-        },
-        {
-          "exec": "yarn upgrade projen"
-        },
-        {
-          "exec": "npx projen"
-        }
-      ]
-    },
     "default": {
       "name": "default",
       "steps": [
@@ -268,7 +247,7 @@
           "exec": "npx projen build"
         },
         {
-          "exec": "cdk deploy --app=./lib/integ.default.js"
+          "exec": "cdk deploy --app=./lib/db-migration/integ.default.js --profile ara"
         }
       ]
     },
@@ -276,7 +255,7 @@
       "name": "test:destroy",
       "steps": [
         {
-          "exec": "cdk destroy --app=./lib/integ.default.js"
+          "exec": "cdk destroy --app=./lib/db-migration/integ.default.js --profile ara"
         }
       ]
     },
@@ -289,6 +268,21 @@
         },
         {
           "exec": "cp -r src/datasets/resources lib/datasets"
+        },
+        {
+          "exec": "cp -r src/db-migration/resources lib/db-migration"
+        },
+        {
+          "exec": "cp -r src/db-migration/resources/flyway-lambda/src/main/resources lib/db-migration/resources/flyway-lambda/src/main"
+        },
+        {
+          "exec": "cp -r src/db-migration/resources/flyway-lambda/src/test/resources lib/db-migration/resources/flyway-lambda/src/test"
+        },
+        {
+          "exec": "cp -r src/db-schema-manager/resources lib/db-schema-manager"
+        },
+        {
+          "exec": "cp -r src/db-schema-manager/resources/flyway-lambda/build/resources lib/db-schema-manager/resources/flyway-lambda/build"
         },
         {
           "exec": "cp -r src/synchronous-athena-query/resources lib/synchronous-athena-query"
