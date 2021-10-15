@@ -26,7 +26,6 @@ export class AthenaDefaultSetup extends Construct {
    * Constructs a new instance of the AthenaDefaultSetup class
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {AthenaDefaultSetupProps} props the AthenaDefaultSetup [properties]{@link AthenaDefaultSetupProps}
    * @access public
    */
 
