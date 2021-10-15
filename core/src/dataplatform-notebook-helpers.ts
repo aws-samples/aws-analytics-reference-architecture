@@ -258,36 +258,26 @@ export function createIAMFederatedRole(scope: Construct,
 
 export function createIAMUser(scope: Construct,
   iamRolePolicy: ManagedPolicy,
-  identityName: string,
-  studioId: string): string {
+  identityName: string): string {
 
   let userPassword: SecretValue = SecretValue.plainText(Utils.randomize(identityName));
 
-  let iamUser: User = new User(scope, 'user' + identityName.replace(/[^\w\s]/gi, ''), {
+  new User(scope, 'user' + identityName.replace(/[^\w\s]/gi, ''), {
     userName: identityName,
     passwordResetRequired: true,
     password: userPassword,
-  });
-
-  new Role (scope, 'role' + identityName.replace(/[^\w\s]/gi, '') + studioId.replace(/[^\w\s]/gi, ''), {
-    assumedBy: iamUser,
-    roleName: 'Role-' + identityName + studioId,
     managedPolicies: [iamRolePolicy],
   });
 
-  let userResources: string [] = [];
-
-  userResources.push(iamUser.userArn);
-
-  //Add policy for user to change password
+  //Add policy for user to be able to change password
   iamRolePolicy.addStatements(new PolicyStatement({
     effect: Effect.ALLOW,
     actions: ['iam:ChangePassword'],
-    resources: userResources,
+    resources: ['arn:aws:iam::' + Aws.ACCOUNT_ID + ':user/' + identityName],
   }));
 
+
   return 'AWS account: ' + Aws.ACCOUNT_ID + ' ,' + ' userName: ' + identityName + ',' +
-    'userPassword: ' + userPassword.toString() +
-  '}';
+    'userPassword: ' + userPassword.toString();
 
 }

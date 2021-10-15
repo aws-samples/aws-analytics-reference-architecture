@@ -590,7 +590,7 @@ export class DataPlatformNotebook extends Construct {
       iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
         managedEndpointArns, this.studioId);
 
-      iamUserList.push(createIAMUser(this, iamRolePolicy!, user.identityName, this.studioId));
+      iamUserList.push(createIAMUser(this, iamRolePolicy!, user.identityName));
 
     }
 
