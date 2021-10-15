@@ -1,0 +1,87 @@
+group 'com.geekoosh'
+version '0.0.3'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+buildscript {
+
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+        mavenCentral()
+        jcenter()
+        maven {
+            url "https://repo.eclipse.org/content/groups/releases/"
+        }
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.3.RELEASE"
+        classpath "com.github.jengelman.gradle.plugins:shadow:6.1.0"
+        classpath 'ca.cutterslade.gradle:gradle-dependency-analyze:1.3.3'
+    }
+}
+
+apply plugin: "io.spring.dependency-management"
+apply plugin: 'com.github.johnrengelman.shadow'
+
+shadowJar {
+    archiveFileName = "flyway-all.jar"
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer)
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'com.amazonaws:aws-java-sdk-bom:1.11.623'
+    }
+}
+
+dependencies {
+    implementation group: 'org.flywaydb', name: 'flyway-core', version: '7.5.3'
+    implementation files('libs/redshift-jdbc42-1.2.55.1083.jar')
+    // implementation group: 'com.amazon.redshift', name:'redshift-jdbc42', version:'1.2.43.1067'
+    implementation group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '5.5.0.201909110433-r'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.5'
+    implementation group: 'org.json', name: 'json', version: '20190722'
+    implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.12'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.12.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.12.1'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    implementation group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.0'
+    implementation group: 'com.amazonaws', name: 'aws-lambda-java-log4j2', version: '1.1.0'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3'
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-secretsmanager'
+    implementation group: 'org.antlr', name: 'antlr4', version: '4.7.2'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.+'
+    testCompile group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0'
+    testCompile group: 'com.adobe.testing', name: 's3mock', version: '1.0.4'
+    testCompile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.http.server', version: '5.5.0.201909110433-r'
+    testCompile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.3.v20170317'
+    testCompile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.junit.http', version: '5.5.0.201909110433-r'
+    testCompile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.junit', version: '5.5.0.201909110433-r'
+    testCompile group: 'org.eclipse.jgit', name: 'org.eclipse.jgit', version: '5.5.0.201909110433-r'
+    testCompile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '8.5.23'
+    testCompile group: 'org.testcontainers', name: 'postgresql', version: '1.12.1'
+    testCompile group: 'org.testcontainers', name: 'mysql', version: '1.12.1'
+}
+
+task buildZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
+}
+
+build.dependsOn buildZip

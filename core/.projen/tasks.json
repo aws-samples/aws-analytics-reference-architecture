@@ -41,6 +41,9 @@
         },
         {
           "spawn": "docgen"
+        },
+        {
+          "exec": "npx projen copy-resources"
         }
       ]
     },
@@ -152,27 +155,6 @@
         }
       ]
     },
-    "upgrade-projen": {
-      "name": "upgrade-projen",
-      "description": "upgrade projen",
-      "env": {
-        "CI": "0"
-      },
-      "steps": [
-        {
-          "exec": "npm-check-updates --upgrade --target=minor --filter='projen'"
-        },
-        {
-          "exec": "yarn install --check-files"
-        },
-        {
-          "exec": "yarn upgrade projen"
-        },
-        {
-          "exec": "npx projen"
-        }
-      ]
-    },
     "default": {
       "name": "default",
       "steps": [
@@ -262,7 +244,7 @@
           "exec": "npx projen build"
         },
         {
-          "exec": "cdk deploy --app=./lib/integ.default.js"
+          "exec": "cdk deploy --app=./lib/db-migration/integ.default.js --profile ara"
         }
       ]
     },
@@ -270,7 +252,25 @@
       "name": "test:destroy",
       "steps": [
         {
-          "exec": "cdk destroy --app=./lib/integ.default.js"
+          "exec": "cdk destroy --app=./lib/db-migration/integ.default.js --profile ara"
+        }
+      ]
+    },
+    "copy-resources": {
+      "name": "copy-resources",
+      "description": "Copy all resources directories from src to lib",
+      "steps": [
+        {
+          "exec": "cp -r src/db-migration/resources lib/db-migration"
+        },
+        {
+          "exec": "cp -r src/db-migration/resources/flyway-lambda/build/resources lib/db-migration/resources/flyway-lambda/build"
+        },
+        {
+          "exec": "cp -r src/db-migration/resources/flyway-lambda/src/main/resources lib/db-migration/resources/flyway-lambda/src/main"
+        },
+        {
+          "exec": "cp -r src/db-migration/resources/flyway-lambda/src/test/resources lib/db-migration/resources/flyway-lambda/src/test"
         }
       ]
     },
