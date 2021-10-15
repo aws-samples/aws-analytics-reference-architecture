@@ -1,7 +1,17 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { FederatedPrincipal, IRole, ManagedPolicy, Policy, PolicyDocument, Role, User } from '@aws-cdk/aws-iam';
+import {
+  Effect,
+  FederatedPrincipal,
+  IRole,
+  ManagedPolicy,
+  Policy,
+  PolicyDocument,
+  PolicyStatement,
+  Role,
+  User,
+} from '@aws-cdk/aws-iam';
 import { Aws, Construct, SecretValue } from '@aws-cdk/core';
 import { StudioUserDefinition } from './dataplatform-notebook';
 import { EmrEksCluster } from './emr-eks-cluster';
@@ -194,8 +204,8 @@ export function createIAMRolePolicy(scope: Construct,
 
   //add restrictions on the managedEndpoint that user of group is allowed to attach to
   for (let managedEndpointArn of managedEndpointArns) {
-    policy.Statement[9].Resource.push(managedEndpointArn);
-    policy.Statement[10].Resource.push(managedEndpointArn);
+    policy.Statement[9].Resource[managedEndpointArns.indexOf(managedEndpointArn)] = managedEndpointArn;
+    policy.Statement[10].Resource[managedEndpointArns.indexOf(managedEndpointArn)] = managedEndpointArn;
   }
 
   //Restrict the studio to which a federated user or iam user can access
@@ -253,18 +263,31 @@ export function createIAMUser(scope: Construct,
 
   let userPassword: SecretValue = SecretValue.plainText(Utils.randomize(identityName));
 
+  let iamUser: User = new User(scope, 'user' + identityName.replace(/[^\w\s]/gi, ''), {
+    userName: identityName,
+    passwordResetRequired: true,
+    password: userPassword,
+  });
+
   new Role (scope, 'role' + identityName.replace(/[^\w\s]/gi, '') + studioId.replace(/[^\w\s]/gi, ''), {
-    assumedBy: new User(scope, 'user' + identityName.replace(/[^\w\s]/gi, ''), {
-      userName: identityName,
-      passwordResetRequired: true,
-      password: userPassword,
-    }),
+    assumedBy: iamUser,
     roleName: 'Role-' + identityName + studioId,
     managedPolicies: [iamRolePolicy],
   });
 
-  return 'userName:' + identityName + ',' +
-    'userPassword:' + userPassword.toString() +
+  let userResources: string [] = [];
+
+  userResources.push(iamUser.userArn);
+
+  //Add policy for user to change password
+  iamRolePolicy.addStatements(new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ['iam:ChangePassword'],
+    resources: userResources,
+  }));
+
+  return 'AWS account: ' + Aws.ACCOUNT_ID + ' ,' + ' userName: ' + identityName + ',' +
+    'userPassword: ' + userPassword.toString() +
   '}';
 
 }
