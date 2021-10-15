@@ -7,14 +7,6 @@ import { Construct } from '@aws-cdk/core';
 import { SingletonBucket } from './singleton-bucket';
 
 /**
- * The properties for AthenaDefaultSetup Construct.
- */
-
-export interface AthenaDefaultSetupProps {
-
-}
-
-/**
  * AthenaDefaultSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box usage
  */
 
