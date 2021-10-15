@@ -1,6 +1,5 @@
-import { Cluster } from '@aws-cdk/aws-eks';
-import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { Construct } from '@aws-cdk/core';
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
 
 /**
  * The properties for the EmrVirtualCluster Construct class.
@@ -20,47 +19,4 @@ export interface EmrVirtualClusterProps {
    * @default - Do not create the namespace
    */
   readonly createNamespace?: boolean;
-}
-
-/**
- * @summary EmrEksNodegroup High-order construct creating EMR Virtual cluster
- */
-
-export class EmrVirtualCluster extends Construct {
-  /**
-   * reference to the CfnVirtualCluster created
-   * @access public
-   */
-  public readonly instance: CfnVirtualCluster;
-
-  /**
-   * Creates a new instance of the EMR Virtual Cluster.
-   * @param {cdk.Construct} scope the Scope of the CDK Construct
-   * @param {string} id the ID of the CDK Construct
-   * @param {Cluster} EKS Cluster instance
-   * @param {EmrVirtualClusterProps} props the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}
-   * @access public
-   */
-  constructor(scope: Construct, id: string, eksCluster: Cluster, props: EmrVirtualClusterProps) {
-    super(scope, id);
-
-    // Create the namespace
-    if (props.createNamespace && props.eksNamespace) {
-      eksCluster.addManifest(props.eksNamespace, {
-        apiVersion: 'v1',
-        kind: 'Namespace',
-        metadata: { name: props.eksNamespace },
-      });
-    }
-
-    const virtCluster = new CfnVirtualCluster(this, 'EMRClusterEc2', {
-      name: props.name,
-      containerProvider: {
-        id: eksCluster.clusterName,
-        type: 'EKS',
-        info: { eksInfo: { namespace: props.eksNamespace || 'default' } },
-      },
-    });
-    this.instance = virtCluster;
-  }
 }

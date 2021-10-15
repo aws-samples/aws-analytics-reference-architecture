@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
+import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { PolicyStatement, PolicyDocument, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
 import * as lambda from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
@@ -13,7 +14,7 @@ import { Construct, Tags, Stack, Duration, CustomResource, Fn } from '@aws-cdk/c
 import { Provider } from '@aws-cdk/custom-resources';
 import * as AWS from 'aws-sdk';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
-import { EmrVirtualClusterProps, EmrVirtualCluster } from './emr-virtual-cluster';
+import { EmrVirtualClusterProps } from './emr-virtual-cluster';
 
 import * as IamPolicyAlb from './k8s/iam-policy-alb.json';
 import * as IamPolicyAutoscaler from './k8s/iam-policy-autoscaler.json';
@@ -61,7 +62,7 @@ export interface EmrEksClusterProps {
 }
 
 /**
- * EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
+ * EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS. 
  */
 export class EmrEksCluster extends Construct {
 
@@ -352,7 +353,7 @@ ${userData.join('\r\n')}
    * @access public
    */
 
-  public addEmrVirtualCluster(props: EmrVirtualClusterProps): EmrVirtualCluster {
+  public addEmrVirtualCluster(props: EmrVirtualClusterProps): CfnVirtualCluster {
     const eksNamespace = props.eksNamespace ?? 'default';
     const ns = props.createNamespace
       ? this.eksCluster.addManifest('eksNamespace', {
@@ -374,12 +375,14 @@ ${userData.join('\r\n')}
     );
     roleBinding.node.addDependency(role);
 
-    const virtCluster = new EmrVirtualCluster(
-      this,
-      props.name,
-      this.eksCluster,
-      props,
-    );
+    const virtCluster = new CfnVirtualCluster(this, 'EMRClusterEc2', {
+      name: props.name,
+      containerProvider: {
+        id: this.eksCluster.clusterName,
+        type: 'EKS',
+        info: { eksInfo: { namespace: props.eksNamespace || 'default' } },
+      },
+    });
 
     virtCluster.node.addDependency(roleBinding);
     virtCluster.node.addDependency(this.emrServiceRole);
