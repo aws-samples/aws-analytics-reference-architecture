@@ -1,0 +1,16 @@
+com/geekoosh/flyway/FlywayServiceTests.java
+ com.geekoosh.flyway.FlywayServiceTests
+com/geekoosh/flyway/FlywayHandlerMySQLTests.java
+ com.geekoosh.flyway.FlywayHandlerMySQLTests
+com/geekoosh/flyway/FlywayHandlerPostgresTests.java
+ com.geekoosh.flyway.FlywayHandlerPostgresTests
+com/geekoosh/flyway/S3MockHelper.java
+ com.geekoosh.flyway.S3MockHelper
+com/geekoosh/flyway/GitSSLTestCase.java
+ com.geekoosh.flyway.GitSSLTestCase
+ com.geekoosh.flyway.GitSSLTestCase$1
+ com.geekoosh.flyway.GitSSLTestCase$GitFile
+com/geekoosh/flyway/GitServiceTests.java
+ com.geekoosh.flyway.GitServiceTests
+com/geekoosh/flyway/TestRepositoryResolver.java
+ com.geekoosh.flyway.TestRepositoryResolver
