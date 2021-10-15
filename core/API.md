@@ -528,18 +528,6 @@ the CrawlerStartWait [properties]{@link SynchronousCrawlerProps}.
 
 ## Structs <a name="Structs"></a>
 
-### AthenaDefaultSetupProps <a name="aws-analytics-reference-architecture.AthenaDefaultSetupProps"></a>
-
-The properties for AthenaDefaultSetup Construct.
-
-#### Initializer <a name="[object Object].Initializer"></a>
-
-```typescript
-import { AthenaDefaultSetupProps } from 'aws-analytics-reference-architecture'
-
-const athenaDefaultSetupProps: AthenaDefaultSetupProps = { ... }
-```
-
 ### DataGeneratorProps <a name="aws-analytics-reference-architecture.DataGeneratorProps"></a>
 
 The properties for DataGenerator Construct.
