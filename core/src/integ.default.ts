@@ -11,3 +11,15 @@ const cluster = new EmrEksCluster(stack, 'testCluster', { eksAdminRoleArn: 'arn:
 cluster.addEmrVirtualCluster({
   name: 'test',
 });
+
+cluster.addEmrVirtualCluster({
+  name: 'test2',
+  eksNamespace: 'test',
+  createNamespace: true,
+});
+
+cluster.addEmrVirtualCluster({
+  name: 'test3',
+  eksNamespace: 'test',
+  createNamespace: true,
+});

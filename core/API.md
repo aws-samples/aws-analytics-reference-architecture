@@ -380,7 +380,7 @@ the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}.
 ##### `addManagedEndpoint` <a name="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint"></a>
 
 ```typescript
-public addManagedEndpoint(id: string, virtualClusterId: string, acmCertificateArn?: string, emrOnEksVersion?: string, executionRoleArn?: string, configurationOverrides?: string)
+public addManagedEndpoint(id: string, virtualClusterId: string, executionRoleArn: string, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
 ```
 
 ###### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
@@ -399,11 +399,19 @@ Amazon Emr Virtual Cluster Id.
 
 ---
 
+###### `executionRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.executionRoleArn"></a>
+
+- *Type:* `string`
+
+IAM execution role to attach.
+
+---
+
 ###### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.acmCertificateArn"></a>
 
 - *Type:* `string`
 
-ACM Certificate Arn to be attached to the JEG managed endpoint,.
+ACM Certificate Arn to be attached to the managed endpoint,.
 
 ---
 
@@ -412,14 +420,6 @@ ACM Certificate Arn to be attached to the JEG managed endpoint,.
 - *Type:* `string`
 
 EmrOnEks version to be used.
-
----
-
-###### `executionRoleArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.executionRoleArn"></a>
-
-- *Type:* `string`
-
-IAM execution role to attach.
 
 ---
 
@@ -441,11 +441,29 @@ public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions
 
 - *Type:* `string`
 
+the ID of the nodegroup.
+
 ---
 
 ###### `options`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.options"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}.
+
+---
+
+##### `createExecutionRole` <a name="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole"></a>
+
+```typescript
+public createExecutionRole(policy: Policy)
+```
+
+###### `policy`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.policy"></a>
+
+- *Type:* [`@aws-cdk/aws-iam.Policy`](#@aws-cdk/aws-iam.Policy)
+
+the execution policy to attach to the role.
 
 ---
 
@@ -475,63 +493,6 @@ public readonly eksCluster: Cluster;
 - *Type:* `string`
 
 ---
-
-### EmrVirtualCluster <a name="aws-analytics-reference-architecture.EmrVirtualCluster"></a>
-
-#### Initializers <a name="aws-analytics-reference-architecture.EmrVirtualCluster.Initializer"></a>
-
-```typescript
-import { EmrVirtualCluster } from 'aws-analytics-reference-architecture'
-
-new EmrVirtualCluster(scope: Construct, id: string, eksCluster: Cluster, props: EmrVirtualClusterProps)
-```
-
-##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.scope"></a>
-
-- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
-
-the Scope of the CDK Construct.
-
----
-
-##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.id"></a>
-
-- *Type:* `string`
-
-the ID of the CDK Construct.
-
----
-
-##### `eksCluster`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.eksCluster"></a>
-
-- *Type:* [`@aws-cdk/aws-eks.Cluster`](#@aws-cdk/aws-eks.Cluster)
-
----
-
-##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.props"></a>
-
-- *Type:* [`aws-analytics-reference-architecture.EmrVirtualClusterProps`](#aws-analytics-reference-architecture.EmrVirtualClusterProps)
-
-the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}.
-
----
-
-
-
-#### Properties <a name="Properties"></a>
-
-##### `instance`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.property.instance"></a>
-
-```typescript
-public readonly instance: CfnVirtualCluster;
-```
-
-- *Type:* [`@aws-cdk/aws-emrcontainers.CfnVirtualCluster`](#@aws-cdk/aws-emrcontainers.CfnVirtualCluster)
-
-reference to the CfnVirtualCluster created.
-
----
-
 
 ### Example <a name="aws-analytics-reference-architecture.Example"></a>
 

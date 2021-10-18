@@ -18,7 +18,6 @@ import { EmrVirtualClusterProps } from './emr-virtual-cluster';
 
 import * as IamPolicyAlb from './k8s/iam-policy-alb.json';
 import * as IamPolicyAutoscaler from './k8s/iam-policy-autoscaler.json';
-import * as IamPolicyEmrJobRole from './k8s/iam-policy-emr-job-role.json';
 import * as K8sRoleBinding from './k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './k8s/rbac/emr-containers-role.json';
 import { SingletonCfnLaunchTemplate } from './singleton-launch-template';
@@ -62,7 +61,7 @@ export interface EmrEksClusterProps {
 }
 
 /**
- * EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS. 
+ * EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
  */
 export class EmrEksCluster extends Construct {
 
@@ -73,7 +72,7 @@ export class EmrEksCluster extends Construct {
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly eksClusterName: string;
   public readonly eksCluster: Cluster;
-  private emrWorkerIAMRole: Role;
+  private eksOidcProvider: FederatedPrincipal;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -166,14 +165,12 @@ export class EmrEksCluster extends Construct {
       'emr-containers',
     );
 
-    // Make the execution role able to assume roles
-    this.emrWorkerIAMRole = new Role(this, 'EMRWorkerIAMRole', {
-      assumedBy: new FederatedPrincipal(
-        this.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
-        [],
-        'sts:AssumeRoleWithWebIdentity',
-      ),
-    });
+    // store the OIDC provider for creating execution roles later
+    this.eksOidcProvider = new FederatedPrincipal(
+      this.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+      [],
+      'sts:AssumeRoleWithWebIdentity',
+    );
 
     // Create the Nodegroup for tooling
     this.addNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
@@ -364,18 +361,18 @@ ${userData.join('\r\n')}
       : null;
 
     K8sRole.metadata.namespace = eksNamespace;
-    const role = this.eksCluster.addManifest('eksNamespaceRole', K8sRole);
+    const role = this.eksCluster.addManifest(`${props.name}EksNamespaceRole`, K8sRole);
     role.node.addDependency(this.emrServiceRole);
     if (ns) role.node.addDependency(ns);
 
     K8sRoleBinding.metadata.namespace = eksNamespace;
     const roleBinding = this.eksCluster.addManifest(
-      'eksNamespaceRoleBinding',
+      `${props.name}eksNamespaceRoleBinding`,
       K8sRoleBinding,
     );
     roleBinding.node.addDependency(role);
 
-    const virtCluster = new CfnVirtualCluster(this, 'EMRClusterEc2', {
+    const virtCluster = new CfnVirtualCluster(this, `${props.name}EmrCluster`, {
       name: props.name,
       containerProvider: {
         id: this.eksCluster.clusterName,
@@ -386,15 +383,6 @@ ${userData.join('\r\n')}
 
     virtCluster.node.addDependency(roleBinding);
     virtCluster.node.addDependency(this.emrServiceRole);
-
-    //Create EMR Worker IAM Role and trust policy
-    const EmrWorkerPolicyDocument =
-      PolicyDocument.fromJson(IamPolicyEmrJobRole);
-    const EmrWorkerIAMPolicy = new ManagedPolicy(this, 'EMRWorkerIAMPolicy', {
-      document: EmrWorkerPolicyDocument,
-    });
-    this.emrWorkerIAMRole.addManagedPolicy(EmrWorkerIAMPolicy);
-
     return virtCluster;
   }
 
@@ -403,18 +391,18 @@ ${userData.join('\r\n')}
    * CfnOutput can be customized.
    * @param {string} id unique id for endpoint
    * @param {string} virtualClusterId Amazon Emr Virtual Cluster Id
-   * @param {string} acmCertificateArn - ACM Certificate Arn to be attached to the JEG managed endpoint, @default - creates new ACM Certificate
+   * @param {string} acmCertificateArn - ACM Certificate Arn to be attached to the managed endpoint, @default - creates new ACM Certificate
    * @param {string} emrOnEksVersion - EmrOnEks version to be used. @default - emr-6.3.0-latest
-   * @param {string} executionRoleArn - IAM execution role to attach @default @see https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/creating-job-execution-role.html
+   * @param {string} executionRoleArn - IAM execution role to attach
    * @param {string} configurationOverrides - The JSON configuration override for Amazon EMR Managed Endpoint, @default - Amazon EMR on EKS default parameters
    * @access public
    */
   public addManagedEndpoint(
     id: string,
     virtualClusterId: string,
+    executionRoleArn: string,
     acmCertificateArn?: string,
     emrOnEksVersion?: string,
-    executionRoleArn?: string,
     configurationOverrides?: string,
   ) {
 
@@ -444,7 +432,7 @@ ${userData.join('\r\n')}
         REGION: Stack.of(this).region,
         CLUSTER_ID: virtualClusterId,
         EXECUTION_ROLE_ARN:
-          executionRoleArn || this.emrWorkerIAMRole.roleArn,
+          executionRoleArn,
         ENDPOINT_NAME: endpointId,
         RELEASE_LABEL: emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
         CONFIGURATION_OVERRIDES: configurationOverrides
@@ -579,6 +567,12 @@ ${userData.join('\r\n')}
     return cert();
   }
 
+  /**
+   * Add a new Amazon EMR on EKS Nodegroup to the cluster
+   * @param {string} nodegroupId the ID of the nodegroup
+   * @param {EmrEksNodegroupOptions} options the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}
+   * @access public
+   */
   public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions): Nodegroup {
 
     const nodeGroupParameters = {
@@ -649,5 +643,19 @@ ${userData.join('\r\n')}
     }
 
     return nodegroup;
+  }
+
+  /**
+   * Create and configure a new Amazon IAM Role usable as an execution role
+   * @param {Policy} policy the execution policy to attach to the role
+   * @access public
+   */
+  public createExecutionRole(policy: Policy): Role {
+    // Create an execution role assumable by EKS OIDC provider
+    const executionRole = new Role(this, 'executionRole', {
+      assumedBy: this.eksOidcProvider,
+    });
+    executionRole.attachInlinePolicy(policy);
+    return executionRole;
   }
 }
