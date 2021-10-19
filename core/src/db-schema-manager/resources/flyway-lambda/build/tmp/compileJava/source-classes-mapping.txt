@@ -3,18 +3,18 @@ com/geekoosh/flyway/response/ResponseInfo.java
 com/geekoosh/flyway/FlywayService.java
  com.geekoosh.flyway.FlywayService
  com.geekoosh.flyway.FlywayService$1
-com/geekoosh/flyway/response/Response.java
- com.geekoosh.flyway.response.Response
 com/geekoosh/flyway/request/FlywayRequest.java
  com.geekoosh.flyway.request.FlywayRequest
+com/geekoosh/flyway/response/Response.java
+ com.geekoosh.flyway.response.Response
 com/geekoosh/flyway/request/EnvironmentVars.java
  com.geekoosh.flyway.request.EnvironmentVars
 com/geekoosh/flyway/request/SecretVars.java
  com.geekoosh.flyway.request.SecretVars
-com/geekoosh/flyway/request/Request.java
- com.geekoosh.flyway.request.Request
 com/geekoosh/flyway/request/DBRequest.java
  com.geekoosh.flyway.request.DBRequest
+com/geekoosh/flyway/request/Request.java
+ com.geekoosh.flyway.request.Request
 com/geekoosh/lambda/MigrationFilesException.java
  com.geekoosh.lambda.MigrationFilesException
 com/geekoosh/flyway/request/GitRequest.java
