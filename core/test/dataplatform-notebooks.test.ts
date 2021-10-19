@@ -305,7 +305,7 @@ test('Should find a mapping between an EMR Studio, a user and a session policy f
     executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint2', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint1'],
   }];
 
-  dataPlatformSSO.addSSOUsers(userList_SSO);
+  dataPlatformSSO.addUser(userList_SSO);
 
   assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EMR::StudioSessionMapping', {
@@ -322,7 +322,7 @@ test('Should find a mapping between an EMR Studio, a user and a session policy f
     executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint1', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint2'],
   }];
 
-  dataPlatformIAMFed.addFederatedUsers(userList_IAM, 'arn:aws:iam::214783019211:saml-provider/AzureAD');
+  dataPlatformIAMFed.addUser(userList_IAM);
 
   assertCDK.expect(stackiamfed).to(
     assertCDK.haveResource('AWS::IAM::Role', {
@@ -344,7 +344,7 @@ test('Should find a mapping between an EMR Studio, a user and a session policy f
     }),
   );
 
-  dataPlatformIAMAuth.addIAMUsers(userList_IAM);
+  dataPlatformIAMAuth.addUser(userList_IAM);
 
   assertCDK.expect(stackiamauth).to(
     assertCDK.haveResource('AWS::IAM::User'),
