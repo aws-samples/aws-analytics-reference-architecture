@@ -63,13 +63,13 @@ const project = new AwsCdkConstructLibrary({
 });
 
 const testDeploy = project.addTask('test:deploy', {
-  exec: 'cdk deploy --app=./lib/integ.default.js --profile ara',
+  exec: 'cdk deploy --app=./lib/integ.default.js',
 });
 
 testDeploy.prependExec('npx projen build');
 
 project.addTask('test:destroy', {
-  exec: 'cdk destroy --app=./lib/integ.default.js --profile ara',
+  exec: 'cdk destroy --app=./lib/integ.default.js',
 });
 
 project.addDevDeps('glob');

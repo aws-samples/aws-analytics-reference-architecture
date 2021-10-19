@@ -244,7 +244,7 @@
           "exec": "npx projen build"
         },
         {
-          "exec": "cdk deploy --app=./lib/integ.default.js --profile ara"
+          "exec": "cdk deploy --app=./lib/integ.default.js"
         }
       ]
     },
@@ -252,7 +252,7 @@
       "name": "test:destroy",
       "steps": [
         {
-          "exec": "cdk destroy --app=./lib/integ.default.js --profile ara"
+          "exec": "cdk destroy --app=./lib/integ.default.js"
         }
       ]
     },
@@ -260,9 +260,6 @@
       "name": "copy-resources",
       "description": "Copy all resources directories from src to lib",
       "steps": [
-        {
-          "exec": "cp -r src/db-migration/resources lib/db-migration"
-        },
         {
           "exec": "cp -r src/db-schema-manager/resources lib/db-schema-manager"
         },
