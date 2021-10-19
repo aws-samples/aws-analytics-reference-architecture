@@ -8,26 +8,6 @@ const emrcontainers = new AWS.EMRcontainers({
   region: process.env.REGION ?? 'us-east-1',
 });
 
-const CONFIGURATION_OVERRIDES_DEFAULT = {
-  applicationConfiguration: [
-    {
-      classification: 'spark-defaults',
-      properties: {
-        'spark.hadoop.hive.metastore.client.factory.class':
-          'com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory',
-        'spark.sql.catalogImplementation': 'hive',
-      },
-    },
-  ],
-  monitoringConfiguration: {
-    persistentAppUI: 'ENABLED',
-    cloudWatchMonitoringConfiguration: {
-      logGroupName: '/emr-containers',
-      logStreamNamePrefix: 'emrmanagedendpoint',
-    },
-  },
-};
-
 export async function onEvent(event: any) {
   switch (event.RequestType) {
     case 'Create':
@@ -42,9 +22,7 @@ export async function onEvent(event: any) {
             virtualClusterId: String(process.env.CLUSTER_ID),
             certificateArn: String(process.env.ACM_CERTIFICATE_ARN),
             executionRoleArn: String(process.env.EXECUTION_ROLE_ARN),
-            configurationOverrides: process.env.CONFIGURATION_OVERRIDES
-              ? JSON.parse(process.env.CONFIGURATION_OVERRIDES)
-              : CONFIGURATION_OVERRIDES_DEFAULT,
+            configurationOverrides: JSON.parse(process.env.CONFIGURATION_OVERRIDES || ''),
             releaseLabel: process.env.RELEASE_LABEL ?? 'emr-6.2.0-latest',
             name: String(process.env.ENDPOINT_NAME),
             type: 'JUPYTER_ENTERPRISE_GATEWAY',

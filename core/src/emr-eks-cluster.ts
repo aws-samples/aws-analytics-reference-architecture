@@ -20,6 +20,7 @@ import * as IamPolicyAlb from './k8s/iam-policy-alb.json';
 import * as IamPolicyAutoscaler from './k8s/iam-policy-autoscaler.json';
 import * as K8sRoleBinding from './k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './k8s/rbac/emr-containers-role.json';
+import * as SparkDefaultConfig from './k8s/spark-default-config.json';
 import { SingletonCfnLaunchTemplate } from './singleton-launch-template';
 
 
@@ -67,12 +68,14 @@ export class EmrEksCluster extends Construct {
 
   public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_20;
   public static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
+  public static readonly DEFAULT_SPARK_CONFIGURATION = JSON.stringify(SparkDefaultConfig);
   private static readonly EMR_VERSIONS = ['emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest']
   private static readonly AUTOSCALING_POLICY = PolicyStatement.fromJson(IamPolicyAutoscaler);
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly eksClusterName: string;
   public readonly eksCluster: Cluster;
-  private eksOidcProvider: FederatedPrincipal;
+  private readonly eksOidcProvider: FederatedPrincipal;
+  private defaultCertificateArn?: string;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -393,14 +396,14 @@ ${userData.join('\r\n')}
    * @param {string} virtualClusterId Amazon Emr Virtual Cluster Id
    * @param {string} acmCertificateArn - ACM Certificate Arn to be attached to the managed endpoint, @default - creates new ACM Certificate
    * @param {string} emrOnEksVersion - EmrOnEks version to be used. @default - emr-6.3.0-latest
-   * @param {string} executionRoleArn - IAM execution role to attach
+   * @param {Role} executionRole - IAM execution role to attach
    * @param {string} configurationOverrides - The JSON configuration override for Amazon EMR Managed Endpoint, @default - Amazon EMR on EKS default parameters
    * @access public
    */
   public addManagedEndpoint(
     id: string,
     virtualClusterId: string,
-    executionRoleArn: string,
+    executionRole: Role,
     acmCertificateArn?: string,
     emrOnEksVersion?: string,
     configurationOverrides?: string,
@@ -432,15 +435,16 @@ ${userData.join('\r\n')}
         REGION: Stack.of(this).region,
         CLUSTER_ID: virtualClusterId,
         EXECUTION_ROLE_ARN:
-          executionRoleArn,
+          executionRole.roleArn,
         ENDPOINT_NAME: endpointId,
         RELEASE_LABEL: emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
         CONFIGURATION_OVERRIDES: configurationOverrides
           ? jsonConfigurationOverrides
-          : '',
+          : EmrEksCluster.DEFAULT_SPARK_CONFIGURATION,
         ACM_CERTIFICATE_ARN:
           acmCertificateArn ||
-          String(this.getOrCreateAcmCertificate()),
+          this.defaultCertificateArn ||
+          String(this.createAcmCertificate()),
       },
       // TODO least priviliges
       initialPolicy: [
@@ -511,37 +515,15 @@ ${userData.join('\r\n')}
     return cr;
   }
 
-  private getOrCreateAcmCertificate(): any {
+  private createAcmCertificate(): any {
     const clientAcm = new AWS.ACM({
       apiVersion: '2015-12-08',
       region: process.env.CDK_DEFAULT_REGION,
     });
-    const cert = async () => {
-      try {
-        const getCerts = await clientAcm
-          .listCertificates({
-            MaxItems: 50,
-            Includes: {
-              keyTypes: ['RSA_1024'],
-            },
-          })
-          .promise();
-
-        if (getCerts.CertificateSummaryList) {
-          const existingCert = getCerts.CertificateSummaryList.find(
-            (itm) => itm.DomainName == '*.emreksanalyticsframework.com',
-          );
-
-          if (existingCert) return String(existingCert.CertificateArn);
-        }
-      } catch (error) {
-        console.log(error);
-        throw new Error(`error getting acm certs ${error}`);
-      }
-
+    async () => {
       try {
         execSync(
-          'openssl req -x509 -newkey rsa:1024 -keyout /tmp/privateKey.pem  -out /tmp/certificateChain.pem -days 365 -nodes -subj "/C=US/ST=Washington/L=Seattle/O=MyOrg/OU=MyDept/CN=*.emreksanalyticsframework.com"',
+          `openssl req -x509 -newkey rsa:1024 -keyout /tmp/privateKey.pem  -out /tmp/certificateChain.pem -days 365 -nodes -subj "/C=US/ST=Washington/L=Seattle/O=MyOrg/OU=MyDept/CN=*.${this.eksClusterName}.com"`,
         );
       } catch (error) {
         throw new Error(`Error generating certificate ${error}`);
@@ -557,14 +539,13 @@ ${userData.join('\r\n')}
           ),
         };
         const response = await clientAcm.importCertificate(command).promise();
-        return String(response.CertificateArn);
+        this.defaultCertificateArn = String(response.CertificateArn);
+        return this.defaultCertificateArn;
       } catch (error) {
         console.log(error);
         throw new Error(`error importing certificate ${error}`);
       }
     };
-
-    return cert();
   }
 
   /**

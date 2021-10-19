@@ -275,6 +275,8 @@ public readonly transformBucket: Bucket;
 
 ### Ec2SsmRole <a name="aws-analytics-reference-architecture.Ec2SsmRole"></a>
 
+Construct extending IAM Role with AmazonSSMManagedInstanceCore managed policy.
+
 #### Initializers <a name="aws-analytics-reference-architecture.Ec2SsmRole.Initializer"></a>
 
 ```typescript
@@ -380,7 +382,7 @@ the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}.
 ##### `addManagedEndpoint` <a name="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint"></a>
 
 ```typescript
-public addManagedEndpoint(id: string, virtualClusterId: string, executionRoleArn: string, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
+public addManagedEndpoint(id: string, virtualClusterId: string, executionRole: Role, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
 ```
 
 ###### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
@@ -399,11 +401,9 @@ Amazon Emr Virtual Cluster Id.
 
 ---
 
-###### `executionRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.executionRoleArn"></a>
+###### `executionRole`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.executionRole"></a>
 
-- *Type:* `string`
-
-IAM execution role to attach.
+- *Type:* [`@aws-cdk/aws-iam.Role`](#@aws-cdk/aws-iam.Role)
 
 ---
 
@@ -489,6 +489,12 @@ public readonly eksCluster: Cluster;
 ---
 
 ##### `DEFAULT_EMR_VERSION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EMR_VERSION"></a>
+
+- *Type:* `string`
+
+---
+
+##### `DEFAULT_SPARK_CONFIGURATION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_SPARK_CONFIGURATION"></a>
 
 - *Type:* `string`
 
