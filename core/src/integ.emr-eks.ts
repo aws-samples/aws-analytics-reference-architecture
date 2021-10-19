@@ -22,7 +22,7 @@ const emrVirtCluster = emrEks.addEmrVirtualCluster({
 
 const managedEndpoint = emrEks.addManagedEndpoint(
   'endpoint',
-  emrVirtCluster.instance.attrId,
+  emrVirtCluster.attrId,
   '',
   '',
 );

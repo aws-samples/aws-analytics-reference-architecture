@@ -6,6 +6,7 @@ import * as path from 'path';
 import { SecurityGroup, ISecurityGroup, IVpc, Port, SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnStudioSessionMapping, CfnStudio, CfnStudioProps } from '@aws-cdk/aws-emr';
+import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { Rule, IRuleTarget, EventPattern } from '@aws-cdk/aws-events';
 import { LambdaFunction } from '@aws-cdk/aws-events-targets';
 import {
@@ -36,7 +37,6 @@ import {
 
 import { EmrEksCluster } from './emr-eks-cluster';
 import { EmrEksNodegroup } from './emr-eks-nodegroup';
-import { EmrVirtualCluster } from './emr-virtual-cluster';
 
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
@@ -49,13 +49,12 @@ import { Utils } from './utils';
 
 export interface DataPlatformNotebooksProps {
   /**
-   *
+   * Required the be given to the name of Amazon EMR Studio
    * */
   readonly studioName: string;
   /**
    * Required the authentication mode of Amazon EMR Studio
-   * Either 'SSO' or 'IAM'
-   * For now only SSO is implemented, kept for future compatibility when Amazon IAM auth is available
+   * Either 'SSO' or 'IAM_FEDERATED' or 'IAM_AUTHENTICATED' defined in the Enum {@linkcode studioAuthMode}
    * */
   readonly studioAuthMode: string;
   /**
@@ -78,13 +77,9 @@ export interface DataPlatformNotebooksProps {
   readonly idpAuthUrl?: string;
   /**
    * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
+   * Value can be set with {@linkcode idpRelayState} Enum or through a value provided by the user
    * */
   readonly idpRelayStateParameterName?: string;
-  /**
-   * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
-   * this is the name of the identity provider that is going to be used
-   * */
-  readonly idPName?: string;
   /**
    * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
    * Value taken from the IAM console in the Identity providers console
@@ -105,7 +100,7 @@ export interface DataPlatformNotebooksProps {
 
 export interface StudioUserDefinition {
   /**
-   * Name of the identity as it appears in AWS SSO console, to be used when SSO is used as an authentication mode
+   * Name of the identity as it appears in AWS SSO console, or the name to be given to a user in IAM_AUTHENTICATED
    * */
   readonly identityName: string;
 
@@ -130,10 +125,23 @@ export enum StudioAuthMode {
   IAM_AUTHENTICATED = 'IAM_AUTHENTICATED',
   SSO = 'SSO',
 }
+
+/**
+ * Enum to define the RelayState of different IdP
+ * Used in EMR Studio Prop in the IAM_FEDERATED scenario
+ */
+export enum idpRelayState {
+  Microsoft_Azure = 'RelayState',
+  Auth0 = 'RelayState',
+  Google = 'RelayState',
+  Okta = 'RelayState',
+  PingFederate = 'TargetResource',
+  PingOne = 'PingOne',
+}
 /**
  * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
  * Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio
- * Construct is then used to assign users to the create EMR Studio with {@linkcode addSSOUsers} or {@linkcode addFederatedUsers}
+ * Construct is then used to assign users to the create EMR Studio by calling the appropriate method {@linkcode addSSOUsers}, {@linkcode addFederatedUsers} or {@linkcode addIAMUsers}
  */
 
 export class DataPlatformNotebook extends Construct {
@@ -162,7 +170,7 @@ export class DataPlatformNotebook extends Construct {
   private readonly studioInstance: CfnStudio;
   private readonly emrEks: EmrEksCluster;
 
-  private readonly emrVirtCluster: EmrVirtualCluster;
+  private readonly emrVirtCluster: CfnVirtualCluster;
 
   private readonly lambdaNotebookTagOnCreatePolicy: IManagedPolicy [];
   private readonly lambdaNotebookAddTagOnCreate: Role;
@@ -213,7 +221,7 @@ export class DataPlatformNotebook extends Construct {
     }).subnetIds;
 
 
-    //Create a virtual cluster a give it a name of 'ec2VirtCluster'+studioName provided by user
+    //Create a virtual cluster a give it a name of 'multi-stack-'+studioName provided by user
     this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
       createNamespace: false,
       eksNamespace: 'default',
@@ -237,6 +245,8 @@ export class DataPlatformNotebook extends Construct {
     //Tag workSpaceSecurityGroup to be used with EMR Studio
     Tags.of(this.workSpaceSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
 
+    //Create a security group to be attached to the engine for EMR
+    //This is mandatory for Amazon EMR Studio although we are not using EMR on EC2
     this.engineSecurityGroup = new SecurityGroup(this, 'engineSecurityGroup', {
       vpc: this.emrVpc,
       securityGroupName: 'engineSecurityGroup',
@@ -404,7 +414,7 @@ export class DataPlatformNotebook extends Construct {
   public addSSOUsers(userList: StudioUserDefinition[]) {
 
     //Initialize the managedEndpointArns
-    //Used to store the arn of managed endpoints after creation for each users
+    //Used to store the arn of managed endpoints after creation for each user
     //This is used to update the session policy
     let managedEndpointArns : string [] = [];
 
@@ -414,18 +424,18 @@ export class DataPlatformNotebook extends Construct {
       //For each policy create a role and then pass it to addManageEndpoint to create an endpoint
       for ( let executionPolicyArn of user.executionPolicyArns ) {
 
-        //Check if the managedendpoint policy has already is already used in role which is created for a managed endpoint
-        //if it there is no managedendpointArn create a new managedendpoint
+        //Check if the managedendpoint is already used in role which is created for a managed endpoint
+        //if there is no managedendpointArn create a new managedendpoint
         //else get managedendpoint and push it to  @managedEndpointArns
         if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyArn)) {
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.studioName + '-' + Utils.stringSanitizer(executionPolicyArn.split('/')[1]),
-            this.emrVirtCluster.instance.attrId,
+            this.emrVirtCluster.attrId,
+            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
             this.certificateArn,
             this.emrOnEksVersion,
-            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
           );
 
           //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
@@ -484,18 +494,23 @@ export class DataPlatformNotebook extends Construct {
 
     let iamRolePolicy: ManagedPolicy;
 
+    //Loop through each user and create its managed endpoint(s) as defined by the user
     for (let user of userList) {
-
+      //For each policy create a role and then pass it to addManageEndpoint to create an endpoint
       for ( let executionPolicyArn of user.executionPolicyArns ) {
+
+        //Check if the managedendpoint is already used in role which is created for a managed endpoint
+        //if there is no managedendpointArn create a new managedendpoint
+        //else get managedendpoint and push it to  @managedEndpointArns
         if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyArn)) {
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.studioName + '-' + Utils.stringSanitizer(executionPolicyArn.split('/')[1]),
-            this.emrVirtCluster.instance.attrId,
+            this.emrVirtCluster.attrId,
+            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
             this.certificateArn,
             this.emrOnEksVersion,
-            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
           );
 
           //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
@@ -549,18 +564,25 @@ export class DataPlatformNotebook extends Construct {
 
     let iamUserList: string [] = [];
 
+//Loop through each user and create its managed endpoint(s) as defined by the user
     for (let user of userList) {
 
+      //For each policy create a role and then pass it to addManageEndpoint to create an endpoint
       for ( let executionPolicyArn of user.executionPolicyArns ) {
+
+        //Check if the managedendpoint is already used in role which is created for a managed endpoint
+        //if there is no managedendpointArn create a new managedendpoint
+        //else get managedendpoint and push it to  @managedEndpointArns
         if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyArn)) {
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.studioName + '-' + Utils.stringSanitizer(executionPolicyArn.split('/')[1]),
-            this.emrVirtCluster.instance.attrId,
+            this.emrVirtCluster.attrId,
+            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
             this.certificateArn,
             this.emrOnEksVersion,
-            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
+
           );
 
           //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
@@ -633,7 +655,7 @@ export class DataPlatformNotebook extends Construct {
         vpcId: this.emrVpc.vpcId,
         workspaceSecurityGroupId: this.workSpaceSecurityGroup.securityGroupId,
         idpAuthUrl: props.idpAuthUrl,
-        idpRelayStateParameterName: 'RelayState',
+        idpRelayStateParameterName: props.idpRelayStateParameterName,
       });
 
     } else if (props.studioAuthMode === 'IAM_AUTHENTICATED') {

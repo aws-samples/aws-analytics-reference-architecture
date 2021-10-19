@@ -13,4 +13,4 @@ export { DataLakeCatalog } from './data-lake-catalog';
 export { AthenaDefaultSetup, AthenaDefaultSetupProps } from './athena-default-setup';
 export { EmrEksCluster, EmrEksClusterProps } from './emr-eks-cluster';
 export { EmrEksNodegroupOptions, EmrEksNodegroup } from './emr-eks-nodegroup';
-export { EmrVirtualCluster, EmrVirtualClusterProps } from './emr-virtual-cluster';
+export { EmrVirtualClusterProps } from './emr-virtual-cluster';

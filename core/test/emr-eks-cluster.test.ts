@@ -3,6 +3,7 @@
 
 import * as assertCDK from '@aws-cdk/assert';
 import '@aws-cdk/assert/jest';
+import { Policy, PolicyDocument, PolicyStatement } from '@aws-cdk/aws-iam';
 import { Stack } from '@aws-cdk/core';
 import { EmrEksCluster } from '../src/emr-eks-cluster';
 
@@ -13,6 +14,15 @@ const cluster = new EmrEksCluster(emrEksClusterStack, 'emrEksClusterTest', {
 cluster.addEmrVirtualCluster({
   name: 'test',
 });
+const policy = new Policy(emrEksClusterStack, 'testPolicy', {
+  document: new PolicyDocument({
+    statements: [new PolicyStatement({
+      resources: ['*'],
+      actions: ['s3:*'],
+    })],
+  }),
+});
+cluster.createExecutionRole(policy);
 
 test('EKS cluster created with correct version and name', () => {
   // THEN
@@ -223,8 +233,6 @@ test('EKS cluster should have the default Nodegroups', () => {
 });
 
 test('EMR virtual cluster should be created with proper configuration', () => {
-  expect(emrEksClusterStack).toCountResources('AWS::EMRContainers::VirtualCluster', 1);
-
   expect(emrEksClusterStack).toHaveResource('AWS::EMRContainers::VirtualCluster', {
     ContainerProvider: assertCDK.objectLike({
       Type: 'EKS',
@@ -235,6 +243,18 @@ test('EMR virtual cluster should be created with proper configuration', () => {
       }),
     }),
     Name: 'test',
+  });
+});
+
+test('Execution role policy should be created with attached policy', () => {
+  expect(emrEksClusterStack).toHaveResource('AWS::IAM::Policy', {
+    PolicyDocument: assertCDK.objectLike({
+      Statement: assertCDK.arrayWith(assertCDK.objectLike({
+        Action: 's3:*',
+        Effect: 'Allow',
+        Resource: '*',
+      })),
+    }),
   });
 });
 
