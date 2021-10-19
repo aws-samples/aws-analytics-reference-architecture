@@ -297,12 +297,12 @@ test('Should find a mapping between an EMR Studio, a user and a session policy f
   let userList_SSO: StudioUserDefinition[] = [{
     identityName: 'lotfi-emr-advanced',
     identityType: 'USER',
-    executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint1', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint3'],
+    executionPolicyNames: ['policyManagedEndpoint1', 'policyManagedEndpoint3'],
   },
   {
     identityName: 'JohnDoe',
     identityType: 'USER',
-    executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint2', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint1'],
+    executionPolicyNames: ['policyManagedEndpoint2', 'policyManagedEndpoint1'],
   }];
 
   dataPlatformSSO.addUser(userList_SSO);
@@ -316,10 +316,10 @@ test('Should find a mapping between an EMR Studio, a user and a session policy f
   //Improve this test to test against the policy attached
   let userList_IAM: StudioUserDefinition[] = [{
     identityName: 'Toto',
-    executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint1', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint3'],
+    executionPolicyNames: ['policyManagedEndpoint1', 'policyManagedEndpoint3'],
   }, {
     identityName: 'JaneDoe',
-    executionPolicyArns: ['arn:aws:iam::0123455678901:policy/policyManagedEndpoint1', 'arn:aws:iam::0123455678901:policy/policyManagedEndpoint2'],
+    executionPolicyNames: ['policyManagedEndpoint1', 'policyManagedEndpoint2'],
   }];
 
   dataPlatformIAMFed.addUser(userList_IAM);

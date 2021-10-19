@@ -110,10 +110,10 @@ export interface StudioUserDefinition {
   readonly identityType?: string;
 
   /**
-   * execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job
-   * Including Amazon S3 buckets, Amazon DynamoDB
+   * The name of the policy to be used for the execution Role to pass to ManagedEndpoint,
+   * this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB
    * */
-  readonly executionPolicyArns: string [];
+  readonly executionPolicyNames: string [];
 
 }
 
@@ -483,25 +483,25 @@ export class DataPlatformNotebook extends Construct {
     for (let user of userList) {
 
       //For each policy create a role and then pass it to addManageEndpoint to create an endpoint
-      for (let executionPolicyArn of user.executionPolicyArns) {
+      for (let executionPolicyName of user.executionPolicyNames) {
 
         //Check if the managedendpoint is already used in role which is created for a managed endpoint
         //if there is no managedendpointArn create a new managedendpoint
         //else get managedendpoint and push it to  @managedEndpointArns
-        if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyArn)) {
+        if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyName)) {
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
           let managedEndpoint = this.emrEks.addManagedEndpoint(
-            this.studioName + '-' + Utils.stringSanitizer(executionPolicyArn.split('/')[1]),
+            this.studioName + '-' + Utils.stringSanitizer(executionPolicyName),
             this.emrVirtCluster.attrId,
-            buildManagedEndpointExecutionRole(this, executionPolicyArn, this.emrEks),
+            buildManagedEndpointExecutionRole(this, executionPolicyName, this.emrEks),
             this.certificateArn,
             this.emrOnEksVersion,
           );
 
           //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
           let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(this,
-            'engineSecurityGroup' + this.studioName + executionPolicyArn.replace(/[^\w\s]/gi, ''),
+            'engineSecurityGroup' + this.studioName + executionPolicyName.replace(/[^\w\s]/gi, ''),
             managedEndpoint.getAttString('securityGroup'));
 
           //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
@@ -513,12 +513,12 @@ export class DataPlatformNotebook extends Construct {
           //Add the managedendpointArn to @managedEndpointExcutionPolicyArnMapping
           //This is to avoid the creation an endpoint with the same policy twice
           //Save resources and reduce the deployment time
-          this.managedEndpointExcutionPolicyArnMapping.set(executionPolicyArn, managedEndpoint.getAttString('arn'));
+          this.managedEndpointExcutionPolicyArnMapping.set(executionPolicyName, managedEndpoint.getAttString('arn'));
 
           //Push the managedendpoint arn to be used in to build the policy to attach to it
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
-          managedEndpointArns.push(<string> this.managedEndpointExcutionPolicyArnMapping.get(executionPolicyArn));
+          managedEndpointArns.push(<string> this.managedEndpointExcutionPolicyArnMapping.get(executionPolicyName));
         }
       }
 
