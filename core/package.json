@@ -60,6 +60,7 @@
     "typescript": "^4.4.3"
   },
   "peerDependencies": {
+    "@aws-cdk/assertions": "1.125.0",
     "@aws-cdk/aws-athena": "1.125.0",
     "@aws-cdk/aws-ec2": "1.125.0",
     "@aws-cdk/aws-events": "1.125.0",
@@ -72,6 +73,7 @@
     "@aws-cdk/aws-logs": "1.125.0",
     "@aws-cdk/aws-redshift": "1.125.0",
     "@aws-cdk/aws-s3": "1.125.0",
+    "@aws-cdk/aws-s3-assets": "1.125.0",
     "@aws-cdk/aws-s3-deployment": "1.125.0",
     "@aws-cdk/aws-secretsmanager": "1.125.0",
     "@aws-cdk/aws-stepfunctions": "1.125.0",
@@ -81,6 +83,7 @@
     "constructs": "^3.2.27"
   },
   "dependencies": {
+    "@aws-cdk/assertions": "1.125.0",
     "@aws-cdk/aws-athena": "1.125.0",
     "@aws-cdk/aws-ec2": "1.125.0",
     "@aws-cdk/aws-events": "1.125.0",
@@ -93,6 +96,7 @@
     "@aws-cdk/aws-logs": "1.125.0",
     "@aws-cdk/aws-redshift": "1.125.0",
     "@aws-cdk/aws-s3": "1.125.0",
+    "@aws-cdk/aws-s3-assets": "1.125.0",
     "@aws-cdk/aws-s3-deployment": "1.125.0",
     "@aws-cdk/aws-secretsmanager": "1.125.0",
     "@aws-cdk/aws-stepfunctions": "1.125.0",

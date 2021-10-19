@@ -244,7 +244,7 @@
           "exec": "npx projen build"
         },
         {
-          "exec": "cdk deploy --app=./lib/db-migration/integ.default.js --profile ara"
+          "exec": "cdk deploy --app=./lib/integ.default.js --profile ara"
         }
       ]
     },
@@ -252,7 +252,7 @@
       "name": "test:destroy",
       "steps": [
         {
-          "exec": "cdk destroy --app=./lib/db-migration/integ.default.js --profile ara"
+          "exec": "cdk destroy --app=./lib/integ.default.js --profile ara"
         }
       ]
     },
@@ -264,13 +264,16 @@
           "exec": "cp -r src/db-migration/resources lib/db-migration"
         },
         {
-          "exec": "cp -r src/db-migration/resources/flyway-lambda/build/resources lib/db-migration/resources/flyway-lambda/build"
+          "exec": "cp -r src/db-schema-manager/resources lib/db-schema-manager"
         },
         {
-          "exec": "cp -r src/db-migration/resources/flyway-lambda/src/main/resources lib/db-migration/resources/flyway-lambda/src/main"
+          "exec": "cp -r src/db-schema-manager/resources/flyway-lambda/build/resources lib/db-schema-manager/resources/flyway-lambda/build"
         },
         {
-          "exec": "cp -r src/db-migration/resources/flyway-lambda/src/test/resources lib/db-migration/resources/flyway-lambda/src/test"
+          "exec": "cp -r src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
+        },
+        {
+          "exec": "cp -r src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
         }
       ]
     },

@@ -6,7 +6,6 @@ const glob = require('glob');
 const { AwsCdkConstructLibrary } = require('projen');
 
 const project = new AwsCdkConstructLibrary({
-
   authorName: 'Amazon Web Services',
   authorUrl: 'https://aws.amazon.com',
   authorOrganization: true,
@@ -14,12 +13,7 @@ const project = new AwsCdkConstructLibrary({
   copyrightPeriod: `2021-${new Date().getFullYear()}`,
   copyrightOwner: 'Amazon.com, Inc. or its affiliates. All Rights Reserved.',
 
-  keywords: [
-    'aws',
-    'constructs',
-    'cdk',
-    'analytics',
-  ],
+  keywords: ['aws', 'constructs', 'cdk', 'analytics'],
   cdkVersion: '1.125.0',
   defaultReleaseBranch: 'main',
   license: 'MIT',
@@ -53,15 +47,12 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-ec2',
     '@aws-cdk/aws-redshift',
     '@aws-cdk/aws-secretsmanager',
+    '@aws-cdk/aws-s3-assets',
+    '@aws-cdk/assertions',
   ],
-  bundledDeps: [
-    'xmldom@github:xmldom/xmldom#0.7.0',
-    'aws-sdk',
-  ],
+  bundledDeps: ['xmldom@github:xmldom/xmldom#0.7.0', 'aws-sdk'],
 
-  devDeps: [
-    'esbuild',
-  ],
+  devDeps: ['esbuild'],
 
   python: {
     distName: 'aws_analytics_reference_architecture',
@@ -69,17 +60,16 @@ const project = new AwsCdkConstructLibrary({
   },
 
   stability: 'experimental',
-
 });
 
 const testDeploy = project.addTask('test:deploy', {
-  exec: 'cdk deploy --app=./lib/db-migration/integ.default.js --profile ara',
+  exec: 'cdk deploy --app=./lib/integ.default.js --profile ara',
 });
 
 testDeploy.prependExec('npx projen build');
 
 project.addTask('test:destroy', {
-  exec: 'cdk destroy --app=./lib/db-migration/integ.default.js --profile ara',
+  exec: 'cdk destroy --app=./lib/integ.default.js --profile ara',
 });
 
 project.addDevDeps('glob');
@@ -97,7 +87,6 @@ for (const from of glob.sync('src/**/resources')) {
   const cpCommand = `cp -r ${from} ${to}`;
   copyResourcesToLibTask.exec(cpCommand);
 }
-
 
 /**
  * Run `copy-resources` and `pip-install` as part of compile
