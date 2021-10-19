@@ -247,7 +247,7 @@
           "exec": "npx projen build"
         },
         {
-          "exec": "cdk deploy --app=./lib/integ.default.js --profile ara"
+          "exec": "cdk deploy --app=./lib/integ.default.js"
         }
       ]
     },
@@ -255,7 +255,7 @@
       "name": "test:destroy",
       "steps": [
         {
-          "exec": "cdk destroy --app=./lib/integ.default.js --profile ara"
+          "exec": "cdk destroy --app=./lib/integ.default.js"
         }
       ]
     },
