@@ -57,6 +57,7 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-stepfunctions-tasks',
     '@aws-cdk/aws-events',
     '@aws-cdk/aws-events-targets',
+    '@aws-cdk/aws-s3-deployment',
   ],
 
   devDeps: [

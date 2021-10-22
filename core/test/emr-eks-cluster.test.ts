@@ -83,8 +83,7 @@ test('EKS should have a helm chart for deploying the cluster autoscaler', () => 
           {
             Ref: 'AWS::Region',
           },
-          '\",\"autoDiscovery\":{\"clusterName\":\"',
-          '\"},\"rbac\":{\"serviceAccount\":{\"name\":\"cluster-autoscaler\",\"create\":false}},\"extraArgs\":{\"skip-nodes-with-local-storage\":false,\"scan-interval\":\"5s\",\"expander\":\"least-waste\",\"balance-similar-node-groups\":true,\"skip-nodes-with-system-pods\":false}}',
+          '\",\"autoDiscovery\":{\"clusterName\":\"emr-eks-cluster\"},\"rbac\":{\"serviceAccount\":{\"name\":\"cluster-autoscaler\",\"create\":false}},\"extraArgs\":{\"skip-nodes-with-local-storage\":false,\"scan-interval\":\"5s\",\"expander\":\"least-waste\",\"balance-similar-node-groups\":true,\"skip-nodes-with-system-pods\":false}}',
         ),
       ],
     },
@@ -104,15 +103,7 @@ test('EKS should have a helm chart for deploying the AWS load balancer controlle
     Chart: 'aws-load-balancer-controller',
     Repository: 'https://aws.github.io/eks-charts',
     Namespace: 'kube-system',
-    Values: {
-      'Fn::Join': [
-        '',
-        assertCDK.arrayWith(
-          '{\"clusterName\":\"',
-          '\",\"serviceAccount\":{\"name\":\"aws-load-balancer-controller\",\"create\":false}}',
-        ),
-      ],
-    },
+    Values: '{"clusterName":"emr-eks-cluster","serviceAccount":{"name":"aws-load-balancer-controller","create":false}}',
   });
 });
 
@@ -135,7 +126,7 @@ test('EKS cluster should have the default Nodegroups', () => {
     },
     ScalingConfig: {
       DesiredSize: 1,
-      MaxSize: 50,
+      MaxSize: 10,
       MinSize: 1,
     },
     Tags: assertCDK.objectLike({
@@ -148,14 +139,13 @@ test('EKS cluster should have the default Nodegroups', () => {
   expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
     NodegroupName: 'critical-0',
     AmiType: 'AL2_ARM_64',
-    InstanceTypes: ['m6gd.2xlarge'],
+    InstanceTypes: ['m6gd.8xlarge'],
     Labels: {
-      'role': 'critical',
-      'emr-containers.amazonaws.com/resource.type': 'job.run',
+      role: 'critical',
     },
     ScalingConfig: {
       DesiredSize: 0,
-      MaxSize: 50,
+      MaxSize: 100,
       MinSize: 0,
     },
     Taints: [
@@ -168,7 +158,6 @@ test('EKS cluster should have the default Nodegroups', () => {
     Tags: assertCDK.objectLike({
       'k8s.io/cluster-autoscaler/emr-eks-cluster': 'owned',
       'k8s.io/cluster-autoscaler/enabled': 'true',
-      'k8s.io/cluster-autoscaler/node-template/label/emr-containers.amazonaws.com/resource.type': 'job.run',
       'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'on-demand',
       'k8s.io/cluster-autoscaler/node-template/label/role': 'critical',
       'k8s.io/cluster-autoscaler/node-template/taint/role': 'critical:NO_SCHEDULE',
@@ -182,17 +171,15 @@ test('EKS cluster should have the default Nodegroups', () => {
     Labels: {
       'role': 'shared',
       'spark-role': 'driver',
-      'emr-containers.amazonaws.com/resource.type': 'job.run',
     },
     ScalingConfig: {
       DesiredSize: 0,
-      MaxSize: 50,
+      MaxSize: 10,
       MinSize: 0,
     },
     Tags: assertCDK.objectLike({
       'k8s.io/cluster-autoscaler/emr-eks-cluster': 'owned',
       'k8s.io/cluster-autoscaler/enabled': 'true',
-      'k8s.io/cluster-autoscaler/node-template/label/emr-containers.amazonaws.com/resource.type': 'job.run',
       'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'on-demand',
       'k8s.io/cluster-autoscaler/node-template/label/role': 'shared',
       'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'driver',
@@ -202,15 +189,14 @@ test('EKS cluster should have the default Nodegroups', () => {
   expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
     NodegroupName: 'shared-executor-0',
     AmiType: 'AL2_ARM_64',
-    InstanceTypes: ['m6g.2xlarge', 'm6gd.2xlarge'],
+    InstanceTypes: ['m6g.8xlarge', 'm6gd.8xlarge'],
     Labels: {
       'role': 'shared',
       'spark-role': 'executor',
-      'emr-containers.amazonaws.com/resource.type': 'job.run',
     },
     ScalingConfig: {
       DesiredSize: 0,
-      MaxSize: 50,
+      MaxSize: 100,
       MinSize: 0,
     },
     Taints: [
@@ -223,7 +209,6 @@ test('EKS cluster should have the default Nodegroups', () => {
     Tags: assertCDK.objectLike({
       'k8s.io/cluster-autoscaler/emr-eks-cluster': 'owned',
       'k8s.io/cluster-autoscaler/enabled': 'true',
-      'k8s.io/cluster-autoscaler/node-template/label/emr-containers.amazonaws.com/resource.type': 'job.run',
       'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'spot',
       'k8s.io/cluster-autoscaler/node-template/label/role': 'shared',
       'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'executor',

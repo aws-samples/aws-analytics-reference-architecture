@@ -180,6 +180,11 @@
       "type": "peer"
     },
     {
+      "name": "@aws-cdk/aws-s3-deployment",
+      "version": "1.124.0",
+      "type": "peer"
+    },
+    {
       "name": "@aws-cdk/aws-s3",
       "version": "1.124.0",
       "type": "peer"
@@ -276,6 +281,11 @@
     },
     {
       "name": "@aws-cdk/aws-logs",
+      "version": "1.124.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-s3-deployment",
       "version": "1.124.0",
       "type": "runtime"
     },
