@@ -4,9 +4,7 @@ import { DataLakeExporter } from '../src/data-lake-exporter';
 import '@aws-cdk/assert/jest';
 import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
 import { RetentionDays } from '@aws-cdk/aws-logs';
-import {
-  SynthUtils,
-} from '@aws-cdk/assert';
+import {SynthUtils} from '@aws-cdk/assert';
 
 
 test('dataLakeExporter', () => {
