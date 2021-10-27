@@ -288,6 +288,9 @@
           "exec": "cp -r src/data-generator/resources lib/data-generator"
         },
         {
+          "exec": "cp -r src/datasets/resources lib/datasets"
+        },
+        {
           "exec": "cp -r src/synchronous-athena-query/resources lib/synchronous-athena-query"
         },
         {
