@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import * as path from 'path';
 import { Code, Function, FunctionProps } from '@aws-cdk/aws-lambda';
 import * as cdk from '@aws-cdk/core';
@@ -20,25 +23,20 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
  * with the same relative path
  *
  * When this construct is being run in JSII, this file will be in `node_modules` folder
- * (as it's installed as a 3rd party library.) This construct will change the path based on that.
+ * (as it's installed as a 3rd party library.) So we need to change reference based on __dirname.
  */
 export class PreBundledFunction extends Function {
   constructor(scope: cdk.Construct, id: string, props: PreBundledFunctionProps) {
 
     if (props.code) {
-      throw new Error('Pass "codePath" prop instead of "code" . See CONTRIBUTING.md on how to create prebundled Lambda function.');
+      throw new Error('Pass "codePath" prop instead of "code" . See CONTRIB_FAQ.md on how to create prebundled Lambda function.');
     }
 
     let functionProps:any = { ...props };
 
-    let assetPath;
-    if (process.env.NODE_ENV !== 'test') {
-      console.info(`Running in JSII, going to use modified path. process.env.JSII_AGENT =  ${process.env.JSII_AGENT}`);
-      // __dirname is where this file is (lib/common). We need to go up one step (to lib).
-      assetPath = path.join(__dirname, `../${props.codePath}`);
-    } else {
-      assetPath = `src/${props.codePath}`;
-    }
+    // __dirname is where this file is. In JSII, it is <jsii_tmp_path>/lib/common.
+    // When running unit tests, it is ./src/common). In boht case, we need to go up one level.
+    let assetPath = path.join(__dirname, `../${props.codePath}`);
 
     functionProps.code = Code.fromAsset(assetPath);
     delete functionProps.codePath;
