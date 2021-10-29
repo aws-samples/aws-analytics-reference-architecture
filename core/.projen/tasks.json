@@ -273,9 +273,6 @@
           "exec": "cp -r src/db-schema-manager/resources lib/db-schema-manager"
         },
         {
-          "exec": "cp -r src/db-schema-manager/resources/flyway-lambda/build/resources lib/db-schema-manager/resources/flyway-lambda/build"
-        },
-        {
           "exec": "cp -r src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
         },
         {
