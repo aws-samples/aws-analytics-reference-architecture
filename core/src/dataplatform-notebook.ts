@@ -127,7 +127,7 @@ export enum StudioAuthMode {
 }
 
 /**
- * Enum to define the RelayState of different IdP
+ * Enum to define the RelayState of different IdPs
  * Used in EMR Studio Prop in the IAM_FEDERATED scenario
  */
 export enum idpRelayState {
@@ -178,8 +178,8 @@ export class DataPlatformNotebook extends Construct {
   private readonly dataPlatformEncryptionKey: Key;
 
   private readonly managedEndpointExcutionPolicyArnMapping: Map<string, string>;
-  private readonly federatedIdPARN;
-  private readonly authMode;
+  private readonly federatedIdPARN : string | undefined;
+  private readonly authMode :string;
 
   /**
    * Constructs a new instance of the DataGenerator class
@@ -199,8 +199,11 @@ export class DataPlatformNotebook extends Construct {
     this.certificateArn = props.acmCertificateArn;
     this.managedEndpointExcutionPolicyArnMapping = new Map<string, string>();
     this.emrOnEksVersion = props.emrOnEksVersion || DataPlatformNotebook.DEFAULT_EMR_VERSION;
-    this.federatedIdPARN = props.idPArn;
     this.authMode = props.studioAuthMode;
+
+    if (props.idPArn !== undefined) {
+      this.federatedIdPARN = props.idPArn;
+    }
 
 
     //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
@@ -215,7 +218,7 @@ export class DataPlatformNotebook extends Construct {
     this.emrEks = new EmrEksCluster(this, 'EmrEks', {
       kubernetesVersion: props.kubernetesVersion || DataPlatformNotebook.DEFAULT_EKS_VERSION,
       eksAdminRoleArn: props.eksAdminRoleArn,
-      eksClusterName: 'job-test-' + props.studioName,
+      eksClusterName: 'ara-cluster-' + props.studioName,
     });
 
     //Get the list of private subnets in VPC
@@ -229,7 +232,7 @@ export class DataPlatformNotebook extends Construct {
     this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
       createNamespace: false,
       eksNamespace: 'default',
-      name: 'multi-stack-' + props.studioName,
+      name: 'emr-vc-' + props.studioName,
     });
 
     //Add a nodegroup for notebooks

@@ -253,7 +253,7 @@ export function createIAMFederatedRole(scope: Construct,
  * @hidden
  * Create an IAM user and its role then attach the policy for the role
  * Called when working in IAM auth mode with users are authenticated through IAM
- * @returns {JSON} Return the user created and its password
+ * @returns {string} Return the user created and its password
  */
 
 export function createIAMUser(scope: Construct,

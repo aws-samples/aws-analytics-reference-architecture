@@ -11,14 +11,14 @@ const stackiamfed = new Stack();
 const stackiamauth = new Stack();
 
 let dataPlatformSSO = new DataPlatformNotebook(stacksso, 'dataplatform', {
-  studioName: 'nodegroupfix',
+  studioName: 'integration-test-sso',
   studioAuthMode: StudioAuthMode.SSO,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
   acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
 });
 
 let dataPlatformIAMFed = new DataPlatformNotebook(stackiamfed, 'dataplatform', {
-  studioName: 'nodegroupfix-iam',
+  studioName: 'integration-test-iam',
   studioAuthMode: StudioAuthMode.IAM_FEDERATED,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
   acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
@@ -27,7 +27,7 @@ let dataPlatformIAMFed = new DataPlatformNotebook(stackiamfed, 'dataplatform', {
 });
 
 let dataPlatformIAMAuth = new DataPlatformNotebook(stackiamauth, 'dataplatform', {
-  studioName: 'nodegroupfix-auth',
+  studioName: 'integration-test-auth',
   studioAuthMode: StudioAuthMode.IAM_AUTHENTICATED,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
   acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
@@ -50,7 +50,7 @@ test('EKS cluster created with correct version and name', () => {
     assertCDK.haveResource('Custom::AWSCDK-EKS-Cluster', {
       Config: assertCDK.objectLike({
         version: '1.20',
-        name: 'job-test-nodegroupfix',
+        name: 'ara-cluster-integration-test-sso',
       }),
     }),
   );
@@ -154,12 +154,12 @@ test('EMR virtual cluster should be created with proper configuration', () => {
           },
         }),
       }),
-      Name: 'multi-stack-nodegroupfix',
+      Name: 'emr-vc-integration-test-sso',
     }),
   );
 });
 
-//TODO ENHANCE THIS TESTS
+//TODO ENHANCE THIS TESTS TO TEST FOR SG RULES
 test('workspace security group should allow outbound access to port 18888 and to port 443 on TCP', () => {
 
   assertCDK.expect(stacksso).to(
@@ -170,7 +170,7 @@ test('workspace security group should allow outbound access to port 18888 and to
         Value: 'true',
       }]),
       VpcId: {
-        Ref: 'dataplatformjobtestnodegroupfixDefaultVpc348D757D',
+        Ref: 'dataplatformaraclusterintegrationtestssoDefaultVpcF7B1D704',
       },
     }),
   );
@@ -186,7 +186,7 @@ test('engine security group should be present, not used with EMR on EKS, but req
         Value: 'true',
       }]),
       VpcId: {
-        Ref: 'dataplatformjobtestnodegroupfixDefaultVpc348D757D',
+        Ref: 'dataplatformaraclusterintegrationtestssoDefaultVpcF7B1D704',
       },
     }),
   );
@@ -209,7 +209,7 @@ test('Should find one S3 bucket used for EMR Studio Notebook ', () => {
             {
               Ref: 'AWS::AccountId',
             },
-            '-nodegroupfix',
+            '-integrationtestsso',
           ],
         ],
       },
@@ -219,7 +219,7 @@ test('Should find one S3 bucket used for EMR Studio Notebook ', () => {
             ServerSideEncryptionByDefault: {
               KMSMasterKeyID: {
                 'Fn::GetAtt': [
-                  'dataplatformKMSkeynodegroupfixB5F2DB76',
+                  'dataplatformKMSkeyintegrationtestsso85DE5F2E',
                   'Arn',
                 ],
               },
@@ -235,7 +235,7 @@ test('Should find one S3 bucket used for EMR Studio Notebook ', () => {
 test('Should find an IAM role for EMR Studio used as Service Role', () => {
   assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::IAM::Role', {
-      RoleName: 'studioServiceRole+nodegroupfix',
+      RoleName: 'studioServiceRole+integrationtestsso',
     }),
   );
 });
@@ -256,7 +256,7 @@ test('Should find a an EMR Studio with SSO Auth Mode', () => {
           [
             's3://',
             {
-              Ref: 'dataplatformWorkspacesBucketnodegroupfix47A86DA4',
+              Ref: 'dataplatformWorkspacesBucketintegrationtestssoC5D3B725',
             },
             '/',
           ],
@@ -281,7 +281,7 @@ test('Should find an EMR Studio with IAM Auth Mode', () => {
           [
             's3://',
             {
-              Ref: 'dataplatformWorkspacesBucketnodegroupfixiamEBD0BDC1',
+              Ref: 'dataplatformWorkspacesBucketintegrationtestiamB4FB923F',
             },
             '/',
           ],
