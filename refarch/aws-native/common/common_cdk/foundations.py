@@ -5,6 +5,7 @@ from aws_cdk.core import Construct, NestedStack
 from aws_cdk.aws_ec2 import GatewayVpcEndpointAwsService, SubnetSelection, SubnetType, Vpc, InterfaceVpcEndpointAwsService
 from aws_cdk.aws_glue import Database
 from aws_cdk.aws_iam import Group
+from aws_analytics_reference_architecture import DataLakeCatalog
 
 from common.common_cdk.auto_empty_bucket import AutoEmptyBucket
 from common.common_cdk.auto_empty_bucket_audited import AutoEmptyAuditedBucket
@@ -73,9 +74,10 @@ class DataLakeFoundations(NestedStack):
         super().__init__(scope, id, **kwargs)
 
         # implement the glue data catalog databases used in the data lake
-        self.__raw_glue_db = Database(self, 'RawGlueDB', database_name='ara_raw_data_' + self.account)
-        self.__clean_glue_db = Database(self, 'CleanGlueDB', database_name='ara_clean_data_' + self.account)
-        self.__curated_glue_db = Database(self, 'CuratedGlueDB', database_name='ara_curated_data_' + self.account)
+        catalog = DataLakeCatalog(self, 'ara_data_lake_catalog')
+        self.__raw_glue_db = catalog.raw_database
+        self.__clean_glue_db = catalog.clean_database
+        self.__curated_glue_db = catalog.transform_database
         self.__audit_glue_db = Database(self, 'AuditGlueDB', database_name='ara_audit_data_' + self.account)
 
         # implement the S3 buckets for the data lake
