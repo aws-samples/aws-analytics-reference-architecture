@@ -65,7 +65,7 @@ Before starting the deployment, ensure that the following steps are completed.
 If you install all modules, the Amazon QuickSight username (which can also be an IAM role) to which access should be granted to, as well as your QuickSight home region (the one selected during the QuickSight sign-up process) have to be specified. 
 
    ```
-   cdk deploy --parameters QuickSightUsername=<ROLE/USERNAME> --parameters QuickSightIdentityRegion=<REGION>
+   cdk deploy -c QuickSightUsername=<ROLE/USERNAME> -c QuickSightIdentityRegion=<REGION>
    ```
 
    Alternatively or additionally, you can disable modules.
@@ -74,11 +74,53 @@ To disable, for example, the data visualization module, the following argument h
    ```
    cdk deploy  -c EnableDataviz=false
    ```
+**Note**: If using CICD deployments as described in the following step, these context variables must also be set in `refarch/aws-native/cdk.json`.
+This is because when the pipeline picks up any changes to the tracked repository, it will use these values as opposed to command line ones. 
+
+4. Additionally, The Analytics Reference Architecture comes with constructs to allow for CICD deployments through the use of CodePipeline.
+   In order to deploy in this manner, there are a few steps that must be performed to allow for integration with your SVN
+   of choice and to specify the environments in which you would like to deploy. Currently, Connections allows for integration
+   with Github, Github Enterprise, and Bitbucket. Alternatively, any code source supported by CodePipeline can be specified
+   by modifying the `input` parameter of the synthesis step in the pipeline found in `refarch/aws-native/cicd/pipeline.py`
+   
+   * Create a CodeStar Connection to allow CodePipeline to pull changes from your repository.
+      * Follow the steps here to create a Connection with your repository: ![CodeStar Connections](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections-create.html)
+        Note that this should be done in the account that you're planning to use to host your pipeline.
+      * Copy the arn of the connection you have created, and paste it into the `ConnectionArn` field of `refarch/aws-native/cdk.json`
+      * Also specify the `RepositoryName` and `RepositoryBranch` context variables for the repo and branch that should be tracked, respectively
+      * Finally, in the same file, enable CICD deployments by setting the `EnableCICD` context variable to `true`
+        * If this is not done then the pipeline will not be synthesized and/or updated when using either `cdk deploy` or `cdk synth`
+   * Specify the details of your CICD account in `refarch/aws-native/cdk.context.json`
+      * Replace <CICD_REGION> and <CICD_ACCOUNT> in the file with the region and account number for your CICD account
+   * In that same file, `refarch/aws-native/cdk.context.json` also put the values for the accounts that you are planning to deploy to, for the respective stages.
+      * These values can either be the same as the ones for the CICD account or another account that you own.
+      * By default, there are two deployment environments specified - DEV and PROD. You can add or take away environments as you wish,
+        simply note that you will also have to update the corresponding environment inputs to the pipeline in `refarch/aws-native/app.py`.
+   * Bootstrap your CICD account with the modern stack style.
+      * First, retrieve credentials for your CICD account.
+      * Second, run the command `export CDK_NEW_BOOTSTRAP=1`. Setting this environment variable tells the CDK to bootstrap
+        the account with the new stack style rather than the default legacy one. This is required to give CodePipeline the
+        appropriate roles and permissions to deploy to the account.
+      * Run the command `cdk bootstrap aws://<CICD_ACCOUNT>/<CICD_ACCOUNT_REGION>`  
+   * Bootstrap your target accounts, so they have a trust relationship with your CICD account.
+      * First, retrieve credentials for the target account that you plan to deploy the reference architecture into.
+      * Second, run the command `export CDK_NEW_BOOTSTRAP=1`. Your target accounts also need to be bootstrapped with the new
+        stack style to allow CodePipeline to deploy to them.
+      * Finally, run the command `cdk bootstrap --trust <CICD_ACCOUNT> --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess aws://<TARGET_ACCOUNT>/<TARGET_ACCOUNT_REGION>`
+         * This creates a trust relationship between your target account and your CICD so that the pipeline can deploy resources
+           into your target account
+         * **Important Note**: By specifying the AdministratorAccess policy you are giving the CDK full admin privileges to deploy
+           to your account. In the case of any security concerns, this can be changed to a more restrictive policy depending on your
+           security requirements.
+  * Finally, run `cdk deploy PipelineStack` using the credentials for your CICD account.
+      * This will deploy the stack containing the pipeline to your CICD account, and cause it to automatically start pulling any changes
+        from the repo that you have specified
+        
    ---
    **NOTE:**
-   Step 4 and 5 only have to be executed if the data visualization module has been installed.
+   Step 5 and 6 only have to be executed if the data visualization module has been installed.
    ---
-4. Configure Amazon QuickSight:
+5. Configure Amazon QuickSight:
     * To link the clean data S3 bucket to the QuickSight account:
         * Visit the [QuickSight web console](https://quicksight.aws.amazon.com)
         * Click on your username in the upper right corner
@@ -101,7 +143,7 @@ To disable, for example, the data visualization module, the following argument h
         * Click "Create"
         * Note down the "VPC connection ARN" of the newly created VPC connection shown on the "Manage VPC connections" page
 
-5. Deploy a second CDK stack, called `DataVizRedshiftStack`, passing the ARN of the VPC connection from the previous step.
+6. Deploy a second CDK stack, called `DataVizRedshiftStack`, passing the ARN of the VPC connection from the previous step.
 
    ```
    cd dataviz/dataviz_redshift_cdk
