@@ -2,11 +2,18 @@
   "app": "python3 app.py",
   "context": {
     "@aws-cdk/core:enableStackNameDuplicates": "true",
+    "@aws-cdk/core:newStyleStackSynthesis":  "true",
     "aws-cdk:enableDiffNoFail": "true",
     "EnableBatch": "true",
     "EnableDWH": "true",
     "EnableDataviz": "true",
     "EnableStreaming": "true",
+    "EnableCICD": "false",
+    "RepositoryName": "<REPOSITORY_NAME>",
+    "RepositoryBranch": "<REPOSITORY_BRANCH>",
+    "ConnectionArn": "<CONNECTION_ARN>",
+    "QuickSightUsername": "<QUICKSIGHT_USERNAME>",
+    "QuickSightIdentityRegion": "<QUICKSIGHT_IDENTITY_REGION>",
     "EnableDeploymentTracking": "true"
   }
 }
