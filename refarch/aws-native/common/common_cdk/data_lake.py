@@ -39,8 +39,8 @@ class DataLake(Stack):
         # BATCH module
         if is_module_enabled(batch_module_param):
             BatchModule(self, "Batch",
-                        raw_bucket=data_lake.raw_s3_bucket.bucket,
-                        clean_bucket=data_lake.clean_s3_bucket.bucket,
+                        raw_bucket=data_lake.raw_s3_bucket,
+                        clean_bucket=data_lake.clean_s3_bucket,
                         raw_db=data_lake.raw_glue_db,
                         clean_db=data_lake.clean_glue_db)
 
@@ -48,8 +48,8 @@ class DataLake(Stack):
                 self, "BatchDatagen",
                 config_table=datagen_config_table,
                 tshirt_size='SMALL',
-                log_bucket=data_lake.logs_s3_bucket.bucket,
-                sink_bucket=data_lake.raw_s3_bucket.bucket,
+                log_bucket=data_lake.logs_s3_bucket,
+                sink_bucket=data_lake.raw_s3_bucket,
                 vpc=data_lake.vpc
             )
 
@@ -57,7 +57,7 @@ class DataLake(Stack):
         if is_module_enabled(dwh_module_param):
             dwh_stack = DwhModule(self, "dwh",
                                   vpc=data_lake.vpc,
-                                  clean_bucket=data_lake.clean_s3_bucket.bucket,
+                                  clean_bucket=data_lake.clean_s3_bucket,
                                   clean_glue_db=data_lake.clean_glue_db)
 
             CfnOutput(self, 'Redshift-QuickSight-Secret-Arn',
@@ -106,15 +106,15 @@ class DataLake(Stack):
             streaming_stack = StreamingModule(self,
                                               id="Streaming",
                                               prefix=id,
-                                              source_bucket=data_lake.raw_s3_bucket.bucket,
-                                              dest_bucket=data_lake.curated_s3_bucket.bucket)
+                                              source_bucket=data_lake.raw_s3_bucket,
+                                              dest_bucket=data_lake.curated_s3_bucket)
 
             StreamDataGenerator(
                 self, "StreamDatagen",
                 config_table=datagen_config_table,
                 tshirt_size='SMALL',
-                log_bucket=data_lake.logs_s3_bucket.bucket,
-                sink_bucket=data_lake.raw_s3_bucket.bucket,
+                log_bucket=data_lake.logs_s3_bucket,
+                sink_bucket=data_lake.raw_s3_bucket,
                 web_sale_stream=streaming_stack.sale_stream.stream_name,
                 web_customer_stream=streaming_stack.customer_stream.stream_name,
                 web_customer_address_stream=streaming_stack.address_stream.stream_name,
@@ -122,7 +122,7 @@ class DataLake(Stack):
                 vpc=data_lake.vpc
             )
 
-        CfnOutput(self, 'Clean-S3-Bucket', value=data_lake.clean_s3_bucket.bucket.bucket_name)
+        CfnOutput(self, 'Clean-S3-Bucket', value=data_lake.clean_s3_bucket.bucket_name)
         CfnOutput(self, "VPC-ID", value=data_lake.vpc.vpc_id, export_name='ara-Vpc-Id')
 
         for idx, val in enumerate(data_lake.private_subnets_selection.subnets):
