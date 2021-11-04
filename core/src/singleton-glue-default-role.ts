@@ -24,8 +24,7 @@ export class SingletonGlueDefaultRole extends Construct {
    * Constructs a new instance of the GlueDefaultRole class
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {GlueDefaultRoleProps} props the GlueDefaultRole [properties]{@link GlueDefaultRoleProps}
-   * @access public
+   * @access private
    */
 
   private constructor(scope: Construct, id: string) {
