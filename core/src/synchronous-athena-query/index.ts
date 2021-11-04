@@ -1,0 +1,1 @@
+export { SynchronousAthenaQueryProps, SynchronousAthenaQuery } from './synchronous-athena-query';
