@@ -95,7 +95,7 @@
     "@aws-cdk/aws-stepfunctions-tasks": "1.124",
     "@aws-cdk/core": "1.124",
     "@aws-cdk/custom-resources": "1.124",
-    "aws-sdk": "^2.1022.0",
+    "aws-sdk": "^2.1023.0",
     "xmldom": "github:xmldom/xmldom#0.7.0"
   },
   "bundledDependencies": [
@@ -111,7 +111,7 @@
   "main": "lib/index.js",
   "license": "MIT",
   "homepage": "https://aws-samples.github.io/aws-analytics-reference-architecture/",
-  "version": "1.6.4",
+  "version": "0.0.0",
   "jest": {
     "testMatch": [
       "**/__tests__/**/*.ts?(x)",
