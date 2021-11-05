@@ -49,7 +49,7 @@ setuptools.setup(
         "cdk_ec2_key_pair"
     ],
 
-    python_requires=">=3.8,<3.9",
+    python_requires=">=3.8",
 
     classifiers=[
         "Development Status :: 4 - Beta",
