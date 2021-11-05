@@ -30,7 +30,7 @@ const project = new AwsCdkConstructLibrary({
   workflow: false,
   buildWorkflow: false,
   releaseWorkflow: true,
-  depsUpgrade: DependenciesUpgradeMechanism.NONE,
+  depsUpgrade: false,
   stale: false,
   pullRequestTemplate: false,
   cdkVersionPinning: true,
