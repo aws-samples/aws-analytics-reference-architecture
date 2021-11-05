@@ -202,6 +202,56 @@ AWS Glue Database for Transform data.
 ---
 
 
+### DataLakeExporter <a name="aws-analytics-reference-architecture.DataLakeExporter"></a>
+
+DataLakeExporter Construct to export data from a stream to the data lake.
+
+Source can be an Amazon Kinesis Data Stream.
+Target can be an Amazon S3 bucket.
+
+#### Initializers <a name="aws-analytics-reference-architecture.DataLakeExporter.Initializer"></a>
+
+```typescript
+import { DataLakeExporter } from 'aws-analytics-reference-architecture'
+
+new DataLakeExporter(scope: Construct, id: string, props: DataLakeExporterProps)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporter.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporter.parameter.id"></a>
+
+- *Type:* `string`
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporter.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.DataLakeExporterProps`](#aws-analytics-reference-architecture.DataLakeExporterProps)
+
+---
+
+
+
+#### Properties <a name="Properties"></a>
+
+##### `cfnIngestionStream`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporter.property.cfnIngestionStream"></a>
+
+```typescript
+public readonly cfnIngestionStream: CfnDeliveryStream;
+```
+
+- *Type:* [`@aws-cdk/aws-kinesisfirehose.CfnDeliveryStream`](#@aws-cdk/aws-kinesisfirehose.CfnDeliveryStream)
+
+Constructs a new instance of the DataLakeExporter class.
+
+---
+
+
 ### DataLakeStorage <a name="aws-analytics-reference-architecture.DataLakeStorage"></a>
 
 A Data Lake Storage composed of 3 Amazon S3 Buckets configured with AWS best practices:   S3 buckets for Raw/Cleaned/Transformed data,   data lifecycle optimization/transitioning to different Amazon S3 storage classes   server side buckets encryption managed by KMS.
@@ -580,6 +630,96 @@ public readonly frequency: number;
 Frequency (in Seconds) of the data generation.
 
 Should be > 60s.
+
+---
+
+### DataLakeExporterProps <a name="aws-analytics-reference-architecture.DataLakeExporterProps"></a>
+
+The properties for DataLakeExporter Construct.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { DataLakeExporterProps } from 'aws-analytics-reference-architecture'
+
+const dataLakeExporterProps: DataLakeExporterProps = { ... }
+```
+
+##### `sinkLocation`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkLocation"></a>
+
+```typescript
+public readonly sinkLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Sink must be an Amazon S3 Location composed of a bucket and a key.
+
+---
+
+##### `sourceGlueDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueDatabase"></a>
+
+```typescript
+public readonly sourceGlueDatabase: Database;
+```
+
+- *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
+
+Source AWS Glue Database containing the schema of the stream.
+
+---
+
+##### `sourceGlueTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueTable"></a>
+
+```typescript
+public readonly sourceGlueTable: Table;
+```
+
+- *Type:* [`@aws-cdk/aws-glue.Table`](#@aws-cdk/aws-glue.Table)
+
+Source AWS Glue Table containing the schema of the stream.
+
+---
+
+##### `sourceKinesisDataStream`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceKinesisDataStream"></a>
+
+```typescript
+public readonly sourceKinesisDataStream: Stream;
+```
+
+- *Type:* [`@aws-cdk/aws-kinesis.Stream`](#@aws-cdk/aws-kinesis.Stream)
+
+Source must be an Amazon Kinesis Data Stream.
+
+---
+
+##### `deliveryInterval`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.deliveryInterval"></a>
+
+```typescript
+public readonly deliveryInterval: number;
+```
+
+- *Type:* `number`
+- *Default:* Set to 900 seconds
+
+Delivery interval in seconds.
+
+The frequency of the data delivery is defined by this interval.
+
+---
+
+##### `deliverySize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.deliverySize"></a>
+
+```typescript
+public readonly deliverySize: number;
+```
+
+- *Type:* `number`
+- *Default:* Set to 128 MB
+
+Maximum delivery size in MB.
+
+The frequency of the data delivery is defined by this maximum delivery size.
 
 ---
 
