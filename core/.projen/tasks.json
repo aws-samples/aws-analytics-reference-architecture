@@ -43,6 +43,12 @@
         },
         {
           "spawn": "docgen"
+        },
+        {
+          "exec": "npx projen copy-resources"
+        },
+        {
+          "exec": "npx projen pip-install"
         }
       ]
     },
@@ -221,6 +227,9 @@
       "name": "test:deploy",
       "steps": [
         {
+          "exec": "npx projen build"
+        },
+        {
           "exec": "cdk deploy --app=./lib/integ.default.js"
         }
       ]
@@ -230,6 +239,39 @@
       "steps": [
         {
           "exec": "cdk destroy --app=./lib/integ.default.js"
+        }
+      ]
+    },
+    "copy-resources": {
+      "name": "copy-resources",
+      "description": "Copy all resources directories from src to lib",
+      "steps": [
+        {
+          "exec": "cp -r src/data-generator/resources lib/data-generator"
+        },
+        {
+          "exec": "cp -r src/datasets/resources lib/datasets"
+        },
+        {
+          "exec": "cp -r src/synchronous-athena-query/resources lib/synchronous-athena-query"
+        },
+        {
+          "exec": "cp -r src/synchronous-crawler/resources lib/synchronous-crawler"
+        }
+      ]
+    },
+    "pip-install": {
+      "name": "pip-install",
+      "description": "pip install all folders in lib that has requirements.txt",
+      "steps": [
+        {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup"
+        },
+        {
+          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas"
+        },
+        {
+          "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas"
         }
       ]
     }

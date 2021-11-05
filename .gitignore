@@ -5,12 +5,11 @@ package-lock.json
 .env
 venv/
 *.egg-info
+
 # CDK asset staging directory
 .cdk.staging
 cdk.out
 .DS_Store
-.idea
-*.iml
 *.pyc
 refarch/aws-native/common/data-generator/project/project/
 refarch/aws-native/common/data-generator/project/target/
@@ -24,4 +23,9 @@ core/node_modules/
 *.log
 doc/site
 __init__.py
-core/.github
+core/.github/*
+
+# IDE settings
+.idea
+.vscode
+*.iml

@@ -2,6 +2,49 @@
 
 ## Constructs <a name="Constructs"></a>
 
+### AthenaDefaultSetup <a name="aws-analytics-reference-architecture.AthenaDefaultSetup"></a>
+
+AthenaDefaultSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box usage.
+
+#### Initializers <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.Initializer"></a>
+
+```typescript
+import { AthenaDefaultSetup } from 'aws-analytics-reference-architecture'
+
+new AthenaDefaultSetup(scope: Construct, id: string)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.parameter.id"></a>
+
+- *Type:* `string`
+
+the ID of the CDK Construct.
+
+---
+
+
+
+#### Properties <a name="Properties"></a>
+
+##### `resultBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.property.resultBucket"></a>
+
+```typescript
+public readonly resultBucket: Bucket;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
+
+---
+
+
 ### DataGenerator <a name="aws-analytics-reference-architecture.DataGenerator"></a>
 
 DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime Target can be an Amazon S3 bucket or an Amazon Kinesis Data Stream.
@@ -414,6 +457,43 @@ SingletonBucket.getOrCreate(scope: Construct, bucketName: string)
 
 ---
 
+
+
+### SingletonGlueDefaultRole <a name="aws-analytics-reference-architecture.SingletonGlueDefaultRole"></a>
+
+SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
+
+The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
+The Construct provides a getOrCreate method for SingletonInstantiation
+
+
+#### Static Functions <a name="Static Functions"></a>
+
+##### `getOrCreate` <a name="aws-analytics-reference-architecture.SingletonGlueDefaultRole.getOrCreate"></a>
+
+```typescript
+import { SingletonGlueDefaultRole } from 'aws-analytics-reference-architecture'
+
+SingletonGlueDefaultRole.getOrCreate(scope: Construct)
+```
+
+###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.SingletonGlueDefaultRole.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+#### Properties <a name="Properties"></a>
+
+##### `iamRole`<sup>Required</sup> <a name="aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.iamRole"></a>
+
+```typescript
+public readonly iamRole: Role;
+```
+
+- *Type:* [`@aws-cdk/aws-iam.Role`](#@aws-cdk/aws-iam.Role)
+
+---
 
 
 ### SynchronousAthenaQuery <a name="aws-analytics-reference-architecture.SynchronousAthenaQuery"></a>

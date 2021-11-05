@@ -1,0 +1,417 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`dataLakeExporter 1`] = `
+Object {
+  "Conditions": Object {
+    "AwsCdkKinesisEncryptedStreamsUnsupportedRegions": Object {
+      "Fn::Or": Array [
+        Object {
+          "Fn::Equals": Array [
+            Object {
+              "Ref": "AWS::Region",
+            },
+            "cn-north-1",
+          ],
+        },
+        Object {
+          "Fn::Equals": Array [
+            Object {
+              "Ref": "AWS::Region",
+            },
+            "cn-northwest-1",
+          ],
+        },
+      ],
+    },
+  },
+  "Resources": Object {
+    "testDB74E9B281": Object {
+      "Properties": Object {
+        "CatalogId": Object {
+          "Ref": "AWS::AccountId",
+        },
+        "DatabaseInput": Object {
+          "Name": "test_db",
+        },
+      },
+      "Type": "AWS::Glue::Database",
+    },
+    "testExporterdataLakeExporter51BD8EA9": Object {
+      "Properties": Object {
+        "DeliveryStreamEncryptionConfigurationInput": Object {
+          "KeyType": "AWS_OWNED_CMK",
+        },
+        "DeliveryStreamType": "KinesisStreamAsSource",
+        "ExtendedS3DestinationConfiguration": Object {
+          "BucketARN": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":s3:::test",
+              ],
+            ],
+          },
+          "BufferingHints": Object {
+            "IntervalInSeconds": 900,
+            "SizeInMBs": 128,
+          },
+          "CloudWatchLoggingOptions": Object {
+            "LogGroupName": Object {
+              "Ref": "testExporterdataLakeExporterLogGroup610F71C7",
+            },
+            "LogStreamName": Object {
+              "Ref": "testExporterdataLakeExporterLogStreamF2BE8809",
+            },
+          },
+          "CompressionFormat": "UNCOMPRESSED",
+          "DataFormatConversionConfiguration": Object {
+            "Enabled": true,
+            "InputFormatConfiguration": Object {
+              "Deserializer": Object {
+                "OpenXJsonSerDe": Object {},
+              },
+            },
+            "OutputFormatConfiguration": Object {
+              "Serializer": Object {
+                "ParquetSerDe": Object {},
+              },
+            },
+            "SchemaConfiguration": Object {
+              "CatalogId": Object {
+                "Ref": "AWS::AccountId",
+              },
+              "DatabaseName": Object {
+                "Ref": "testDB74E9B281",
+              },
+              "Region": Object {
+                "Ref": "AWS::Region",
+              },
+              "RoleARN": Object {
+                "Fn::GetAtt": Array [
+                  "testExporterdataLakeExporterRole1BEE617B",
+                  "Arn",
+                ],
+              },
+              "TableName": Object {
+                "Ref": "testTable12C06BD8",
+              },
+            },
+          },
+          "ErrorOutputPrefix": "test-error",
+          "Prefix": "test",
+          "RoleARN": Object {
+            "Fn::GetAtt": Array [
+              "testExporterdataLakeExporterRole1BEE617B",
+              "Arn",
+            ],
+          },
+          "S3BackupMode": "Disabled",
+        },
+        "KinesisStreamSourceConfiguration": Object {
+          "KinesisStreamARN": "",
+          "RoleARN": Object {
+            "Fn::GetAtt": Array [
+              "testExporterdataLakeExporterRole1BEE617B",
+              "Arn",
+            ],
+          },
+        },
+      },
+      "Type": "AWS::KinesisFirehose::DeliveryStream",
+    },
+    "testExporterdataLakeExporterLogGroup610F71C7": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "LogGroupName": "/data-lake-exporter/",
+        "RetentionInDays": 1,
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "testExporterdataLakeExporterLogStreamF2BE8809": Object {
+      "DeletionPolicy": "Delete",
+      "Properties": Object {
+        "LogGroupName": Object {
+          "Ref": "testExporterdataLakeExporterLogGroup610F71C7",
+        },
+        "LogStreamName": "firehose-stream",
+      },
+      "Type": "AWS::Logs::LogStream",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "testExporterdataLakeExporterRole1BEE617B": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "firehose.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "testExporterdataLakeExporterRoleDefaultPolicy3EEE6D56": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "glue:GetTable",
+                "glue:GetTableVersion",
+                "glue:GetTableVersions",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/",
+                      Object {
+                        "Ref": "testDB74E9B281",
+                      },
+                      "/",
+                      Object {
+                        "Ref": "testTable12C06BD8",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":catalog",
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":database/",
+                      Object {
+                        "Ref": "testDB74E9B281",
+                      },
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": Array [
+                "kinesis:DescribeStream",
+                "kinesis:GetShardIterator",
+                "kinesis:GetRecords",
+                "kinesis:ListShards",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "testStream8BCA7523",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "s3:AbortMultipartUpload",
+                "s3:GetBucketLocation",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:ListBucketMultipartUploads",
+                "s3:PutObject",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::test/test",
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::test/test/*",
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":s3:::test",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "logs:PutLogEvents",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    Object {
+                      "Fn::GetAtt": Array [
+                        "testExporterdataLakeExporterLogGroup610F71C7",
+                        "Arn",
+                      ],
+                    },
+                    ":log-stream:",
+                    Object {
+                      "Ref": "testExporterdataLakeExporterLogStreamF2BE8809",
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "testExporterdataLakeExporterRoleDefaultPolicy3EEE6D56",
+        "Roles": Array [
+          Object {
+            "Ref": "testExporterdataLakeExporterRole1BEE617B",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "testStream8BCA7523": Object {
+      "Properties": Object {
+        "RetentionPeriodHours": 24,
+        "ShardCount": 1,
+        "StreamEncryption": Object {
+          "Fn::If": Array [
+            "AwsCdkKinesisEncryptedStreamsUnsupportedRegions",
+            Object {
+              "Ref": "AWS::NoValue",
+            },
+            Object {
+              "EncryptionType": "KMS",
+              "KeyId": "alias/aws/kinesis",
+            },
+          ],
+        },
+      },
+      "Type": "AWS::Kinesis::Stream",
+    },
+    "testTable12C06BD8": Object {
+      "Properties": Object {
+        "CatalogId": Object {
+          "Ref": "AWS::AccountId",
+        },
+        "DatabaseName": Object {
+          "Ref": "testDB74E9B281",
+        },
+        "TableInput": Object {
+          "Description": "test_table generated by CDK",
+          "Name": "test_table",
+          "Parameters": Object {
+            "classification": "json",
+            "has_encrypted_data": false,
+          },
+          "StorageDescriptor": Object {
+            "Columns": Array [
+              Object {
+                "Name": "a",
+                "Type": "STRING",
+              },
+            ],
+            "Compressed": false,
+            "InputFormat": "org.apache.hadoop.mapred.TextInputFormat",
+            "Location": Object {
+              "Fn::Join": Array [
+                "",
+                Array [
+                  "s3://",
+                  Object {
+                    "Ref": "testTableBucket030117E6",
+                  },
+                  "/",
+                ],
+              ],
+            },
+            "OutputFormat": "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat",
+            "SerdeInfo": Object {
+              "SerializationLibrary": "org.openx.data.jsonserde.JsonSerDe",
+            },
+            "StoredAsSubDirectories": false,
+          },
+          "TableType": "EXTERNAL_TABLE",
+        },
+      },
+      "Type": "AWS::Glue::Table",
+    },
+    "testTableBucket030117E6": Object {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
+    },
+  },
+}
+`;

@@ -1,5 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
+const { basename, join, dirname, relative } = require('path');
+const glob = require('glob');
 
 
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
@@ -72,12 +74,69 @@ const project = new AwsCdkConstructLibrary({
 
 });
 
-project.addTask('test:deploy', {
+const testDeploy = project.addTask('test:deploy', {
   exec: 'cdk deploy --app=./lib/integ.default.js',
 });
+
+testDeploy.prependExec('npx projen build');
 
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',
 });
+
+
+project.addDevDeps('glob');
+
+/**
+ * Task to copy `resources` directories from `src` to `lib`
+ */
+
+const copyResourcesToLibTask = project.addTask('copy-resources', {
+  description: 'Copy all resources directories from src to lib',
+});
+
+for (const from of glob.sync('src/**/resources')) {
+  const to = dirname(from.replace('src', 'lib'));
+  const cpCommand = `cp -r ${from} ${to}`;
+  copyResourcesToLibTask.exec(cpCommand);
+}
+
+/**
+ * Task to pip install all Python Lambda functions in lib folder
+ */
+
+const pipInstallTask = project.addTask('pip-install', {
+  description: 'pip install all folders in lib that has requirements.txt',
+});
+
+for (const dirPath of findAllPythonLambdaDir('src')) {
+  // Assume that all folders with 'requirements.txt' have been copied to lib
+  // by the task 'copy-resources'
+  const dirPathInLib = dirPath.replace('src', 'lib');
+  const target = dirname(dirPathInLib);
+  const pipCmd = `pip3 install -r ${dirPathInLib} --target ${target}`;
+
+  pipInstallTask.exec(pipCmd);
+}
+
+/**
+ * Run `copy-resources` and `pip-install` as part of compile
+ */
+project.compileTask.exec('npx projen copy-resources');
+project.compileTask.exec('npx projen pip-install');
+
+/**
+ * Find all directory that has a Python package.
+ * Assume that they have requirements.txt
+ *
+ * @param rootDir Root directory to begin finding
+ * @returns Array of directory paths
+ */
+function findAllPythonLambdaDir(rootDir) {
+
+  return glob.sync(`${rootDir}/**/requirements.txt`).map((pathWithReq) => {
+    return pathWithReq;
+  });
+}
 
 project.synth();
