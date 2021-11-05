@@ -12,7 +12,7 @@ import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfuncti
 import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { Dataset } from '../dataset';
+import { Dataset } from '../datasets/dataset';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonGlueDatabase } from '../singleton-glue-database';
 import { SynchronousAthenaQuery } from '../synchronous-athena-query';
