@@ -6,6 +6,7 @@
     "EnableBatch": "true",
     "EnableDWH": "true",
     "EnableDataviz": "true",
-    "EnableStreaming": "true"
+    "EnableStreaming": "true",
+    "EnableDeploymentTracking": "true"
   }
 }

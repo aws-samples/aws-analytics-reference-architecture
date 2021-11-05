@@ -14,13 +14,20 @@ from streaming.streaming_cdk.streaming_module import StreamingModule
 
 
 def is_module_enabled(param: str):
-    return param.lower() in ("yes", "true")
+    return param and (param.lower() in ("yes", "true"))
 
 
 class DataLake(Stack):
 
-    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
+    def __init__(self, scope: Construct, id: str, **kwargs) -> None:   
+
+        # Set Stack description
+        deployment_tracking_param = scope.node.try_get_context("EnableDeploymentTracking")
+        stack_description = "Analytics Ref Arch - DataLake stack"
+        if is_module_enabled(deployment_tracking_param):
+            stack_description = stack_description + " (uksb-1scq97upu)" 
+
+        super().__init__(scope, id, description = stack_description, **kwargs)
 
         data_lake = DataLakeFoundations(self, "Foundations")
 
