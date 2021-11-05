@@ -6,28 +6,29 @@
     "directory": "core"
   },
   "scripts": {
-    "clobber": "npx projen clobber",
-    "compile": "npx projen compile",
-    "test:compile": "npx projen test:compile",
-    "test": "npx projen test",
     "build": "npx projen build",
-    "test:watch": "npx projen test:watch",
-    "test:update": "npx projen test:update",
     "bump": "npx projen bump",
-    "unbump": "npx projen unbump",
-    "upgrade-projen": "npx projen upgrade-projen",
-    "default": "npx projen default",
-    "watch": "npx projen watch",
-    "package": "npx projen package",
-    "eslint": "npx projen eslint",
+    "clobber": "npx projen clobber",
     "compat": "npx projen compat",
+    "compile": "npx projen compile",
+    "copy-resources": "npx projen copy-resources",
+    "default": "npx projen default",
     "docgen": "npx projen docgen",
+    "eslint": "npx projen eslint",
+    "package": "npx projen package",
+    "pip-install": "npx projen pip-install",
+    "publish:github": "npx projen publish:github",
+    "publish:npm": "npx projen publish:npm",
+    "publish:pypi": "npx projen publish:pypi",
+    "release": "npx projen release",
+    "test": "npx projen test",
     "test:deploy": "npx projen test:deploy",
     "test:destroy": "npx projen test:destroy",
-    "copy-resources": "npx projen copy-resources",
-    "pip-install": "npx projen pip-install",
-    "projen": "npx projen",
-    "start": "npx projen start"
+    "test:update": "npx projen test:update",
+    "test:watch": "npx projen test:watch",
+    "unbump": "npx projen unbump",
+    "watch": "npx projen watch",
+    "projen": "npx projen"
   },
   "author": {
     "name": "Amazon Web Services",
@@ -37,7 +38,7 @@
   "devDependencies": {
     "@aws-cdk/assert": "1.124",
     "@types/jest": "^27.0.2",
-    "@types/node": "^10.17.0",
+    "@types/node": "^14.17.0",
     "@typescript-eslint/eslint-plugin": "^5.3.0",
     "@typescript-eslint/parser": "^5.3.0",
     "esbuild": "^0.13.12",
@@ -53,8 +54,7 @@
     "jsii-docgen": "^3.8.20",
     "jsii-pacmak": "^1.42.0",
     "json-schema": "^0.3.0",
-    "npm-check-updates": "^11",
-    "projen": "^0.19.1",
+    "projen": "^0.32.8",
     "standard-version": "^9",
     "ts-jest": "^27.0.7",
     "typescript": "^4.4.4"
@@ -111,7 +111,7 @@
   "main": "lib/index.js",
   "license": "MIT",
   "homepage": "https://aws-samples.github.io/aws-analytics-reference-architecture/",
-  "version": "0.0.0",
+  "version": "1.6.4",
   "jest": {
     "testMatch": [
       "**/__tests__/**/*.ts?(x)",
@@ -147,7 +147,7 @@
     "preset": "ts-jest",
     "globals": {
       "ts-jest": {
-        "tsconfig": "tsconfig.jest.json"
+        "tsconfig": "tsconfig.dev.json"
       }
     }
   },
