@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Location } from '@aws-cdk/aws-s3';
-import { retailCustomerCreate, retailCustomerCreateTarget, retailCustomerGenerate } from './datasets/retail-customer';
-import { retailCustomerAddressCreate, retailCustomerAddressCreateTarget, retailCustomerAddressGenerate } from './datasets/retail-customer-address';
-import { retailItemCreate, retailItemGenerate } from './datasets/retail-item';
-import { retailPromoCreate, retailPromoGenerate } from './datasets/retail-promo';
-import { retailStoreCreate, retailStoreGenerate } from './datasets/retail-store';
-import { retailStoreSaleCreate, retailStoreSaleGenerate } from './datasets/retail-store-sale';
-import { retailWarehouseCreate, retailWarehouseGenerate } from './datasets/retail-warehouse';
-import { retailWebSaleCreate, retailWebSaleGenerate } from './datasets/retail-web-sale';
+import { retailCustomerCreate, retailCustomerCreateTarget, retailCustomerGenerate } from './retail-customer';
+import { retailCustomerAddressCreate, retailCustomerAddressCreateTarget, retailCustomerAddressGenerate } from './retail-customer-address';
+import { retailItemCreate, retailItemGenerate } from './retail-item';
+import { retailPromoCreate, retailPromoGenerate } from './retail-promo';
+import { retailStoreCreate, retailStoreGenerate } from './retail-store';
+import { retailStoreSaleCreate, retailStoreSaleGenerate } from './retail-store-sale';
+import { retailWarehouseCreate, retailWarehouseGenerate } from './retail-warehouse';
+import { retailWebSaleCreate, retailWebSaleGenerate } from './retail-web-sale';
 
 export interface DatasetProps {
   /**
