@@ -15,6 +15,71 @@
     
     `npx projen test`
 
+## Project structure convention
+
+Source code and related resources must be in `core/src` directory. There are 4 ways to organize your construct files.
+
+1. **Construct with a single file.** For a very simple construct, it can be in a single file in `core/src` directory.
+
+  ```
+  core/src
+    |- simple-construct-.ts # for class SimpleConstruct
+    |- index.ts # Update the index file so that it's exported
+  ```
+
+2. **Construct with multiple files.** In most cases, your construct is not trivial and consists of multiple classes. Then you create a subdirectory with your construct name. If any of your constructs cannot be used stand-alone, they should be in the same directory.
+
+
+  ```
+  core/src
+    |- notebook-construct
+      |- notebook-construct.ts # Put the main class with the same name
+      |- dependent-construct.ts # This construct must be used with notebook-construct.ts, so we keep them in the same directory. 
+      |- subdir
+        |- other-files.ts
+      |- index.ts # Export any public classes here
+  ```
+
+3. **Construct with non-TypeScript files.** If you need to use these files (e.g. SQL files, Python script for Glue job, etc.), you have put them under `resources` directory. Otherwise, these files will not be exported to PyPi or NPM packages.
+
+  ```
+
+  core/src
+    |- construct-with-script
+      |- construct-with-script.ts 
+      |- other-file-in.ts # Keep .ts files outside of `resources` to be clean
+      |- resources # Unless you put the files in `resources` directory, they will not be copied to the exported package. 
+        |- glue-script-1.py
+        |- subdir-in-resources # All files in subdirectory are also copied.
+          |- glue-script-2.py 
+      |- index.ts 
+  ```
+
+  When referring to the file, use `__dirname` with relative. For example, if I want to refer to read the script from `construct-with-script.ts`. 
+
+  ```
+  //construct-with-script.ts
+  import { readFileSync } from 'fs';
+  import { join } from 'path';
+  readFileSync(
+    join(__dirname, 'resources/glue-script-1.py')
+  );
+  ```
+  
+  If you want to understand while `__dirname` is important, check "How non-TypeScript files are managed" are handled.
+
+4. **Code shared by multiple constructs.** If your code is reused by multiple constructs from different subdirectory, keep it inside `common` directory. Use the same rule as placing them in `core/src` (including using `resources` directory).
+
+  ```
+  core/src
+    |- common 
+      |- class-or-function-used-by-many-constructs.ts
+      |- group-of-components
+         |- component-a.ts
+         |- component-b.ts
+  ```
+ 
+
 ## Git strategy
 
 ### What Git branch strategy to use?
@@ -76,6 +141,64 @@ See the `Dataset` class using static variables call the class constructor [here]
 The singleton pattern can be implemented using the unique ID of the AWS CDK node. Instead of creating a new resource from the AWS CDK Construct, a static `getOrCreate` method is used to retrieve the resource by search for the unique ID in the AWS CDK Scope. If no resource exists, the method creates a new one.
 
 See the `SingletonBucket` Construct [here](./core/src/singleton-bucket.ts).
+
+### How non-TypeScript files are included in the package
+When you build the package, all TypeScript (.ts) files are transpiled to .js and copied from `src` to `lib`. 
+
+By default, only .js files are copied to `lib`. If you have any other types of files, they will not be in the `lib`. This will cause your constructs to break with a file-not-found error.
+
+To prevent that issue, we have a Projen task to copy other files from `src` to `lib` directory. This is run automatically when you run any Projen task. **We will copy only directories with the name `resources`.** Here is an example.
+
+```
+# Working directory
+core/src
+  |- construct-a
+    |- construct-a.ts
+    |- resources # All .sql (and any non-TS files) will be copied
+      |- first.sql
+        |- subdir
+          |- second.sql 
+  |- construct-b
+    |- construct-b.ts
+    |- third.sql # This file will not be copied as it is not in "resources" folder
+```
+
+The package will have this folder structure.
+
+```
+# In JSII package
+lib
+  |- construct-a
+    |- construct-a.js 
+    |- resources 
+      |- first.sql
+        |- subdir
+          |- second.sql 
+  |- construct-b 
+    |- construct-b.js
+    
+# Note that there is no src dir
+```
+
+When our library is used in consumers' machines, the code paths will be like this. 
+
+```
+<project_path>
+  |- consumer_project
+    |- consumer__project_stack.py # Use our constructs from here
+
+<jsii_temp_path>
+  |-analytics-reference-architecture
+    |- lib
+      |- construct-a.js
+      |- resources
+        |- first.sql  # Relative reference like 'resources/first.sql' will not find this file
+    
+```
+
+If `construct-a.js` uses relative path `resources/first.sql`. It will be relative from `<project_path>` not `<jsii_temp_path>`.  
+
+To prevent this issue, we need to use `path.join(__dirname, 'resources/first.sql')` instead. `__dirname` will refer to the actual location of the file being executed, not the working directory.
 
 ### How to create a pre-bundled Python Lambda function?
 
