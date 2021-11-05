@@ -5,9 +5,10 @@ from aws_cdk.core import Construct, NestedStack
 from aws_cdk.aws_ec2 import GatewayVpcEndpointAwsService, SubnetSelection, SubnetType, Vpc, InterfaceVpcEndpointAwsService
 from aws_cdk.aws_glue import Database
 from aws_cdk.aws_iam import Group
+from aws_analytics_reference_architecture import DataLakeCatalog, DataLakeStorage
+from common_cdk.audit_trail_glue import AuditTrailGlue
 
 from common.common_cdk.auto_empty_bucket import AutoEmptyBucket
-from common.common_cdk.auto_empty_bucket_audited import AutoEmptyAuditedBucket
 from common.common_cdk.config import AutoEmptyConfig
 
 
@@ -73,34 +74,30 @@ class DataLakeFoundations(NestedStack):
         super().__init__(scope, id, **kwargs)
 
         # implement the glue data catalog databases used in the data lake
-        self.__raw_glue_db = Database(self, 'RawGlueDB', database_name='ara_raw_data_' + self.account)
-        self.__clean_glue_db = Database(self, 'CleanGlueDB', database_name='ara_clean_data_' + self.account)
-        self.__curated_glue_db = Database(self, 'CuratedGlueDB', database_name='ara_curated_data_' + self.account)
+        catalog = DataLakeCatalog(self, 'DataLakeCatalog')
+        self.__raw_glue_db = catalog.raw_database
+        self.__clean_glue_db = catalog.clean_database
+        self.__curated_glue_db = catalog.transform_database
         self.__audit_glue_db = Database(self, 'AuditGlueDB', database_name='ara_audit_data_' + self.account)
 
+
         # implement the S3 buckets for the data lake
+        storage = DataLakeStorage(self, 'DataLakeStorage')
         self.__logs_s3_bucket = AutoEmptyBucket(
             self, 'Logs',
             bucket_name='ara-logs-' + self.account,
             uuid=AutoEmptyConfig.FOUNDATIONS_UUID
-        )
+        ).bucket
 
-        self.__raw_s3_bucket = AutoEmptyBucket(
-            self, 'RawData',
-            bucket_name='ara-raw-data-' + self.account,
-            uuid=AutoEmptyConfig.FOUNDATIONS_UUID
-        )
-        self.__clean_s3_bucket = AutoEmptyBucket(
-            self, 'CleanData',
-            bucket_name='ara-clean-data-' + self.account,
-            uuid=AutoEmptyConfig.FOUNDATIONS_UUID
-        )
-        self.__curated_s3_bucket = AutoEmptyAuditedBucket(
-            self, 'CuratedData',
-            bucket_name='ara-curated-data-' + self.account,
-            uuid=AutoEmptyConfig.FOUNDATIONS_UUID,
-            log_bucket=self.__logs_s3_bucket.bucket,
-            audit_db=self.__audit_glue_db
+        self.__raw_s3_bucket = storage.raw_bucket
+        self.__clean_s3_bucket = storage.clean_bucket
+        self.__curated_s3_bucket = storage.transform_bucket
+
+        AuditTrailGlue(self, 'GlueAudit',
+            log_bucket=self.__logs_s3_bucket,
+            audit_bucket=self.__curated_s3_bucket,
+            audit_db=self.__audit_glue_db,
+            audit_table=self.__curated_s3_bucket.bucket_name
         )
 
         # the vpc used for the overall data lake (same vpc, different subnet for modules)
