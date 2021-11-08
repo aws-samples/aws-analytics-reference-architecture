@@ -7,9 +7,11 @@ import { EmrEksNodegroup } from './emr-eks-nodegroup';
 
 export class SingletonEmrEksCluster extends EmrEksCluster {
 
-  public static getOrCreate(scope: Construct, clusterName: string, props: DataPlatformNotebookProp) {
+  public static getOrCreate(scope: Construct, props: DataPlatformNotebookProp) {
+
+    const clusterName = 'ara-dataplatform-cluster';
     const stack = Stack.of(scope);
-    const id = `${clusterName}`;
+    const id = `${clusterName}Singleton`;
 
     let emrEksCluster: EmrEksCluster;
 
@@ -17,9 +19,8 @@ export class SingletonEmrEksCluster extends EmrEksCluster {
       emrEksCluster = new EmrEksCluster(stack, id, {
         kubernetesVersion: props.kubernetesVersion || KubernetesVersion.V1_20,
         eksAdminRoleArn: props.eksAdminRoleArn,
-        eksClusterName: props.eksClusterName,
+        eksClusterName: clusterName,
       });
-
 
       //Add a nodegroup for notebooks
       emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_DRIVER);

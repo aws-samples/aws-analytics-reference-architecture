@@ -50,10 +50,6 @@ import { Utils } from './utils';
 export interface DataPlatformNotebookProp {
 
   /**
-   * Required the be given to the name of EKS cluster
-   * */
-  readonly eksClusterName: string;
-  /**
    * Required the be given to the name of Amazon EMR Studio
    * */
   readonly studioName: string;
@@ -135,13 +131,13 @@ export enum StudioAuthMode {
  * Enum to define the RelayState of different IdPs
  * Used in EMR Studio Prop in the IAM_FEDERATED scenario
  */
-export enum idpRelayState {
-  Microsoft_Azure = 'RelayState',
-  Auth0 = 'RelayState',
-  Google = 'RelayState',
-  Okta = 'RelayState',
-  PingFederate = 'TargetResource',
-  PingOne = 'PingOne',
+export enum IdpRelayState {
+  MICROSOFT_AZURE = 'RelayState',
+  AUTH0 = 'RelayState',
+  GOOGLE = 'RelayState',
+  OKTA = 'RelayState',
+  PING_FEDERATE = 'TargetResource',
+  PING_ONE = 'PingOne',
 }
 /**
  * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
@@ -223,7 +219,7 @@ export class DataPlatformNotebook extends Construct {
 
     //Create new Amazon EKS cluster for Amazon EMR or get one already create for previous EMR on EKS cluster
     //This avoid creating a new cluster everytime an object is initialized
-    this.emrEks = SingletonEmrEksCluster.getOrCreate(scope, props.eksClusterName+'-stack', props);
+    this.emrEks = SingletonEmrEksCluster.getOrCreate(scope, props);
 
     //Get the list of private subnets in VPC
     this.studioSubnetList = this.emrEks.eksCluster.vpc.selectSubnets({

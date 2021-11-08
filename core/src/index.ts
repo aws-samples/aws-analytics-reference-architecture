@@ -16,4 +16,4 @@ export { EmrEksCluster, EmrEksClusterProps } from './emr-eks-cluster';
 export { EmrEksNodegroupOptions, EmrEksNodegroup } from './emr-eks-nodegroup';
 export { EmrVirtualClusterProps } from './emr-virtual-cluster';
 export { SingletonEmrEksCluster } from './singleton-emr-eks-cluster';
-export { DataPlatformNotebookProp, DataPlatformNotebook, StudioUserDefinition, StudioAuthMode, idpRelayState } from './dataplatform-notebook';
+export { DataPlatformNotebookProp, DataPlatformNotebook, StudioUserDefinition, StudioAuthMode, IdpRelayState } from './dataplatform-notebook';

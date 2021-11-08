@@ -88,7 +88,7 @@ export class EmrEksCluster extends Construct {
 
     this.eksClusterName = props.eksClusterName ?? 'emr-eks-cluster';
 
-    // create an Amazon EKS CLuster with default paramaters if not provided in the properties
+    // create an Amazon EKS CLuster with default parameters if not provided in the properties
     this.eksCluster = new Cluster(scope, this.eksClusterName, {
       defaultCapacity: 0,
       clusterName: this.eksClusterName,
