@@ -48,17 +48,23 @@ export function createLambdaNoteBookAddTagPolicy (scope: Construct, logArn: stri
  * Create the role to be used with the ManagedEndpoint
  * @returns Return a string with Role ARN
  */
-export function buildManagedEndpointExecutionRole (scope: Construct, policyName: string, emrEks: EmrEksCluster): string {
+export function buildManagedEndpointExecutionRole (
+  scope: Construct,
+  policyName: string,
+  emrEks: EmrEksCluster,
+  studioName: string,
+  emrVcName: string): string {
 
-  let managedPolicy = ManagedPolicy.fromManagedPolicyName(scope, 'managedEndpointPolicy' + policyName, policyName);
+  let managedPolicy = ManagedPolicy.fromManagedPolicyName(scope, 'managedEndpointPolicy' + policyName + studioName + emrVcName, policyName);
 
-  let managedEndpointExecutionRole: Role = new Role(scope, 'EMRWorkerIAMRole'+ policyName, {
+  let managedEndpointExecutionRole: Role = new Role(scope, 'EMRWorkerIAMRole'+ policyName + studioName + emrVcName, {
     assumedBy: new FederatedPrincipal(
       emrEks.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
       [],
       'sts:AssumeRoleWithWebIdentity',
     ),
     managedPolicies: [managedPolicy],
+    roleName: policyName + '-' + emrVcName + '-' + studioName,
   });
 
   return managedEndpointExecutionRole.roleArn;

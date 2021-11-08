@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+
 export { ExampleProps, Example } from './example';
 export { DataLakeStorageProps, DataLakeStorage } from './data-lake-storage';
 export { SynchronousCrawlerProps, SynchronousCrawler } from './synchronous-crawler';
@@ -14,3 +15,5 @@ export { AthenaDefaultSetup, AthenaDefaultSetupProps } from './athena-default-se
 export { EmrEksCluster, EmrEksClusterProps } from './emr-eks-cluster';
 export { EmrEksNodegroupOptions, EmrEksNodegroup } from './emr-eks-nodegroup';
 export { EmrVirtualClusterProps } from './emr-virtual-cluster';
+export { SingletonEmrEksCluster } from './singleton-emr-eks-cluster';
+export { DataPlatformNotebookProp, DataPlatformNotebook, StudioUserDefinition, StudioAuthMode, idpRelayState } from './dataplatform-notebook';

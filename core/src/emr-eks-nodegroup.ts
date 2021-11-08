@@ -38,7 +38,7 @@ export class EmrEksNodegroup {
   public static readonly TOOLING_ALL: EmrEksNodegroupOptions = {
     id: 'tooling',
     instanceTypes: [new InstanceType('t3.large')],
-    minSize: 2,
+    minSize: 4,
     maxSize: 50,
     labels: { role: 'tooling' },
   };

@@ -134,9 +134,9 @@ test('EKS cluster should have the default Nodegroups', () => {
       role: 'tooling',
     },
     ScalingConfig: {
-      DesiredSize: 2,
+      DesiredSize: 4,
       MaxSize: 50,
-      MinSize: 2,
+      MinSize: 4,
     },
     Tags: assertCDK.objectLike({
       'k8s.io/cluster-autoscaler/emr-eks-cluster': 'owned',

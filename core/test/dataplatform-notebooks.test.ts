@@ -11,6 +11,7 @@ const stackiamfed = new Stack();
 const stackiamauth = new Stack();
 
 let dataPlatformSSO = new DataPlatformNotebook(stacksso, 'dataplatform', {
+  eksClusterName: 'ara-cluster-integration-test-sso',
   studioName: 'integration-test-sso',
   studioAuthMode: StudioAuthMode.SSO,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
@@ -18,6 +19,7 @@ let dataPlatformSSO = new DataPlatformNotebook(stacksso, 'dataplatform', {
 });
 
 let dataPlatformIAMFed = new DataPlatformNotebook(stackiamfed, 'dataplatform', {
+  eksClusterName: 'ara-cluster-integration-test-sso',
   studioName: 'integration-test-iam',
   studioAuthMode: StudioAuthMode.IAM_FEDERATED,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
@@ -27,6 +29,7 @@ let dataPlatformIAMFed = new DataPlatformNotebook(stackiamfed, 'dataplatform', {
 });
 
 let dataPlatformIAMAuth = new DataPlatformNotebook(stackiamauth, 'dataplatform', {
+  eksClusterName: 'ara-cluster-integration-test-sso',
   studioName: 'integration-test-auth',
   studioAuthMode: StudioAuthMode.IAM_AUTHENTICATED,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
@@ -170,7 +173,7 @@ test('workspace security group should allow outbound access to port 18888 and to
         Value: 'true',
       }]),
       VpcId: {
-        Ref: 'dataplatformaraclusterintegrationtestssoDefaultVpcF7B1D704',
+        Ref: 'araclusterintegrationtestssoDefaultVpcB3A0B8A6',
       },
     }),
   );
@@ -186,7 +189,7 @@ test('engine security group should be present, not used with EMR on EKS, but req
         Value: 'true',
       }]),
       VpcId: {
-        Ref: 'dataplatformaraclusterintegrationtestssoDefaultVpcF7B1D704',
+        Ref: 'araclusterintegrationtestssoDefaultVpcB3A0B8A6',
       },
     }),
   );

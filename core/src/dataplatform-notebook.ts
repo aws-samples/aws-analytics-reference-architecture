@@ -3,9 +3,9 @@
 
 import * as path from 'path';
 
-import { SecurityGroup, ISecurityGroup, IVpc, Port, SubnetType } from '@aws-cdk/aws-ec2';
+import { SecurityGroup, ISecurityGroup, IVpc, SubnetType, Port } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
-import { CfnStudioSessionMapping, CfnStudio, CfnStudioProps } from '@aws-cdk/aws-emr';
+import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from '@aws-cdk/aws-emr';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { Rule, IRuleTarget, EventPattern } from '@aws-cdk/aws-events';
 import { LambdaFunction } from '@aws-cdk/aws-events-targets';
@@ -26,18 +26,18 @@ import { Construct, Tags, Aws, Duration } from '@aws-cdk/core';
 
 import {
   createLambdaNoteBookAddTagPolicy,
-  buildManagedEndpointExecutionRole,
-  createUserSessionPolicy,
   createStudioUserRolePolicy,
   createStudioServiceRolePolicy,
+  createUserSessionPolicy,
   createIAMFederatedRole,
   createIAMRolePolicy,
   createIAMUser,
+  buildManagedEndpointExecutionRole,
 } from './dataplatform-notebook-helpers';
 
 import { EmrEksCluster } from './emr-eks-cluster';
-import { EmrEksNodegroup } from './emr-eks-nodegroup';
 
+import { SingletonEmrEksCluster } from './singleton-emr-eks-cluster';
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
 import { Utils } from './utils';
@@ -47,7 +47,12 @@ import { Utils } from './utils';
  * The properties for DataPlatformNotebooks Construct.
  */
 
-export interface DataPlatformNotebooksProps {
+export interface DataPlatformNotebookProp {
+
+  /**
+   * Required the be given to the name of EKS cluster
+   * */
+  readonly eksClusterName: string;
   /**
    * Required the be given to the name of Amazon EMR Studio
    * */
@@ -146,7 +151,6 @@ export enum idpRelayState {
 
 export class DataPlatformNotebook extends Construct {
 
-  public static readonly DEFAULT_EKS_VERSION: KubernetesVersion = KubernetesVersion.V1_20;
   public static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
 
   private readonly studioSubnetList: string[] | undefined ;
@@ -157,6 +161,7 @@ export class DataPlatformNotebook extends Construct {
   private readonly certificateArn: string;
   private readonly studioName: string;
   private readonly emrOnEksVersion: string;
+  private readonly emrVcName: string;
 
   private readonly workSpaceSecurityGroup: SecurityGroup;
   private readonly engineSecurityGroup: ISecurityGroup | undefined;
@@ -185,11 +190,11 @@ export class DataPlatformNotebook extends Construct {
    * Constructs a new instance of the DataGenerator class
    * @param {Construct} scope the Scope of the AWS CDK Construct
    * @param {string} id the ID of the AWS CDK Construct
-   * @param {DataPlatformNotebooksProps} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebooksProps}
+   * @param {DataPlatformNotebookProp} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}
    * @access public
    */
 
-  constructor(scope: Construct, id: string, props: DataPlatformNotebooksProps) {
+  constructor(scope: Construct, id: string, props: DataPlatformNotebookProp) {
     super(scope, id);
 
     this.studioServicePolicy = [];
@@ -205,7 +210,6 @@ export class DataPlatformNotebook extends Construct {
       this.federatedIdPARN = props.idPArn;
     }
 
-
     //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
     this.dataPlatformEncryptionKey = new Key(
       this,
@@ -214,12 +218,12 @@ export class DataPlatformNotebook extends Construct {
       },
     );
 
-    //Create new Amazon EKS cluster for Amazon EMR
-    this.emrEks = new EmrEksCluster(this, 'EmrEks', {
-      kubernetesVersion: props.kubernetesVersion || DataPlatformNotebook.DEFAULT_EKS_VERSION,
-      eksAdminRoleArn: props.eksAdminRoleArn,
-      eksClusterName: 'ara-cluster-' + props.studioName,
-    });
+    //EMR Virtual Cluster Name
+    this.emrVcName = 'emr-vc-' + props.studioName;
+
+    //Create new Amazon EKS cluster for Amazon EMR or get one already create for previous EMR on EKS cluster
+    //This avoid creating a new cluster everytime an object is initialized
+    this.emrEks = SingletonEmrEksCluster.getOrCreate(scope, props.eksClusterName+'-stack', props);
 
     //Get the list of private subnets in VPC
     this.studioSubnetList = this.emrEks.eksCluster.vpc.selectSubnets({
@@ -232,12 +236,8 @@ export class DataPlatformNotebook extends Construct {
     this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
       createNamespace: false,
       eksNamespace: 'default',
-      name: 'emr-vc-' + props.studioName,
+      name: this.emrVcName,
     });
-
-    //Add a nodegroup for notebooks
-    this.emrEks.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_DRIVER);
-    this.emrEks.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_EXECUTOR);
 
     //Set Vpc object to be used with SecurityGroup and EMR Studio Creation
     this.emrVpc = this.emrEks.eksCluster.vpc;
@@ -339,7 +339,6 @@ export class DataPlatformNotebook extends Construct {
 
     //Wait until the EMR virtual cluser and kms key are succefully created before creating the LogGroup
     lambdaNotebookTagOnCreateLog.node.addDependency(this.dataPlatformEncryptionKey);
-    //lambdaNotebookTagOnCreateLog.node.addDependency(this.managedEndpoint);
 
     let kmsLogPolicy = JSON.parse(JSON.stringify(kmsLogPolicyTemplate));
 
@@ -400,7 +399,7 @@ export class DataPlatformNotebook extends Construct {
     let createTagEventPattern: EventPattern = JSON.parse(JSON.stringify(eventPattern));
 
     //Create Event on EventBridge/Cloudwatch Event
-    let eventRule: Rule = new Rule(this, props.studioName + 'eventRule', {
+    let eventRule: Rule = new Rule(this, this.studioName + 'eventRule', {
       enabled: true,
       eventPattern: createTagEventPattern,
       targets: createTagEventTarget,
@@ -414,11 +413,11 @@ export class DataPlatformNotebook extends Construct {
   /**
    * @hidden
    * Constructs a new object of CfnStudio
-   * @param {DataPlatformNotebooksProps} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebooksProps}
+   * @param {DataPlatformNotebookProp} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}
    * @param {string} securityGroupId engine SecurityGroupId
    * @param {string} studioUserRoleRoleArn if used in SSO mode pass the user role that is by Amazon EMR Studio
    */
-  private studioInstanceBuilder (props: DataPlatformNotebooksProps, securityGroupId: string, studioUserRoleRoleArn?: string ): CfnStudio {
+  private studioInstanceBuilder (props: DataPlatformNotebookProp, securityGroupId: string, studioUserRoleRoleArn?: string ): CfnStudio {
 
     let studioInstance: CfnStudio;
 
@@ -472,7 +471,7 @@ export class DataPlatformNotebook extends Construct {
    * @return {string[] | void } return a list of users that were created and their temporary passwords if IAM_AUTHENTICATED is used
    * @access public
    */
-  public addUser (userList: StudioUserDefinition[]): string [] | void {
+  public addUser (userList: StudioUserDefinition[]): string [] {
     //Initialize the managedEndpointArns
     //Used to store the arn of managed endpoints after creation for each users
     //This is used to update the IAM policy
@@ -497,7 +496,7 @@ export class DataPlatformNotebook extends Construct {
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.studioName + '-' + Utils.stringSanitizer(executionPolicyName),
             this.emrVirtCluster.attrId,
-            buildManagedEndpointExecutionRole(this, executionPolicyName, this.emrEks),
+            buildManagedEndpointExecutionRole(this, executionPolicyName, this.emrEks, this.studioName, this.emrVcName),
             this.certificateArn,
             this.emrOnEksVersion,
           );
@@ -552,8 +551,6 @@ export class DataPlatformNotebook extends Construct {
       }
     }
 
-    if (this.authMode === 'IAM_AUTHENTICATED') {
-      return iamUserList;
-    }
+    return iamUserList;
   }
 }
