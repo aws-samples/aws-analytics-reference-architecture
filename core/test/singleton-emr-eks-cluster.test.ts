@@ -24,7 +24,7 @@ new DataPlatformNotebook(mutliDataplatformTest, 'dataplatform-iam', {
 });
 
 
-test('EKS cluster created with correct version and name', () => {
+test('Only 1 EKS cluster created for both dataplatforms with correct version and name', () => {
   // THEN
   assertCDK.expect(mutliDataplatformTest).to(
     assertCDK.countResources('Custom::AWSCDK-EKS-Cluster', 1),
