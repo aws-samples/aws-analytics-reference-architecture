@@ -405,6 +405,8 @@ Amazon Emr Virtual Cluster Id.
 
 - *Type:* [`@aws-cdk/aws-iam.Role`](#@aws-cdk/aws-iam.Role)
 
+IAM execution role to attach.
+
 ---
 
 ###### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.acmCertificateArn"></a>
@@ -470,6 +472,16 @@ the execution policy to attach to the role.
 
 #### Properties <a name="Properties"></a>
 
+##### `criticalDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig"></a>
+
+```typescript
+public readonly criticalDefaultConfig: string;
+```
+
+- *Type:* `string`
+
+---
+
 ##### `eksCluster`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster"></a>
 
 ```typescript
@@ -477,6 +489,26 @@ public readonly eksCluster: Cluster;
 ```
 
 - *Type:* [`@aws-cdk/aws-eks.Cluster`](#@aws-cdk/aws-eks.Cluster)
+
+---
+
+##### `notebookDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig"></a>
+
+```typescript
+public readonly notebookDefaultConfig: string;
+```
+
+- *Type:* `string`
+
+---
+
+##### `sharedDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.sharedDefaultConfig"></a>
+
+```typescript
+public readonly sharedDefaultConfig: string;
+```
+
+- *Type:* `string`
 
 ---
 
@@ -489,12 +521,6 @@ public readonly eksCluster: Cluster;
 ---
 
 ##### `DEFAULT_EMR_VERSION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EMR_VERSION"></a>
-
-- *Type:* `string`
-
----
-
-##### `DEFAULT_SPARK_CONFIGURATION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_SPARK_CONFIGURATION"></a>
 
 - *Type:* `string`
 
@@ -941,7 +967,7 @@ public readonly acmCertificateArn: string;
 ```
 
 - *Type:* `string`
-- *Default:* attempt to generate and import certificate using locally installed openssl utility
+- *Default:* generate and import certificate using locally installed openssl utility
 
 ACM Certificate ARN used with EMR on EKS managed endpoint.
 
@@ -967,9 +993,9 @@ public readonly emrEksNodegroups: EmrEksNodegroup[];
 ```
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroup`](#aws-analytics-reference-architecture.EmrEksNodegroup)[]
-- *Default:* Create a default set of EmrEksNodegroup
+- *Default:* Don't create additional nodegroups
 
-List of EmrEksNodegroup to create in the cluster.
+List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups] {@link EmrEksNodegroup}.
 
 ---
 
@@ -1889,6 +1915,8 @@ new EmrEksNodegroup()
 ##### `NOTEBOOK_EXECUTOR` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_EXECUTOR"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
 
 ---
 

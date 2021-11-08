@@ -8,18 +8,16 @@ const mockApp = new App();
 const stack = new Stack(mockApp, 'stack');
 const cluster = new EmrEksCluster(stack, 'testCluster', { eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav' });
 
-cluster.addEmrVirtualCluster({
-  name: 'test',
-});
 
 cluster.addEmrVirtualCluster({
-  name: 'test2',
-  eksNamespace: 'test',
+  name: 'sometest',
+  eksNamespace: 'sometest',
   createNamespace: true,
 });
 
 cluster.addEmrVirtualCluster({
-  name: 'test3',
-  eksNamespace: 'test',
+  name: 'anothertest',
+  eksNamespace: 'anothertest',
   createNamespace: true,
 });
+

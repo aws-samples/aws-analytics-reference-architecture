@@ -418,23 +418,24 @@ ${userData.join('\r\n')}
   public addEmrVirtualCluster(props: EmrVirtualClusterProps): CfnVirtualCluster {
     const eksNamespace = props.eksNamespace ?? 'default';
     const ns = props.createNamespace
-      ? this.eksCluster.addManifest('eksNamespace', {
+      ? this.eksCluster.addManifest(`${props.name}Namespace`, {
         apiVersion: 'v1',
         kind: 'Namespace',
         metadata: { name: eksNamespace },
       })
       : null;
 
-    K8sRole.metadata.namespace = eksNamespace;
-    const role = this.eksCluster.addManifest(`${props.name}EksNamespaceRole`, K8sRole);
+    // deep clone the Role template object and replace the namespace
+    const k8sRole = JSON.parse(JSON.stringify(K8sRole));
+    k8sRole.metadata.namespace = eksNamespace;
+    const role = this.eksCluster.addManifest(`${props.name}Role`, k8sRole);
     role.node.addDependency(this.emrServiceRole);
     if (ns) role.node.addDependency(ns);
 
-    K8sRoleBinding.metadata.namespace = eksNamespace;
-    const roleBinding = this.eksCluster.addManifest(
-      `${props.name}eksNamespaceRoleBinding`,
-      K8sRoleBinding,
-    );
+    // deep clone the Role Binding template object and replace the namespace
+    const k8sRoleBinding = JSON.parse(JSON.stringify(K8sRoleBinding));
+    k8sRoleBinding.metadata.namespace = eksNamespace;
+    const roleBinding = this.eksCluster.addManifest(`${props.name}RoleBinding`, k8sRoleBinding);
     roleBinding.node.addDependency(role);
 
     const virtCluster = new CfnVirtualCluster(this, `${props.name}EmrCluster`, {
