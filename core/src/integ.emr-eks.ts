@@ -14,18 +14,19 @@ const emrEks = new EmrEksCluster(stack, 'EmrEks', {
   eksClusterName: 'EmrEksCluster3',
 });
 
-const emrVirtCluster = emrEks.addEmrVirtualCluster({
+// const emrVirtCluster =
+emrEks.addEmrVirtualCluster({
   createNamespace: false,
   eksNamespace: 'default',
   name: 'ec2VirtCluster',
 });
 
-const managedEndpoint = emrEks.addManagedEndpoint(
+/*const managedEndpoint = emrEks.addManagedEndpoint(
   'endpoint',
   emrVirtCluster.attrId,
   '',
   '',
 );
 
-managedEndpoint.node.addDependency(emrVirtCluster);
+managedEndpoint.node.addDependency(emrVirtCluster);*/
 

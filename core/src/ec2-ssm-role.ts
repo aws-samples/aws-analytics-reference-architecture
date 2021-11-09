@@ -2,7 +2,7 @@ import { Role, RoleProps, ManagedPolicy } from '@aws-cdk/aws-iam';
 import { Construct } from '@aws-cdk/core';
 
 /**
- * @summary Construct extending IAM Role with AmazonSSMManagedInstanceCore managed policy
+ * Construct extending IAM Role with AmazonSSMManagedInstanceCore managed policy
  */
 
 export class Ec2SsmRole extends Role {

@@ -14,7 +14,6 @@ import {
 } from '@aws-cdk/aws-iam';
 import { Aws, Construct, SecretValue } from '@aws-cdk/core';
 import { StudioUserDefinition } from './dataplatform-notebook';
-import { EmrEksCluster } from './emr-eks-cluster';
 
 import * as studioS3Policy from './studio/emr-studio-s3-policy.json';
 import * as lambdaNotebookTagPolicy from './studio/notenook-add-tag-on-create-lambda-policy.json';
@@ -51,15 +50,15 @@ export function createLambdaNoteBookAddTagPolicy (scope: Construct, logArn: stri
 export function buildManagedEndpointExecutionRole (
   scope: Construct,
   policyName: string,
-  emrEks: EmrEksCluster,
+  emrEksOIDCProvider: string,
   studioName: string,
-  emrVcName: string): string {
+  emrVcName: string): Role {
 
   let managedPolicy = ManagedPolicy.fromManagedPolicyName(scope, 'managedEndpointPolicy' + policyName + studioName + emrVcName, policyName);
 
   let managedEndpointExecutionRole: Role = new Role(scope, 'EMRWorkerIAMRole'+ policyName + studioName + emrVcName, {
     assumedBy: new FederatedPrincipal(
-      emrEks.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+      emrEksOIDCProvider,
       [],
       'sts:AssumeRoleWithWebIdentity',
     ),
@@ -67,7 +66,7 @@ export function buildManagedEndpointExecutionRole (
     roleName: policyName + '-' + emrVcName + '-' + studioName,
   });
 
-  return managedEndpointExecutionRole.roleArn;
+  return managedEndpointExecutionRole;
 }
 
 /**

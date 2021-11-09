@@ -1,4 +1,5 @@
 import * as assertCDK from '@aws-cdk/assert';
+import { TaintEffect } from '@aws-cdk/aws-eks';
 import { Stack } from '@aws-cdk/core';
 import {
   DataPlatformNotebook,
@@ -12,6 +13,7 @@ const stackiamauth = new Stack();
 
 let dataPlatformSSO = new DataPlatformNotebook(stacksso, 'dataplatform', {
   studioName: 'integration-test-sso',
+  emrVCNamespace: 'dataplatformsso',
   studioAuthMode: StudioAuthMode.SSO,
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
   acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
@@ -20,6 +22,7 @@ let dataPlatformSSO = new DataPlatformNotebook(stacksso, 'dataplatform', {
 let dataPlatformIAMFed = new DataPlatformNotebook(stackiamfed, 'dataplatform', {
   studioName: 'integration-test-iam',
   studioAuthMode: StudioAuthMode.IAM_FEDERATED,
+  emrVCNamespace: 'dataplatformiamfed',
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
   acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
   idpAuthUrl: 'https://myapps.microsoft.com/signin/9b33f8d1-2cdd-4972-97a6-dedfc5a4bb38?tenantId=eb9c8428-db71-4fa4-9cc8-0a49d2c645c5',
@@ -29,6 +32,7 @@ let dataPlatformIAMFed = new DataPlatformNotebook(stackiamfed, 'dataplatform', {
 let dataPlatformIAMAuth = new DataPlatformNotebook(stackiamauth, 'dataplatform', {
   studioName: 'integration-test-auth',
   studioAuthMode: StudioAuthMode.IAM_AUTHENTICATED,
+  emrVCNamespace: 'dataplatformiamauth',
   eksAdminRoleArn: 'arn:aws:iam::012345678901:role/Admin',
   acmCertificateArn: 'arn:aws:acm:eu-west-1:012345678901:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
 });
@@ -50,7 +54,7 @@ test('EKS cluster created with correct version and name', () => {
     assertCDK.haveResource('Custom::AWSCDK-EKS-Cluster', {
       Config: assertCDK.objectLike({
         version: '1.20',
-        name: 'ara-dataplatform-cluster',
+        name: 'ara-cluster',
       }),
     }),
   );
@@ -82,23 +86,22 @@ test('EKS cluster should have the default Nodegroups and two notebooks nodegroup
   assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EKS::Nodegroup', {
       NodegroupName: 'notebook-driver-0',
-      InstanceTypes: ['t3.xlarge'],
+      InstanceTypes: ['t3.large'],
       Labels: {
         'role': 'notebook',
         'spark-role': 'driver',
-        'app': 'enterprise-gateway',
-        'emr-containers.amazonaws.com/resource.type': 'job.run',
+        'node-lifecycle': 'on-demand',
       },
       Taints: [
         {
-          Key: 'app',
-          Value: 'enterprise-gateway',
-          Effect: 'NO_SCHEDULE',
+          Key: 'role',
+          Value: 'notebook',
+          Effect: TaintEffect.NO_SCHEDULE,
         },
       ],
       ScalingConfig: {
         DesiredSize: 0,
-        MaxSize: 50,
+        MaxSize: 10,
         MinSize: 0,
       },
     },
@@ -114,13 +117,12 @@ test('EKS cluster should have the default Nodegroups and two notebooks nodegroup
       Labels: {
         'role': 'notebook',
         'spark-role': 'executor',
-        'app': 'enterprise-gateway',
-        'emr-containers.amazonaws.com/resource.type': 'job.run',
+        'node-lifecycle': 'spot',
       },
       Taints: [
         {
-          Key: 'app',
-          Value: 'enterprise-gateway',
+          Key: 'role',
+          Value: 'notebook',
           Effect: 'NO_SCHEDULE',
         },
         {
@@ -131,7 +133,7 @@ test('EKS cluster should have the default Nodegroups and two notebooks nodegroup
       ],
       ScalingConfig: {
         DesiredSize: 0,
-        MaxSize: 50,
+        MaxSize: 100,
         MinSize: 0,
       },
     },
@@ -150,7 +152,7 @@ test('EMR virtual cluster should be created with proper configuration', () => {
         Type: 'EKS',
         Info: assertCDK.objectLike({
           EksInfo: {
-            Namespace: 'default',
+            Namespace: 'dataplatformsso',
           },
         }),
       }),
@@ -164,13 +166,13 @@ test('workspace security group should allow outbound access to port 18888 and to
 
   assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EC2::SecurityGroup', {
-      GroupName: 'workSpaceSecurityGroup',
+      GroupName: 'workSpaceSecurityGroup-integration-test-sso',
       Tags: assertCDK.objectLike([{
         Key: 'for-use-with-amazon-emr-managed-policies',
         Value: 'true',
       }]),
       VpcId: {
-        Ref: 'aradataplatformclusterDefaultVpcD2ED856E',
+        Ref: 'araclusterDefaultVpcD501221D',
       },
     }),
   );
@@ -180,23 +182,23 @@ test('engine security group should be present, not used with EMR on EKS, but req
 
   assertCDK.expect(stacksso).to(
     assertCDK.haveResource('AWS::EC2::SecurityGroup', {
-      GroupName: 'engineSecurityGroup',
+      GroupName: 'engineSecurityGroup-integration-test-sso',
       Tags: assertCDK.objectLike([{
         Key: 'for-use-with-amazon-emr-managed-policies',
         Value: 'true',
       }]),
       VpcId: {
-        Ref: 'aradataplatformclusterDefaultVpcD2ED856E',
+        Ref: 'araclusterDefaultVpcD501221D',
       },
     }),
   );
 });
 
-test('Should find one S3 bucket used for EMR Studio Notebook ', () => {
+test('Should find 2 S3 bucket used for EMR Studio Notebook and to upload node templates ', () => {
 
   // Count the number of buckets it should be
   assertCDK.expect(stacksso).to(
-    assertCDK.countResources('AWS::S3::Bucket', 1),
+    assertCDK.countResources('AWS::S3::Bucket', 2),
   );
 
   assertCDK.expect(stacksso).to(

@@ -37,9 +37,9 @@ export class EmrEksNodegroup {
    */
   public static readonly TOOLING_ALL: EmrEksNodegroupOptions = {
     id: 'tooling',
-    instanceTypes: [new InstanceType('t3.large')],
-    minSize: 4,
-    maxSize: 50,
+    instanceTypes: [new InstanceType('t3.medium')],
+    minSize: 1,
+    maxSize: 10,
     labels: { role: 'tooling' },
   };
 
@@ -49,13 +49,12 @@ export class EmrEksNodegroup {
   public static readonly CRITICAL_ALL: EmrEksNodegroupOptions = {
     id: 'critical',
     mountNvme: true,
-    instanceTypes: [new InstanceType('m6gd.2xlarge')],
+    instanceTypes: [new InstanceType('m6gd.8xlarge')],
     amiType: NodegroupAmiType.AL2_ARM_64,
     minSize: 0,
-    maxSize: 50,
+    maxSize: 100,
     labels: {
-      'role': 'critical',
-      'emr-containers.amazonaws.com/resource.type': 'job.run',
+      role: 'critical',
     },
     taints: [
       {
@@ -74,25 +73,23 @@ export class EmrEksNodegroup {
     instanceTypes: [new InstanceType('m6g.xlarge')],
     amiType: NodegroupAmiType.AL2_ARM_64,
     minSize: 0,
-    maxSize: 50,
+    maxSize: 10,
     labels: {
       'role': 'shared',
       'spark-role': 'driver',
-      'emr-containers.amazonaws.com/resource.type': 'job.run',
     },
   };
 
   public static readonly SHARED_EXECUTOR: EmrEksNodegroupOptions = {
     id: 'shared-executor',
-    instanceTypes: [new InstanceType('m6g.2xlarge'), new InstanceType('m6gd.2xlarge')],
+    instanceTypes: [new InstanceType('m6g.8xlarge'), new InstanceType('m6gd.8xlarge')],
     minSize: 0,
-    maxSize: 50,
+    maxSize: 100,
     capacityType: CapacityType.SPOT,
     amiType: NodegroupAmiType.AL2_ARM_64,
     labels: {
       'role': 'shared',
       'spark-role': 'executor',
-      'emr-containers.amazonaws.com/resource.type': 'job.run',
     },
     taints: [
       {
@@ -103,25 +100,24 @@ export class EmrEksNodegroup {
     ],
   };
 
-  /*
-   ** Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS
+  /**
+   * Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
    */
   public static readonly NOTEBOOK_EXECUTOR: EmrEksNodegroupOptions = {
     id: 'notebook-executor',
     instanceTypes: [new InstanceType('t3.2xlarge'), new InstanceType('t3a.2xlarge')],
     minSize: 0,
-    maxSize: 50,
+    maxSize: 100,
     capacityType: CapacityType.SPOT,
     labels: {
       'role': 'notebook',
       'spark-role': 'executor',
-      'app': 'enterprise-gateway',
-      'emr-containers.amazonaws.com/resource.type': 'job.run',
+      'node-lifecycle': 'spot',
     },
     taints: [
       {
-        key: 'app',
-        value: 'enterprise-gateway',
+        key: 'role',
+        value: 'notebook',
         effect: TaintEffect.NO_SCHEDULE,
       },
       {
@@ -134,19 +130,18 @@ export class EmrEksNodegroup {
 
   public static readonly NOTEBOOK_DRIVER: EmrEksNodegroupOptions = {
     id: 'notebook-driver',
-    instanceTypes: [new InstanceType('t3.xlarge')],
+    instanceTypes: [new InstanceType('t3.large')],
     minSize: 0,
-    maxSize: 50,
+    maxSize: 10,
     labels: {
       'role': 'notebook',
       'spark-role': 'driver',
-      'app': 'enterprise-gateway',
-      'emr-containers.amazonaws.com/resource.type': 'job.run',
+      'node-lifecycle': 'on-demand',
     },
     taints: [
       {
-        key: 'app',
-        value: 'enterprise-gateway',
+        key: 'role',
+        value: 'notebook',
         effect: TaintEffect.NO_SCHEDULE,
       },
     ],

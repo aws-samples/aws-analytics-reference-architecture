@@ -20,9 +20,9 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.125.0',
+  cdkVersion: '1.124.0',
   defaultReleaseBranch: 'main',
-  license: 'MIT',
+  license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
   repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
   repositoryDirectory: 'core',
@@ -50,21 +50,14 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/lambda-layer-awscli',
     '@aws-cdk/aws-lambda',
     '@aws-cdk/aws-logs',
-    '@aws-cdk/custom-resources',
     '@aws-cdk/aws-athena',
     '@aws-cdk/aws-glue',
     '@aws-cdk/aws-stepfunctions',
     '@aws-cdk/aws-stepfunctions-tasks',
     '@aws-cdk/aws-events',
     '@aws-cdk/aws-events-targets',
+    '@aws-cdk/aws-s3-deployment',
     '@aws-cdk/aws-emr',
-    '@aws-cdk/aws-eks',
-    '@aws-cdk/aws-ec2',
-    '@aws-cdk/aws-emrcontainers',
-    '@aws-cdk/aws-autoscaling',
-    '@aws-cdk/lambda-layer-awscli',
-    '@aws-cdk/aws-events',
-    '@aws-cdk/aws-events-targets',
     '@aws-cdk/aws-kms',
   ],
 
@@ -79,12 +72,6 @@ const project = new AwsCdkConstructLibrary({
     'uuid',
     'xmldom@github:xmldom/xmldom#0.7.0',
     'aws-sdk',
-  ],
-
-  devDeps: [
-    'esbuild',
-    '@types/js-yaml',
-    '@types/jest',
   ],
 
   python: {
