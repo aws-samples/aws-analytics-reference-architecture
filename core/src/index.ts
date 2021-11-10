@@ -10,9 +10,7 @@ export { SynchronousAthenaQueryProps, SynchronousAthenaQuery } from './synchrono
 export { SingletonBucket } from './singleton-bucket';
 export { Ec2SsmRole } from './ec2-ssm-role';
 export { DataLakeCatalog } from './data-lake-catalog';
-export { EmrEksCluster, EmrEksClusterProps } from './emr-eks-cluster';
-export { EmrEksNodegroupOptions, EmrEksNodegroup } from './emr-eks-nodegroup';
-export { EmrVirtualClusterProps } from './emr-virtual-cluster';
 export { DataLakeExporter, DataLakeExporterProps } from './data-lake-exporter';
 export { AthenaDefaultSetup } from './athena-default-setup';
 export { SingletonGlueDefaultRole } from './singleton-glue-default-role';
+export { EmrEksClusterProps, EmrEksCluster, EmrEksNodegroupOptions, EmrEksNodegroup, EmrVirtualClusterProps } from './emr-eks-data-platform';
