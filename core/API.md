@@ -233,7 +233,84 @@ the DataLakeStorageProps properties.
 ---
 
 
+### DataPlatformNotebook <a name="aws-analytics-reference-architecture.DataPlatformNotebook"></a>
+
+Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio Construct is then used to assign users to the create EMR Studio by calling the appropriate method {@linkcode addSSOUsers}, {@linkcode addFederatedUsers} or {@linkcode addIAMUsers}.
+
+#### Initializer <a name="aws-analytics-reference-architecture.DataPlatformNotebook.Initializer"></a>
+
+```typescript
+import { DataPlatformNotebook } from 'aws-analytics-reference-architecture'
+
+new DataPlatformNotebook(scope: Construct, id: string, props: DataPlatformNotebookProp)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+the Scope of the AWS CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.parameter.id"></a>
+
+- *Type:* `string`
+
+the ID of the AWS CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookProp`](#aws-analytics-reference-architecture.DataPlatformNotebookProp)
+
+the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}.
+
+---
+
+#### Methods <a name="Methods"></a>
+
+##### `addUser` <a name="aws-analytics-reference-architecture.DataPlatformNotebook.addUser"></a>
+
+```typescript
+public addUser(userList: StudioUserDefinition[])
+```
+
+###### `userList`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.parameter.userList"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.StudioUserDefinition`](#aws-analytics-reference-architecture.StudioUserDefinition)[]
+
+list of users.
+
+---
+
+
+#### Properties <a name="Properties"></a>
+
+##### `studioId`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.property.studioId"></a>
+
+- *Type:* `string`
+
+---
+
+##### `studioUrl`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.property.studioUrl"></a>
+
+- *Type:* `string`
+
+---
+
+#### Constants <a name="Constants"></a>
+
+##### `DEFAULT_EMR_VERSION` <a name="aws-analytics-reference-architecture.DataPlatformNotebook.property.DEFAULT_EMR_VERSION"></a>
+
+- *Type:* `string`
+
+---
+
 ### Ec2SsmRole <a name="aws-analytics-reference-architecture.Ec2SsmRole"></a>
+
+Construct extending IAM Role with AmazonSSMManagedInstanceCore managed policy.
 
 #### Initializer <a name="aws-analytics-reference-architecture.Ec2SsmRole.Initializer"></a>
 
@@ -340,7 +417,7 @@ the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}.
 ##### `addManagedEndpoint` <a name="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint"></a>
 
 ```typescript
-public addManagedEndpoint(id: string, virtualClusterId: string, acmCertificateArn?: string, emrOnEksVersion?: string, executionRoleArn?: string, configurationOverrides?: string)
+public addManagedEndpoint(id: string, virtualClusterId: string, executionRole: Role, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
 ```
 
 ###### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
@@ -359,11 +436,19 @@ Amazon Emr Virtual Cluster Id.
 
 ---
 
+###### `executionRole`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.executionRole"></a>
+
+- *Type:* [`@aws-cdk/aws-iam.Role`](#@aws-cdk/aws-iam.Role)
+
+IAM execution role to attach.
+
+---
+
 ###### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.acmCertificateArn"></a>
 
 - *Type:* `string`
 
-ACM Certificate Arn to be attached to the JEG managed endpoint,.
+ACM Certificate Arn to be attached to the managed endpoint,.
 
 ---
 
@@ -372,14 +457,6 @@ ACM Certificate Arn to be attached to the JEG managed endpoint,.
 - *Type:* `string`
 
 EmrOnEks version to be used.
-
----
-
-###### `executionRoleArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.executionRoleArn"></a>
-
-- *Type:* `string`
-
-IAM execution role to attach.
 
 ---
 
@@ -401,20 +478,83 @@ public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions
 
 - *Type:* `string`
 
+the ID of the nodegroup.
+
 ---
 
 ###### `options`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.options"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
 
+the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}.
+
 ---
 
+##### `createExecutionRole` <a name="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole"></a>
+
+```typescript
+public createExecutionRole(policy: Policy)
+```
+
+###### `policy`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.policy"></a>
+
+- *Type:* [`@aws-cdk/aws-iam.Policy`](#@aws-cdk/aws-iam.Policy)
+
+the execution policy to attach to the role.
+
+---
+
+#### Static Functions <a name="Static Functions"></a>
+
+##### `getOrCreate` <a name="aws-analytics-reference-architecture.EmrEksCluster.getOrCreate"></a>
+
+```typescript
+import { EmrEksCluster } from 'aws-analytics-reference-architecture'
+
+EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion)
+```
+
+###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+###### `eksAdminRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.eksAdminRoleArn"></a>
+
+- *Type:* `string`
+
+---
+
+###### `kubernetesVersion`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.kubernetesVersion"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
+
+---
 
 #### Properties <a name="Properties"></a>
+
+##### `criticalDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig"></a>
+
+- *Type:* `string`
+
+---
 
 ##### `eksCluster`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster"></a>
 
 - *Type:* [`@aws-cdk/aws-eks.Cluster`](#@aws-cdk/aws-eks.Cluster)
+
+---
+
+##### `notebookDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig"></a>
+
+- *Type:* `string`
+
+---
+
+##### `sharedDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.sharedDefaultConfig"></a>
+
+- *Type:* `string`
 
 ---
 
@@ -431,59 +571,6 @@ public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions
 - *Type:* `string`
 
 ---
-
-### EmrVirtualCluster <a name="aws-analytics-reference-architecture.EmrVirtualCluster"></a>
-
-#### Initializer <a name="aws-analytics-reference-architecture.EmrVirtualCluster.Initializer"></a>
-
-```typescript
-import { EmrVirtualCluster } from 'aws-analytics-reference-architecture'
-
-new EmrVirtualCluster(scope: Construct, id: string, eksCluster: Cluster, props: EmrVirtualClusterProps)
-```
-
-##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.scope"></a>
-
-- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
-
-the Scope of the CDK Construct.
-
----
-
-##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.id"></a>
-
-- *Type:* `string`
-
-the ID of the CDK Construct.
-
----
-
-##### `eksCluster`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.eksCluster"></a>
-
-- *Type:* [`@aws-cdk/aws-eks.Cluster`](#@aws-cdk/aws-eks.Cluster)
-
----
-
-##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.parameter.props"></a>
-
-- *Type:* [`aws-analytics-reference-architecture.EmrVirtualClusterProps`](#aws-analytics-reference-architecture.EmrVirtualClusterProps)
-
-the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}.
-
----
-
-
-
-#### Properties <a name="Properties"></a>
-
-##### `instance`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualCluster.property.instance"></a>
-
-- *Type:* [`@aws-cdk/aws-emrcontainers.CfnVirtualCluster`](#@aws-cdk/aws-emrcontainers.CfnVirtualCluster)
-
-reference to the CfnVirtualCluster created.
-
----
-
 
 ### Example <a name="aws-analytics-reference-architecture.Example"></a>
 
@@ -786,6 +873,100 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 
 ---
 
+### DataPlatformNotebookProp <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp"></a>
+
+The properties for DataPlatformNotebooks Construct.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { DataPlatformNotebookProp } from 'aws-analytics-reference-architecture'
+
+const dataPlatformNotebookProp: DataPlatformNotebookProp = { ... }
+```
+
+##### `acmCertificateArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.acmCertificateArn"></a>
+
+- *Type:* `string`
+
+Amazon ACM Certificate ARN.
+
+---
+
+##### `eksAdminRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.eksAdminRoleArn"></a>
+
+- *Type:* `string`
+
+Amazon EKS Admin Role.
+
+---
+
+##### `emrVCNamespace`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.emrVCNamespace"></a>
+
+- *Type:* `string`
+
+the namespace where to deploy the EMR Virtual Cluster.
+
+---
+
+##### `studioAuthMode`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.studioAuthMode"></a>
+
+- *Type:* `string`
+
+Required the authentication mode of Amazon EMR Studio Either 'SSO' or 'IAM_FEDERATED' or 'IAM_AUTHENTICATED' defined in the Enum {@linkcode studioAuthMode}.
+
+---
+
+##### `studioName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.studioName"></a>
+
+- *Type:* `string`
+
+Required the be given to the name of Amazon EMR Studio.
+
+---
+
+##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.emrOnEksVersion"></a>
+
+- *Type:* `string`
+- *Default:* v6.3 version is used
+
+The version of Amazon EMR to deploy.
+
+---
+
+##### `idPArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.idPArn"></a>
+
+- *Type:* `string`
+
+Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value taken from the IAM console in the Identity providers console.
+
+---
+
+##### `idpAuthUrl`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.idpAuthUrl"></a>
+
+- *Type:* `string`
+
+Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio This is is the URL used to sign in the AWS console.
+
+---
+
+##### `idpRelayStateParameterName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.idpRelayStateParameterName"></a>
+
+- *Type:* `string`
+
+Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value can be set with {@linkcode idpRelayState} Enum or through a value provided by the user.
+
+---
+
+##### `kubernetesVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.kubernetesVersion"></a>
+
+- *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
+- *Default:* v1.20 version is used
+
+The version of kubernetes to deploy.
+
+---
+
 ### DatasetProps <a name="aws-analytics-reference-architecture.DatasetProps"></a>
 
 #### Initializer <a name="[object Object].Initializer"></a>
@@ -862,7 +1043,7 @@ Amazon IAM Role to be added to Amazon EKS master roles that will give access to 
 ##### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.acmCertificateArn"></a>
 
 - *Type:* `string`
-- *Default:* attempt to generate and import certificate using locally installed openssl utility
+- *Default:* generate and import certificate using locally installed openssl utility
 
 ACM Certificate ARN used with EMR on EKS managed endpoint.
 
@@ -880,9 +1061,9 @@ Name of the Amazon EKS cluster to be created.
 ##### `emrEksNodegroups`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroup`](#aws-analytics-reference-architecture.EmrEksNodegroup)[]
-- *Default:* Create a default set of EmrEksNodegroup
+- *Default:* Don't create additional nodegroups
 
-List of EmrEksNodegroup to create in the cluster.
+List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups] {@link EmrEksNodegroup}.
 
 ---
 
@@ -1215,6 +1396,45 @@ Name used to qualify the CfnOutput in the Stack.
 - *Default:* Set to 'defaultValue!' if not provided
 
 Value used in the CfnOutput in the Stack.
+
+---
+
+### StudioUserDefinition <a name="aws-analytics-reference-architecture.StudioUserDefinition"></a>
+
+The properties for defining a user.
+
+The interface is used to create and assign a user or a group to a Amazon EMR Studio
+used in {@linkcode addUser}
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { StudioUserDefinition } from 'aws-analytics-reference-architecture'
+
+const studioUserDefinition: StudioUserDefinition = { ... }
+```
+
+##### `executionPolicyNames`<sup>Required</sup> <a name="aws-analytics-reference-architecture.StudioUserDefinition.property.executionPolicyNames"></a>
+
+- *Type:* `string`[]
+
+The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB.
+
+---
+
+##### `identityName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.StudioUserDefinition.property.identityName"></a>
+
+- *Type:* `string`
+
+Name of the identity as it appears in AWS SSO console, or the name to be given to a user in IAM_AUTHENTICATED.
+
+---
+
+##### `identityType`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.StudioUserDefinition.property.identityType"></a>
+
+- *Type:* `string`
+
+Type of the identity either GROUP or USER, to be used when SSO is used as an authentication mode.
 
 ---
 
@@ -1643,6 +1863,8 @@ new EmrEksNodegroup()
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
 
+Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
+
 ---
 
 ##### `SHARED_DRIVER` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER"></a>
@@ -1663,4 +1885,43 @@ new EmrEksNodegroup()
 
 ---
 
+
+## Enums <a name="Enums"></a>
+
+### IdpRelayState <a name="IdpRelayState"></a>
+
+Enum to define the RelayState of different IdPs Used in EMR Studio Prop in the IAM_FEDERATED scenario.
+
+#### `MICROSOFT_AZURE` <a name="aws-analytics-reference-architecture.IdpRelayState.MICROSOFT_AZURE"></a>
+
+---
+
+
+#### `PING_FEDERATE` <a name="aws-analytics-reference-architecture.IdpRelayState.PING_FEDERATE"></a>
+
+---
+
+
+#### `PING_ONE` <a name="aws-analytics-reference-architecture.IdpRelayState.PING_ONE"></a>
+
+---
+
+
+### StudioAuthMode <a name="StudioAuthMode"></a>
+
+Enum to define authentication mode for Amazon EMR Studio.
+
+#### `IAM_FEDERATED` <a name="aws-analytics-reference-architecture.StudioAuthMode.IAM_FEDERATED"></a>
+
+---
+
+
+#### `IAM_AUTHENTICATED` <a name="aws-analytics-reference-architecture.StudioAuthMode.IAM_AUTHENTICATED"></a>
+
+---
+
+
+#### `SSO` <a name="aws-analytics-reference-architecture.StudioAuthMode.SSO"></a>
+
+---
 

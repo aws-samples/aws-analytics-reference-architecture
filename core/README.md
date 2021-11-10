@@ -10,7 +10,7 @@ data lake using spark engine deployed in EMR on EKS.
 * A KMS encryption Key used to encrypt an S3 bucket and Cloudwatch GroupLog  
 * An S3 Bucket used by EMR Studio to store the Jupyter notebooks
 * An EMR Studio service Role as defined [here][1], and customize to access the S3 bucket and KMS key created above
-* An EMR Studio User Role as defined [here][2] - The policy template which leverages is the Basic one
+* An EMR Studio User Role as defined [here][2] - The policy template which is leveraged is the Basic one
 * An EMR Studio tenant
 * Multiple ManagedEnpdoints, each for a user or a group of users
 * Create an execution role to be passed to the Managed endpoint from a policy arn provided by the user  
@@ -29,7 +29,8 @@ The `DataPlatformNotebook` is used to create a new construct and its constructor
 
 ```
 studioName: <the name of the EMR Studio>
-authMode: 'SSO'
+authMode: SSO, IAM_AUTH or IAM_FED
+emrVCNamespace: 'dept1nc'
 eksAdminRoleArn: <ARN of EKS admin role>
 acmCertificateArn: <ARN of ACM certificate>
 ```
@@ -41,7 +42,7 @@ The `StudioUserDefinition` interface define a user to be added to the studio and
 ```
 mappingIdentityName: <identity name as it appears in SSO>
 mappingIdentityType: <USER>
-executionPolicyArn: <ARN of the EMR Execution role>
+executionPolicyNames: <List of the policies for the managedendpoints>
 ```
 
 Once an object is initialized from `DataPlatformNotebook` class, you can start adding users using the `addUsers` method. The method expects a List of `StudioUserDefinition`.
@@ -52,7 +53,7 @@ Once an object is initialized from `DataPlatformNotebook` class, you can start a
 ```
 const dataPlatform = new DataPlatformNotebook(stack, 'dataplatform', {
 studioName: 'Studio-from-dataplatform-construct',
-authMode: 'SSO',
+authMode: StudioAuthMode.SSO,
 eksAdminRoleArn: 'arn:aws:iam::0123456789012:role/***',
 acmCertificateArn: 'arn:aws:acm:<region>:0123456789012:certificate/******',
 });
@@ -62,12 +63,12 @@ let userList: StudioUserDefinition[];
 userList = [{
 mappingIdentityName: 'toto',
 mappingIdentityType: 'USER',
-executionPolicyArn: 'arn:aws:iam::0123456789012:policy/policyManagedEndpoint1',
+executionPolicyNames: ['policyManagedEndpoint1', 'policyManagedEndpoint2'],
 },
 {
 mappingIdentityName: 'jane',
 mappingIdentityType: 'USER',
-executionPolicyArn: 'arn:aws:iam::0123456789012:policy/policyManagedEndpoint2',
+executionPolicyNames: ['policyManagedEndpoint1'],
 }];
 
 dataPlatform.addUsers(userList);
