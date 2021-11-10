@@ -7,14 +7,6 @@ import { Construct } from '@aws-cdk/core';
 import { SingletonBucket } from './singleton-bucket';
 
 /**
- * The properties for AthenaDefaultSetup Construct.
- */
-
-export interface AthenaDefaultSetupProps {
-
-}
-
-/**
  * AthenaDefaultSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box usage
  */
 
@@ -26,7 +18,6 @@ export class AthenaDefaultSetup extends Construct {
    * Constructs a new instance of the AthenaDefaultSetup class
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {AthenaDefaultSetupProps} props the AthenaDefaultSetup [properties]{@link AthenaDefaultSetupProps}
    * @access public
    */
 
@@ -38,6 +29,7 @@ export class AthenaDefaultSetup extends Construct {
 
     new CfnWorkGroup(this, 'athenaDefaultWorkgroup', {
       name: 'default',
+      recursiveDeleteOption: true,
       workGroupConfiguration: {
         publishCloudWatchMetricsEnabled: false,
         resultConfiguration: {

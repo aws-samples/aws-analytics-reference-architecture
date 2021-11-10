@@ -41,7 +41,7 @@ export class Example extends Construct {
     super(scope, id);
 
     // add a fake CFN Output to the Stack
-    // use an export name because the output name is defined by CDK
+    // use an export name because the output name is defined by AWS CDK
     new CfnOutput(this, 'message', {
       exportName: props.name ? props.name: 'defaultMessage',
       value: props.value ? props.value: 'defaultValue!',

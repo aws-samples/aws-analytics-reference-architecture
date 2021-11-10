@@ -1,59 +1,15 @@
-export const retailCustomerAddressCreate = `CREATE EXTERNAL TABLE IF NOT EXISTS {{DATABASE}}.{{TABLE}}(
-  address_id string,
-  city string,
-  county string,
-  state string,
-  zip string,
-  country string,
-  gmt_offset string,
-  location_type string,
-  street string,
-  address_datetime string
-)
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
-LOCATION
-  's3://{{BUCKET}}/{{KEY}}/'
-TBLPROPERTIES (
-  'skip.header.line.count'='1'
-)`;
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
 
-export const retailCustomerAddressCreateTarget = `CREATE EXTERNAL TABLE IF NOT EXISTS {{DATABASE}}.{{TABLE}}(
-  address_id string,
-  city string,
-  county string,
-  state string,
-  zip string,
-  country string,
-  gmt_offset string,
-  location_type string,
-  street string,
-  address_datetime string
-)
-ROW FORMAT DELIMITED 
-  FIELDS TERMINATED BY ',' 
-STORED AS INPUTFORMAT 
-  'org.apache.hadoop.mapred.TextInputFormat' 
-OUTPUTFORMAT 
-  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
-LOCATION
-  's3://{{BUCKET}}/{{KEY}}/'
-TBLPROPERTIES (
-  'skip.header.line.count'='1'
-)`;
 
-export const retailCustomerAddressGenerate = `INSERT INTO {{DATABASE}}.{{TARGET_TABLE}} (
-  SELECT
-    address_id,
-    city,
-    county,
-    state,
-    zip,
-    country,
-    gmt_offset,
-    location_type,
-    street,
-    to_iso8601(date_add('second', {{OFFSET}}, from_iso8601_timestamp(address_datetime))) as address_datetime
-  FROM {{DATABASE}}.{{SOURCE_TABLE}}
-  WHERE address_datetime
-    BETWEEN '{{MIN}}' AND '{{MAX}}'
-)`;
+import { join } from 'path';
+import { readSqlFile } from './read-sql-file';
+
+const SQL_FOLDER_PATH = join(__dirname, 'resources/retail-customer-address');
+
+
+export const retailCustomerAddressCreate = readSqlFile(join(SQL_FOLDER_PATH, 'create.sql'));
+
+export const retailCustomerAddressCreateTarget = readSqlFile(join(SQL_FOLDER_PATH, 'create-target.sql'));
+
+export const retailCustomerAddressGenerate = readSqlFile(join(SQL_FOLDER_PATH, 'generate.sql'));
