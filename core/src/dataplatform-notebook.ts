@@ -21,7 +21,7 @@ import { Key } from '@aws-cdk/aws-kms';
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
-import { Construct, Tags, Aws, Duration } from '@aws-cdk/core';
+import { Construct, Tags, Aws, Duration, NestedStack } from '@aws-cdk/core';
 
 
 import {
@@ -39,6 +39,13 @@ import { EmrEksCluster } from './emr-eks-cluster';
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
 import { Utils } from './utils';
+
+export interface DataPlatformNotebookInfra {
+  readonly dataPlatformProps: DataPlatformNotebookProp;
+  readonly emrEks: EmrEksCluster;
+  readonly serviceToken: string;
+  readonly emrOnEksStack: NestedStack;
+}
 
 /**
  * The properties for DataPlatformNotebooks Construct.
@@ -62,10 +69,6 @@ export interface DataPlatformNotebookProp {
    * @default - v1.20 version is used
    * */
   readonly kubernetesVersion?: KubernetesVersion;
-  /**
-   * Amazon EKS Admin Role
-   * */
-  readonly eksAdminRoleArn: string;
   /**
    * Amazon ACM Certificate ARN
    */
@@ -180,6 +183,10 @@ export class DataPlatformNotebook extends Construct {
   private readonly managedEndpointExcutionPolicyArnMapping: Map<string, string>;
   private readonly federatedIdPARN : string | undefined;
   private readonly authMode :string;
+  private readonly serviceToken: string;
+
+  private readonly nestedStack: NestedStack;
+  //private readonly emrOnEksStack: NestedStack;
 
   /**
    * Constructs a new instance of the DataGenerator class
@@ -189,34 +196,38 @@ export class DataPlatformNotebook extends Construct {
    * @access public
    */
 
-  constructor(scope: Construct, id: string, props: DataPlatformNotebookProp) {
+  constructor(scope: Construct, id: string, props: DataPlatformNotebookInfra) {
     super(scope, id);
 
     this.studioServicePolicy = [];
     this.studioUserPolicy = [];
     this.lambdaNotebookTagOnCreatePolicy = [];
     this.studioSubnetList = [];
-    this.certificateArn = props.acmCertificateArn;
+    this.certificateArn = props.dataPlatformProps.acmCertificateArn;
     this.managedEndpointExcutionPolicyArnMapping = new Map<string, string>();
-    this.emrOnEksVersion = props.emrOnEksVersion || DataPlatformNotebook.DEFAULT_EMR_VERSION;
-    this.authMode = props.studioAuthMode;
+    this.emrOnEksVersion = props.dataPlatformProps.emrOnEksVersion || DataPlatformNotebook.DEFAULT_EMR_VERSION;
+    this.authMode = props.dataPlatformProps.studioAuthMode;
+    //this.emrOnEksStack = props.emrOnEksStack;
+    this.serviceToken = props.serviceToken;
 
-    if (props.idPArn !== undefined) {
-      this.federatedIdPARN = props.idPArn;
+    this.nestedStack = new NestedStack(scope, props.dataPlatformProps.studioName + '-stack');
+
+    if (props.dataPlatformProps.idPArn !== undefined) {
+      this.federatedIdPARN = props.dataPlatformProps.idPArn;
     }
 
     //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
     this.dataPlatformEncryptionKey = new Key(
-      this,
-      'KMS-key-'+ Utils.stringSanitizer(props.studioName),
+      this.nestedStack,
+      'KMS-key-'+ Utils.stringSanitizer(props.dataPlatformProps.studioName),
     );
 
     //EMR Virtual Cluster Name
-    this.emrVcName = 'emr-vc-' + props.studioName;
+    this.emrVcName = 'emr-vc-' + Utils.stringSanitizer(props.dataPlatformProps.studioName);
 
     //Create new Amazon EKS cluster for Amazon EMR or get one already create for previous EMR on EKS cluster
     //This avoid creating a new cluster everytime an object is initialized
-    this.emrEks = EmrEksCluster.getOrCreate(this, props.eksAdminRoleArn, props.kubernetesVersion || KubernetesVersion.V1_20);
+    this.emrEks = props.emrEks;
 
     //Get the list of private subnets in VPC
     this.studioSubnetList = this.emrEks.eksCluster.vpc.selectSubnets({
@@ -228,17 +239,17 @@ export class DataPlatformNotebook extends Construct {
     //Create a virtual cluster a give it a name of 'multi-stack-'+studioName provided by user
     this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
       createNamespace: true,
-      eksNamespace: props.emrVCNamespace,
-      name: this.emrVcName,
+      eksNamespace: props.dataPlatformProps.emrVCNamespace,
+      name: Utils.stringSanitizer(this.emrVcName),
     });
 
     //Set Vpc object to be used with SecurityGroup and EMR Studio Creation
     this.emrVpc = this.emrEks.eksCluster.vpc;
 
     //Create a security group to be attached to the studio workspaces
-    this.workSpaceSecurityGroup = new SecurityGroup(this, 'workspaceSecurityGroup', {
+    this.workSpaceSecurityGroup = new SecurityGroup(this.nestedStack, 'workspaceSecurityGroup', {
       vpc: this.emrVpc,
-      securityGroupName: 'workSpaceSecurityGroup-'+props.studioName,
+      securityGroupName: 'workSpaceSecurityGroup-'+props.dataPlatformProps.studioName,
       allowAllOutbound: false,
     });
 
@@ -247,9 +258,9 @@ export class DataPlatformNotebook extends Construct {
 
     //Create a security group to be attached to the engine for EMR
     //This is mandatory for Amazon EMR Studio although we are not using EMR on EC2
-    this.engineSecurityGroup = new SecurityGroup(this, 'engineSecurityGroup', {
+    this.engineSecurityGroup = new SecurityGroup(this.nestedStack, 'engineSecurityGroup', {
       vpc: this.emrVpc,
-      securityGroupName: 'engineSecurityGroup-'+props.studioName,
+      securityGroupName: 'engineSecurityGroup-'+props.dataPlatformProps.studioName,
       allowAllOutbound: false,
     });
 
@@ -258,8 +269,8 @@ export class DataPlatformNotebook extends Construct {
 
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
-    this.workspacesBucket = new Bucket(this, 'WorkspacesBucket' + props.studioName, {
-      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + Utils.stringSanitizer(props.studioName),
+    this.workspacesBucket = new Bucket(this.nestedStack, 'WorkspacesBucket' + props.dataPlatformProps.studioName, {
+      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + Utils.stringSanitizer(props.dataPlatformProps.studioName),
       enforceSSL: true,
       encryptionKey: this.dataPlatformEncryptionKey,
       encryption: BucketEncryption.KMS,
@@ -269,47 +280,47 @@ export class DataPlatformNotebook extends Construct {
     //this.workspacesBucket.node.addDependency(this.emrVirtCluster);
 
     //Create a Managed policy for Studio service role
-    this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
-      'StudioServiceManagedPolicy', createStudioServiceRolePolicy(this, this.dataPlatformEncryptionKey.keyArn, this.workspacesBucket.bucketName,
-        props.studioName),
+    this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this.nestedStack,
+      'StudioServiceManagedPolicy', createStudioServiceRolePolicy(this.nestedStack, this.dataPlatformEncryptionKey.keyArn, this.workspacesBucket.bucketName,
+        props.dataPlatformProps.studioName),
     ));
 
     //Create a role for the Studio
-    this.studioServiceRole = new Role(this, 'studioServiceRole', {
+    this.studioServiceRole = new Role(this.nestedStack, 'studioServiceRole', {
       assumedBy: new ServicePrincipal(this.studioPrincipal),
-      roleName: 'studioServiceRole+' + Utils.stringSanitizer(props.studioName),
+      roleName: 'studioServiceRole+' + Utils.stringSanitizer(props.dataPlatformProps.studioName),
       managedPolicies: this.studioServicePolicy,
     });
 
     // Create an EMR Studio user role only if the user uses SSO as authentication mode
-    if (props.studioAuthMode === 'SSO') {
+    if (props.dataPlatformProps.studioAuthMode === 'SSO') {
       //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
-      this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
+      this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this.nestedStack,
         'StudioUserManagedPolicy',
-        createStudioUserRolePolicy(this, props.studioName, this.studioServiceRole.roleName),
+        createStudioUserRolePolicy(this.nestedStack, props.dataPlatformProps.studioName, this.studioServiceRole.roleName),
       ));
 
       //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
-      this.studioUserRole = new Role(this, 'studioUserRole', {
+      this.studioUserRole = new Role(this.nestedStack, 'studioUserRole', {
         assumedBy: new ServicePrincipal(this.studioPrincipal),
-        roleName: 'studioUserRole+' + Utils.stringSanitizer(props.studioName),
+        roleName: 'studioUserRole+' + Utils.stringSanitizer(props.dataPlatformProps.studioName),
         managedPolicies: this.studioUserPolicy,
       });
 
       //create a new instance of EMR studio
-      this.studioInstance = this.studioInstanceBuilder(props,
+      this.studioInstance = this.studioInstanceBuilder(props.dataPlatformProps,
         this.engineSecurityGroup.securityGroupId,
         this.studioUserRole.roleArn);
 
     } else {
 
       //create a new instance of EMR studio
-      this.studioInstance = this.studioInstanceBuilder(props, this.engineSecurityGroup.securityGroupId);
+      this.studioInstance = this.studioInstanceBuilder(props.dataPlatformProps, this.engineSecurityGroup.securityGroupId);
     }
 
     //Set the Studio URL and Studio Id this is used in session Mapping for
     // EMR Studio when {@linkcode addFederatedUsers} or {@linkcode addSSOUsers} are called
-    this.studioName = props.studioName;
+    this.studioName = props.dataPlatformProps.studioName;
 
     //Set the Studio URL and Studio Id to return as CfnOutput later
     this.studioUrl = this.studioInstance.attrUrl;
@@ -321,8 +332,8 @@ export class DataPlatformNotebook extends Construct {
      * */
 
     //Create LogGroup for lambda which tag the EMR Notebook (EMR Studio Workspaces)
-    let lambdaNotebookTagOnCreateLog = new LogGroup(this, 'lambdaNotebookTagOnCreateLog' + props.studioName, {
-      logGroupName: '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.studioName,
+    let lambdaNotebookTagOnCreateLog = new LogGroup(this.nestedStack, 'lambdaNotebookTagOnCreateLog' + props.dataPlatformProps.studioName, {
+      logGroupName: '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.dataPlatformProps.studioName,
       encryptionKey: this.dataPlatformEncryptionKey,
       retention: RetentionDays.ONE_MONTH,
     });
@@ -342,7 +353,7 @@ export class DataPlatformNotebook extends Construct {
         kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/account-id/gi, Aws.ACCOUNT_ID);
 
     kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
-        kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/log-group-name/gi, '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.studioName);
+        kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/log-group-name/gi, '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.dataPlatformProps.studioName);
 
     //Applying the policy to the KMS key
     this.dataPlatformEncryptionKey.addToResourcePolicy(PolicyStatement.fromJson(kmsLogPolicy));
@@ -350,15 +361,15 @@ export class DataPlatformNotebook extends Construct {
     //Create Policy for Lambda to put logs in LogGroup
     //Create Policy for Lambda to AddTags to EMR Notebooks
     this.lambdaNotebookTagOnCreatePolicy.push(ManagedPolicy.fromManagedPolicyArn(
-      this,
-      'lambdaNotebookTagOnCreatePolicy'+ props.studioName,
-      createLambdaNoteBookAddTagPolicy(this, lambdaNotebookTagOnCreateLog.logGroupArn, props.studioName)),
+      this.nestedStack,
+      'lambdaNotebookTagOnCreatePolicy'+ props.dataPlatformProps.studioName,
+      createLambdaNoteBookAddTagPolicy(this.nestedStack, lambdaNotebookTagOnCreateLog.logGroupArn, props.dataPlatformProps.studioName)),
     );
 
     //Create IAM role for Lambda and attach policy
-    this.lambdaNotebookAddTagOnCreate = new Role(this, 'addLambdaTagRole' + props.studioName, {
+    this.lambdaNotebookAddTagOnCreate = new Role(this.nestedStack, 'addLambdaTagRole' + props.dataPlatformProps.studioName, {
       assumedBy: new ServicePrincipal(this.lambdaPrincipal),
-      roleName: 'lambdaRoleNotebookAddTagOnCreate' + props.studioName,
+      roleName: 'lambdaRoleNotebookAddTagOnCreate' + props.dataPlatformProps.studioName,
       managedPolicies: this.lambdaNotebookTagOnCreatePolicy,
     });
 
@@ -366,13 +377,13 @@ export class DataPlatformNotebook extends Construct {
     let lambdaPath = 'lambdas/studio-workspace-tag-on-create';
 
     //Create lambda to tag EMR notebook with UserID of the IAM principal that created it
-    let workspaceTaggingLambda = new Function(this, 'CreateTagHandler', {
+    let workspaceTaggingLambda = new Function(this.nestedStack, 'CreateTagHandler', {
       runtime: Runtime.NODEJS_14_X, // execution environment
       code: Code.fromAsset(path.join(__dirname, lambdaPath)), // code loaded from "lambda" directory
       handler: 'index.handler', // file is "index", function is "handler"
       role: this.lambdaNotebookAddTagOnCreate,
       timeout: Duration.seconds(10),
-      functionName: 'lambdaNotebookCreateTagOnCreate' + props.studioName,
+      functionName: 'lambdaNotebookCreateTagOnCreate' + props.dataPlatformProps.studioName,
     });
 
     //Create an event Target for event Bridge
@@ -390,7 +401,7 @@ export class DataPlatformNotebook extends Construct {
 
     //Create Event on EventBridge/Cloudwatch Event
     /*let eventRule: Rule = */
-    new Rule(this, this.studioName + 'eventRule', {
+    new Rule(this.nestedStack, this.studioName + 'eventRule', {
       enabled: true,
       eventPattern: createTagEventPattern,
       targets: createTagEventTarget,
@@ -413,7 +424,7 @@ export class DataPlatformNotebook extends Construct {
     let studioInstance: CfnStudio;
 
     if (props.studioAuthMode === 'SSO') {
-      studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
+      studioInstance = new CfnStudio(this.nestedStack, 'Studio', <CfnStudioProps>{
         authMode: 'SSO',
         defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
         engineSecurityGroupId: securityGroupId,
@@ -426,7 +437,7 @@ export class DataPlatformNotebook extends Construct {
       });
 
     } else if (props.studioAuthMode === 'IAM_FEDERATED') {
-      studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
+      studioInstance = new CfnStudio(this.nestedStack, 'Studio', <CfnStudioProps>{
         authMode: 'IAM',
         defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
         engineSecurityGroupId: securityGroupId,
@@ -440,7 +451,7 @@ export class DataPlatformNotebook extends Construct {
       });
 
     } else if (props.studioAuthMode === 'IAM_AUTHENTICATED') {
-      studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
+      studioInstance = new CfnStudio(this.nestedStack, 'Studio', <CfnStudioProps>{
         authMode: 'IAM',
         defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
         engineSecurityGroupId: securityGroupId,
@@ -486,7 +497,10 @@ export class DataPlatformNotebook extends Construct {
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
 
+
           let managedEndpoint = this.emrEks.addManagedEndpoint(
+            this.nestedStack,
+            this.serviceToken,
             this.studioName + '-' + Utils.stringSanitizer(executionPolicyName),
             this.emrVirtCluster.attrId,
             buildManagedEndpointExecutionRole(this, executionPolicyName,
@@ -496,9 +510,11 @@ export class DataPlatformNotebook extends Construct {
             this.emrOnEksVersion,
           );
 
+          managedEndpoint.node.addDependency(this.emrEks);
+
           //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
           let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(
-            this,
+            this.nestedStack,
             'engineSecurityGroup-' + this.studioName + executionPolicyName.replace(/[^\w\s]/gi, ''),
             managedEndpoint.getAttString('securityGroup'));
 
@@ -522,23 +538,23 @@ export class DataPlatformNotebook extends Construct {
 
       if (this.authMode === 'IAM_AUTHENTICATED') {
         //Create the role policy and gets its ARN
-        iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
+        iamRolePolicy = createIAMRolePolicy(this.nestedStack, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
-        iamUserList.push(createIAMUser(this, iamRolePolicy!, user.identityName));
+        iamUserList.push(createIAMUser(this.nestedStack, iamRolePolicy!, user.identityName));
       } else if (this.authMode === 'IAM_FEDERATED') {
         //Create the role policy and gets its ARN
-        iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
+        iamRolePolicy = createIAMRolePolicy(this.nestedStack, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
-        createIAMFederatedRole(this, iamRolePolicy!, this.federatedIdPARN!, user.identityName, this.studioId);
+        createIAMFederatedRole(this.nestedStack, iamRolePolicy!, this.federatedIdPARN!, user.identityName, this.studioId);
       } else if (this.authMode === 'SSO') {
         //Create the session policy and gets its ARN
-        let sessionPolicyArn = createUserSessionPolicy(this, user, this.studioServiceRole.roleName,
+        let sessionPolicyArn = createUserSessionPolicy(this.nestedStack, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
         //Map a session to user or group
-        new CfnStudioSessionMapping(this, 'studioUser' + user.identityName + user.identityName, {
+        new CfnStudioSessionMapping(this.nestedStack, 'studioUser' + user.identityName + user.identityName, {
           identityName: user.identityName!,
           identityType: user.identityType!,
           sessionPolicyArn: sessionPolicyArn,
