@@ -7,12 +7,12 @@ import * as path from 'path';
 import { SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { PolicyStatement, PolicyDocument, Policy, Role, IRole, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
+import { PolicyStatement, PolicyDocument, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
 import * as lambda from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Location } from '@aws-cdk/aws-s3';
-import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
+import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
+import { Construct, Tags, Stack, Duration, CustomResource, Fn } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import * as AWS from 'aws-sdk';
 import { SingletonBucket } from '.';
@@ -73,6 +73,31 @@ export class EmrEksCluster extends Construct {
 
   public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_20;
   public static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
+
+  public static getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion) {
+
+    const clusterName = 'ara-cluster';
+    const stack = Stack.of(scope);
+    const id = `${clusterName}Singleton`;
+
+    let emrEksCluster: EmrEksCluster;
+
+    if (stack.node.tryFindChild(id) == undefined) {
+      emrEksCluster = new EmrEksCluster(stack, id, {
+        kubernetesVersion: kubernetesVersion,
+        eksAdminRoleArn: eksAdminRoleArn,
+        eksClusterName: clusterName,
+      });
+
+      //Add a nodegroup for notebooks
+      emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_DRIVER);
+      emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+    }
+
+
+    return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
+  }
+
   private static readonly EMR_VERSIONS = ['emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest']
   private static readonly AUTOSCALING_POLICY = PolicyStatement.fromJson(IamPolicyAutoscaler);
   private readonly emrServiceRole: CfnServiceLinkedRole;
@@ -84,7 +109,6 @@ export class EmrEksCluster extends Construct {
   private defaultCertificateArn?: string;
   private readonly podTemplateLocation: Location;
   private readonly clusterName: string;
-  private readonly managedEndpointProvider: Provider;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -95,7 +119,7 @@ export class EmrEksCluster extends Construct {
    * @access public
    */
   constructor(scope:
-  Construct, id: string, props: EmrEksClusterProps) {
+                  Construct, id: string, props: EmrEksClusterProps) {
     super(scope, id);
 
     this.clusterName = props.eksClusterName ?? 'emr-eks-cluster';
@@ -117,7 +141,7 @@ export class EmrEksCluster extends Construct {
     });
     // Add the proper Amazon IAM Policy to the Amazon IAM Role for the Cluster Autoscaler
     AutoscalerServiceAccount.addToPrincipalPolicy(
-      EmrEksCluster.AUTOSCALING_POLICY,
+        EmrEksCluster.AUTOSCALING_POLICY,
     );
 
     // @todo: check if we can create the service account from the Helm Chart
@@ -151,14 +175,14 @@ export class EmrEksCluster extends Construct {
 
     // Tags the Amazon VPC and Subnets of the Amazon EKS Cluster
     Tags.of(this.eksCluster.vpc).add(
-      'for-use-with-amazon-emr-managed-policies',
-      'true',
+        'for-use-with-amazon-emr-managed-policies',
+        'true',
     );
     this.eksCluster.vpc.privateSubnets.forEach((subnet) =>
-      Tags.of(subnet).add('for-use-with-amazon-emr-managed-policies', 'true'),
+        Tags.of(subnet).add('for-use-with-amazon-emr-managed-policies', 'true'),
     );
     this.eksCluster.vpc.publicSubnets.forEach((subnet) =>
-      Tags.of(subnet).add('for-use-with-amazon-emr-managed-policies', 'true'),
+        Tags.of(subnet).add('for-use-with-amazon-emr-managed-policies', 'true'),
     );
 
     // Create Amazon IAM ServiceLinkedRole for Amazon EMR and add to kubernetes configmap
@@ -167,21 +191,21 @@ export class EmrEksCluster extends Construct {
       awsServiceName: 'emr-containers.amazonaws.com',
     });
     this.eksCluster.awsAuth.addMastersRole(
-      Role.fromRoleArn(
-        this,
-        'ServiceRoleForAmazonEMRContainers',
-        `arn:aws:iam::${
-          Stack.of(this).account
-        }:role/AWSServiceRoleForAmazonEMRContainers`,
-      ),
-      'emr-containers',
+        Role.fromRoleArn(
+            this,
+            'ServiceRoleForAmazonEMRContainers',
+            `arn:aws:iam::${
+                Stack.of(this).account
+            }:role/AWSServiceRoleForAmazonEMRContainers`,
+        ),
+        'emr-containers',
     );
 
     // store the OIDC provider for creating execution roles later
     this.eksOidcProvider = new FederatedPrincipal(
-      this.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
-      [],
-      'sts:AssumeRoleWithWebIdentity',
+        this.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+        [],
+        'sts:AssumeRoleWithWebIdentity',
     );
 
     // Create the Nodegroup for tooling
@@ -192,8 +216,8 @@ export class EmrEksCluster extends Construct {
     this.addEmrEksNodegroup(EmrEksNodegroup.SHARED_DRIVER);
     this.addEmrEksNodegroup(EmrEksNodegroup.SHARED_EXECUTOR);
 
-    // Create an Amazon S3 Buclet for default podTemplate assets
-    const assetBucket = SingletonBucket.getOrCreate(this, 'emr-eks-assets');
+    // Create an Amazon S3 Bucket for default podTemplate assets
+    const assetBucket = SingletonBucket.getOrCreate(this, `${this.clusterName}-emr-eks-assets`);
     // Deploy the default podTemplates
     this.podTemplateLocation = {
       bucketName: assetBucket.bucketName,
@@ -233,10 +257,10 @@ export class EmrEksCluster extends Construct {
     //Create service account for ALB and install ALB
     const albPolicyDocument = PolicyDocument.fromJson(IamPolicyAlb);
     const albIAMPolicy = new Policy(
-      this,
+        this,
 
-      'AWSLoadBalancerControllerIAMPolicy',
-      { document: albPolicyDocument },
+        'AWSLoadBalancerControllerIAMPolicy',
+        { document: albPolicyDocument },
     );
 
     const albServiceAccount = this.eksCluster.addServiceAccount('ALB', {
@@ -265,14 +289,13 @@ export class EmrEksCluster extends Construct {
 
     // Add the kubernetes dashboard from helm chart
     this.eksCluster.addHelmChart('KubernetesDashboard', {
-      createNamespace: true,
-      namespace: 'kubernetes-dashboard',
+      createNamespace: false,
+      namespace: 'default',
       chart: 'kubernetes-dashboard',
       repository: 'https://kubernetes.github.io/dashboard/',
-      version: 'v5.0.4',
+      version: 'v5.0.1',
       timeout: Duration.minutes(2),
       values: {
-        fullnameOverride: 'kubernetes-dashboard',
         resources: {
           limits: {
             memory: '600Mi',
@@ -309,85 +332,6 @@ export class EmrEksCluster extends Construct {
           namespace: 'kube-system',
         },
       ],
-    });
-    // Provide the Kubernetes Dashboard URL in AWS CloudFormation output
-    new CfnOutput(this, 'kubernetesDashboardURL', {
-      description: 'Access Kubernetes Dashboard via kubectl proxy and this URL',
-      value: 'http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:https/proxy/#/login',
-    });
-
-    // Create the custom resource provider for adding managed endpoints to the cluster
-    const lambdaPath = 'lambdas/managed-endpoint';
-
-    // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
-    const onEvent = new lambda.Function(this, `${this.clusterName}ManagedEndpointOnEvent`, {
-      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
-      runtime: lambda.Runtime.NODEJS_12_X,
-      handler: 'index.onEvent',
-      timeout: Duration.seconds(120),
-      environment: {
-        REGION: Stack.of(this).region,
-      },
-      // TODO least priviliges
-      initialPolicy: [
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['acm:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['emr-containers:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['ec2:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['kms:*'],
-        }),
-      ],
-    });
-
-    // AWS Lambda supporting the status check on asynchronous create, update and delete operations
-    const isComplete = new lambda.Function(this, `${this.clusterName}ManagedEndpointIsComplete`, {
-      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
-      handler: 'index.isComplete',
-      runtime: lambda.Runtime.NODEJS_12_X,
-      timeout: Duration.seconds(120),
-      environment: {
-        REGION: Stack.of(this).region,
-      },
-      // TODO least priviliges
-      initialPolicy: [
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['acm:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['emr-containers:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['ec2:*'],
-        }),
-      ],
-    });
-    this.managedEndpointProvider = new Provider(this, `CustomResourceProvider${id}`, {
-      onEventHandler: onEvent,
-      isCompleteHandler: isComplete,
-      logRetention: RetentionDays.ONE_DAY,
-      totalTimeout: Duration.minutes(30),
-      queryInterval: Duration.seconds(20),
     });
   }
 
@@ -499,12 +443,12 @@ ${userData.join('\r\n')}
   public addEmrVirtualCluster(props: EmrVirtualClusterProps): CfnVirtualCluster {
     const eksNamespace = props.eksNamespace ?? 'default';
     const ns = props.createNamespace
-      ? this.eksCluster.addManifest(`${props.name}Namespace`, {
-        apiVersion: 'v1',
-        kind: 'Namespace',
-        metadata: { name: eksNamespace },
-      })
-      : null;
+        ? this.eksCluster.addManifest(`${props.name}Namespace`, {
+          apiVersion: 'v1',
+          kind: 'Namespace',
+          metadata: { name: eksNamespace },
+        })
+        : null;
 
     // deep clone the Role template object and replace the namespace
     const k8sRole = JSON.parse(JSON.stringify(K8sRole));
@@ -545,12 +489,12 @@ ${userData.join('\r\n')}
    * @access public
    */
   public addManagedEndpoint(
-    id: string,
-    virtualClusterId: string,
-    executionRole: IRole,
-    acmCertificateArn?: string,
-    emrOnEksVersion?: string,
-    configurationOverrides?: string,
+      id: string,
+      virtualClusterId: string,
+      executionRole: Role,
+      acmCertificateArn?: string,
+      emrOnEksVersion?: string,
+      configurationOverrides?: string,
   ) {
 
     if (id.length > 64) {
@@ -572,23 +516,91 @@ ${userData.join('\r\n')}
     }
     // Create custom resource with async waiter until the Amazon EMR Managed Endpoint is created
     const endpointId = `managed-endpoint-${id}`;
+    const lambdaPath = 'lambdas/managed-endpoint';
 
-    const cr = new CustomResource(this, id, {
-      serviceToken: this.managedEndpointProvider.serviceToken,
-      properties: {
-        clusterId: virtualClusterId,
-        executionRoleArn:
-          executionRole.roleArn,
-        endpointName: endpointId,
-        releaseLabel: emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
-        configurationOverrides: configurationOverrides
-          ? jsonConfigurationOverrides
-          : this.notebookDefaultConfig,
-        acmCertificateArn:
-          acmCertificateArn ||
-          this.defaultCertificateArn ||
-          String(this.createAcmCertificate()),
+    const onEvent = new lambda.Function(this, `${endpointId}-on-event`, {
+      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
+      runtime: lambda.Runtime.NODEJS_12_X,
+      handler: 'index.onEvent',
+      timeout: Duration.seconds(120),
+      environment: {
+        REGION: Stack.of(this).region,
+        CLUSTER_ID: virtualClusterId,
+        EXECUTION_ROLE_ARN:
+        executionRole.roleArn,
+        ENDPOINT_NAME: endpointId,
+        RELEASE_LABEL: emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
+        CONFIGURATION_OVERRIDES: configurationOverrides
+            ? jsonConfigurationOverrides
+            : this.notebookDefaultConfig,
+        ACM_CERTIFICATE_ARN:
+            acmCertificateArn ||
+            this.defaultCertificateArn ||
+            String(this.createAcmCertificate()),
       },
+      // TODO least priviliges
+      initialPolicy: [
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['acm:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['emr-containers:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['ec2:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['kms:*'],
+        }),
+      ],
+    });
+
+    const isComplete = new lambda.Function(this, `${endpointId}-is-complete`, {
+      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
+      handler: 'index.isComplete',
+      runtime: lambda.Runtime.NODEJS_12_X,
+      timeout: Duration.seconds(120),
+      environment: {
+        REGION: Stack.of(this).region,
+        CLUSTER_ID: virtualClusterId,
+      },
+      // TODO least priviliges
+      initialPolicy: [
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['acm:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['emr-containers:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['ec2:*'],
+        }),
+      ],
+    });
+    const myProvider = new Provider(this, 'CustomResourceProvider' + id, {
+      onEventHandler: onEvent,
+      isCompleteHandler: isComplete,
+      logRetention: RetentionDays.ONE_DAY,
+      totalTimeout: Duration.minutes(30),
+      queryInterval: Duration.seconds(10),
+    });
+    const cr = new CustomResource(this, id, {
+      serviceToken: myProvider.serviceToken,
     });
     cr.node.addDependency(this.eksCluster);
 
@@ -603,7 +615,7 @@ ${userData.join('\r\n')}
     async () => {
       try {
         execSync(
-          `openssl req -x509 -newkey rsa:1024 -keyout /tmp/privateKey.pem  -out /tmp/certificateChain.pem -days 365 -nodes -subj "/C=US/ST=Washington/L=Seattle/O=MyOrg/OU=MyDept/CN=*.${this.clusterName}.com"`,
+            `openssl req -x509 -newkey rsa:1024 -keyout /tmp/privateKey.pem  -out /tmp/certificateChain.pem -days 365 -nodes -subj "/C=US/ST=Washington/L=Seattle/O=MyOrg/OU=MyDept/CN=*.${this.clusterName}.com"`,
         );
       } catch (error) {
         throw new Error(`Error generating certificate ${error}`);
@@ -612,10 +624,10 @@ ${userData.join('\r\n')}
       try {
         const command = {
           Certificate: Buffer.from(
-            fs.readFileSync('/tmp/certificateChain.pem', 'binary'),
+              fs.readFileSync('/tmp/certificateChain.pem', 'binary'),
           ),
           PrivateKey: Buffer.from(
-            fs.readFileSync('/tmp/privateKey.pem', 'binary'),
+              fs.readFileSync('/tmp/privateKey.pem', 'binary'),
           ),
         };
         const response = await clientAcm.importCertificate(command).promise();
@@ -650,43 +662,43 @@ ${userData.join('\r\n')}
 
     // Add tags for the Cluster Autoscaler management
     Tags.of(nodegroup).add(
-      `k8s.io/cluster-autoscaler/${this.clusterName}`,
-      'owned',
-      { applyToLaunchedInstances: true },
+        `k8s.io/cluster-autoscaler/${this.clusterName}`,
+        'owned',
+        { applyToLaunchedInstances: true },
     );
     Tags.of(nodegroup).add(
-      'k8s.io/cluster-autoscaler/enabled',
-      'true',
-      {
-        applyToLaunchedInstances: true,
-      },
+        'k8s.io/cluster-autoscaler/enabled',
+        'true',
+        {
+          applyToLaunchedInstances: true,
+        },
     );
     // Add tag for the AZ
     if (options.subnets && options.subnets.subnets) {
       Tags.of(nodegroup).add(
-        'k8s.io/cluster-autoscaler/node-template/label/topology.kubernetes.io/zone',
-        options.subnets.subnets[0].availabilityZone,
-        {
-          applyToLaunchedInstances: true,
-        },
+          'k8s.io/cluster-autoscaler/node-template/label/topology.kubernetes.io/zone',
+          options.subnets.subnets[0].availabilityZone,
+          {
+            applyToLaunchedInstances: true,
+          },
       );
     };
     Tags.of(nodegroup).add(
-      'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle',
-      (options.capacityType == CapacityType.SPOT) ? 'spot' : 'on-demand',
-      {
-        applyToLaunchedInstances: true,
-      },
+        'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle',
+        (options.capacityType == CapacityType.SPOT) ? 'spot' : 'on-demand',
+        {
+          applyToLaunchedInstances: true,
+        },
     );
     // Iterate over labels and add appropriate tags
     if (options.labels) {
       for (const [key, value] of Object.entries(options.labels)) {
         Tags.of(nodegroup).add(
-          `k8s.io/cluster-autoscaler/node-template/label/${key}`,
-          value,
-          {
-            applyToLaunchedInstances: true,
-          },
+            `k8s.io/cluster-autoscaler/node-template/label/${key}`,
+            value,
+            {
+              applyToLaunchedInstances: true,
+            },
         );
       }
     }
@@ -694,11 +706,11 @@ ${userData.join('\r\n')}
     if (options.taints) {
       options.taints.forEach( (taint) => {
         Tags.of(nodegroup).add(
-          `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
-          `${taint.value}:${taint.effect}`,
-          {
-            applyToLaunchedInstances: true,
-          },
+            `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
+            `${taint.value}:${taint.effect}`,
+            {
+              applyToLaunchedInstances: true,
+            },
         );
       });
     }
@@ -719,4 +731,5 @@ ${userData.join('\r\n')}
     executionRole.attachInlinePolicy(policy);
     return executionRole;
   }
+
 }
