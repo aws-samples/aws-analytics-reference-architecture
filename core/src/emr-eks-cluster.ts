@@ -87,12 +87,7 @@ export class EmrEksCluster extends Construct {
         eksAdminRoleArn: eksAdminRoleArn,
         eksClusterName: `${clusterName}-ara-cluster`,
       });
-
-      //Add a nodegroup for notebooks
-      emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_DRIVER);
-      emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_EXECUTOR);
     }
-
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
