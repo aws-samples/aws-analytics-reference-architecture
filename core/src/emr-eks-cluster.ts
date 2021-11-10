@@ -7,12 +7,12 @@ import * as path from 'path';
 import { SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { PolicyStatement, PolicyDocument, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
+import { PolicyStatement, PolicyDocument, Policy, Role, IRole, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
 import * as lambda from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import { Construct, Tags, Stack, Duration, CustomResource, Fn } from '@aws-cdk/core';
+import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import * as AWS from 'aws-sdk';
 import { SingletonBucket } from '.';
@@ -84,6 +84,7 @@ export class EmrEksCluster extends Construct {
   private defaultCertificateArn?: string;
   private readonly podTemplateLocation: Location;
   private readonly clusterName: string;
+  private readonly managedEndpointProvider: Provider;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -264,13 +265,14 @@ export class EmrEksCluster extends Construct {
 
     // Add the kubernetes dashboard from helm chart
     this.eksCluster.addHelmChart('KubernetesDashboard', {
-      createNamespace: false,
-      namespace: 'default',
+      createNamespace: true,
+      namespace: 'kubernetes-dashboard',
       chart: 'kubernetes-dashboard',
       repository: 'https://kubernetes.github.io/dashboard/',
-      version: 'v5.0.1',
+      version: 'v5.0.4',
       timeout: Duration.minutes(2),
       values: {
+        fullnameOverride: 'kubernetes-dashboard',
         resources: {
           limits: {
             memory: '600Mi',
@@ -307,6 +309,85 @@ export class EmrEksCluster extends Construct {
           namespace: 'kube-system',
         },
       ],
+    });
+    // Provide the Kubernetes Dashboard URL in AWS CloudFormation output
+    new CfnOutput(this, 'kubernetesDashboardURL', {
+      description: 'Access Kubernetes Dashboard via kubectl proxy and this URL',
+      value: 'http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:https/proxy/#/login',
+    });
+
+    // Create the custom resource provider for adding managed endpoints to the cluster
+    const lambdaPath = 'lambdas/managed-endpoint';
+
+    // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
+    const onEvent = new lambda.Function(this, `${this.clusterName}ManagedEndpointOnEvent`, {
+      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
+      runtime: lambda.Runtime.NODEJS_12_X,
+      handler: 'index.onEvent',
+      timeout: Duration.seconds(120),
+      environment: {
+        REGION: Stack.of(this).region,
+      },
+      // TODO least priviliges
+      initialPolicy: [
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['acm:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['emr-containers:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['ec2:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['kms:*'],
+        }),
+      ],
+    });
+
+    // AWS Lambda supporting the status check on asynchronous create, update and delete operations
+    const isComplete = new lambda.Function(this, `${this.clusterName}ManagedEndpointIsComplete`, {
+      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
+      handler: 'index.isComplete',
+      runtime: lambda.Runtime.NODEJS_12_X,
+      timeout: Duration.seconds(120),
+      environment: {
+        REGION: Stack.of(this).region,
+      },
+      // TODO least priviliges
+      initialPolicy: [
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['acm:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['emr-containers:*'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['ec2:*'],
+        }),
+      ],
+    });
+    this.managedEndpointProvider = new Provider(this, `CustomResourceProvider${id}`, {
+      onEventHandler: onEvent,
+      isCompleteHandler: isComplete,
+      logRetention: RetentionDays.ONE_DAY,
+      totalTimeout: Duration.minutes(30),
+      queryInterval: Duration.seconds(20),
     });
   }
 
@@ -466,7 +547,7 @@ ${userData.join('\r\n')}
   public addManagedEndpoint(
     id: string,
     virtualClusterId: string,
-    executionRole: Role,
+    executionRole: IRole,
     acmCertificateArn?: string,
     emrOnEksVersion?: string,
     configurationOverrides?: string,
@@ -491,91 +572,23 @@ ${userData.join('\r\n')}
     }
     // Create custom resource with async waiter until the Amazon EMR Managed Endpoint is created
     const endpointId = `managed-endpoint-${id}`;
-    const lambdaPath = 'lambdas/managed-endpoint';
 
-    const onEvent = new lambda.Function(this, `${endpointId}-on-event`, {
-      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
-      runtime: lambda.Runtime.NODEJS_12_X,
-      handler: 'index.onEvent',
-      timeout: Duration.seconds(120),
-      environment: {
-        REGION: Stack.of(this).region,
-        CLUSTER_ID: virtualClusterId,
-        EXECUTION_ROLE_ARN:
+    const cr = new CustomResource(this, id, {
+      serviceToken: this.managedEndpointProvider.serviceToken,
+      properties: {
+        clusterId: virtualClusterId,
+        executionRoleArn:
           executionRole.roleArn,
-        ENDPOINT_NAME: endpointId,
-        RELEASE_LABEL: emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
-        CONFIGURATION_OVERRIDES: configurationOverrides
+        endpointName: endpointId,
+        releaseLabel: emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
+        configurationOverrides: configurationOverrides
           ? jsonConfigurationOverrides
           : this.notebookDefaultConfig,
-        ACM_CERTIFICATE_ARN:
+        acmCertificateArn:
           acmCertificateArn ||
           this.defaultCertificateArn ||
           String(this.createAcmCertificate()),
       },
-      // TODO least priviliges
-      initialPolicy: [
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['acm:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['emr-containers:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['ec2:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['kms:*'],
-        }),
-      ],
-    });
-
-    const isComplete = new lambda.Function(this, `${endpointId}-is-complete`, {
-      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
-      handler: 'index.isComplete',
-      runtime: lambda.Runtime.NODEJS_12_X,
-      timeout: Duration.seconds(120),
-      environment: {
-        REGION: Stack.of(this).region,
-        CLUSTER_ID: virtualClusterId,
-      },
-      // TODO least priviliges
-      initialPolicy: [
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['acm:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['emr-containers:*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['ec2:*'],
-        }),
-      ],
-    });
-    const myProvider = new Provider(this, 'CustomResourceProvider' + id, {
-      onEventHandler: onEvent,
-      isCompleteHandler: isComplete,
-      logRetention: RetentionDays.ONE_DAY,
-      totalTimeout: Duration.minutes(30),
-      queryInterval: Duration.seconds(10),
-    });
-    const cr = new CustomResource(this, id, {
-      serviceToken: myProvider.serviceToken,
     });
     cr.node.addDependency(this.eksCluster);
 

@@ -16,15 +16,16 @@ export async function onEvent(event: any) {
       //const certArn = await getOrCreateCertificate();
 
       try {
+        console.log(`lambda properties: ${JSON.stringify(event.ResourceProperties)}`);
         const response = await emrcontainers
           .createManagedEndpoint({
             clientToken: 'emr-managed-endpoint',
-            virtualClusterId: String(process.env.CLUSTER_ID),
-            certificateArn: String(process.env.ACM_CERTIFICATE_ARN),
-            executionRoleArn: String(process.env.EXECUTION_ROLE_ARN),
-            configurationOverrides: JSON.parse(process.env.CONFIGURATION_OVERRIDES || ''),
-            releaseLabel: process.env.RELEASE_LABEL ?? 'emr-6.2.0-latest',
-            name: String(process.env.ENDPOINT_NAME),
+            virtualClusterId: event.ResourceProperties.clusterId,
+            certificateArn: event.ResourceProperties.acmCertificateArn,
+            executionRoleArn: event.ResourceProperties.executionRoleArn,
+            configurationOverrides: JSON.parse(event.ResourceProperties.configurationOverrides || ''),
+            releaseLabel: event.ResourceProperties.releaseLabel ?? 'emr-6.3.0-latest',
+            name: event.ResourceProperties.endpointName,
             type: 'JUPYTER_ENTERPRISE_GATEWAY',
           })
           .promise();
@@ -52,7 +53,7 @@ export async function onEvent(event: any) {
         const data = await emrcontainers
           .deleteManagedEndpoint({
             id: event.PhysicalResourceId,
-            virtualClusterId: String(process.env.CLUSTER_ID),
+            virtualClusterId: event.ResourceProperties.clusterId,
           })
           .promise();
 
@@ -77,7 +78,7 @@ export async function isComplete(event: any) {
     const data = await emrcontainers
       .describeManagedEndpoint({
         id: endpoint_id,
-        virtualClusterId: String(process.env.CLUSTER_ID),
+        virtualClusterId: event.ResourceProperties.clusterId,
       })
       .promise();
     if (!data.endpoint) return { IsComplete: false };

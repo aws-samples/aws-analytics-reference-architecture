@@ -20,4 +20,3 @@ cluster.addEmrVirtualCluster({
   eksNamespace: 'anothertest',
   createNamespace: true,
 });
-
