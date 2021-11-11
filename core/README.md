@@ -23,21 +23,23 @@ data lake using spark engine deployed in EMR on EKS.
 
 # How to use the construct
 
-In your CDK app, from the _dataplatform-notebook_ construct import the `DataPlatformNotebook` Class, and the `StudioUserDefinition` interface.
+In your CDK app, from the _dataplatform_ construct import the `DataPlatform` Class, and the `DataPlatformProps` interface.
 
-The `DataPlatformNotebook` is used to create a new construct and its constructor expects the following:
+The `DataPlatform` is used to create a new construct and its constructor expects the following:
 
 ```
-studioName: <the name of the EMR Studio>
-authMode: SSO, IAM_AUTH or IAM_FED
-emrVCNamespace: 'dept1nc'
 eksAdminRoleArn: <ARN of EKS admin role>
-acmCertificateArn: <ARN of ACM certificate>
 ```
+To create a notebook data platform supported by EMR Studio, you should use the object instantiated from `DataPlatform` Class
+and call the method `addNotebookPlatform`, the method expects two arguments: 
+* `notebookPlatformName` which is the name of the stack in CDK
+* `dataPlatformNotebookProps` which defines the properties of the stack, you can import the `DataPlatformNotebookProp`
+from the `DataPlatformNotebook` construct to define the properties of the Studio.
 
-_**For the time being only SSO is supported in the construct**_
-
-The `StudioUserDefinition` interface define a user to be added to the studio and expects the following:
+To add user to the notebook dataplaform created above you should use the method `addUsersNotebookPlatform` from the object instantiated  from `DataPlatform` Class
+The method expects two arguments:
+* The name of the `notebookPlatformName` as provided in the `addNotebookPlatform`
+* A user list as defined in the prop `StudioUserDefinition` interface define a user to be added to the studio and expects the following:
 
 ```
 mappingIdentityName: <identity name as it appears in SSO>
@@ -45,33 +47,39 @@ mappingIdentityType: <USER>
 executionPolicyNames: <List of the policies for the managedendpoints>
 ```
 
-Once an object is initialized from `DataPlatformNotebook` class, you can start adding users using the `addUsers` method. The method expects a List of `StudioUserDefinition`.
-
 
 ## The code snippet below shows how you can use the construct
 
+The code below instantiate a new `DataPlatform` called _dept1_ then use it to create two notebook dataplatfrom based on EMR Studio 
+with a stack called dept1 and dept2, then add a single user to both of them.
+
 ```
-const dataPlatform = new DataPlatformNotebook(stack, 'dataplatform', {
-studioName: 'Studio-from-dataplatform-construct',
-authMode: StudioAuthMode.SSO,
-eksAdminRoleArn: 'arn:aws:iam::0123456789012:role/***',
-acmCertificateArn: 'arn:aws:acm:<region>:0123456789012:certificate/******',
+const dept1 = new DataPlatform(stack, 'marketing-data', {
+  eksAdminRoleArn: 'arn:aws:iam::123456789012:role/EkRole',
 });
 
-let userList: StudioUserDefinition[];
+dept1.addNotebookPlatform('dept1', {
+  studioName: 'unit1',
+  emrVCNamespace: 'unit1ns',
+  studioAuthMode: StudioAuthMode.SSO,
+  acmCertificateArn: 'ACM certificate ARN',
+});
 
-userList = [{
-mappingIdentityName: 'toto',
-mappingIdentityType: 'USER',
-executionPolicyNames: ['policyManagedEndpoint1', 'policyManagedEndpoint2'],
-},
-{
-mappingIdentityName: 'jane',
-mappingIdentityType: 'USER',
-executionPolicyNames: ['policyManagedEndpoint1'],
+dept1.addNotebookPlatform('dept2', {
+  studioName: 'unit2',
+  emrVCNamespace: 'unit2ns',
+  studioAuthMode: StudioAuthMode.SSO,
+  acmCertificateArn: 'ACM certificate ARN',
+});
+
+let userList: StudioUserDefinition[] = [{
+  identityName: 'user',
+  identityType: 'USER',
+  executionPolicyNames: ['policyManagedEndpoint'],
 }];
 
-dataPlatform.addUsers(userList);
+dept1.addUsersNotebookPlatform('dept1', userList);
+dept1.addUsersNotebookPlatform('dept2', userList);
 ```
 
 [1]: [https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-studio-service-role.html]
