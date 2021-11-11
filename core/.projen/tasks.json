@@ -98,16 +98,16 @@
       "description": "Copy all resources directories from src to lib",
       "steps": [
         {
-          "exec": "rsync -avr --exclude '.*' --exclude '*.ts' --exclude '*.js' src/data-generator/resources lib/data-generator "
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-generator/resources lib/data-generator"
         },
         {
-          "exec": "rsync -avr --exclude '.*' --exclude '*.ts' --exclude '*.js' src/datasets/resources lib/datasets "
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/datasets/resources lib/datasets"
         },
         {
-          "exec": "rsync -avr --exclude '.*' --exclude '*.ts' --exclude '*.js' src/synchronous-athena-query/resources lib/synchronous-athena-query "
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-athena-query/resources lib/synchronous-athena-query"
         },
         {
-          "exec": "rsync -avr --exclude '.*' --exclude '*.ts' --exclude '*.js' src/synchronous-crawler/resources lib/synchronous-crawler "
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-crawler/resources lib/synchronous-crawler"
         }
       ]
     },
