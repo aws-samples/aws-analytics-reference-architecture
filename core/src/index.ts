@@ -15,8 +15,8 @@ export { AthenaDefaultSetup, AthenaDefaultSetupProps } from './athena-default-se
 export { EmrEksCluster, EmrEksClusterProps } from './emr-eks-cluster';
 export { EmrEksNodegroupOptions, EmrEksNodegroup } from './emr-eks-nodegroup';
 export { EmrVirtualClusterProps } from './emr-virtual-cluster';
-export { DataPlatformNotebookProp, DataPlatformNotebook, StudioUserDefinition, StudioAuthMode, IdpRelayState, DataPlatformNotebookInfra } from './dataplatform-notebook';
-export { DataPlatformProps, DataPlatform } from './dataplatform';
+export { DataPlatformNotebookProp, DataPlatformNotebook, StudioUserDefinition, StudioAuthMode, IdpRelayState, DataPlatformNotebookInfra } from './notebooks-data-platform/dataplatform-notebook';
+export { DataPlatformProps, DataPlatform } from './notebooks-data-platform/dataplatform';
 
 /*Parent
     -> Emr on EKS (Stack parent)

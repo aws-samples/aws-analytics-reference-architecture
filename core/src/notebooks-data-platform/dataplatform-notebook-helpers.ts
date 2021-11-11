@@ -13,6 +13,7 @@ import {
   User,
 } from '@aws-cdk/aws-iam';
 import { Aws, Construct, SecretValue } from '@aws-cdk/core';
+import { Utils } from '../utils';
 import { StudioUserDefinition } from './dataplatform-notebook';
 
 import * as studioS3Policy from './studio/emr-studio-s3-policy.json';
@@ -21,7 +22,6 @@ import * as studioServiceRolePolicy from './studio/studio-service-role-policy.js
 import * as studioUserRolePolicy from './studio/studio-user-iam-role-policy.json';
 import * as studioSessionPolicy from './studio/studio-user-session-policy.json';
 import * as studioUserPolicy from './studio/studio-user-sso-role-policy.json';
-import { Utils } from './utils';
 
 /**
  * @hidden

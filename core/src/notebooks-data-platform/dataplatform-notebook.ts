@@ -24,6 +24,8 @@ import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Tags, Aws, Duration, NestedStack } from '@aws-cdk/core';
 
 
+import { EmrEksCluster } from '../emr-eks-cluster';
+import { Utils } from '../utils';
 import {
   createLambdaNoteBookAddTagPolicy,
   createStudioUserRolePolicy,
@@ -35,14 +37,25 @@ import {
   buildManagedEndpointExecutionRole,
 } from './dataplatform-notebook-helpers';
 
-import { EmrEksCluster } from './emr-eks-cluster';
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
-import { Utils } from './utils';
 
+/**
+ * The properties of Data Platform Infrastructure where the notebooks should be deployed
+ */
 export interface DataPlatformNotebookInfra {
+  /**
+   * Required the props of the notebooks dataplatform to be deployed
+   * */
   readonly dataPlatformProps: DataPlatformNotebookProp;
+  /**
+   * Required the EmrEks infrastructure used for the deployment
+   * */
   readonly emrEks: EmrEksCluster;
+  /**
+   * Required service token of the addManagedEndpoint Custome Resource
+   * This used to create the CR deployed in the EMR on EKS stack
+   * */
   readonly serviceToken: string;
 }
 
@@ -373,7 +386,7 @@ export class DataPlatformNotebook extends Construct {
     });
 
     //set the path for the lambda code
-    let lambdaPath = 'lambdas/studio-workspace-tag-on-create';
+    let lambdaPath = 'resources/lambdas/studio-workspace-tag-on-create';
 
     //Create lambda to tag EMR notebook with UserID of the IAM principal that created it
     let workspaceTaggingLambda = new Function(this.nestedStack, 'CreateTagHandler', {

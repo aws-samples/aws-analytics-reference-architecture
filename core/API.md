@@ -968,6 +968,8 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 
 ### DataPlatformNotebookInfra <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra"></a>
 
+The properties of Data Platform Infrastructure where the notebooks should be deployed.
+
 #### Initializer <a name="[object Object].Initializer"></a>
 
 ```typescript
@@ -980,17 +982,23 @@ const dataPlatformNotebookInfra: DataPlatformNotebookInfra = { ... }
 
 - *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookProp`](#aws-analytics-reference-architecture.DataPlatformNotebookProp)
 
+Required the props of the notebooks dataplatform to be deployed.
+
 ---
 
 ##### `emrEks`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra.property.emrEks"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksCluster`](#aws-analytics-reference-architecture.EmrEksCluster)
 
+Required the EmrEks infrastructure used for the deployment.
+
 ---
 
 ##### `serviceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra.property.serviceToken"></a>
 
 - *Type:* `string`
+
+Required service token of the addManagedEndpoint Custome Resource This used to create the CR deployed in the EMR on EKS stack.
 
 ---
 
@@ -1082,6 +1090,12 @@ The version of kubernetes to deploy.
 
 ### DataPlatformProps <a name="aws-analytics-reference-architecture.DataPlatformProps"></a>
 
+The properties for DataPlatform Infrastructure Construct.
+
+The properties are used to create an EKS cluster
+The EKS cluster will have the same name as the id of the stack,
+this is to ensure only one EKS cluster is created across the stack
+
 #### Initializer <a name="[object Object].Initializer"></a>
 
 ```typescript
@@ -1095,14 +1109,6 @@ const dataPlatformProps: DataPlatformProps = { ... }
 - *Type:* `string`
 
 Amazon EKS Admin Role.
-
----
-
-##### `eksClusterName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformProps.property.eksClusterName"></a>
-
-- *Type:* `string`
-
-Amazon EKS Cluster Name.
 
 ---
 
