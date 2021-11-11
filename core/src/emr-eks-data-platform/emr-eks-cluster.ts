@@ -4,7 +4,6 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { join } from 'path';
 import { SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
@@ -12,7 +11,7 @@ import { PolicyStatement, PolicyDocument, Policy, Role, IRole, ManagedPolicy, Fe
 import * as lambda from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Location } from '@aws-cdk/aws-s3';
-import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
+import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import * as AWS from 'aws-sdk';
@@ -94,11 +93,10 @@ export class EmrEksCluster extends Construct {
       emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_EXECUTOR);
     }
 
-
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
 
-  private static readonly EMR_VERSIONS = ['emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
+  private static readonly EMR_VERSIONS = ['emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest']
   private static readonly AUTOSCALING_POLICY = PolicyStatement.fromJson(IamPolicyAutoscaler);
   private readonly emrServiceRole: CfnServiceLinkedRole;
   public readonly eksCluster: Cluster;
@@ -228,7 +226,7 @@ export class EmrEksCluster extends Construct {
     new BucketDeployment(this, 'assetDeployment', {
       destinationBucket: assetBucket,
       destinationKeyPrefix: this.podTemplateLocation.objectKey,
-      sources: [Source.asset(join(__dirname, './resources/k8s/pod-template'))],
+      sources: [Source.asset('./src/k8s/pod-template')],
     });
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the notebook default config
@@ -527,6 +525,13 @@ ${userData.join('\r\n')}
 
   public addEmrVirtualCluster(props: EmrVirtualClusterProps): CfnVirtualCluster {
     const eksNamespace = props.eksNamespace ?? 'default';
+
+    const regex = /^[a-z0-9]+$/g;
+
+    if (!eksNamespace.match(regex)) {
+      throw new Error(`Namespace provided violates the constraints of Namespace naming ${eksNamespace}`);
+    }
+
     const ns = props.createNamespace
       ? this.eksCluster.addManifest(`${props.name}Namespace`, {
         apiVersion: 'v1',
