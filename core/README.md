@@ -72,14 +72,20 @@ dept1.addNotebookPlatform('dept2', {
   acmCertificateArn: 'ACM certificate ARN',
 });
 
-let userList: StudioUserDefinition[] = [{
+let userList1: StudioUserDefinition[] = [{
   identityName: 'user',
   identityType: 'USER',
-  executionPolicyNames: ['policyManagedEndpoint'],
+  executionPolicyNames: ['policyManagedEndpoint1'],
 }];
 
-dept1.addUsersNotebookPlatform('dept1', userList);
-dept1.addUsersNotebookPlatform('dept2', userList);
+let userList2: StudioUserDefinition[] = [{
+  identityName: 'user',
+  identityType: 'USER',
+  executionPolicyNames: ['policyManagedEndpoint3'],
+}];
+
+dept1.addUsersNotebookPlatform('dept1', userList1);
+dept1.addUsersNotebookPlatform('dept2', userList2);
 ```
 
 [1]: [https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-studio-service-role.html]
