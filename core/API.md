@@ -233,6 +233,75 @@ the DataLakeStorageProps properties.
 ---
 
 
+### DataPlatform <a name="aws-analytics-reference-architecture.DataPlatform"></a>
+
+#### Initializer <a name="aws-analytics-reference-architecture.DataPlatform.Initializer"></a>
+
+```typescript
+import { DataPlatform } from 'aws-analytics-reference-architecture'
+
+new DataPlatform(scope: Construct, id: string, props: DataPlatformProps)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.id"></a>
+
+- *Type:* `string`
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.DataPlatformProps`](#aws-analytics-reference-architecture.DataPlatformProps)
+
+---
+
+#### Methods <a name="Methods"></a>
+
+##### `addNotebookPlatform` <a name="aws-analytics-reference-architecture.DataPlatform.addNotebookPlatform"></a>
+
+```typescript
+public addNotebookPlatform(notebookPlatformName: string, dataPlatformNotebookProps: DataPlatformNotebookProp)
+```
+
+###### `notebookPlatformName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.notebookPlatformName"></a>
+
+- *Type:* `string`
+
+---
+
+###### `dataPlatformNotebookProps`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.dataPlatformNotebookProps"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookProp`](#aws-analytics-reference-architecture.DataPlatformNotebookProp)
+
+---
+
+##### `addUsersNotebookPlatform` <a name="aws-analytics-reference-architecture.DataPlatform.addUsersNotebookPlatform"></a>
+
+```typescript
+public addUsersNotebookPlatform(notebookPlatformName: string, userList: StudioUserDefinition[])
+```
+
+###### `notebookPlatformName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.notebookPlatformName"></a>
+
+- *Type:* `string`
+
+---
+
+###### `userList`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.userList"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.StudioUserDefinition`](#aws-analytics-reference-architecture.StudioUserDefinition)[]
+
+---
+
+
+
+
 ### DataPlatformNotebook <a name="aws-analytics-reference-architecture.DataPlatformNotebook"></a>
 
 Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio Construct is then used to assign users to the create EMR Studio by calling the appropriate method {@linkcode addSSOUsers}, {@linkcode addFederatedUsers} or {@linkcode addIAMUsers}.
@@ -242,7 +311,7 @@ Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon
 ```typescript
 import { DataPlatformNotebook } from 'aws-analytics-reference-architecture'
 
-new DataPlatformNotebook(scope: Construct, id: string, props: DataPlatformNotebookProp)
+new DataPlatformNotebook(scope: Construct, id: string, props: DataPlatformNotebookInfra)
 ```
 
 ##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.parameter.scope"></a>
@@ -263,7 +332,7 @@ the ID of the AWS CDK Construct.
 
 ##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.parameter.props"></a>
 
-- *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookProp`](#aws-analytics-reference-architecture.DataPlatformNotebookProp)
+- *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookInfra`](#aws-analytics-reference-architecture.DataPlatformNotebookInfra)
 
 the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}.
 
@@ -417,8 +486,20 @@ the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}.
 ##### `addManagedEndpoint` <a name="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint"></a>
 
 ```typescript
-public addManagedEndpoint(id: string, virtualClusterId: string, executionRole: Role, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
+public addManagedEndpoint(scope: Construct, serviceToken: string, id: string, virtualClusterId: string, executionRole: IRole, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
 ```
+
+###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+###### `serviceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.serviceToken"></a>
+
+- *Type:* `string`
+
+---
 
 ###### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
 
@@ -438,7 +519,7 @@ Amazon Emr Virtual Cluster Id.
 
 ###### `executionRole`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.executionRole"></a>
 
-- *Type:* [`@aws-cdk/aws-iam.Role`](#@aws-cdk/aws-iam.Role)
+- *Type:* [`@aws-cdk/aws-iam.IRole`](#@aws-cdk/aws-iam.IRole)
 
 IAM execution role to attach.
 
@@ -511,7 +592,7 @@ the execution policy to attach to the role.
 ```typescript
 import { EmrEksCluster } from 'aws-analytics-reference-architecture'
 
-EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion)
+EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion, clusterName: string)
 ```
 
 ###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
@@ -532,6 +613,12 @@ EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesV
 
 ---
 
+###### `clusterName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.clusterName"></a>
+
+- *Type:* `string`
+
+---
+
 #### Properties <a name="Properties"></a>
 
 ##### `criticalDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig"></a>
@@ -543,6 +630,12 @@ EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesV
 ##### `eksCluster`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster"></a>
 
 - *Type:* [`@aws-cdk/aws-eks.Cluster`](#@aws-cdk/aws-eks.Cluster)
+
+---
+
+##### `managedEndpointProviderServiceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.managedEndpointProviderServiceToken"></a>
+
+- *Type:* `string`
 
 ---
 
@@ -873,6 +966,34 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 
 ---
 
+### DataPlatformNotebookInfra <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra"></a>
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { DataPlatformNotebookInfra } from 'aws-analytics-reference-architecture'
+
+const dataPlatformNotebookInfra: DataPlatformNotebookInfra = { ... }
+```
+
+##### `dataPlatformProps`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra.property.dataPlatformProps"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookProp`](#aws-analytics-reference-architecture.DataPlatformNotebookProp)
+
+---
+
+##### `emrEks`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra.property.emrEks"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.EmrEksCluster`](#aws-analytics-reference-architecture.EmrEksCluster)
+
+---
+
+##### `serviceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra.property.serviceToken"></a>
+
+- *Type:* `string`
+
+---
+
 ### DataPlatformNotebookProp <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp"></a>
 
 The properties for DataPlatformNotebooks Construct.
@@ -890,14 +1011,6 @@ const dataPlatformNotebookProp: DataPlatformNotebookProp = { ... }
 - *Type:* `string`
 
 Amazon ACM Certificate ARN.
-
----
-
-##### `eksAdminRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.eksAdminRoleArn"></a>
-
-- *Type:* `string`
-
-Amazon EKS Admin Role.
 
 ---
 
@@ -964,6 +1077,32 @@ Used when IAM Authentication is selected with IAM federation with an external id
 - *Default:* v1.20 version is used
 
 The version of kubernetes to deploy.
+
+---
+
+### DataPlatformProps <a name="aws-analytics-reference-architecture.DataPlatformProps"></a>
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { DataPlatformProps } from 'aws-analytics-reference-architecture'
+
+const dataPlatformProps: DataPlatformProps = { ... }
+```
+
+##### `eksAdminRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformProps.property.eksAdminRoleArn"></a>
+
+- *Type:* `string`
+
+Amazon EKS Admin Role.
+
+---
+
+##### `eksClusterName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformProps.property.eksClusterName"></a>
+
+- *Type:* `string`
+
+Amazon EKS Cluster Name.
 
 ---
 

@@ -36,7 +36,6 @@ import {
 } from './dataplatform-notebook-helpers';
 
 import { EmrEksCluster } from './emr-eks-cluster';
-import { EmrEksNodegroup } from './emr-eks-nodegroup';
 import * as eventPattern from './studio/create-editor-event-pattern.json';
 import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
 import { Utils } from './utils';
@@ -228,10 +227,6 @@ export class DataPlatformNotebook extends Construct {
     //Create new Amazon EKS cluster for Amazon EMR or get one already create for previous EMR on EKS cluster
     //This avoid creating a new cluster everytime an object is initialized
     this.emrEks = props.emrEks;
-
-    //Add a nodegroup for notebooks
-    this.emrEks.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_DRIVER);
-    this.emrEks.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_EXECUTOR);
 
     //Get the list of private subnets in VPC
     this.studioSubnetList = this.emrEks.eksCluster.vpc.selectSubnets({

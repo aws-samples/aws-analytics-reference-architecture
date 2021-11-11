@@ -87,6 +87,10 @@ export class EmrEksCluster extends Construct {
         eksAdminRoleArn: eksAdminRoleArn,
         eksClusterName: `${clusterName}-ara-cluster`,
       });
+
+      //Add a nodegroup for notebooks
+      emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_DRIVER);
+      emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_EXECUTOR);
     }
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
@@ -521,6 +525,13 @@ ${userData.join('\r\n')}
 
   public addEmrVirtualCluster(props: EmrVirtualClusterProps): CfnVirtualCluster {
     const eksNamespace = props.eksNamespace ?? 'default';
+
+    const regex = /^[a-z0-9]+$/g;
+
+    if (!eksNamespace.match(regex)) {
+      throw new Error(`Namespace provided violates the constraints of Namespace naming ${eksNamespace}`);
+    }
+
     const ns = props.createNamespace
       ? this.eksCluster.addManifest(`${props.name}Namespace`, {
         apiVersion: 'v1',

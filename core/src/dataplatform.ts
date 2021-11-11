@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: MIT-0
 
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
-import { Construct } from '@aws-cdk/core';
+import { CfnOutput, Construct } from '@aws-cdk/core';
 import { DataPlatformNotebook, DataPlatformNotebookProp, StudioUserDefinition } from './dataplatform-notebook';
 import { EmrEksCluster } from './emr-eks-cluster';
 
 export interface DataPlatformProps {
-
   /**
     * Amazon EKS Admin Role
    * */
@@ -17,7 +16,6 @@ export interface DataPlatformProps {
    * Amazon EKS Cluster Name
    * */
   readonly eksClusterName: string;
-
 }
 
 
@@ -25,7 +23,6 @@ export class DataPlatform extends Construct {
 
   private readonly emrEks: EmrEksCluster;
   private readonly dataPlatformMapping: Map<string, DataPlatformNotebook>;
-
 
   constructor(scope: Construct, id: string, props: DataPlatformProps) {
     super(scope, id);
@@ -36,17 +33,23 @@ export class DataPlatform extends Construct {
 
   }
 
-
   public addNotebookPlatform (notebookPlatformName: string, dataPlatformNotebookProps: DataPlatformNotebookProp) : void {
 
-    let notebookPlatform = new DataPlatformNotebook(this, notebookPlatformName, {
-      emrEks: this.emrEks,
-      dataPlatformProps: dataPlatformNotebookProps,
-      serviceToken: this.emrEks.managedEndpointProviderServiceToken,
-    });
+    if (!this.dataPlatformMapping.has(notebookPlatformName)) {
+      let notebookPlatform = new DataPlatformNotebook(this, notebookPlatformName, {
+        emrEks: this.emrEks,
+        dataPlatformProps: dataPlatformNotebookProps,
+        serviceToken: this.emrEks.managedEndpointProviderServiceToken,
+      });
 
-    this.dataPlatformMapping.set(notebookPlatformName, notebookPlatform);
+      this.dataPlatformMapping.set(notebookPlatformName, notebookPlatform);
 
+      new CfnOutput(this, `emrStudioUrl-${dataPlatformNotebookProps.studioName}`, {
+        value: notebookPlatform.studioUrl,
+      });
+    } else {
+      throw new Error(`A dataplatform with name ${notebookPlatformName} already exists in stack, please choose another name`);
+    }
   }
 
   public addUsersNotebookPlatform (notebookPlatformName: string, userList: StudioUserDefinition[] ): void {
