@@ -386,7 +386,7 @@ export class DataPlatformNotebook extends Construct {
     });
 
     //set the path for the lambda code
-    let lambdaPath = 'resources/lambdas/studio-workspace-tag-on-create';
+    let lambdaPath = 'resources/lambdas/';
 
     //Create lambda to tag EMR notebook with UserID of the IAM principal that created it
     let workspaceTaggingLambda = new Function(this.nestedStack, 'CreateTagHandler', {
