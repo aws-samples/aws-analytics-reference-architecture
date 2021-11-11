@@ -97,7 +97,7 @@ const copyResourcesToLibTask = project.addTask('copy-resources', {
 
 for (const from of glob.sync('src/**/resources')) {
   const to = dirname(from.replace('src', 'lib'));
-  const cpCommand = `cp -r ${from} ${to}`;
+  const cpCommand = `rsync -avr --exclude '.*' --exclude '*.ts' --exclude '*.js' ${from} ${to} `;
   copyResourcesToLibTask.exec(cpCommand);
 }
 
