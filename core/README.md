@@ -30,10 +30,11 @@ The `DataPlatform` is used to create a new construct and its constructor expects
 ```
 eksAdminRoleArn: <ARN of EKS admin role>
 ```
-The initialization of the construct will create an EKS cluster.
+The initialization of the construct will create an EKS cluster. 
+The getOrCreate method expects the same EKS admin ARN role everytime it is invoked
 
 To create a notebook data platform supported by EMR Studio, you should use the object instantiated from `DataPlatform` Class
-and call the method `addNotebookPlatform`, the method expects one arguments:
+and call the method `addNotebookPlatform`, the method expects one argument:
 * `dataPlatformNotebookProps` which defines the properties of the stack, you can import the `DataPlatformNotebookProp`
 from the `DataPlatformNotebook` construct to define the properties of the Studio.
 
