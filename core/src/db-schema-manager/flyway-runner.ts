@@ -97,7 +97,7 @@ export class FlywayRunner extends cdk.Construct {
     });
 
     const flywayLambda = new PreBundledFunction(this, 'runner', {
-      codePath: path.join(__dirname.split('/').slice(-1)[0], './resources/flyway-lambda/build/libs/flyway-all.jar'),
+      codePath: path.join(__dirname.split('/').slice(-1)[0], './resources/flyway-lambda/flyway-all.jar'),
       handler: 'com.geekoosh.flyway.FlywayCustomResourceHandler::handleRequest',
       runtime: lambda.Runtime.JAVA_11,
       logRetention: props.logRetention ?? logs.RetentionDays.ONE_DAY,

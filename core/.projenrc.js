@@ -137,7 +137,7 @@ for (const dirPath of findAllGradleLambdaDir('src')) {
   // Assume that all folders with 'requirements.txt' have been copied to lib
   // by the task 'copy-resources'
   const dirPathInLib = dirname(dirPath.replace('src', 'lib'));
-  const gradleCmd = `cd ${dirPathInLib} && ./gradlew shadowJar`;
+  const gradleCmd = `cd ${dirPathInLib} && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null`;
 
   gradleBuildTask.exec(gradleCmd);
 }
