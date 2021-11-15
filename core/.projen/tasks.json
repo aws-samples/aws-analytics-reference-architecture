@@ -1,5 +1,45 @@
 {
   "tasks": {
+    "build": {
+      "name": "build",
+      "description": "Full release build",
+      "steps": [
+        {
+          "spawn": "default"
+        },
+        {
+          "spawn": "pre-compile"
+        },
+        {
+          "spawn": "compile"
+        },
+        {
+          "spawn": "post-compile"
+        },
+        {
+          "spawn": "test"
+        },
+        {
+          "spawn": "package"
+        }
+      ]
+    },
+    "bump": {
+      "name": "bump",
+      "description": "Bumps version based on latest git tag and generates a changelog entry",
+      "env": {
+        "OUTFILE": "package.json",
+        "CHANGELOG": "dist/changelog.md",
+        "BUMPFILE": "dist/version.txt",
+        "RELEASETAG": "dist/releasetag.txt"
+      },
+      "steps": [
+        {
+          "builtin": "release/bump-version"
+        }
+      ],
+      "condition": "! git log --oneline -1 | grep -q \"chore(release):\""
+    },
     "clobber": {
       "name": "clobber",
       "description": "hard resets to HEAD of origin and cleans the local repo",
@@ -32,15 +72,21 @@
       ],
       "condition": "git diff --exit-code > /dev/null"
     },
+    "compat": {
+      "name": "compat",
+      "description": "Perform API compatibility check against latest version",
+      "steps": [
+        {
+          "exec": "jsii-diff npm:$(node -p \"require('./package.json').name\") -k --ignore-file .compatignore || (echo \"\nUNEXPECTED BREAKING CHANGES: add keys such as 'removed:constructs.Node.of' to .compatignore to skip.\n\" && exit 1)"
+        }
+      ]
+    },
     "compile": {
       "name": "compile",
       "description": "Only compile",
       "steps": [
         {
           "exec": "jsii --silence-warnings=reserved-word --no-fix-peer-dependencies"
-        },
-        {
-          "spawn": "docgen"
         },
         {
           "exec": "npx projen copy-resources"
@@ -53,137 +99,48 @@
         }
       ]
     },
-    "test:compile": {
-      "name": "test:compile",
-      "description": "compiles the test code",
+    "copy-resources": {
+      "name": "copy-resources",
+      "description": "Copy all resources directories from src to lib",
       "steps": [
         {
-          "exec": "tsc --noEmit --project tsconfig.jest.json"
-        }
-      ]
-    },
-    "test": {
-      "name": "test",
-      "description": "Run tests",
-      "steps": [
-        {
-          "exec": "rm -fr lib/"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-generator/resources lib/data-generator"
         },
         {
-          "spawn": "test:compile"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/datasets/resources lib/datasets"
         },
         {
-          "exec": "jest --passWithNoTests --all"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
         },
         {
-          "spawn": "eslint"
-        }
-      ]
-    },
-    "build": {
-      "name": "build",
-      "description": "Full release build (test+compile)",
-      "steps": [
-        {
-          "exec": "npx projen"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
         },
         {
-          "spawn": "test"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
         },
         {
-          "spawn": "compile"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-athena-query/resources lib/synchronous-athena-query"
         },
         {
-          "spawn": "package"
-        }
-      ]
-    },
-    "test:watch": {
-      "name": "test:watch",
-      "description": "Run jest in watch mode",
-      "steps": [
-        {
-          "exec": "jest --watch"
-        }
-      ]
-    },
-    "test:update": {
-      "name": "test:update",
-      "description": "Update jest snapshots",
-      "steps": [
-        {
-          "exec": "jest --updateSnapshot"
-        }
-      ]
-    },
-    "bump": {
-      "name": "bump",
-      "description": "Bumps version based on latest git tag and generates a changelog entry",
-      "env": {
-        "OUTFILE": "package.json",
-        "CHANGELOG": "dist/changelog.md",
-        "BUMPFILE": "dist/version.txt",
-        "RELEASETAG": "dist/releasetag.txt"
-      },
-      "steps": [
-        {
-          "builtin": "release/bump-version"
-        }
-      ],
-      "condition": "! git log --oneline -1 | grep -q \"chore(release):\""
-    },
-    "unbump": {
-      "name": "unbump",
-      "description": "Restores version to 0.0.0",
-      "env": {
-        "OUTFILE": "package.json",
-        "CHANGELOG": "dist/changelog.md",
-        "BUMPFILE": "dist/version.txt",
-        "RELEASETAG": "dist/releasetag.txt"
-      },
-      "steps": [
-        {
-          "builtin": "release/reset-version"
-        }
-      ]
-    },
-    "publish:github": {
-      "name": "publish:github",
-      "description": "Publish this package to GitHub Releases",
-      "requiredEnv": [
-        "GITHUB_TOKEN",
-        "GITHUB_REPOSITORY",
-        "GITHUB_REF"
-      ],
-      "steps": [
-        {
-          "exec": "errout=$(mktemp); gh release create $(cat dist/releasetag.txt) -R $GITHUB_REPOSITORY -F dist/changelog.md -t $(cat dist/releasetag.txt) --target $GITHUB_REF 2> $errout && true; exitcode=$?; if [ $exitcode -ne 0 ] && ! grep -q \"Release.tag_name already exists\" $errout; then cat $errout; exit $exitcode; fi"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-crawler/resources lib/synchronous-crawler"
         }
       ]
     },
     "default": {
       "name": "default",
+      "description": "Synthesize project files",
       "steps": [
         {
           "exec": "node .projenrc.js"
         }
       ]
     },
-    "watch": {
-      "name": "watch",
-      "description": "Watch & compile in the background",
+    "docgen": {
+      "name": "docgen",
+      "description": "Generate API.md from .jsii manifest",
       "steps": [
         {
-          "exec": "jsii -w --silence-warnings=reserved-word --no-fix-peer-dependencies"
-        }
-      ]
-    },
-    "package": {
-      "name": "package",
-      "description": "Create an npm tarball",
-      "steps": [
-        {
-          "exec": "jsii-pacmak"
+          "exec": "jsii-docgen"
         }
       ]
     },
@@ -196,12 +153,63 @@
         }
       ]
     },
-    "compat": {
-      "name": "compat",
-      "description": "Perform API compatibility check against latest version",
+    "gradle-build": {
+      "name": "gradle-build",
+      "description": "./gradlew shadowJar all folders in lib that has requirements.txt",
       "steps": [
         {
-          "exec": "jsii-diff npm:$(node -p \"require('./package.json').name\") -k --ignore-file .compatignore || (echo \"\nUNEXPECTED BREAKING CHANGES: add keys such as 'removed:constructs.Node.of' to .compatignore to skip.\n\" && exit 1)"
+          "exec": "cd lib/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar"
+        }
+      ]
+    },
+    "package": {
+      "name": "package",
+      "description": "Creates the distribution package",
+      "steps": [
+        {
+          "exec": "jsii-pacmak"
+        }
+      ]
+    },
+    "pip-install": {
+      "name": "pip-install",
+      "description": "pip install all folders in lib that has requirements.txt",
+      "steps": [
+        {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup"
+        },
+        {
+          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas"
+        },
+        {
+          "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas"
+        }
+      ]
+    },
+    "post-compile": {
+      "name": "post-compile",
+      "description": "Runs after successful compilation",
+      "steps": [
+        {
+          "spawn": "docgen"
+        }
+      ]
+    },
+    "pre-compile": {
+      "name": "pre-compile",
+      "description": "Prepare the project for compilation"
+    },
+    "publish:github": {
+      "name": "publish:github",
+      "description": "Publish this package to GitHub Releases",
+      "requiredEnv": [
+        "GITHUB_TOKEN",
+        "GITHUB_REPOSITORY",
+        "GITHUB_REF"
+      ],
+      "steps": [
+        {
+          "exec": "errout=$(mktemp); gh release create $(cat dist/releasetag.txt) -R $GITHUB_REPOSITORY -F dist/changelog.md -t $(cat dist/releasetag.txt) --target $GITHUB_REF 2> $errout && true; exitcode=$?; if [ $exitcode -ne 0 ] && ! grep -q \"Release.tag_name already exists\" $errout; then cat $errout; exit $exitcode; fi"
         }
       ]
     },
@@ -234,12 +242,39 @@
         }
       ]
     },
-    "docgen": {
-      "name": "docgen",
-      "description": "Generate API.md from .jsii manifest",
+    "release": {
+      "name": "release",
+      "description": "Prepare a release from \"main\" branch",
+      "env": {
+        "RELEASE": "true"
+      },
       "steps": [
         {
-          "exec": "jsii-docgen"
+          "exec": "rm -fr dist"
+        },
+        {
+          "spawn": "bump"
+        },
+        {
+          "spawn": "build"
+        },
+        {
+          "spawn": "unbump"
+        },
+        {
+          "exec": "git diff --ignore-space-at-eol --exit-code"
+        }
+      ]
+    },
+    "test": {
+      "name": "test",
+      "description": "Run tests",
+      "steps": [
+        {
+          "exec": "jest --passWithNoTests --all"
+        },
+        {
+          "spawn": "eslint"
         }
       ]
     },
@@ -262,78 +297,45 @@
         }
       ]
     },
-    "copy-resources": {
-      "name": "copy-resources",
-      "description": "Copy all resources directories from src to lib",
+    "test:update": {
+      "name": "test:update",
+      "description": "Update jest snapshots",
       "steps": [
         {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-generator/resources lib/data-generator"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/datasets/resources lib/datasets"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-athena-query/resources lib/synchronous-athena-query"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-crawler/resources lib/synchronous-crawler"
+          "exec": "jest --updateSnapshot"
         }
       ]
     },
-    "pip-install": {
-      "name": "pip-install",
-      "description": "pip install all folders in lib that has requirements.txt",
+    "test:watch": {
+      "name": "test:watch",
+      "description": "Run jest in watch mode",
       "steps": [
         {
-          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup"
-        },
-        {
-          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas"
-        },
-        {
-          "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas"
+          "exec": "jest --watch"
         }
       ]
     },
-    "gradle-build": {
-      "name": "gradle-build",
-      "description": "./gradlew shadowJar all folders in lib that has requirements.txt",
-      "steps": [
-        {
-          "exec": "cd lib/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar"
-        }
-      ]
-    },
-    "release": {
-      "name": "release",
-      "description": "Prepare a release from \"main\" branch",
+    "unbump": {
+      "name": "unbump",
+      "description": "Restores version to 0.0.0",
       "env": {
-        "RELEASE": "true"
+        "OUTFILE": "package.json",
+        "CHANGELOG": "dist/changelog.md",
+        "BUMPFILE": "dist/version.txt",
+        "RELEASETAG": "dist/releasetag.txt"
       },
       "steps": [
         {
-          "exec": "rm -fr dist"
-        },
+          "builtin": "release/reset-version"
+        }
+      ]
+    },
+    "watch": {
+      "name": "watch",
+      "description": "Watch & compile in the background",
+      "steps": [
         {
-          "spawn": "bump"
-        },
-        {
-          "spawn": "build"
-        },
-        {
-          "spawn": "unbump"
-        },
-        {
-          "exec": "git diff --ignore-space-at-eol --exit-code"
+          "exec": "jsii -w --silence-warnings=reserved-word --no-fix-peer-dependencies"
         }
       ]
     }
