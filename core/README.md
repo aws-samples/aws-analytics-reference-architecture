@@ -86,8 +86,8 @@ let userList2: StudioUserDefinition[] = [{
   executionPolicyNames: ['policyManagedEndpoint3'],
 }];
 
-dept1.addUsersNotebookPlatform('dept1', userList1);
-dept1.addUsersNotebookPlatform('dept2', userList2);
+dept1.addUsersNotebookPlatform('unit1', userList1);
+dept1.addUsersNotebookPlatform('unit2', userList2);
 ```
 
 [1]: [https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-studio-service-role.html]
