@@ -1,11 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-const { dirname } = require('path');
+const { basename, join, dirname, relative } = require('path');
 const glob = require('glob');
 
-const { AwsCdkConstructLibrary } = require('projen');
 
+const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
 const project = new AwsCdkConstructLibrary({
+
   authorName: 'Amazon Web Services',
   authorUrl: 'https://aws.amazon.com',
   authorOrganization: true,
@@ -13,8 +14,14 @@ const project = new AwsCdkConstructLibrary({
   copyrightPeriod: `2021-${new Date().getFullYear()}`,
   copyrightOwner: 'Amazon.com, Inc. or its affiliates. All Rights Reserved.',
 
-  keywords: ['aws', 'constructs', 'cdk', 'analytics'],
-  cdkVersion: '1.125.0',
+  keywords: [
+    'aws',
+    'constructs',
+    'cdk',
+    'analytics',
+  ],
+
+  cdkVersion: '1.125',
   defaultReleaseBranch: 'main',
   license: 'MIT',
   name: 'aws-analytics-reference-architecture',
@@ -55,9 +62,14 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-s3-assets',
     '@aws-cdk/assertions',
   ],
-  bundledDeps: ['xmldom@github:xmldom/xmldom#0.7.0', 'aws-sdk'],
+  bundledDeps: [
+    'xmldom@github:xmldom/xmldom#0.7.0',
+    'aws-sdk',
+  ],
 
-  devDeps: ['esbuild'],
+  devDeps: [
+    'esbuild',
+  ],
 
   python: {
     distName: 'aws_analytics_reference_architecture',
@@ -65,6 +77,7 @@ const project = new AwsCdkConstructLibrary({
   },
 
   stability: 'experimental',
+
 });
 
 const testDeploy = project.addTask('test:deploy', {
@@ -76,6 +89,7 @@ testDeploy.prependExec('npx projen build');
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',
 });
+
 
 project.addDevDeps('glob');
 
@@ -114,7 +128,6 @@ for (const dirPath of findAllPythonLambdaDir('src')) {
 /**
  * Task to build java lambda jar with gradle
  */
-
 const gradleBuildTask = project.addTask('gradle-build', {
   description: './gradlew shadowJar all folders in lib that has requirements.txt',
 });
