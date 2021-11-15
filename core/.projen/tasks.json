@@ -267,25 +267,25 @@
       "description": "Copy all resources directories from src to lib",
       "steps": [
         {
-          "exec": "cp -r src/data-generator/resources lib/data-generator"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-generator/resources lib/data-generator"
         },
         {
-          "exec": "cp -r src/datasets/resources lib/datasets"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/datasets/resources lib/datasets"
         },
         {
-          "exec": "cp -r src/db-schema-manager/resources lib/db-schema-manager"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
         },
         {
-          "exec": "cp -r src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
         },
         {
-          "exec": "cp -r src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
         },
         {
-          "exec": "cp -r src/synchronous-athena-query/resources lib/synchronous-athena-query"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-athena-query/resources lib/synchronous-athena-query"
         },
         {
-          "exec": "cp -r src/synchronous-crawler/resources lib/synchronous-crawler"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-crawler/resources lib/synchronous-crawler"
         }
       ]
     },

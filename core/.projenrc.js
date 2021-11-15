@@ -37,6 +37,11 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-s3',
     '@aws-cdk/aws-kinesis',
     '@aws-cdk/aws-iam',
+    '@aws-cdk/aws-kinesisfirehose',
+    '@aws-cdk/aws-kinesisfirehose-destinations',
+    '@aws-cdk/aws-kinesis',
+    '@aws-cdk/aws-logs',
+    '@aws-cdk/aws-glue',
     '@aws-cdk/aws-athena',
     '@aws-cdk/aws-glue',
     '@aws-cdk/aws-stepfunctions',
@@ -84,7 +89,7 @@ const copyResourcesToLibTask = project.addTask('copy-resources', {
 
 for (const from of glob.sync('src/**/resources')) {
   const to = dirname(from.replace('src', 'lib'));
-  const cpCommand = `cp -r ${from} ${to}`;
+  const cpCommand = `rsync -avr --exclude '*.ts' --exclude '*.js' ${from} ${to}`;
   copyResourcesToLibTask.exec(cpCommand);
 }
 
