@@ -1,7 +1,7 @@
 # Construct Definition
 
 This construct deploys an end-to-end platform to explore and experiment with data in a 
-data lake using spark engine deployed in EMR on EKS.
+data lake using spark engine deployed in EMR on EKS, and a Jupyter notebook infrastructure based on EMR Studio 
 
 ## What it deploys
 
