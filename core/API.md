@@ -6,7 +6,7 @@
 
 AthenaDefaultSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box usage.
 
-#### Initializer <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.Initializer"></a>
 
 ```typescript
 import { AthenaDefaultSetup } from 'aws-analytics-reference-architecture'
@@ -36,6 +36,10 @@ the ID of the CDK Construct.
 
 ##### `resultBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.AthenaDefaultSetup.property.resultBucket"></a>
 
+```typescript
+public readonly resultBucket: Bucket;
+```
+
 - *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
 
 ---
@@ -47,7 +51,7 @@ DataGenerator Construct to replay data from an existing dataset into a target re
 
 DataGenerator can use pre-defined or custom datasets available in the [Dataset]{@link Dataset} Class
 
-#### Initializer <a name="aws-analytics-reference-architecture.DataGenerator.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.DataGenerator.Initializer"></a>
 
 ```typescript
 import { DataGenerator } from 'aws-analytics-reference-architecture'
@@ -85,6 +89,10 @@ the DataGenerator [properties]{@link DataGeneratorProps}.
 
 ##### `dataset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataGenerator.property.dataset"></a>
 
+```typescript
+public readonly dataset: Dataset;
+```
+
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
 Dataset used to generate data.
@@ -93,6 +101,10 @@ Dataset used to generate data.
 
 ##### `frequency`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataGenerator.property.frequency"></a>
 
+```typescript
+public readonly frequency: number;
+```
+
 - *Type:* `number`
 
 Frequency (in Seconds) of the data generation.
@@ -100,6 +112,10 @@ Frequency (in Seconds) of the data generation.
 ---
 
 ##### `sinkArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataGenerator.property.sinkArn"></a>
+
+```typescript
+public readonly sinkArn: string;
+```
 
 - *Type:* `string`
 
@@ -121,7 +137,7 @@ AWS Glue Database name used by the DataGenerator.
 
 A Data Lake Catalog composed of 3 AWS Glue Database configured with AWS best practices:   Databases for Raw/Cleaned/Transformed data,.
 
-#### Initializer <a name="aws-analytics-reference-architecture.DataLakeCatalog.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.DataLakeCatalog.Initializer"></a>
 
 ```typescript
 import { DataLakeCatalog } from 'aws-analytics-reference-architecture'
@@ -151,6 +167,10 @@ the ID of the CDK Construct.
 
 ##### `cleanDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.property.cleanDatabase"></a>
 
+```typescript
+public readonly cleanDatabase: Database;
+```
+
 - *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
 
 AWS Glue Database for Clean data.
@@ -158,6 +178,10 @@ AWS Glue Database for Clean data.
 ---
 
 ##### `rawDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.property.rawDatabase"></a>
+
+```typescript
+public readonly rawDatabase: Database;
+```
 
 - *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
 
@@ -167,9 +191,63 @@ AWS Glue Database for Raw data.
 
 ##### `transformDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeCatalog.property.transformDatabase"></a>
 
+```typescript
+public readonly transformDatabase: Database;
+```
+
 - *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
 
 AWS Glue Database for Transform data.
+
+---
+
+
+### DataLakeExporter <a name="aws-analytics-reference-architecture.DataLakeExporter"></a>
+
+DataLakeExporter Construct to export data from a stream to the data lake.
+
+Source can be an Amazon Kinesis Data Stream.
+Target can be an Amazon S3 bucket.
+
+#### Initializers <a name="aws-analytics-reference-architecture.DataLakeExporter.Initializer"></a>
+
+```typescript
+import { DataLakeExporter } from 'aws-analytics-reference-architecture'
+
+new DataLakeExporter(scope: Construct, id: string, props: DataLakeExporterProps)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporter.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporter.parameter.id"></a>
+
+- *Type:* `string`
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporter.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.DataLakeExporterProps`](#aws-analytics-reference-architecture.DataLakeExporterProps)
+
+---
+
+
+
+#### Properties <a name="Properties"></a>
+
+##### `cfnIngestionStream`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporter.property.cfnIngestionStream"></a>
+
+```typescript
+public readonly cfnIngestionStream: CfnDeliveryStream;
+```
+
+- *Type:* [`@aws-cdk/aws-kinesisfirehose.CfnDeliveryStream`](#@aws-cdk/aws-kinesisfirehose.CfnDeliveryStream)
+
+Constructs a new instance of the DataLakeExporter class.
 
 ---
 
@@ -178,7 +256,7 @@ AWS Glue Database for Transform data.
 
 A Data Lake Storage composed of 3 Amazon S3 Buckets configured with AWS best practices:   S3 buckets for Raw/Cleaned/Transformed data,   data lifecycle optimization/transitioning to different Amazon S3 storage classes   server side buckets encryption managed by KMS.
 
-#### Initializer <a name="aws-analytics-reference-architecture.DataLakeStorage.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.DataLakeStorage.Initializer"></a>
 
 ```typescript
 import { DataLakeStorage } from 'aws-analytics-reference-architecture'
@@ -216,17 +294,29 @@ the DataLakeStorageProps properties.
 
 ##### `cleanBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeStorage.property.cleanBucket"></a>
 
+```typescript
+public readonly cleanBucket: Bucket;
+```
+
 - *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
 
 ---
 
 ##### `rawBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeStorage.property.rawBucket"></a>
 
+```typescript
+public readonly rawBucket: Bucket;
+```
+
 - *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
 
 ---
 
 ##### `transformBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeStorage.property.transformBucket"></a>
+
+```typescript
+public readonly transformBucket: Bucket;
+```
 
 - *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
 
@@ -237,7 +327,7 @@ the DataLakeStorageProps properties.
 
 Construct to create an Amazon EKS cluster Construct is then used to create a dataplatform which is composed of an EMR Virtual Cluster and an EMR studio Construct is then used to assign users to the created EMR Studio.
 
-#### Initializer <a name="aws-analytics-reference-architecture.DataPlatform.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.DataPlatform.Initializer"></a>
 
 ```typescript
 import { DataPlatform } from 'aws-analytics-reference-architecture'
@@ -339,7 +429,7 @@ DataPlatform.getOrCreate(scope: Construct, stackName: string, props: DataPlatfor
 
 ### DataPlatformNotebook <a name="aws-analytics-reference-architecture.DataPlatformNotebook"></a>
 
-#### Initializer <a name="aws-analytics-reference-architecture.DataPlatformNotebook.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.DataPlatformNotebook.Initializer"></a>
 
 ```typescript
 import { DataPlatformNotebook } from 'aws-analytics-reference-architecture'
@@ -392,11 +482,19 @@ list of users.
 
 ##### `studioId`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.property.studioId"></a>
 
+```typescript
+public readonly studioId: string;
+```
+
 - *Type:* `string`
 
 ---
 
 ##### `studioUrl`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebook.property.studioUrl"></a>
+
+```typescript
+public readonly studioUrl: string;
+```
 
 - *Type:* `string`
 
@@ -414,7 +512,7 @@ list of users.
 
 Construct extending IAM Role with AmazonSSMManagedInstanceCore managed policy.
 
-#### Initializer <a name="aws-analytics-reference-architecture.Ec2SsmRole.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.Ec2SsmRole.Initializer"></a>
 
 ```typescript
 import { Ec2SsmRole } from 'aws-analytics-reference-architecture'
@@ -454,7 +552,7 @@ the RoleProps [properties]{@link RoleProps}.
 
 EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
 
-#### Initializer <a name="aws-analytics-reference-architecture.EmrEksCluster.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.EmrEksCluster.Initializer"></a>
 
 ```typescript
 import { EmrEksCluster } from 'aws-analytics-reference-architecture'
@@ -656,11 +754,19 @@ EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesV
 
 ##### `criticalDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig"></a>
 
+```typescript
+public readonly criticalDefaultConfig: string;
+```
+
 - *Type:* `string`
 
 ---
 
 ##### `eksCluster`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster"></a>
+
+```typescript
+public readonly eksCluster: Cluster;
+```
 
 - *Type:* [`@aws-cdk/aws-eks.Cluster`](#@aws-cdk/aws-eks.Cluster)
 
@@ -668,17 +774,29 @@ EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesV
 
 ##### `managedEndpointProviderServiceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.managedEndpointProviderServiceToken"></a>
 
+```typescript
+public readonly managedEndpointProviderServiceToken: string;
+```
+
 - *Type:* `string`
 
 ---
 
 ##### `notebookDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig"></a>
 
+```typescript
+public readonly notebookDefaultConfig: string;
+```
+
 - *Type:* `string`
 
 ---
 
 ##### `sharedDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.sharedDefaultConfig"></a>
+
+```typescript
+public readonly sharedDefaultConfig: string;
+```
 
 - *Type:* `string`
 
@@ -705,7 +823,7 @@ Example Construct to help onboarding contributors.
 This example includes best practices for code comment/documentation generation,
 and for default parameters pattern in CDK using Props with Optional properties
 
-#### Initializer <a name="aws-analytics-reference-architecture.Example.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.Example.Initializer"></a>
 
 ```typescript
 import { Example } from 'aws-analytics-reference-architecture'
@@ -745,7 +863,7 @@ the ExampleProps properties.
 
 An Amazon S3 Bucket implementing the singleton pattern.
 
-#### Initializer <a name="aws-analytics-reference-architecture.SingletonBucket.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.SingletonBucket.Initializer"></a>
 
 ```typescript
 import { SingletonBucket } from 'aws-analytics-reference-architecture'
@@ -796,11 +914,48 @@ SingletonBucket.getOrCreate(scope: Construct, bucketName: string)
 
 
 
+### SingletonGlueDefaultRole <a name="aws-analytics-reference-architecture.SingletonGlueDefaultRole"></a>
+
+SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
+
+The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
+The Construct provides a getOrCreate method for SingletonInstantiation
+
+
+#### Static Functions <a name="Static Functions"></a>
+
+##### `getOrCreate` <a name="aws-analytics-reference-architecture.SingletonGlueDefaultRole.getOrCreate"></a>
+
+```typescript
+import { SingletonGlueDefaultRole } from 'aws-analytics-reference-architecture'
+
+SingletonGlueDefaultRole.getOrCreate(scope: Construct)
+```
+
+###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.SingletonGlueDefaultRole.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+#### Properties <a name="Properties"></a>
+
+##### `iamRole`<sup>Required</sup> <a name="aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.iamRole"></a>
+
+```typescript
+public readonly iamRole: Role;
+```
+
+- *Type:* [`@aws-cdk/aws-iam.Role`](#@aws-cdk/aws-iam.Role)
+
+---
+
+
 ### SynchronousAthenaQuery <a name="aws-analytics-reference-architecture.SynchronousAthenaQuery"></a>
 
 SynchronousAthenaQuery Construct to execute an Amazon Athena query synchronously.
 
-#### Initializer <a name="aws-analytics-reference-architecture.SynchronousAthenaQuery.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.SynchronousAthenaQuery.Initializer"></a>
 
 ```typescript
 import { SynchronousAthenaQuery } from 'aws-analytics-reference-architecture'
@@ -840,7 +995,7 @@ the CrawlerStartWait [properties]{@link SynchronousAthenaQueryProps}.
 
 CrawlerStartWait Construct to start an AWS Glue Crawler execution and asynchronously wait for completion.
 
-#### Initializer <a name="aws-analytics-reference-architecture.SynchronousCrawler.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.SynchronousCrawler.Initializer"></a>
 
 ```typescript
 import { SynchronousCrawler } from 'aws-analytics-reference-architecture'
@@ -878,18 +1033,6 @@ the CrawlerStartWait [properties]{@link SynchronousCrawlerProps}.
 
 ## Structs <a name="Structs"></a>
 
-### AthenaDefaultSetupProps <a name="aws-analytics-reference-architecture.AthenaDefaultSetupProps"></a>
-
-The properties for AthenaDefaultSetup Construct.
-
-#### Initializer <a name="[object Object].Initializer"></a>
-
-```typescript
-import { AthenaDefaultSetupProps } from 'aws-analytics-reference-architecture'
-
-const athenaDefaultSetupProps: AthenaDefaultSetupProps = { ... }
-```
-
 ### DataGeneratorProps <a name="aws-analytics-reference-architecture.DataGeneratorProps"></a>
 
 The properties for DataGenerator Construct.
@@ -904,6 +1047,10 @@ const dataGeneratorProps: DataGeneratorProps = { ... }
 
 ##### `dataset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataGeneratorProps.property.dataset"></a>
 
+```typescript
+public readonly dataset: Dataset;
+```
+
 - *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
 
 Source dataset used to generate the data by replying it.
@@ -913,6 +1060,10 @@ Use a pre-defined [Dataset]{@link Dataset} or create a [custom one]{@link Datase
 ---
 
 ##### `sinkArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataGeneratorProps.property.sinkArn"></a>
+
+```typescript
+public readonly sinkArn: string;
+```
 
 - *Type:* `string`
 
@@ -924,12 +1075,106 @@ Sink must be an Amazon S3 bucket.
 
 ##### `frequency`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataGeneratorProps.property.frequency"></a>
 
+```typescript
+public readonly frequency: number;
+```
+
 - *Type:* `number`
 - *Default:* 30 min (1800s)
 
 Frequency (in Seconds) of the data generation.
 
 Should be > 60s.
+
+---
+
+### DataLakeExporterProps <a name="aws-analytics-reference-architecture.DataLakeExporterProps"></a>
+
+The properties for DataLakeExporter Construct.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { DataLakeExporterProps } from 'aws-analytics-reference-architecture'
+
+const dataLakeExporterProps: DataLakeExporterProps = { ... }
+```
+
+##### `sinkLocation`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkLocation"></a>
+
+```typescript
+public readonly sinkLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Sink must be an Amazon S3 Location composed of a bucket and a key.
+
+---
+
+##### `sourceGlueDatabase`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueDatabase"></a>
+
+```typescript
+public readonly sourceGlueDatabase: Database;
+```
+
+- *Type:* [`@aws-cdk/aws-glue.Database`](#@aws-cdk/aws-glue.Database)
+
+Source AWS Glue Database containing the schema of the stream.
+
+---
+
+##### `sourceGlueTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueTable"></a>
+
+```typescript
+public readonly sourceGlueTable: Table;
+```
+
+- *Type:* [`@aws-cdk/aws-glue.Table`](#@aws-cdk/aws-glue.Table)
+
+Source AWS Glue Table containing the schema of the stream.
+
+---
+
+##### `sourceKinesisDataStream`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceKinesisDataStream"></a>
+
+```typescript
+public readonly sourceKinesisDataStream: Stream;
+```
+
+- *Type:* [`@aws-cdk/aws-kinesis.Stream`](#@aws-cdk/aws-kinesis.Stream)
+
+Source must be an Amazon Kinesis Data Stream.
+
+---
+
+##### `deliveryInterval`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.deliveryInterval"></a>
+
+```typescript
+public readonly deliveryInterval: number;
+```
+
+- *Type:* `number`
+- *Default:* Set to 900 seconds
+
+Delivery interval in seconds.
+
+The frequency of the data delivery is defined by this interval.
+
+---
+
+##### `deliverySize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeExporterProps.property.deliverySize"></a>
+
+```typescript
+public readonly deliverySize: number;
+```
+
+- *Type:* `number`
+- *Default:* Set to 128 MB
+
+Maximum delivery size in MB.
+
+The frequency of the data delivery is defined by this maximum delivery size.
 
 ---
 
@@ -947,6 +1192,10 @@ const dataLakeStorageProps: DataLakeStorageProps = { ... }
 
 ##### `cleanArchiveDelay`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeStorageProps.property.cleanArchiveDelay"></a>
 
+```typescript
+public readonly cleanArchiveDelay: number;
+```
+
 - *Type:* `number`
 - *Default:* Objects are not archived to Glacier
 
@@ -955,6 +1204,10 @@ Delay (in days) before archiving CLEAN data to frozen storage (Glacier storage c
 ---
 
 ##### `cleanInfrequentAccessDelay`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeStorageProps.property.cleanInfrequentAccessDelay"></a>
+
+```typescript
+public readonly cleanInfrequentAccessDelay: number;
+```
 
 - *Type:* `number`
 - *Default:* Move objects to Infrequent Access after 90 days
@@ -965,6 +1218,10 @@ Delay (in days) before moving CLEAN data to cold storage (Infrequent Access stor
 
 ##### `rawArchiveDelay`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeStorageProps.property.rawArchiveDelay"></a>
 
+```typescript
+public readonly rawArchiveDelay: number;
+```
+
 - *Type:* `number`
 - *Default:* Move objects to Glacier after 90 days
 
@@ -973,6 +1230,10 @@ Delay (in days) before archiving RAW data to frozen storage (Glacier storage cla
 ---
 
 ##### `rawInfrequentAccessDelay`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeStorageProps.property.rawInfrequentAccessDelay"></a>
+
+```typescript
+public readonly rawInfrequentAccessDelay: number;
+```
 
 - *Type:* `number`
 - *Default:* Move objects to Infrequent Access after 30 days
@@ -983,6 +1244,10 @@ Delay (in days) before moving RAW data to cold storage (Infrequent Access storag
 
 ##### `transformArchiveDelay`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeStorageProps.property.transformArchiveDelay"></a>
 
+```typescript
+public readonly transformArchiveDelay: number;
+```
+
 - *Type:* `number`
 - *Default:* Objects are not archived to Glacier
 
@@ -991,6 +1256,10 @@ Delay (in days) before archiving TRANSFORM data to frozen storage (Glacier stora
 ---
 
 ##### `transformInfrequentAccessDelay`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataLakeStorageProps.property.transformInfrequentAccessDelay"></a>
+
+```typescript
+public readonly transformInfrequentAccessDelay: number;
+```
 
 - *Type:* `number`
 - *Default:* Move objects to Infrequent Access after 90 days
@@ -1013,6 +1282,10 @@ const dataPlatformNotebookInfra: DataPlatformNotebookInfra = { ... }
 
 ##### `dataPlatformProps`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra.property.dataPlatformProps"></a>
 
+```typescript
+public readonly dataPlatformProps: DataPlatformNotebookProp;
+```
+
 - *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookProp`](#aws-analytics-reference-architecture.DataPlatformNotebookProp)
 
 Required the props of the notebooks dataplatform to be deployed.
@@ -1021,6 +1294,10 @@ Required the props of the notebooks dataplatform to be deployed.
 
 ##### `emrEks`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra.property.emrEks"></a>
 
+```typescript
+public readonly emrEks: EmrEksCluster;
+```
+
 - *Type:* [`aws-analytics-reference-architecture.EmrEksCluster`](#aws-analytics-reference-architecture.EmrEksCluster)
 
 Required the EmrEks infrastructure used for the deployment.
@@ -1028,6 +1305,10 @@ Required the EmrEks infrastructure used for the deployment.
 ---
 
 ##### `serviceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookInfra.property.serviceToken"></a>
+
+```typescript
+public readonly serviceToken: string;
+```
 
 - *Type:* `string`
 
@@ -1049,6 +1330,10 @@ const dataPlatformNotebookProp: DataPlatformNotebookProp = { ... }
 
 ##### `acmCertificateArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.acmCertificateArn"></a>
 
+```typescript
+public readonly acmCertificateArn: string;
+```
+
 - *Type:* `string`
 
 Amazon ACM Certificate ARN.
@@ -1056,6 +1341,10 @@ Amazon ACM Certificate ARN.
 ---
 
 ##### `emrVCNamespace`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.emrVCNamespace"></a>
+
+```typescript
+public readonly emrVCNamespace: string;
+```
 
 - *Type:* `string`
 
@@ -1065,6 +1354,10 @@ the namespace where to deploy the EMR Virtual Cluster.
 
 ##### `studioAuthMode`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.studioAuthMode"></a>
 
+```typescript
+public readonly studioAuthMode: string;
+```
+
 - *Type:* `string`
 
 Required the authentication mode of Amazon EMR Studio Either 'SSO' or 'IAM_FEDERATED' or 'IAM_AUTHENTICATED' defined in the Enum {@linkcode studioAuthMode}.
@@ -1073,6 +1366,10 @@ Required the authentication mode of Amazon EMR Studio Either 'SSO' or 'IAM_FEDER
 
 ##### `studioName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.studioName"></a>
 
+```typescript
+public readonly studioName: string;
+```
+
 - *Type:* `string`
 
 Required the be given to the name of Amazon EMR Studio.
@@ -1080,6 +1377,10 @@ Required the be given to the name of Amazon EMR Studio.
 ---
 
 ##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.emrOnEksVersion"></a>
+
+```typescript
+public readonly emrOnEksVersion: string;
+```
 
 - *Type:* `string`
 - *Default:* v6.3 version is used
@@ -1090,6 +1391,10 @@ The version of Amazon EMR to deploy.
 
 ##### `idPArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.idPArn"></a>
 
+```typescript
+public readonly idPArn: string;
+```
+
 - *Type:* `string`
 
 Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value taken from the IAM console in the Identity providers console.
@@ -1097,6 +1402,10 @@ Used when IAM Authentication is selected with IAM federation with an external id
 ---
 
 ##### `idpAuthUrl`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.idpAuthUrl"></a>
+
+```typescript
+public readonly idpAuthUrl: string;
+```
 
 - *Type:* `string`
 
@@ -1106,6 +1415,10 @@ Used when IAM Authentication is selected with IAM federation with an external id
 
 ##### `idpRelayStateParameterName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.idpRelayStateParameterName"></a>
 
+```typescript
+public readonly idpRelayStateParameterName: string;
+```
+
 - *Type:* `string`
 
 Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value can be set with {@linkcode idpRelayState} Enum or through a value provided by the user.
@@ -1113,6 +1426,10 @@ Used when IAM Authentication is selected with IAM federation with an external id
 ---
 
 ##### `kubernetesVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.kubernetesVersion"></a>
+
+```typescript
+public readonly kubernetesVersion: KubernetesVersion;
+```
 
 - *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
 - *Default:* v1.20 version is used
@@ -1139,6 +1456,10 @@ const dataPlatformProps: DataPlatformProps = { ... }
 
 ##### `eksAdminRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformProps.property.eksAdminRoleArn"></a>
 
+```typescript
+public readonly eksAdminRoleArn: string;
+```
+
 - *Type:* `string`
 
 Amazon EKS Admin Role.
@@ -1157,6 +1478,10 @@ const datasetProps: DatasetProps = { ... }
 
 ##### `createSourceTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.createSourceTable"></a>
 
+```typescript
+public readonly createSourceTable: string;
+```
+
 - *Type:* `string`
 
 The CREATE TABLE DDL command to create the source AWS Glue Table.
@@ -1165,6 +1490,10 @@ The CREATE TABLE DDL command to create the source AWS Glue Table.
 
 ##### `generateData`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.generateData"></a>
 
+```typescript
+public readonly generateData: string;
+```
+
 - *Type:* `string`
 
 The SELECT query used to generate new data.
@@ -1172,6 +1501,10 @@ The SELECT query used to generate new data.
 ---
 
 ##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.location"></a>
+
+```typescript
+public readonly location: Location;
+```
 
 - *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
 
@@ -1183,6 +1516,10 @@ It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
 
 ##### `startDatetime`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.startDatetime"></a>
 
+```typescript
+public readonly startDatetime: string;
+```
+
 - *Type:* `string`
 
 The minimum datetime value in the dataset used to calculate time offset.
@@ -1190,6 +1527,10 @@ The minimum datetime value in the dataset used to calculate time offset.
 ---
 
 ##### `createTargetTable`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.createTargetTable"></a>
+
+```typescript
+public readonly createTargetTable: string;
+```
 
 - *Type:* `string`
 - *Default:* Use the same DDL as the source table
@@ -1212,6 +1553,10 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 
 ##### `eksAdminRoleArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn"></a>
 
+```typescript
+public readonly eksAdminRoleArn: string;
+```
+
 - *Type:* `string`
 
 Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
@@ -1219,6 +1564,10 @@ Amazon IAM Role to be added to Amazon EKS master roles that will give access to 
 ---
 
 ##### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.acmCertificateArn"></a>
+
+```typescript
+public readonly acmCertificateArn: string;
+```
 
 - *Type:* `string`
 - *Default:* generate and import certificate using locally installed openssl utility
@@ -1229,6 +1578,10 @@ ACM Certificate ARN used with EMR on EKS managed endpoint.
 
 ##### `eksClusterName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName"></a>
 
+```typescript
+public readonly eksClusterName: string;
+```
+
 - *Type:* `string`
 - *Default:* automatically generated cluster name
 
@@ -1237,6 +1590,10 @@ Name of the Amazon EKS cluster to be created.
 ---
 
 ##### `emrEksNodegroups`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups"></a>
+
+```typescript
+public readonly emrEksNodegroups: EmrEksNodegroup[];
+```
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroup`](#aws-analytics-reference-architecture.EmrEksNodegroup)[]
 - *Default:* Don't create additional nodegroups
@@ -1247,6 +1604,10 @@ List of EmrEksNodegroup to create in the cluster in addition to the default [nod
 
 ##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.emrOnEksVersion"></a>
 
+```typescript
+public readonly emrOnEksVersion: string;
+```
+
 - *Type:* `string`
 - *Default:* emr-6.3.0-latest
 
@@ -1255,6 +1616,10 @@ EMR on EKS managed endpoint version.
 ---
 
 ##### `kubernetesVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion"></a>
+
+```typescript
+public readonly kubernetesVersion: KubernetesVersion;
+```
 
 - *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
 - *Default:* v1.20 version is used
@@ -1282,6 +1647,10 @@ const emrEksNodegroupOptions: EmrEksNodegroupOptions = { ... }
 
 ##### `amiType`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.amiType"></a>
 
+```typescript
+public readonly amiType: NodegroupAmiType;
+```
+
 - *Type:* [`@aws-cdk/aws-eks.NodegroupAmiType`](#@aws-cdk/aws-eks.NodegroupAmiType)
 - *Default:* auto-determined from the instanceTypes property.
 
@@ -1291,6 +1660,10 @@ The AMI type for your node group.
 
 ##### `capacityType`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.capacityType"></a>
 
+```typescript
+public readonly capacityType: CapacityType;
+```
+
 - *Type:* [`@aws-cdk/aws-eks.CapacityType`](#@aws-cdk/aws-eks.CapacityType)
 - *Default:* ON_DEMAND
 
@@ -1299,6 +1672,10 @@ The capacity type of the nodegroup.
 ---
 
 ##### `desiredSize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.desiredSize"></a>
+
+```typescript
+public readonly desiredSize: number;
+```
 
 - *Type:* `number`
 - *Default:* 2
@@ -1312,6 +1689,10 @@ the nodewgroup will initially create `minSize` instances.
 
 ##### `diskSize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.diskSize"></a>
 
+```typescript
+public readonly diskSize: number;
+```
+
 - *Type:* `number`
 - *Default:* 20
 
@@ -1320,6 +1701,10 @@ The root device disk size (in GiB) for your node group instances.
 ---
 
 ##### `forceUpdate`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.forceUpdate"></a>
+
+```typescript
+public readonly forceUpdate: boolean;
+```
 
 - *Type:* `boolean`
 - *Default:* true
@@ -1336,6 +1721,10 @@ running on the node.
 
 - *Deprecated:* Use `instanceTypes` instead.
 
+```typescript
+public readonly instanceType: InstanceType;
+```
+
 - *Type:* [`@aws-cdk/aws-ec2.InstanceType`](#@aws-cdk/aws-ec2.InstanceType)
 - *Default:* t3.medium
 
@@ -1349,6 +1738,10 @@ The default value for this parameter is `t3.medium`. If you choose a GPU instanc
 
 ##### `instanceTypes`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.instanceTypes"></a>
 
+```typescript
+public readonly instanceTypes: InstanceType[];
+```
+
 - *Type:* [`@aws-cdk/aws-ec2.InstanceType`](#@aws-cdk/aws-ec2.InstanceType)[]
 - *Default:* t3.medium will be used according to the cloudformation document.
 
@@ -1360,6 +1753,10 @@ The instance types to use for your node group.
 
 ##### `labels`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.labels"></a>
 
+```typescript
+public readonly labels: {[ key: string ]: string};
+```
+
 - *Type:* {[ key: string ]: `string`}
 - *Default:* None
 
@@ -1368,6 +1765,10 @@ The Kubernetes labels to be applied to the nodes in the node group when they are
 ---
 
 ##### `launchTemplateSpec`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.launchTemplateSpec"></a>
+
+```typescript
+public readonly launchTemplateSpec: LaunchTemplateSpec;
+```
 
 - *Type:* [`@aws-cdk/aws-eks.LaunchTemplateSpec`](#@aws-cdk/aws-eks.LaunchTemplateSpec)
 - *Default:* no launch template
@@ -1380,6 +1781,10 @@ Launch template specification used for the nodegroup.
 
 ##### `maxSize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.maxSize"></a>
 
+```typescript
+public readonly maxSize: number;
+```
+
 - *Type:* `number`
 - *Default:* desiredSize
 
@@ -1390,6 +1795,10 @@ Managed node groups can support up to 100 nodes by default.
 ---
 
 ##### `minSize`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.minSize"></a>
+
+```typescript
+public readonly minSize: number;
+```
 
 - *Type:* `number`
 - *Default:* 1
@@ -1402,6 +1811,10 @@ This number must be greater than or equal to zero.
 
 ##### `nodegroupName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.nodegroupName"></a>
 
+```typescript
+public readonly nodegroupName: string;
+```
+
 - *Type:* `string`
 - *Default:* resource ID
 
@@ -1410,6 +1823,10 @@ Name of the Nodegroup.
 ---
 
 ##### `nodeRole`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.nodeRole"></a>
+
+```typescript
+public readonly nodeRole: IRole;
+```
 
 - *Type:* [`@aws-cdk/aws-iam.IRole`](#@aws-cdk/aws-iam.IRole)
 - *Default:* None. Auto-generated if not specified.
@@ -1425,6 +1842,10 @@ into a cluster, you must create an IAM role for those worker nodes to use when t
 
 ##### `releaseVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.releaseVersion"></a>
 
+```typescript
+public readonly releaseVersion: string;
+```
+
 - *Type:* `string`
 - *Default:* The latest available AMI version for the node group's current Kubernetes version is used.
 
@@ -1433,6 +1854,10 @@ The AMI version of the Amazon EKS-optimized AMI to use with your node group (for
 ---
 
 ##### `remoteAccess`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.remoteAccess"></a>
+
+```typescript
+public readonly remoteAccess: NodegroupRemoteAccess;
+```
 
 - *Type:* [`@aws-cdk/aws-eks.NodegroupRemoteAccess`](#@aws-cdk/aws-eks.NodegroupRemoteAccess)
 - *Default:* disabled
@@ -1446,6 +1871,10 @@ then port 22 on the worker nodes is opened to the internet (0.0.0.0/0)
 ---
 
 ##### `subnets`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.subnets"></a>
+
+```typescript
+public readonly subnets: SubnetSelection;
+```
 
 - *Type:* [`@aws-cdk/aws-ec2.SubnetSelection`](#@aws-cdk/aws-ec2.SubnetSelection)
 - *Default:* private subnets
@@ -1461,6 +1890,10 @@ the name of your cluster.
 
 ##### `tags`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.tags"></a>
 
+```typescript
+public readonly tags: {[ key: string ]: string};
+```
+
 - *Type:* {[ key: string ]: `string`}
 - *Default:* None
 
@@ -1474,6 +1907,10 @@ associated with the node group, such as the Amazon EC2 instances or subnets.
 
 ##### `taints`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.taints"></a>
 
+```typescript
+public readonly taints: TaintSpec[];
+```
+
 - *Type:* [`@aws-cdk/aws-eks.TaintSpec`](#@aws-cdk/aws-eks.TaintSpec)[]
 - *Default:* None
 
@@ -1483,6 +1920,10 @@ The Kubernetes taints to be applied to the nodes in the node group when they are
 
 ##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.id"></a>
 
+```typescript
+public readonly id: string;
+```
+
 - *Type:* `string`
 
 Nodegroup ID.
@@ -1490,6 +1931,10 @@ Nodegroup ID.
 ---
 
 ##### `mountNvme`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.mountNvme"></a>
+
+```typescript
+public readonly mountNvme: boolean;
+```
 
 - *Type:* `boolean`
 - *Default:* false
@@ -1499,6 +1944,10 @@ Set to true if using instance types with local NVMe drives to mount them automat
 ---
 
 ##### `subnet`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.subnet"></a>
+
+```typescript
+public readonly subnet: ISubnet;
+```
 
 - *Type:* [`@aws-cdk/aws-ec2.ISubnet`](#@aws-cdk/aws-ec2.ISubnet)
 - *Default:* One NodeGroup is deployed per cluster AZ
@@ -1523,6 +1972,10 @@ const emrVirtualClusterProps: EmrVirtualClusterProps = { ... }
 
 ##### `name`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.name"></a>
 
+```typescript
+public readonly name: string;
+```
+
 - *Type:* `string`
 
 name of the  EmrVirtualCluster to be created.
@@ -1530,6 +1983,10 @@ name of the  EmrVirtualCluster to be created.
 ---
 
 ##### `createNamespace`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.createNamespace"></a>
+
+```typescript
+public readonly createNamespace: boolean;
+```
 
 - *Type:* `boolean`
 - *Default:* Do not create the namespace
@@ -1539,6 +1996,10 @@ creates EKS namespace.
 ---
 
 ##### `eksNamespace`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.eksNamespace"></a>
+
+```typescript
+public readonly eksNamespace: string;
+```
 
 - *Type:* `string`
 - *Default:* Use the default namespace
@@ -1561,6 +2022,10 @@ const exampleProps: ExampleProps = { ... }
 
 ##### `name`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.ExampleProps.property.name"></a>
 
+```typescript
+public readonly name: string;
+```
+
 - *Type:* `string`
 - *Default:* Set to 'defaultMessage' if not provided
 
@@ -1569,6 +2034,10 @@ Name used to qualify the CfnOutput in the Stack.
 ---
 
 ##### `value`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.ExampleProps.property.value"></a>
+
+```typescript
+public readonly value: string;
+```
 
 - *Type:* `string`
 - *Default:* Set to 'defaultValue!' if not provided
@@ -1593,6 +2062,10 @@ const studioUserDefinition: StudioUserDefinition = { ... }
 
 ##### `executionPolicyNames`<sup>Required</sup> <a name="aws-analytics-reference-architecture.StudioUserDefinition.property.executionPolicyNames"></a>
 
+```typescript
+public readonly executionPolicyNames: string[];
+```
+
 - *Type:* `string`[]
 
 The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB.
@@ -1601,6 +2074,10 @@ The name of the policy to be used for the execution Role to pass to ManagedEndpo
 
 ##### `identityName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.StudioUserDefinition.property.identityName"></a>
 
+```typescript
+public readonly identityName: string;
+```
+
 - *Type:* `string`
 
 Name of the identity as it appears in AWS SSO console, or the name to be given to a user in IAM_AUTHENTICATED.
@@ -1608,6 +2085,10 @@ Name of the identity as it appears in AWS SSO console, or the name to be given t
 ---
 
 ##### `identityType`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.StudioUserDefinition.property.identityType"></a>
+
+```typescript
+public readonly identityType: string;
+```
 
 - *Type:* `string`
 
@@ -1629,6 +2110,10 @@ const synchronousAthenaQueryProps: SynchronousAthenaQueryProps = { ... }
 
 ##### `resultPath`<sup>Required</sup> <a name="aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.resultPath"></a>
 
+```typescript
+public readonly resultPath: Location;
+```
+
 - *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
 
 The Amazon S3 Location for the query results (without trailing slash).
@@ -1636,6 +2121,10 @@ The Amazon S3 Location for the query results (without trailing slash).
 ---
 
 ##### `statement`<sup>Required</sup> <a name="aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.statement"></a>
+
+```typescript
+public readonly statement: string;
+```
 
 - *Type:* `string`
 
@@ -1645,6 +2134,10 @@ The name of the Athena query to execute.
 
 ##### `executionRoleStatements`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.executionRoleStatements"></a>
 
+```typescript
+public readonly executionRoleStatements: PolicyStatement[];
+```
+
 - *Type:* [`@aws-cdk/aws-iam.PolicyStatement`](#@aws-cdk/aws-iam.PolicyStatement)[]
 - *Default:* No Policy Statements are added to the execution role
 
@@ -1653,6 +2146,10 @@ The Amazon IAM Policy Statements used to run the query.
 ---
 
 ##### `timeout`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.timeout"></a>
+
+```typescript
+public readonly timeout: number;
+```
 
 - *Type:* `number`
 - *Default:* 60 seconds
@@ -1675,6 +2172,10 @@ const synchronousCrawlerProps: SynchronousCrawlerProps = { ... }
 
 ##### `crawlerName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.SynchronousCrawlerProps.property.crawlerName"></a>
 
+```typescript
+public readonly crawlerName: string;
+```
+
 - *Type:* `string`
 
 The name of the Crawler to use.
@@ -1682,6 +2183,10 @@ The name of the Crawler to use.
 ---
 
 ##### `timeout`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.SynchronousCrawlerProps.property.timeout"></a>
+
+```typescript
+public readonly timeout: number;
+```
 
 - *Type:* `number`
 - *Default:* 300 seconds
@@ -1696,7 +2201,7 @@ The timeout in seconds to wait for the Crawler success.
 
 Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
 
-#### Initializer <a name="aws-analytics-reference-architecture.Dataset.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.Dataset.Initializer"></a>
 
 ```typescript
 import { Dataset } from 'aws-analytics-reference-architecture'
@@ -1825,6 +2330,10 @@ the target table name to parse.
 
 ##### `createSourceTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.createSourceTable"></a>
 
+```typescript
+public readonly createSourceTable: string;
+```
+
 - *Type:* `string`
 
 The CREATE TABLE DDL command to create the source AWS Glue Table.
@@ -1832,6 +2341,10 @@ The CREATE TABLE DDL command to create the source AWS Glue Table.
 ---
 
 ##### `createTargetTable`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.createTargetTable"></a>
+
+```typescript
+public readonly createTargetTable: string;
+```
 
 - *Type:* `string`
 
@@ -1841,6 +2354,10 @@ The CREATE TABLE DDL command to create the target AWS Glue Table.
 
 ##### `generateData`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.generateData"></a>
 
+```typescript
+public readonly generateData: string;
+```
+
 - *Type:* `string`
 
 The SELECT query used to generate new data.
@@ -1848,6 +2365,10 @@ The SELECT query used to generate new data.
 ---
 
 ##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.location"></a>
+
+```typescript
+public readonly location: Location;
+```
 
 - *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
 
@@ -1857,6 +2378,10 @@ The Amazon S3 Location of the source dataset.
 
 ##### `offset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.offset"></a>
 
+```typescript
+public readonly offset: number;
+```
+
 - *Type:* `number`
 
 The offset of the Dataset (difference between min datetime and now) in Seconds.
@@ -1864,6 +2389,10 @@ The offset of the Dataset (difference between min datetime and now) in Seconds.
 ---
 
 ##### `tableName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.Dataset.property.tableName"></a>
+
+```typescript
+public readonly tableName: string;
+```
 
 - *Type:* `string`
 
@@ -2011,7 +2540,7 @@ The web sale dataset part of 1GB retail datasets.
 
 ### EmrEksNodegroup <a name="aws-analytics-reference-architecture.EmrEksNodegroup"></a>
 
-#### Initializer <a name="aws-analytics-reference-architecture.EmrEksNodegroup.Initializer"></a>
+#### Initializers <a name="aws-analytics-reference-architecture.EmrEksNodegroup.Initializer"></a>
 
 ```typescript
 import { EmrEksNodegroup } from 'aws-analytics-reference-architecture'

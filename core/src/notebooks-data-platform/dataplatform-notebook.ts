@@ -24,7 +24,7 @@ import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Tags, Aws, Duration, NestedStack } from '@aws-cdk/core';
 
 
-import { EmrEksCluster } from '../emr-eks-cluster';
+import { EmrEksCluster } from '../emr-eks-data-platform/emr-eks-cluster';
 import { Utils } from '../utils';
 import {
   createLambdaNoteBookAddTagPolicy,
@@ -483,7 +483,7 @@ export class DataPlatformNotebook extends Construct {
    * Method to add users, take a list of userDefinition and will create a managed endpoints for each user
    * and create an IAM Policy scoped to the list managed endpoints
    * @param {StudioUserDefinition} userList list of users
-   * @return {string[] | void } return a list of users that were created and their temporary passwords if IAM_AUTHENTICATED is used
+   * @return {string[] } return a list of users that were created and their temporary passwords if IAM_AUTHENTICATED is used
    * @access public
    */
   public addUser (userList: StudioUserDefinition[]): string [] {

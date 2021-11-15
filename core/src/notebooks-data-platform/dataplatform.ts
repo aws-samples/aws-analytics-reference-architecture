@@ -3,7 +3,7 @@
 
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnOutput, Construct, Stack } from '@aws-cdk/core';
-import { EmrEksCluster } from '../emr-eks-cluster';
+import { EmrEksCluster } from '../emr-eks-data-platform/emr-eks-cluster';
 //import { EmrEksNodegroup } from '../emr-eks-nodegroup';
 import { DataPlatformNotebook, DataPlatformNotebookProp, StudioUserDefinition } from './dataplatform-notebook';
 

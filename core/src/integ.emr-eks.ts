@@ -1,6 +1,6 @@
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { Stack, App } from '@aws-cdk/core';
-import { EmrEksCluster } from './emr-eks-cluster';
+import { EmrEksCluster } from './emr-eks-data-platform/emr-eks-cluster';
 
 const envInteg = { account: '', region: '' };
 
