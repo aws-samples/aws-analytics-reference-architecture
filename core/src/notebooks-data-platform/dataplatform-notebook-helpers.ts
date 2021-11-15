@@ -16,12 +16,12 @@ import { Aws, Construct, SecretValue } from '@aws-cdk/core';
 import { Utils } from '../utils';
 import { StudioUserDefinition } from './dataplatform-notebook';
 
-import * as studioS3Policy from './studio/emr-studio-s3-policy.json';
-import * as lambdaNotebookTagPolicy from './studio/notenook-add-tag-on-create-lambda-policy.json';
-import * as studioServiceRolePolicy from './studio/studio-service-role-policy.json';
-import * as studioUserRolePolicy from './studio/studio-user-iam-role-policy.json';
-import * as studioSessionPolicy from './studio/studio-user-session-policy.json';
-import * as studioUserPolicy from './studio/studio-user-sso-role-policy.json';
+import * as studioS3Policy from './resources/studio/emr-studio-s3-policy.json';
+import * as lambdaNotebookTagPolicy from './resources/studio/notenook-add-tag-on-create-lambda-policy.json';
+import * as studioServiceRolePolicy from './resources/studio/studio-service-role-policy.json';
+import * as studioUserRolePolicy from './resources/studio/studio-user-iam-role-policy.json';
+import * as studioSessionPolicy from './resources/studio/studio-user-session-policy.json';
+import * as studioUserPolicy from './resources/studio/studio-user-sso-role-policy.json';
 
 /**
  * @hidden

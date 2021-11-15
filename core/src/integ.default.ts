@@ -10,11 +10,11 @@ const envInteg = { account: '', region: '' };
 const mockApp = new App();
 const stack = new Stack(mockApp, 'deployment', { env: envInteg });
 
-const dept1 = DataPlatform.getOrCreate(stack, 'my-platform', {
+const dept1 = DataPlatform.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
 });
 
-dept1.addNotebookPlatform('unit1', {
+dept1.addNotebookPlatform({
   studioName: 'mystudio1',
   emrVCNamespace: 'mystudio1ns',
   studioAuthMode: StudioAuthMode.SSO,

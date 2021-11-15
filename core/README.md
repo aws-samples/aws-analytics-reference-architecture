@@ -30,9 +30,10 @@ The `DataPlatform` is used to create a new construct and its constructor expects
 ```
 eksAdminRoleArn: <ARN of EKS admin role>
 ```
+The initialization of the construct will create an EKS cluster.
+
 To create a notebook data platform supported by EMR Studio, you should use the object instantiated from `DataPlatform` Class
-and call the method `addNotebookPlatform`, the method expects two arguments: 
-* `notebookPlatformName` which is the name of the stack in CDK
+and call the method `addNotebookPlatform`, the method expects one arguments:
 * `dataPlatformNotebookProps` which defines the properties of the stack, you can import the `DataPlatformNotebookProp`
 from the `DataPlatformNotebook` construct to define the properties of the Studio.
 
@@ -54,18 +55,18 @@ The code below instantiate a new `DataPlatform` called _dept1_ then use it to cr
 with a stack called dept1 and dept2, then add a single user to both of them.
 
 ```
-const dept1 = new DataPlatform(stack, 'marketing-data', {
+const dept1 = DataPlatform.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123456789012:role/EkRole',
 });
 
-dept1.addNotebookPlatform('dept1', {
+dept1.addNotebookPlatform({
   studioName: 'unit1',
   emrVCNamespace: 'unit1ns',
   studioAuthMode: StudioAuthMode.SSO,
   acmCertificateArn: 'ACM certificate ARN',
 });
 
-dept1.addNotebookPlatform('dept2', {
+dept1.addNotebookPlatform({
   studioName: 'unit2',
   emrVCNamespace: 'unit2ns',
   studioAuthMode: StudioAuthMode.SSO,

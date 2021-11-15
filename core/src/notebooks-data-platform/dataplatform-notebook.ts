@@ -37,11 +37,11 @@ import {
   buildManagedEndpointExecutionRole,
 } from './dataplatform-notebook-helpers';
 
-import * as eventPattern from './studio/create-editor-event-pattern.json';
-import * as kmsLogPolicyTemplate from './studio/kms-key-policy.json';
+import * as eventPattern from './resources/studio/create-editor-event-pattern.json';
+import * as kmsLogPolicyTemplate from './resources/studio/kms-key-policy.json';
 
 /**
- * The properties of Data Platform Infrastructure where the notebooks should be deployed
+ * The properties of Data Platform Infrastructure where the notebook infrastructure should be deployed
  */
 export interface DataPlatformNotebookInfra {
   /**
@@ -53,7 +53,7 @@ export interface DataPlatformNotebookInfra {
    * */
   readonly emrEks: EmrEksCluster;
   /**
-   * Required service token of the addManagedEndpoint Custome Resource
+   * Required service token of the addManagedEndpoint Custom Resource
    * This used to create the CR deployed in the EMR on EKS stack
    * */
   readonly serviceToken: string;
@@ -153,6 +153,7 @@ export enum IdpRelayState {
   PING_ONE = 'PingOne',
 }
 /**
+ * @access private
  * @hidden
  * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
  * Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio
@@ -201,12 +202,12 @@ export class DataPlatformNotebook extends Construct {
   //private readonly emrOnEksStack: NestedStack;
 
   /**
+   * @access private
    * @hidden
    * Constructs a new instance of the DataGenerator class
    * @param {Construct} scope the Scope of the AWS CDK Construct
    * @param {string} id the ID of the AWS CDK Construct
    * @param {DataPlatformNotebookProp} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}
-   * @access public
    */
 
   constructor(scope: Construct, id: string, props: DataPlatformNotebookInfra) {
@@ -484,7 +485,8 @@ export class DataPlatformNotebook extends Construct {
    * and create an IAM Policy scoped to the list managed endpoints
    * @param {StudioUserDefinition} userList list of users
    * @return {string[] } return a list of users that were created and their temporary passwords if IAM_AUTHENTICATED is used
-   * @access public
+   * @access private
+   * @hidden
    */
   public addUser (userList: StudioUserDefinition[]): string [] {
     //Initialize the managedEndpointArns
