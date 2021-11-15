@@ -28,6 +28,7 @@
     "test:destroy": "npx projen test:destroy",
     "copy-resources": "npx projen copy-resources",
     "pip-install": "npx projen pip-install",
+    "gradle-build": "npx projen gradle-build",
     "release": "npx projen release",
     "projen": "npx projen"
   },

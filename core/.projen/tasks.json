@@ -47,6 +47,9 @@
         },
         {
           "exec": "npx projen pip-install"
+        },
+        {
+          "exec": "npx projen gradle-build"
         }
       ]
     },
@@ -298,6 +301,15 @@
         },
         {
           "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas"
+        }
+      ]
+    },
+    "gradle-build": {
+      "name": "gradle-build",
+      "description": "./gradlew shadowJar all folders in lib that has requirements.txt",
+      "steps": [
+        {
+          "exec": "cd lib/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar"
         }
       ]
     },

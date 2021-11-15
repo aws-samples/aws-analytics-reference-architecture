@@ -1,4 +1,3 @@
-import { spawnSync, SpawnSyncOptions } from 'child_process';
 import * as path from 'path';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as iam from '@aws-cdk/aws-iam';
@@ -9,8 +8,9 @@ import * as s3 from '@aws-cdk/aws-s3';
 import { Asset } from '@aws-cdk/aws-s3-assets';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 import * as cdk from '@aws-cdk/core';
+import { CustomResource } from '@aws-cdk/core';
 import * as cr from '@aws-cdk/custom-resources';
-
+import { PreBundledFunction } from '../common/pre-bundled-function';
 /**
  * Properties needed to run flyway migration scripts.
  */
@@ -96,40 +96,12 @@ export class FlywayRunner extends cdk.Construct {
       destinationBucket: migrationFilesBucket,
     });
 
-    const entry = path.join(__dirname, './resources/flyway-lambda');
-
-    // TODO: convert to preBundled lambda
-    const flywayLambda = new lambda.Function(this, 'runner', {
-      code: lambda.Code.fromAsset(entry, {
-        exclude: ['build/**'],
-        bundling: {
-          image: lambda.Runtime.JAVA_8.bundlingImage,
-          command: ['/bin/sh', '-c', './gradlew shadowJar -x test' + '&& cp build/libs/flyway-all.jar /asset-output/'],
-          local: {
-            tryBundle(outputDir: string) {
-              try {
-                exec(`./gradlew shadowJar -x test && cp build/libs/flyway-all.jar ${outputDir}`, {
-                  stdio: [
-                    // show output
-                    'inherit', //ignore stdio
-                    process.stderr, // redirect stdout to stderr
-                    'inherit', // inherit stderr
-                  ],
-                  cwd: entry,
-                });
-              } catch (error) {
-                return false;
-              }
-
-              return true;
-            },
-          },
-        },
-      }),
-      handler: 'com.geekoosh.flyway.FlywayHandler::handleRequest',
-      runtime: lambda.Runtime.JAVA_8,
+    const flywayLambda = new PreBundledFunction(this, 'runner', {
+      codePath: path.join(__dirname.split('/').slice(-1)[0], './resources/flyway-lambda/build/libs/flyway-all.jar'),
+      handler: 'com.geekoosh.flyway.FlywayCustomResourceHandler::handleRequest',
+      runtime: lambda.Runtime.JAVA_11,
       logRetention: props.logRetention ?? logs.RetentionDays.ONE_DAY,
-      memorySize: 512,
+      memorySize: 2048,
       timeout: cdk.Duration.seconds(900),
       vpc: props.vpc,
       securityGroups: props.cluster.connections.securityGroups,
@@ -138,7 +110,20 @@ export class FlywayRunner extends cdk.Construct {
         DB_CONNECTION_STRING: `jdbc:redshift://${props.cluster.clusterEndpoint.socketAddress}/${props.databaseName}`,
         DB_SECRET: props.cluster.secret!.secretFullArn!,
       },
+      initialPolicy: [
+        new iam.PolicyStatement({
+          effect: iam.Effect.ALLOW,
+          resources: [
+            '*',
+          ],
+          actions: [
+            'cloudformation:DescribeStacks',
+            'cloudformation:DescribeStackResource',
+          ],
+        }),
+      ],
     });
+
 
     // Allowing connection to the cluster
     props.cluster.connections.allowDefaultPortInternally();
@@ -146,47 +131,23 @@ export class FlywayRunner extends cdk.Construct {
     props.cluster.secret?.grantRead(flywayLambda);
     migrationFilesBucket.grantRead(flywayLambda);
 
-    new cr.AwsCustomResource(this, 'trigger', {
+    const flywayCustomResourceProvider = new cr.Provider(this, 'FlywayCustomResourceProvider', {
+      onEventHandler: flywayLambda,
       logRetention: props.logRetention ?? logs.RetentionDays.ONE_DAY,
-      onUpdate: {
-        service: 'Lambda',
-        action: 'invoke',
-        physicalResourceId: cr.PhysicalResourceId.of('flywayTrigger'),
-        parameters: {
-          FunctionName: flywayLambda.functionName,
-          InvocationType: 'RequestResponse',
-          Payload: JSON.stringify({
-            flywayRequest: {
-              flywayMethod: 'migrate',
-            },
-            assetHash: (migrationFilesDeployment.node.findChild('Asset1') as Asset).assetHash,
-          }),
-        },
-      },
-      policy: cr.AwsCustomResourcePolicy.fromStatements([
-        new iam.PolicyStatement({ actions: ['lambda:InvokeFunction'], resources: [flywayLambda.functionArn] }),
-      ]),
+      securityGroups: props.cluster.connections.securityGroups,
+      vpc: props.vpc,
     });
+
+    new CustomResource(this, 'trigger', {
+      serviceToken: flywayCustomResourceProvider.serviceToken,
+      properties: {
+        flywayRequest: {
+          flywayMethod: 'migrate',
+        },
+        assetHash: (migrationFilesDeployment.node.findChild('Asset1') as Asset).assetHash,
+      },
+    });
+
+    flywayCustomResourceProvider.node.addDependency(migrationFilesDeployment);
   }
-}
-
-function exec(command: string, options?: SpawnSyncOptions) {
-  const proc = spawnSync('bash', ['-c', command], options);
-
-  if (proc.error) {
-    throw proc.error;
-  }
-
-  if (proc.status != 0) {
-    if (proc.stdout || proc.stderr) {
-      throw new Error(
-        `[Status ${proc.status}] stdout: ${proc.stdout?.toString().trim()}\n\n\nstderr: ${proc.stderr
-          ?.toString()
-          .trim()}`,
-      );
-    }
-    throw new Error(`exited with status ${proc.status}`);
-  }
-
-  return proc;
 }

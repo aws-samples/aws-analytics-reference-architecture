@@ -204,13 +204,15 @@ To prevent this issue, we need to use `path.join(__dirname, 'resources/first.sql
 
 Place your Lambda function code under `<construct-folder>/resources/lambdas/<lambdan-function-name>` folder. Projen will detect the new folder and bundle that during `npx projen build`. 
 
+#### For python
+
 It will copy all files to the same path in `lib` folder and install Python dependencies on any folder with `requirements.txt`. Our package will have all dependencies bundle and consumers do not have to install dependencies by themselves.
 
 In the construct, create a Lambda function with `PreBundledFunction` construct to use the prebundled version. All of the parameter is the same as `lambda.Function`. The only difference is passing `codePath` prop instead of `code` with a relative path from `core/src`. The construct will use the right path with all dependencies when consumer is building. 
 
 Here's an example:
 
-```
+```typescript
 new PreBundledFunction(this, 'helloWordNumpy', {
     runtime: Runtime.PYTHON_3_8,
     codePath: '<construct-folder>/resources/lambdas/<lambdan-function-name>',
@@ -219,13 +221,28 @@ new PreBundledFunction(this, 'helloWordNumpy', {
     timeout: Duration.seconds(30),
 });
 ```
+
+### For Java (Gradle)
+
+It will copy all files to the same path in `lib` folder and call `./gradlew build shadowJar`  on any folder with `build.gradle`. Our package will have all dependencies bundle and consumers do not have to install java or dependencies by themselves.
+
+Here's an example:
+
+```typescript
+new PreBundledFunction(this, 'runner', {
+      codePath: path.join(__dirname.split('/').slice(-1)[0], './resources/flyway-lambda/build/libs/flyway-all.jar'),
+      handler: 'com.geekoosh.flyway.FlywayCustomResourceHandler::handleRequest',
+      runtime: lambda.Runtime.JAVA_11,
+    });
+```
+
 ### Why do we prebundle Python code for Lambda function?
 
 Most of the data engineering code are written in Python. Even our CDK constructs are in TypeScript, we still use Python a lot in our Lambda functions. 
 
 Normally, construct provider will **defer bundling step to construct consumers**. The provider only packages Python files and `requirements.txt` and distribute them. Consumers have to install and compile dependencies by themselves. The code looks like this:
 
-```
+```typescript
 new PythonFunction(this, 'functionName', {
     runtime: Runtime.PYTHON_3_8,
     entry: '<construct-folder>/resources/lambdas/<function-name>',
