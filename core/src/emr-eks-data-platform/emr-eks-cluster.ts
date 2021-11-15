@@ -96,7 +96,7 @@ export class EmrEksCluster extends Construct {
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
 
-  private static readonly EMR_VERSIONS = ['emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest']
+  private static readonly EMR_VERSIONS = ['emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
   private static readonly AUTOSCALING_POLICY = PolicyStatement.fromJson(IamPolicyAutoscaler);
   private readonly emrServiceRole: CfnServiceLinkedRole;
   public readonly eksCluster: Cluster;
@@ -226,7 +226,7 @@ export class EmrEksCluster extends Construct {
     new BucketDeployment(this, 'assetDeployment', {
       destinationBucket: assetBucket,
       destinationKeyPrefix: this.podTemplateLocation.objectKey,
-      sources: [Source.asset('./src/k8s/pod-template')],
+      sources: [Source.asset('./src/emr-eks-data-platform/resources/k8s/pod-template')],
     });
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the notebook default config
@@ -360,19 +360,26 @@ export class EmrEksCluster extends Construct {
         }),
         new PolicyStatement({
           resources: ['*'],
-          actions: ['acm:*'],
+          actions: ['acm:ImportCertificate', 'acm:DescribeCertificate'],
         }),
         new PolicyStatement({
           resources: ['*'],
-          actions: ['emr-containers:*'],
+          actions: ['emr-containers:CreateManagedEndpoint',
+            'emr-containers:DeleteManagedEndpoint'],
         }),
         new PolicyStatement({
           resources: ['*'],
-          actions: ['ec2:*'],
+          actions: ['ec2:CreateSecurityGroup',
+            'ec2:DeleteSecurityGroup',
+            'ec2:AuthorizeSecurityGroupEgress',
+            'ec2:AuthorizeSecurityGroupIngress',
+            'ec2:RevokeSecurityGroupEgress',
+            'ec2:RevokeSecurityGroupIngress',
+            'ec2:DeleteSecurityGroup'],
         }),
         new PolicyStatement({
           resources: ['*'],
-          actions: ['kms:*'],
+          actions: ['kms:Decrypt'],
         }),
       ],
     });
@@ -394,15 +401,27 @@ export class EmrEksCluster extends Construct {
         }),
         new PolicyStatement({
           resources: ['*'],
-          actions: ['acm:*'],
+          actions: ['acm:ImportCertificate', 'acm:DescribeCertificate'],
         }),
         new PolicyStatement({
           resources: ['*'],
-          actions: ['emr-containers:*'],
+          actions: ['emr-containers:CreateManagedEndpoint',
+            'emr-containers:CreateManagedEndpoint',
+            'emr-containers:DeleteManagedEndpoint'],
         }),
         new PolicyStatement({
           resources: ['*'],
-          actions: ['ec2:*'],
+          actions: ['ec2:CreateSecurityGroup',
+            'ec2:DeleteSecurityGroup',
+            'ec2:AuthorizeSecurityGroupEgress',
+            'ec2:AuthorizeSecurityGroupIngress',
+            'ec2:RevokeSecurityGroupEgress',
+            'ec2:RevokeSecurityGroupIngress',
+            'ec2:DeleteSecurityGroup'],
+        }),
+        new PolicyStatement({
+          resources: ['*'],
+          actions: ['kms:Decrypt'],
         }),
       ],
     });
