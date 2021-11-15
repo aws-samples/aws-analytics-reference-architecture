@@ -365,7 +365,8 @@ export class EmrEksCluster extends Construct {
         new PolicyStatement({
           resources: ['*'],
           actions: ['emr-containers:CreateManagedEndpoint',
-            'emr-containers:DeleteManagedEndpoint'],
+            'emr-containers:DeleteManagedEndpoint',
+            'emr-containers:DescribeManagedEndpoint '],
         }),
         new PolicyStatement({
           resources: ['*'],
@@ -405,7 +406,7 @@ export class EmrEksCluster extends Construct {
         }),
         new PolicyStatement({
           resources: ['*'],
-          actions: ['emr-containers:CreateManagedEndpoint',
+          actions: ['emr-containers:DescribeManagedEndpoint',
             'emr-containers:CreateManagedEndpoint',
             'emr-containers:DeleteManagedEndpoint'],
         }),
