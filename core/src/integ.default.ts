@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { App, Stack } from '@aws-cdk/core';
-import {DataPlatform, StudioAuthMode, StudioUserDefinition} from '.';
+import { DataPlatform, StudioAuthMode, StudioUserDefinition } from '.';
 
 const envInteg = { account: '214783019211', region: 'eu-west-1' };
 

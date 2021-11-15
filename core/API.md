@@ -235,6 +235,8 @@ the DataLakeStorageProps properties.
 
 ### DataPlatform <a name="aws-analytics-reference-architecture.DataPlatform"></a>
 
+Construct to create an Amazon EKS cluster Construct is then used to create a dataplatform which is composed of an EMR Virtual Cluster and an EMR studio Construct is then used to assign users to the created EMR Studio.
+
 #### Initializer <a name="aws-analytics-reference-architecture.DataPlatform.Initializer"></a>
 
 ```typescript
@@ -273,11 +275,15 @@ public addNotebookPlatform(notebookPlatformName: string, dataPlatformNotebookPro
 
 - *Type:* `string`
 
+if used in SSO mode pass the user role that is by Amazon EMR Studio.
+
 ---
 
 ###### `dataPlatformNotebookProps`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.dataPlatformNotebookProps"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookProp`](#aws-analytics-reference-architecture.DataPlatformNotebookProp)
+
+the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}.
 
 ---
 
@@ -297,14 +303,41 @@ public addUsersNotebookPlatform(notebookPlatformName: string, userList: StudioUs
 
 - *Type:* [`aws-analytics-reference-architecture.StudioUserDefinition`](#aws-analytics-reference-architecture.StudioUserDefinition)[]
 
+list of users.
+
+---
+
+#### Static Functions <a name="Static Functions"></a>
+
+##### `getOrCreate` <a name="aws-analytics-reference-architecture.DataPlatform.getOrCreate"></a>
+
+```typescript
+import { DataPlatform } from 'aws-analytics-reference-architecture'
+
+DataPlatform.getOrCreate(scope: Construct, stackName: string, props: DataPlatformProps)
+```
+
+###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+###### `stackName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.stackName"></a>
+
+- *Type:* `string`
+
+---
+
+###### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.DataPlatformProps`](#aws-analytics-reference-architecture.DataPlatformProps)
+
 ---
 
 
 
-
 ### DataPlatformNotebook <a name="aws-analytics-reference-architecture.DataPlatformNotebook"></a>
-
-Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio Construct is then used to assign users to the create EMR Studio by calling the appropriate method {@linkcode addSSOUsers}, {@linkcode addFederatedUsers} or {@linkcode addIAMUsers}.
 
 #### Initializer <a name="aws-analytics-reference-architecture.DataPlatformNotebook.Initializer"></a>
 
@@ -1549,7 +1582,6 @@ Value used in the CfnOutput in the Stack.
 The properties for defining a user.
 
 The interface is used to create and assign a user or a group to a Amazon EMR Studio
-used in {@linkcode addUser}
 
 #### Initializer <a name="[object Object].Initializer"></a>
 

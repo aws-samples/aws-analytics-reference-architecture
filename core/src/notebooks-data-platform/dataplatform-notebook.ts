@@ -110,7 +110,6 @@ export interface DataPlatformNotebookProp {
 /**
  * The properties for defining a user.
  * The interface is used to create and assign a user or a group to a Amazon EMR Studio
- * used in {@linkcode addUser}
  */
 
 export interface StudioUserDefinition {
@@ -154,9 +153,10 @@ export enum IdpRelayState {
   PING_ONE = 'PingOne',
 }
 /**
+ * @hidden
  * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
  * Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio
- * Construct is then used to assign users to the create EMR Studio by calling the appropriate method {@linkcode addSSOUsers}, {@linkcode addFederatedUsers} or {@linkcode addIAMUsers}
+ * Construct is then used to assign users to the created EMR Studio
  */
 
 export class DataPlatformNotebook extends Construct {
@@ -201,6 +201,7 @@ export class DataPlatformNotebook extends Construct {
   //private readonly emrOnEksStack: NestedStack;
 
   /**
+   * @hidden
    * Constructs a new instance of the DataGenerator class
    * @param {Construct} scope the Scope of the AWS CDK Construct
    * @param {string} id the ID of the AWS CDK Construct

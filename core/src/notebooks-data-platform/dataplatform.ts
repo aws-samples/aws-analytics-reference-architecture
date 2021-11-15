@@ -22,6 +22,11 @@ export interface DataPlatformProps {
 
 }
 
+/**
+ * Construct to create an Amazon EKS cluster
+ * Construct is then used to create a dataplatform which is composed of an EMR Virtual Cluster and an EMR studio
+ * Construct is then used to assign users to the created EMR Studio
+ */
 
 export class DataPlatform extends Construct {
 
@@ -53,6 +58,12 @@ export class DataPlatform extends Construct {
 
   }
 
+  /**
+   * Method used to create a new EMR Virtual cluster and EMR Studio
+   * @access public
+   * @param {DataPlatformNotebookProp} dataPlatformNotebookProps the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}
+   * @param {string} notebookPlatformName if used in SSO mode pass the user role that is by Amazon EMR Studio
+   */
   public addNotebookPlatform (notebookPlatformName: string, dataPlatformNotebookProps: DataPlatformNotebookProp) : void {
 
     if (!this.dataPlatformMapping.has(notebookPlatformName) ||
@@ -80,6 +91,14 @@ export class DataPlatform extends Construct {
     }
   }
 
+  /**
+   * Method to add users, take the scope of dataPlatformNotebook
+   * and take a list of userDefinition and will create a managed endpoints for each user
+   * and create an IAM Policy scoped to the list managed endpoints
+   * @param {StudioUserDefinition []} userList list of users
+   * @param {string} notebookPlatformName
+   * @access public
+   */
   public addUsersNotebookPlatform (notebookPlatformName: string, userList: StudioUserDefinition[] ): void {
     if (this.dataPlatformMapping.has(notebookPlatformName)) {
       this.dataPlatformMapping.get(notebookPlatformName)!.addUser(userList);
