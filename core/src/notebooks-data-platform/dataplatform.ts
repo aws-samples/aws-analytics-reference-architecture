@@ -6,7 +6,6 @@ import { CfnOutput, Construct, Stack } from '@aws-cdk/core';
 import { EmrEksCluster } from '../emr-eks-data-platform/emr-eks-cluster';
 import { DataPlatformNotebook, DataPlatformNotebookProp, StudioUserDefinition } from './dataplatform-notebook';
 
-
 /**
  * The properties for DataPlatform Infrastructure Construct.
  * The properties are used to create an EKS cluster
@@ -28,15 +27,17 @@ export interface DataPlatformProps {
  */
 export class DataPlatform extends Construct {
 
-  public static getOrCreate(scope: Construct, props: DataPlatformProps) {
+  public static getOrCreate(scope: Construct, props?: DataPlatformProps) {
 
     const stack = Stack.of(scope);
     const id = `${stack.stackName}`;
 
     let dataPlatform: DataPlatform;
 
-    if (stack.node.tryFindChild(id) == undefined) {
+    if (stack.node.tryFindChild(id) == undefined && props != undefined) {
       dataPlatform = new DataPlatform(stack, id, props);
+    } else if (stack.node.tryFindChild(id) == undefined && typeof (props) == 'undefined') {
+      throw new Error('Dataplatform construct initialization requires the ARN for the EKS admin role ');
     }
 
     return stack.node.tryFindChild(id) as DataPlatform || dataPlatform!;
@@ -90,7 +91,7 @@ export class DataPlatform extends Construct {
 
   /**
    * Method to add users, takes the name of the EMR Studio hosting the notebook infrastructure
-   * takes a list of userDefinition and will create a managed endpoints for each user
+   * and takes a list of userDefinition and will create a managed endpoints for each user
    * and create an IAM Policy and Role scoped to the list of managed endpoints it the user should have access to
    * @param {StudioUserDefinition []} userList list of users defined in [properties]{@link StudioUserDefinition}
    * @param {string} notebookPlatformName the name given to the EMR studio at its creation

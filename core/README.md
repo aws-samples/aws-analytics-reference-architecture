@@ -86,8 +86,19 @@ let userList2: StudioUserDefinition[] = [{
   executionPolicyNames: ['policyManagedEndpoint3'],
 }];
 
+const dept3 = DataPlatform.getOrCreate(stack);
+
+dept3.addNotebookPlatform({
+  studioName: 'unit3',
+  emrVCNamespace: 'unit3ns',
+  studioAuthMode: StudioAuthMode.SSO,
+  acmCertificateArn: 'ACM certificate ARN',
+});
+
 dept1.addUsersNotebookPlatform('unit1', userList1);
 dept1.addUsersNotebookPlatform('unit2', userList2);
+dept3.addUsersNotebookPlatform('unit3', userList2);
+
 ```
 
 [1]: [https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-studio-service-role.html]
