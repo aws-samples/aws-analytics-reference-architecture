@@ -24,7 +24,7 @@ import * as studioSessionPolicy from './resources/studio/studio-user-session-pol
 import * as studioUserPolicy from './resources/studio/studio-user-sso-role-policy.json';
 
 /**
- * @hidden
+ * @internal
  * Create a policy for Lambda function
  * @returns Return a string with IAM policy ARN
  */
@@ -43,7 +43,7 @@ export function createLambdaNoteBookAddTagPolicy (scope: Construct, logArn: stri
 }
 
 /**
- * @hidden
+ * @internal
  * Create the role to be used with the ManagedEndpoint
  * @returns Return a string with Role ARN
  */
@@ -70,7 +70,7 @@ export function buildManagedEndpointExecutionRole (
 }
 
 /**
- * @hidden
+ * @internal
  * Create a session policy for each user scoped down to the managed endpoint
  * @returns Return the ARN of the policy created
  */
@@ -108,7 +108,7 @@ export function createUserSessionPolicy(scope: Construct, user: StudioUserDefini
 }
 
 /**
- * @hidden
+ * @internal
  * Create a policy for the EMR USER Role
  * @returns Return the ARN of the policy created
  */
@@ -133,7 +133,7 @@ export function createStudioUserRolePolicy(scope: Construct, studioName: string,
 }
 
 /**
- * @hidden
+ * @internal
  * Add an inline policy to the role passed by the user
  */
 export function addServiceRoleInlinePolicy (scope: Construct, studioServiceRoleArn: string, bucketName: string ): IRole {
@@ -156,7 +156,7 @@ export function addServiceRoleInlinePolicy (scope: Construct, studioServiceRoleA
 }
 
 /**
- * @hidden
+ * @internal
  * Create a policy for the EMR Service Role
  * The policy allow access only to a single bucket to store notebooks
  * @returns Return the ARN of the policy created
@@ -183,7 +183,7 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
 }
 
 /**
- * @hidden
+ * @internal
  * Create a policy for the role to which a user federate
  * Called when working in IAM auth mode with Federated IdP
  * @returns Return the ARN of the policy created
@@ -227,7 +227,7 @@ export function createIAMRolePolicy(scope: Construct,
 }
 
 /**
- * @hidden
+ * @internal
  * Create the role to which a user federate
  * Called when working in IAM auth mode with Federated IdP
  * @returns Return the ARN of the policy created
@@ -255,7 +255,7 @@ export function createIAMFederatedRole(scope: Construct,
 }
 
 /**
- * @hidden
+ * @internal
  * Create an IAM user and its role then attach the policy for the role
  * Called when working in IAM auth mode with users are authenticated through IAM
  * @returns {string} Return the user created and its password

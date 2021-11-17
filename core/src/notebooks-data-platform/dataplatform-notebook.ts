@@ -42,6 +42,7 @@ import * as kmsLogPolicyTemplate from './resources/studio/kms-key-policy.json';
 
 /**
  * The properties of Data Platform Infrastructure where the notebook infrastructure should be deployed
+ * @internal
  */
 export interface DataPlatformNotebookInfra {
   /**
@@ -152,13 +153,13 @@ export enum IdpRelayState {
   PING_FEDERATE = 'TargetResource',
   PING_ONE = 'PingOne',
 }
+
 /**
- * @hidden
+ * @internal
  * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
  * Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio
  * Construct is then used to assign users to the created EMR Studio
  */
-
 export class DataPlatformNotebook extends Construct {
 
   public static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
@@ -424,7 +425,7 @@ export class DataPlatformNotebook extends Construct {
   }
 
   /**
-   * @hidden
+   * @internal
    * Constructs a new object of CfnStudio
    * @param {DataPlatformNotebookProp} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}
    * @param {string} securityGroupId engine SecurityGroupId
@@ -482,8 +483,7 @@ export class DataPlatformNotebook extends Construct {
    * and create an IAM Policy scoped to the list managed endpoints
    * @param {StudioUserDefinition} userList list of users
    * @return {string[] } return a list of users that were created and their temporary passwords if IAM_AUTHENTICATED is used
-   * @access private
-   * @hidden
+   * @internal
    */
   public addUser (userList: StudioUserDefinition[]): string [] {
     //Initialize the managedEndpointArns
