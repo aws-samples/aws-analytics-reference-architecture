@@ -153,7 +153,6 @@ export enum IdpRelayState {
   PING_ONE = 'PingOne',
 }
 /**
- * @access private
  * @hidden
  * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
  * Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio
@@ -199,7 +198,6 @@ export class DataPlatformNotebook extends Construct {
   private readonly serviceToken: string;
 
   private readonly nestedStack: NestedStack;
-  //private readonly emrOnEksStack: NestedStack;
 
   /**
    * @access private
@@ -221,7 +219,6 @@ export class DataPlatformNotebook extends Construct {
     this.managedEndpointExcutionPolicyArnMapping = new Map<string, string>();
     this.emrOnEksVersion = props.dataPlatformProps.emrOnEksVersion || DataPlatformNotebook.DEFAULT_EMR_VERSION;
     this.authMode = props.dataPlatformProps.studioAuthMode;
-    //this.emrOnEksStack = props.emrOnEksStack;
     this.serviceToken = props.serviceToken;
 
     this.nestedStack = new NestedStack(scope, props.dataPlatformProps.studioName + '-stack');
@@ -532,6 +529,8 @@ export class DataPlatformNotebook extends Construct {
             this.nestedStack,
             'engineSecurityGroup-' + this.studioName + executionPolicyName.replace(/[^\w\s]/gi, ''),
             managedEndpoint.getAttString('securityGroup'));
+
+          Tags.of(engineSecurityGroup).add('for-use-by-analytics-reference-architecture', 'true');
 
           //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
           this.workSpaceSecurityGroup.addEgressRule(engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);

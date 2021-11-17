@@ -45,7 +45,10 @@ export class DataPlatform extends Construct {
 
   private readonly emrEks: EmrEksCluster;
   private readonly dataPlatformMapping: Map<string, DataPlatformNotebook>;
-  private list: string[] = [];
+
+  //This is used to avoid failing a deployment due to having duplicate EMR VC namespace or EMR Studio Name
+  // Used to keep track of names given to EMR Studio and EMR VC namespaces
+  private emrVCNamespaceAndStudioNameList: string[] = [];
 
 
   private constructor(scope: Construct, id: string, props: DataPlatformProps) {
@@ -61,12 +64,12 @@ export class DataPlatform extends Construct {
   /**
    * Method used to create a new EMR Virtual cluster and EMR Studio for the dataplatform
    * @access public
-   * @param {DataPlatformNotebookProp} dataPlatformNotebookProps the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}
+   * @param {DataPlatformNotebookProp} dataPlatformNotebookProps the DataPlatformNotebooks as defined in [properties]{@link DataPlatformNotebookProp}
    */
   public addNotebookPlatform (dataPlatformNotebookProps: DataPlatformNotebookProp) : void {
 
-    if (!this.list.includes(dataPlatformNotebookProps.studioName) ||
-        !this.list.includes(dataPlatformNotebookProps.emrVCNamespace) ) {
+    if (!this.emrVCNamespaceAndStudioNameList.includes(dataPlatformNotebookProps.studioName) ||
+        !this.emrVCNamespaceAndStudioNameList.includes(dataPlatformNotebookProps.emrVCNamespace) ) {
 
       let notebookPlatform = new DataPlatformNotebook(this, dataPlatformNotebookProps.studioName, {
         emrEks: this.emrEks,
@@ -74,8 +77,8 @@ export class DataPlatform extends Construct {
         serviceToken: this.emrEks.managedEndpointProviderServiceToken,
       });
 
-      this.list.push(dataPlatformNotebookProps.studioName);
-      this.list.push(dataPlatformNotebookProps.emrVCNamespace);
+      this.emrVCNamespaceAndStudioNameList.push(dataPlatformNotebookProps.studioName);
+      this.emrVCNamespaceAndStudioNameList.push(dataPlatformNotebookProps.emrVCNamespace);
 
       this.dataPlatformMapping.set(dataPlatformNotebookProps.studioName, notebookPlatform);
 
