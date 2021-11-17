@@ -35,6 +35,10 @@ app = core.App()
 if app.node.try_get_context('EnableCICD') == 'true':
     deploy_envs = []
 
+    cicd_account_context = app.node.try_get_context('CICD')
+    if cicd_account_context is None:
+        raise ValueError('Please provide CICD account information on cdk.context.json')
+
     dev_env = make_env(app, 'DEV')
     deploy_envs.append(dev_env)
 
@@ -42,8 +46,11 @@ if app.node.try_get_context('EnableCICD') == 'true':
     prod_env = make_env(app, 'PROD')
     deploy_envs.append(prod_env)
 
-    PipelineStack(app, "PipelineStack",
-                  env=make_env(app, 'PROD'),
+    PipelineStack(app, "araPipelineStack",
+                  env={
+                      'account': cicd_account_context.get('account'),
+                      'region': cicd_account_context.get('region')
+                  },
                   deploy_envs=deploy_envs)
 else:
     DataLake(app, "ara")
