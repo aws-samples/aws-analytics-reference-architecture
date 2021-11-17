@@ -78,16 +78,16 @@ To disable, for example, the data visualization module, the following argument h
 This is because when the pipeline picks up any changes to the tracked repository, it will use these values as opposed to command line ones. 
 
 4. Additionally, The Analytics Reference Architecture comes with constructs to allow for CICD deployments through the use of CodePipeline.
-   In order to deploy in this manner, there are a few steps that must be performed to allow for integration with your SVN
+   In order to deploy in this manner, there are a few steps that must be performed to allow for integration with your code repository
    of choice and to specify the environments in which you would like to deploy. Currently, Connections allows for integration
    with Github, Github Enterprise, and Bitbucket. Alternatively, any code source supported by CodePipeline can be specified
    by modifying the `input` parameter of the synthesis step in the pipeline found in `refarch/aws-native/cicd/pipeline.py`
    
    * Create a CodeStar Connection to allow CodePipeline to pull changes from your repository.
-      * Follow the steps here to create a Connection with your repository: ![CodeStar Connections](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections-create.html)
+      * Follow the steps here to create a Connection with your repository: [CodeStar Connections](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections-create.html)
         Note that this should be done in the account that you're planning to use to host your pipeline.
       * Copy the arn of the connection you have created, and paste it into the `ConnectionArn` field of `refarch/aws-native/cdk.json`
-      * Also specify the `RepositoryName` and `RepositoryBranch` context variables for the repo and branch that should be tracked, respectively
+      * Also specify the `RepositoryName` (e.g. `githubid/myrepo`) and `RepositoryBranch` context variables for the repo and branch that should be tracked, respectively
       * Finally, in the same file, enable CICD deployments by setting the `EnableCICD` context variable to `true`
         * If this is not done then the pipeline will not be synthesized and/or updated when using either `cdk deploy` or `cdk synth`
    * Specify the details of your CICD account in `refarch/aws-native/cdk.context.json`
