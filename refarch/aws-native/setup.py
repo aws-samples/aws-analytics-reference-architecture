@@ -19,7 +19,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="common"),
 
     install_requires=[
-        "aws-analytics-reference-architecture==1.5.1",
+        "aws-analytics-reference-architecture==1.7.0",
         "aws-cdk.core==1.130.0",
         "aws-cdk.aws-s3==1.130.0",
         "aws-cdk.aws-glue==1.130.0",
