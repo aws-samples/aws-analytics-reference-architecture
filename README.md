@@ -112,7 +112,7 @@ This is because when the pipeline picks up any changes to the tracked repository
          * **Important Note**: By specifying the AdministratorAccess policy you are giving the CDK full admin privileges to deploy
            to your account. In the case of any security concerns, this can be changed to a more restrictive policy depending on your
            security requirements.
-  * Finally, run `cdk deploy PipelineStack` using the credentials for your CICD account.
+  * Finally, run `cdk deploy araPipelineStack` using the credentials for your CICD account.
       * This will deploy the stack containing the pipeline to your CICD account, and cause it to automatically start pulling any changes
         from the repo that you have specified
         
