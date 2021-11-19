@@ -404,6 +404,77 @@ the ExampleProps properties.
 
 
 
+### FlywayRunner <a name="aws-analytics-reference-architecture.FlywayRunner"></a>
+
+A CDK construct that runs flyway migration scripts against a redshift cluster.
+
+This construct is based on two main resource, an AWS Lambda hosting a flyway runner
+and one custom resource invoking it when content of migrationScriptsFolderAbsolutePath changes.
+
+Usage example:
+
+*This example assume that migration SQL files are located in `resources/sql` of the cdk project.*
+```typescript
+import * as path from 'path';
+import * as ec2 from '@aws-cdk/aws-ec2';
+import * as redshift from '@aws-cdk/aws-redshift';
+import * as cdk from '@aws-cdk/core';
+
+import { FlywayRunner } from 'aws-analytics-reference-architecture';
+
+const integTestApp = new cdk.App();
+const stack = new cdk.Stack(integTestApp, 'fywayRunnerTest');
+
+const vpc = new ec2.Vpc(stack, 'Vpc');
+
+const dbName = 'testdb';
+const cluster = new redshift.Cluster(stack, 'Redshift', {
+   removalPolicy: cdk.RemovalPolicy.DESTROY,
+   masterUser: {
+     masterUsername: 'admin',
+   },
+   vpc,
+   defaultDatabaseName: dbName,
+});
+
+new FlywayRunner(stack, 'testMigration', {
+   migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),
+   cluster: cluster,
+   vpc: vpc,
+   databaseName: dbName,
+});
+```
+
+#### Initializers <a name="aws-analytics-reference-architecture.FlywayRunner.Initializer"></a>
+
+```typescript
+import { FlywayRunner } from 'aws-analytics-reference-architecture'
+
+new FlywayRunner(scope: Construct, id: string, props: FlywayRunnerProps)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.FlywayRunner.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.FlywayRunner.parameter.id"></a>
+
+- *Type:* `string`
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.FlywayRunner.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.FlywayRunnerProps`](#aws-analytics-reference-architecture.FlywayRunnerProps)
+
+---
+
+
+
+
+
 ### SingletonBucket <a name="aws-analytics-reference-architecture.SingletonBucket"></a>
 
 An Amazon S3 Bucket implementing the singleton pattern.
@@ -921,6 +992,83 @@ public readonly value: string;
 - *Default:* Set to 'defaultValue!' if not provided
 
 Value used in the CfnOutput in the Stack.
+
+---
+
+### FlywayRunnerProps <a name="aws-analytics-reference-architecture.FlywayRunnerProps"></a>
+
+Properties needed to run flyway migration scripts.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { FlywayRunnerProps } from 'aws-analytics-reference-architecture'
+
+const flywayRunnerProps: FlywayRunnerProps = { ... }
+```
+
+##### `cluster`<sup>Required</sup> <a name="aws-analytics-reference-architecture.FlywayRunnerProps.property.cluster"></a>
+
+```typescript
+public readonly cluster: Cluster;
+```
+
+- *Type:* [`@aws-cdk/aws-redshift.Cluster`](#@aws-cdk/aws-redshift.Cluster)
+
+The cluster to run migration scripts against.
+
+---
+
+##### `databaseName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.FlywayRunnerProps.property.databaseName"></a>
+
+```typescript
+public readonly databaseName: string;
+```
+
+- *Type:* `string`
+
+The database name to run migration scripts against.
+
+---
+
+##### `migrationScriptsFolderAbsolutePath`<sup>Required</sup> <a name="aws-analytics-reference-architecture.FlywayRunnerProps.property.migrationScriptsFolderAbsolutePath"></a>
+
+```typescript
+public readonly migrationScriptsFolderAbsolutePath: string;
+```
+
+- *Type:* `string`
+
+The absolute path to the flyway migration scripts.
+
+Those scripts needs to follow expected flyway naming convention.
+
+> https://flywaydb.org/documentation/concepts/migrations.html#sql-based-migrations for more details.
+
+---
+
+##### `vpc`<sup>Required</sup> <a name="aws-analytics-reference-architecture.FlywayRunnerProps.property.vpc"></a>
+
+```typescript
+public readonly vpc: Vpc;
+```
+
+- *Type:* [`@aws-cdk/aws-ec2.Vpc`](#@aws-cdk/aws-ec2.Vpc)
+
+The vpc hosting the cluster.
+
+---
+
+##### `logRetention`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.FlywayRunnerProps.property.logRetention"></a>
+
+```typescript
+public readonly logRetention: RetentionDays;
+```
+
+- *Type:* [`@aws-cdk/aws-logs.RetentionDays`](#@aws-cdk/aws-logs.RetentionDays)
+- *Default:* logs.RetentionDays.ONE_DAY (1 day)
+
+Period to keep the logs around.
 
 ---
 

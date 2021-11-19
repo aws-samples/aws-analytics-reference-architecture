@@ -13,3 +13,4 @@ export { DataLakeCatalog } from './data-lake-catalog';
 export { DataLakeExporter, DataLakeExporterProps } from './data-lake-exporter';
 export { AthenaDefaultSetup } from './athena-default-setup';
 export { SingletonGlueDefaultRole } from './singleton-glue-default-role';
+export { FlywayRunner, FlywayRunnerProps } from './db-schema-manager';
