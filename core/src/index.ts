@@ -14,3 +14,4 @@ export { DataLakeExporter, DataLakeExporterProps } from './data-lake-exporter';
 export { AthenaDefaultSetup } from './athena-default-setup';
 export { SingletonGlueDefaultRole } from './singleton-glue-default-role';
 export { EmrEksClusterProps, EmrEksCluster, EmrEksNodegroupOptions, EmrEksNodegroup, EmrVirtualClusterProps } from './emr-eks-data-platform';
+export { FlywayRunner, FlywayRunnerProps } from './db-schema-manager';

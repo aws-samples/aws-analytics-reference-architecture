@@ -230,8 +230,8 @@ export class EmrEksCluster extends Construct {
     });
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the notebook default config
-    NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-driver.yaml`);
-    NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-executor.yaml`);
+    // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-driver.yaml`);
+    // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-executor.yaml`);
     this.notebookDefaultConfig = JSON.stringify(NotebookDefaultConfig);
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the critical default config
@@ -366,7 +366,7 @@ export class EmrEksCluster extends Construct {
           resources: ['*'],
           actions: ['emr-containers:CreateManagedEndpoint',
             'emr-containers:DeleteManagedEndpoint',
-            'emr-containers:DescribeManagedEndpoint '],
+            'emr-containers:DescribeManagedEndpoint'],
         }),
         new PolicyStatement({
           resources: ['*'],
