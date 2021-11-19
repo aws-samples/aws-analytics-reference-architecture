@@ -2,22 +2,25 @@
   "tasks": {
     "build": {
       "name": "build",
-      "description": "Full release build (test+compile)",
+      "description": "Full release build",
       "steps": [
         {
-          "exec": "npx projen"
+          "spawn": "default"
         },
         {
-          "spawn": "test"
+          "spawn": "pre-compile"
         },
         {
           "spawn": "compile"
         },
         {
-          "spawn": "package"
+          "spawn": "post-compile"
         },
         {
-          "spawn": "docgen"
+          "spawn": "test"
+        },
+        {
+          "spawn": "package"
         }
       ]
     },
@@ -90,6 +93,9 @@
         },
         {
           "exec": "npx projen pip-install"
+        },
+        {
+          "exec": "npx projen gradle-build"
         }
       ]
     },
@@ -104,6 +110,15 @@
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/datasets/resources lib/datasets"
         },
         {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
+        },
+        {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-athena-query/resources lib/synchronous-athena-query"
         },
         {
@@ -113,6 +128,7 @@
     },
     "default": {
       "name": "default",
+      "description": "Synthesize project files",
       "steps": [
         {
           "exec": "node .projenrc.js"
@@ -137,9 +153,18 @@
         }
       ]
     },
+    "gradle-build": {
+      "name": "gradle-build",
+      "description": "./gradlew shadowJar all folders in lib that has requirements.txt",
+      "steps": [
+        {
+          "exec": "cd lib/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null"
+        }
+      ]
+    },
     "package": {
       "name": "package",
-      "description": "Create an npm tarball",
+      "description": "Creates the distribution package",
       "steps": [
         {
           "exec": "jsii-pacmak"
@@ -160,6 +185,19 @@
           "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas"
         }
       ]
+    },
+    "post-compile": {
+      "name": "post-compile",
+      "description": "Runs after successful compilation",
+      "steps": [
+        {
+          "spawn": "docgen"
+        }
+      ]
+    },
+    "pre-compile": {
+      "name": "pre-compile",
+      "description": "Prepare the project for compilation"
     },
     "publish:github": {
       "name": "publish:github",
@@ -232,9 +270,6 @@
       "name": "test",
       "description": "Run tests",
       "steps": [
-        {
-          "exec": "rm -fr lib/"
-        },
         {
           "exec": "jest --passWithNoTests --all"
         },

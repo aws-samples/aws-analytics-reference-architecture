@@ -150,3 +150,8 @@ Section 8 – Interpretation.
      c.	No term or condition of this Public License will be waived and no failure to comply consented to unless expressly agreed to by the Licensor.
 
      d.	Nothing in this Public License constitutes or may be interpreted as a limitation upon, or waiver of, any privileges and immunities that apply to the Licensor or You, including from the legal processes of any jurisdiction or authority.
+
+
+** FlywayLambdaService (core/src/db-schema-manager/resources/flyway-lambda) - https://github.com/Geekoosh/flyway-lambda
+
+Copyright (c) 2021 Assaf Kamil

@@ -102,7 +102,17 @@
       "type": "bundled"
     },
     {
+      "name": "@aws-cdk/assertions",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
       "name": "@aws-cdk/aws-athena",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-ec2",
       "version": "1.130",
       "type": "peer"
     },
@@ -157,7 +167,27 @@
       "type": "peer"
     },
     {
+      "name": "@aws-cdk/aws-redshift",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-s3-assets",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-s3-deployment",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
       "name": "@aws-cdk/aws-s3",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-secretsmanager",
       "version": "1.130",
       "type": "peer"
     },
@@ -187,7 +217,17 @@
       "type": "peer"
     },
     {
+      "name": "@aws-cdk/assertions",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
       "name": "@aws-cdk/aws-athena",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-ec2",
       "version": "1.130",
       "type": "runtime"
     },
@@ -242,7 +282,27 @@
       "type": "runtime"
     },
     {
+      "name": "@aws-cdk/aws-redshift",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-s3-assets",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-s3-deployment",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
       "name": "@aws-cdk/aws-s3",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-secretsmanager",
       "version": "1.130",
       "type": "runtime"
     },

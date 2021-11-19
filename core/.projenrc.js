@@ -55,6 +55,12 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-stepfunctions-tasks',
     '@aws-cdk/aws-events',
     '@aws-cdk/aws-events-targets',
+    '@aws-cdk/aws-s3-deployment',
+    '@aws-cdk/aws-ec2',
+    '@aws-cdk/aws-redshift',
+    '@aws-cdk/aws-secretsmanager',
+    '@aws-cdk/aws-s3-assets',
+    '@aws-cdk/assertions',
   ],
   bundledDeps: [
     'xmldom@github:xmldom/xmldom#0.7.0',
@@ -120,10 +126,28 @@ for (const dirPath of findAllPythonLambdaDir('src')) {
 }
 
 /**
+ * Task to build java lambda jar with gradle
+ */
+const gradleBuildTask = project.addTask('gradle-build', {
+  description: './gradlew shadowJar all folders in lib that has requirements.txt',
+});
+
+for (const dirPath of findAllGradleLambdaDir('src')) {
+  console.log('loop over gradle dir');
+  // Assume that all folders with 'requirements.txt' have been copied to lib
+  // by the task 'copy-resources'
+  const dirPathInLib = dirname(dirPath.replace('src', 'lib'));
+  const gradleCmd = `cd ${dirPathInLib} && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null`;
+
+  gradleBuildTask.exec(gradleCmd);
+}
+
+/**
  * Run `copy-resources` and `pip-install` as part of compile
  */
 project.compileTask.exec('npx projen copy-resources');
 project.compileTask.exec('npx projen pip-install');
+project.compileTask.exec('npx projen gradle-build');
 
 /**
  * Find all directory that has a Python package.
@@ -136,6 +160,21 @@ function findAllPythonLambdaDir(rootDir) {
 
   return glob.sync(`${rootDir}/**/requirements.txt`).map((pathWithReq) => {
     return pathWithReq;
+  });
+}
+
+/**
+ * Find all directory that has a gradle package.
+ * Assume that they have build.gradle
+ *
+ * @param rootDir Root directory to begin finding
+ * @returns Array of directory paths
+ */
+function findAllGradleLambdaDir(rootDir) {
+  console.log('findAllGradleLambdaDir');
+
+  return glob.sync(`${rootDir}/**/build.gradle`).map((pathWithGradle) => {
+    return pathWithGradle;
   });
 }
 
