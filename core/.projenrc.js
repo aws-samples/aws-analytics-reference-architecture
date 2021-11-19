@@ -114,7 +114,7 @@ for (const dirPath of findAllPythonLambdaDir('src')) {
   // by the task 'copy-resources'
   const dirPathInLib = dirPath.replace('src', 'lib');
   const target = dirname(dirPathInLib);
-  const pipCmd = `pip3 install -r ${dirPathInLib} --target ${target}`;
+  const pipCmd = `pip3 install -r ${dirPathInLib} --target ${target} --upgrade`;
 
   pipInstallTask.exec(pipCmd);
 }
