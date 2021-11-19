@@ -17,9 +17,10 @@ export async function onEvent(event: any) {
 
       try {
         console.log(`lambda properties: ${JSON.stringify(event.ResourceProperties)}`);
+        const uuid = uuidv4();
         const response = await emrcontainers
           .createManagedEndpoint({
-            clientToken: 'emr-managed-endpoint',
+            clientToken: uuid,
             virtualClusterId: event.ResourceProperties.clusterId,
             certificateArn: event.ResourceProperties.acmCertificateArn,
             executionRoleArn: event.ResourceProperties.executionRoleArn,
@@ -104,52 +105,13 @@ export async function isComplete(event: any) {
     throw new Error('failed to describe managed endpoint');
   }
 }
-/*
-export async function getOrCreateCertificate(): Promise<string | undefined> {
-  const clientAcm = new AWS.ACM(
-    { apiVersion: '2015-12-08', region: process.env.REGION ?? 'us-east-1' },
 
-  );
+function uuidv4() {
+  let outString: string = '';
+  let inOptions: string = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
-  const getCerts = await clientAcm.listCertificates({
-    MaxItems: 50,
-    Includes: {
-      keyTypes: ['RSA_1024'],
-    },
-  },
-  ).promise();
-
-  if (getCerts.CertificateSummaryList) {
-    const existingCert = getCerts.CertificateSummaryList.find(
-      (itm) => itm.DomainName == '*.emreksanalyticsframework.com',
-    );
-
-    if (existingCert) return existingCert.CertificateArn;
+  for (let i = 0; i < 32; i++) {
+    outString += inOptions.charAt(Math.floor(Math.random() * inOptions.length));
   }
-
-  try {
-    execSync(
-      'openssl req -x509 -newkey rsa:1024 -keyout /tmp/privateKey.pem  -out /tmp/certificateChain.pem -days 365 -nodes -subj "/C=US/ST=Washington/L=Seattle/O=MyOrg/OU=MyDept/CN=*.emreksanalyticsframework.com"',
-    );
-  } catch (error) {
-    throw new Error(`Error generating certificate ${error.message}`);
-  }
-
-  try {
-    const command = {
-      Certificate: Buffer.from(
-        readFileSync('file:///tmp/certificateChain.pem', 'iso-8859-1'),
-      ),
-      PrivateKey: Buffer.from(
-        readFileSync('file:///tmp/privateKey.pem', 'iso-8859-1'),
-      ),
-    };
-    const response = await clientAcm.importCertificate(
-      command,
-    ).promise();
-    return response.CertificateArn;
-  } catch (error) {
-    console.log(error);
-    throw new Error(`error importing certificate ${error.message}`);
-  }
-}*/
+  return outString;
+}

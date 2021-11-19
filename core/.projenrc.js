@@ -65,9 +65,6 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/custom-resources',
     '@aws-cdk/lambda-layer-awscli',
   ],
-  bundledDeps: [
-    'aws-sdk',
-  ],
 
   devDeps: [
     '@types/js-yaml',
