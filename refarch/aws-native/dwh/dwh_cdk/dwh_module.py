@@ -68,12 +68,14 @@ class DwhModule(core.NestedStack):
                                                       lambda_sg=self.__redshift.lambda_sg,
                                                       clean_glue_db=self.__clean_glue_db,
                                                       redshift_role_arn=self.__redshift.redshift_role_arn,
-                                                      redshift_cluster_endpoint=self.__redshift.cluster.cluster_endpoint)
+                                                      redshift_cluster_endpoint=self.__redshift.cluster.cluster_endpoint,
+                                                      redshift_cluster=self.__redshift.cluster)
 
-        self.__dwh_loader = DwhLoader(
-            self, 'DwhLoader',
-            redshift_cluster_name=self.__redshift.cluster.cluster_name,
-            user_secret=self.__redshift_admin.etl_user_secret
-        )
+        # TODO: find a way to pass ETL user credentials to the loader
+        # self.__dwh_loader = DwhLoader(
+        #     self, 'DwhLoader',
+        #     redshift_cluster_name=self.__redshift.cluster.cluster_name,
+        #     user_secret=self.__redshift_admin.etl_user
+        # )
 
         core.Tags.of(self).add('module-name', 'dwh')

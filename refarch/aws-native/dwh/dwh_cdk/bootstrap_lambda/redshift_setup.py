@@ -26,7 +26,7 @@ def build_secrets_dict(secrets_dict, secmgr, secret_name):
 
 
 def handler(event, context):
-    users_secrets_names = ['ETL_SECRET', 'DATAENG_SECRET', 'DATAVIZ_SECRET']
+    users_secrets_names = []
 
     sql_script_location = os.environ['SQL_SCRIPT_LOCATION']
     logger.info("SQL script location " + sql_script_location)

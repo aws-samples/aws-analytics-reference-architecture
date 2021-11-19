@@ -67,9 +67,9 @@ class DataLake(Stack):
                                   clean_bucket=data_lake.clean_s3_bucket,
                                   clean_glue_db=data_lake.clean_glue_db)
 
-            CfnOutput(self, 'Redshift-QuickSight-Secret-Arn',
-                      value=dwh_stack.quicksight_redshift_secret_arn,
-                      export_name='ara-QuickSight-Redshift-Secret-Arn')
+            # CfnOutput(self, 'Redshift-QuickSight-Secret-Arn',
+            #           value=dwh_stack.quicksight_redshift_secret_arn,
+            #           export_name='ara-QuickSight-Redshift-Secret-Arn')
             CfnOutput(self, 'bastion_dns',
                       value=dwh_stack.bastion_dns,
                       export_name='ara-Redshift-bastion-dns')

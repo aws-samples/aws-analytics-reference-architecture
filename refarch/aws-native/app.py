@@ -8,6 +8,6 @@ from common.common_cdk.data_lake import DataLake
 
 app = core.App()
 
-DataLake(app, "ara")
+DataLake(app, "ara-v2")
 
 app.synth()

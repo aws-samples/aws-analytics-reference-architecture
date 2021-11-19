@@ -108,33 +108,35 @@ class Glue:
 
 class RedshiftDeploy:
     REDSHIFT_DB_NAME = 'ara_tpcds_db'
-    SQL_SCRIPT_FILES = 'create_users.sql,' \
-                       'dw_mystore/scripts/create_schema.sql,' \
-                       'dw_mystore/tables/customer_dim.sql,' \
-                       'dw_mystore/tables/date_dim.sql,' \
-                       'dw_mystore/tables/time_dim.sql,' \
-                       'dw_mystore/tables/sale_fact.sql,' \
-                       'dw_mystore/scripts/grant_user_privs.sql,' \
-                       'dw_mystore/scripts/ins_customer_dim_unknown_rec.sql,' \
-                       'dw_mystore/scripts/load_date_dim.sql,' \
-                       'dw_mystore/scripts/load_time_dim.sql,' \
-                       'ext_mystore/scripts/create_schema.sql,' \
-                       'stg_mystore/scripts/create_schema.sql,' \
-                       'stg_mystore/tables/dw_incremental_dates.sql,' \
-                       'stg_mystore/tables/wrk_customer_dim.sql,' \
-                       'stg_mystore/tables/wrk_sale_fact.sql,' \
-                       'stg_mystore/tables/store_sale.sql,' \
-                       'stg_mystore/functions/f_from_unixtime.sql,' \
-                       'stg_mystore/views/v_store_customer.sql,' \
-                       'stg_mystore/views/v_store_customer_address.sql,' \
-                       'stg_mystore/procedures/sp_copy_data.sql,' \
-                       'stg_mystore/procedures/sp_validate_parameters.sql,' \
-                       'stg_mystore/procedures/sp_update_high_water_mark.sql,' \
-                       'stg_mystore/procedures/sp_return_high_water_mark.sql,' \
-                       'stg_mystore/procedures/sp_load_customer_dim.sql,' \
-                       'stg_mystore/procedures/sp_load_sale_fact.sql,' \
-                       'stg_mystore/procedures/sp_run_incremental_load.sql,' \
-                       'stg_mystore/scripts/grant_user_privs.sql'
+    SQL_SCRIPT_FILES = 'ext_mystore/scripts/create_schema.sql'
+
+    # SQL_SCRIPT_FILES = 'create_users.sql,' \
+    #                    'dw_mystore/scripts/create_schema.sql,' \
+    #                    'dw_mystore/tables/customer_dim.sql,' \
+    #                    'dw_mystore/tables/date_dim.sql,' \
+    #                    'dw_mystore/tables/time_dim.sql,' \
+    #                    'dw_mystore/tables/sale_fact.sql,' \
+    #                    'dw_mystore/scripts/grant_user_privs.sql,' \
+    #                    'dw_mystore/scripts/ins_customer_dim_unknown_rec.sql,' \
+    #                    'dw_mystore/scripts/load_date_dim.sql,' \
+    #                    'dw_mystore/scripts/load_time_dim.sql,' \
+    #                    'ext_mystore/scripts/create_schema.sql,' \
+    #                    'stg_mystore/scripts/create_schema.sql,' \
+    #                    'stg_mystore/tables/dw_incremental_dates.sql,' \
+    #                    'stg_mystore/tables/wrk_customer_dim.sql,' \
+    #                    'stg_mystore/tables/wrk_sale_fact.sql,' \
+    #                    'stg_mystore/tables/store_sale.sql,' \
+    #                    'stg_mystore/functions/f_from_unixtime.sql,' \
+    #                    'stg_mystore/views/v_store_customer.sql,' \
+    #                    'stg_mystore/views/v_store_customer_address.sql,' \
+    #                    'stg_mystore/procedures/sp_copy_data.sql,' \
+    #                    'stg_mystore/procedures/sp_validate_parameters.sql,' \
+    #                    'stg_mystore/procedures/sp_update_high_water_mark.sql,' \
+    #                    'stg_mystore/procedures/sp_return_high_water_mark.sql,' \
+    #                    'stg_mystore/procedures/sp_load_customer_dim.sql,' \
+    #                    'stg_mystore/procedures/sp_load_sale_fact.sql,' \
+    #                    'stg_mystore/procedures/sp_run_incremental_load.sql,' \
+    #                    'stg_mystore/scripts/grant_user_privs.sql'
 
 
 class Redshift:

@@ -17,7 +17,11 @@ from aws_cdk import (
     aws_redshift as _redshift
 )
 
+import aws_analytics_reference_architecture
+
 import subprocess
+
+import os
 
 
 class RedshiftAdminCdkStack(core.Construct):
@@ -40,6 +44,7 @@ class RedshiftAdminCdkStack(core.Construct):
                  clean_glue_db: _glue.Database,
                  redshift_role_arn: str,
                  redshift_cluster_endpoint: _redshift.Endpoint,
+                 redshift_cluster: _redshift.Cluster,
                  **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -54,56 +59,56 @@ class RedshiftAdminCdkStack(core.Construct):
         # Generate secrets for Redshift users
         generator = SecretStringGenerator(exclude_characters="'", exclude_punctuation=True)
 
-        self.__etl_user_secret = Secret(
-            scope=self, id='ETLUserSecret',
-            description="ETL user Redshift",
-            generate_secret_string=SecretStringGenerator(
-                exclude_characters="'",
-                exclude_punctuation=True,
-                generate_string_key="password",
-                secret_string_template=json.dumps(
-                    {
-                        'username': _config.Redshift.ETL_USER,
-                        'dbname': _config.Redshift.DATABASE,
-                        'host': redshift_cluster_endpoint.hostname,
-                        'port': core.Token.as_string(redshift_cluster_endpoint.port)
-                    }
-                )
-            )
-        )
-        self.__dataengineer_user_secret = Secret(
-            scope=self, id='DataEngineerUserSecret',
-            description="DataEngineer user Redshift",
-            generate_secret_string=SecretStringGenerator(
-                exclude_characters="'",
-                exclude_punctuation=True,
-                generate_string_key="password",
-                secret_string_template=json.dumps(
-                    {
-                        'username': _config.Redshift.DATA_ENGINEER_USER,
-                        'dbname': _config.Redshift.DATABASE,
-                        'host': redshift_cluster_endpoint.hostname,
-                        'port': core.Token.as_string(redshift_cluster_endpoint.port)
-                    }
-                )
-            ))
+        # self.__etl_user_secret = Secret(
+        #     scope=self, id='ETLUserSecret',
+        #     description="ETL user Redshift",
+        #     generate_secret_string=SecretStringGenerator(
+        #         exclude_characters="'",
+        #         exclude_punctuation=True,
+        #         generate_string_key="password",
+        #         secret_string_template=json.dumps(
+        #             {
+        #                 'username': _config.Redshift.ETL_USER,
+        #                 'dbname': _config.Redshift.DATABASE,
+        #                 'host': redshift_cluster_endpoint.hostname,
+        #                 'port': core.Token.as_string(redshift_cluster_endpoint.port)
+        #             }
+        #         )
+        #     )
+        # )
+        # self.__dataengineer_user_secret = Secret(
+        #     scope=self, id='DataEngineerUserSecret',
+        #     description="DataEngineer user Redshift",
+        #     generate_secret_string=SecretStringGenerator(
+        #         exclude_characters="'",
+        #         exclude_punctuation=True,
+        #         generate_string_key="password",
+        #         secret_string_template=json.dumps(
+        #             {
+        #                 'username': _config.Redshift.DATA_ENGINEER_USER,
+        #                 'dbname': _config.Redshift.DATABASE,
+        #                 'host': redshift_cluster_endpoint.hostname,
+        #                 'port': core.Token.as_string(redshift_cluster_endpoint.port)
+        #             }
+        #         )
+        #     ))
 
-        self.__quicksight_user_secret = Secret(
-            scope=self, id='DatavizUserSecret',
-            description="Quicksight user Redshift",
-            generate_secret_string=SecretStringGenerator(
-                exclude_characters="'",
-                exclude_punctuation=True,
-                generate_string_key="password",
-                secret_string_template=json.dumps(
-                    {
-                        'username': _config.Redshift.DATAVIZ_USER,
-                        'dbname': _config.Redshift.DATABASE,
-                        'host': redshift_cluster_endpoint.hostname,
-                        'port': core.Token.as_string(redshift_cluster_endpoint.port)
-                    }
-                )
-            ))
+        # self.__quicksight_user_secret = Secret(
+        #     scope=self, id='DatavizUserSecret',
+        #     description="Quicksight user Redshift",
+        #     generate_secret_string=SecretStringGenerator(
+        #         exclude_characters="'",
+        #         exclude_punctuation=True,
+        #         generate_string_key="password",
+        #         secret_string_template=json.dumps(
+        #             {
+        #                 'username': _config.Redshift.DATAVIZ_USER,
+        #                 'dbname': _config.Redshift.DATABASE,
+        #                 'host': redshift_cluster_endpoint.hostname,
+        #                 'port': core.Token.as_string(redshift_cluster_endpoint.port)
+        #             }
+        #         )
+        #     ))
 
         self.__subnets_selection = _ec2.SubnetSelection(availability_zones=None, one_per_az=None,
                                                        subnet_group_name=None, subnet_name=None,
@@ -113,16 +118,40 @@ class RedshiftAdminCdkStack(core.Construct):
         # pip3 install -t lambda-layer/python/lib/python3.8/site-packages -r lambda/requirements.txt
         # Build the lambda layer assets
         subprocess.call(
-            ['pip', 'install', '-t', 'dwh/dwh_cdk/bootstrap_lambda_layer/python/lib/python3.8/site-packages', '-r',
+            ['pip3', 'install', '-t', 'dwh/dwh_cdk/bootstrap_lambda_layer/python/lib/python3.8/site-packages', '-r',
              'dwh/dwh_cdk/bootstrap_lambda/requirements.txt', '--platform', 'manylinux1_x86_64', '--only-binary=:all:',
              '--upgrade'])
 
         requirements_layer = _lambda.LayerVersion(scope=self,
                                                   id='PythonRequirementsTemplate',
-                                                  code=_lambda.Code.from_asset('dwh/dwh_cdk/bootstrap_lambda_layer'),
+                                                  code=_lambda.Code.from_asset(
+                                                      'dwh/dwh_cdk/bootstrap_lambda_layer'),
                                                   compatible_runtimes=[_lambda.Runtime.PYTHON_3_8])
 
         # This lambda function will run SQL commands to setup Redshift users and tables
+
+        data_engineer = _redshift.User(self, "dataEngineer",
+            cluster=redshift_cluster,
+            database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
+            username='data_engineer')
+        dataviz = _redshift.User(self, "dataviz",
+            cluster=redshift_cluster,
+            database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
+            username='dataviz')
+        etl = _redshift.User(self, "etl",
+            cluster=redshift_cluster,
+            database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
+            username='etl')
+            
+
+        redshift_migration = aws_analytics_reference_architecture.FlywayRunner(scope=self,
+                                                          id='BootstrapNewGen', 
+                                                          migration_scripts_folder_absolute_path=os.path.abspath('dwh/redshift/sql'),
+                                                          cluster=redshift_cluster, 
+                                                          vpc=self.__vpc, 
+                                                          database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
+                                                        )
+
         bootstrap_function_name = 'RedshiftBootstrap'
         register_template_lambda = _lambda.Function(scope=self,
                                                     id='RegisterTemplate',
@@ -134,9 +163,6 @@ class RedshiftAdminCdkStack(core.Construct):
                                                         'SQL_SCRIPT_LOCATION': _config.BINARIES_LOCATION + self.SQL_SCRIPT_DIR,
                                                         'SECRET_ARN': self.__redshift_secret_arn,
                                                         'SQL_SCRIPT_FILES': _config.RedshiftDeploy.SQL_SCRIPT_FILES,
-                                                        'ETL_SECRET': self.__etl_user_secret.secret_arn,
-                                                        'DATAENG_SECRET': self.__dataengineer_user_secret.secret_arn,
-                                                        'DATAVIZ_SECRET': self.__quicksight_user_secret.secret_arn,
                                                         'GLUE_DATABASE': self.__clean_glue_db.database_name,
                                                         'REDSHIFT_IAM_ROLE': self.__redshift_role_arn
                                                     },
@@ -148,6 +174,12 @@ class RedshiftAdminCdkStack(core.Construct):
                                                     function_name=bootstrap_function_name,
                                                     memory_size=256
                                                     )
+
+
+        redshift_migration.node.add_dependency(data_engineer)
+        redshift_migration.node.add_dependency(dataviz)
+        redshift_migration.node.add_dependency(etl)
+        register_template_lambda.node.add_dependency(redshift_migration)
 
         lambda_role = register_template_lambda.role
 

@@ -3,10 +3,10 @@
   "context": {
     "@aws-cdk/core:enableStackNameDuplicates": "true",
     "aws-cdk:enableDiffNoFail": "true",
-    "EnableBatch": "true",
+    "EnableBatch": "false",
     "EnableDWH": "true",
-    "EnableDataviz": "true",
-    "EnableStreaming": "true",
+    "EnableDataviz": "false",
+    "EnableStreaming": "false",
     "EnableDeploymentTracking": "true"
   }
 }
