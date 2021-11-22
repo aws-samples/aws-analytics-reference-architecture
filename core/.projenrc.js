@@ -38,30 +38,32 @@ const project = new AwsCdkConstructLibrary({
   cdkVersionPinning: true,
 
   cdkDependencies: [
-    '@aws-cdk/core',
-    '@aws-cdk/custom-resources',
-    '@aws-cdk/aws-lambda',
-    '@aws-cdk/aws-lambda-python',
-    '@aws-cdk/aws-s3',
-    '@aws-cdk/aws-iam',
-    '@aws-cdk/aws-eks',
+    '@aws-cdk/assertions',
+    '@aws-cdk/aws-athena',
+    '@aws-cdk/aws-autoscaling',
     '@aws-cdk/aws-ec2',
     '@aws-cdk/aws-emrcontainers',
-    '@aws-cdk/aws-autoscaling',
-    '@aws-cdk/lambda-layer-awscli',
-    '@aws-cdk/aws-kinesisfirehose',
-    '@aws-cdk/aws-kinesisfirehose-destinations',
-    '@aws-cdk/aws-kinesis',
-    '@aws-cdk/aws-logs',
-    '@aws-cdk/aws-glue',
-    '@aws-cdk/aws-athena',
-    '@aws-cdk/aws-stepfunctions',
-    '@aws-cdk/aws-stepfunctions-tasks',
+    '@aws-cdk/aws-eks',
     '@aws-cdk/aws-events',
     '@aws-cdk/aws-events-targets',
+    '@aws-cdk/aws-glue',
+    '@aws-cdk/aws-iam',
+    '@aws-cdk/aws-kinesis',
+    '@aws-cdk/aws-kinesisfirehose',
+    '@aws-cdk/aws-kinesisfirehose-destinations',
+    '@aws-cdk/aws-lambda',
+    '@aws-cdk/aws-lambda-python',
+    '@aws-cdk/aws-logs',
+    '@aws-cdk/aws-redshift',
+    '@aws-cdk/aws-s3',
+    '@aws-cdk/aws-s3-assets',
     '@aws-cdk/aws-s3-deployment',
-    '@aws-cdk/aws-emr',
-    '@aws-cdk/aws-kms',
+    '@aws-cdk/aws-secretsmanager',
+    '@aws-cdk/aws-stepfunctions',
+    '@aws-cdk/aws-stepfunctions-tasks',
+    '@aws-cdk/core',
+    '@aws-cdk/custom-resources',
+    '@aws-cdk/lambda-layer-awscli',
   ],
 
   devDeps: [
@@ -73,7 +75,6 @@ const project = new AwsCdkConstructLibrary({
   bundledDeps: [
     'js-yaml',
     'uuid',
-    'xmldom@github:xmldom/xmldom#0.7.0',
     'aws-sdk',
   ],
 
@@ -117,7 +118,7 @@ const copyResourcesToLibTask = project.addTask('copy-resources', {
 
 for (const from of glob.sync('src/**/resources')) {
   const to = dirname(from.replace('src', 'lib'));
-  const cpCommand = `cp -r ${from} ${to}`;
+  const cpCommand = `rsync -avr --exclude '*.ts' --exclude '*.js' ${from} ${to}`;
   copyResourcesToLibTask.exec(cpCommand);
 }
 
@@ -140,10 +141,28 @@ for (const dirPath of findAllPythonLambdaDir('src')) {
 }
 
 /**
+ * Task to build java lambda jar with gradle
+ */
+const gradleBuildTask = project.addTask('gradle-build', {
+  description: './gradlew shadowJar all folders in lib that has requirements.txt',
+});
+
+for (const dirPath of findAllGradleLambdaDir('src')) {
+  console.log('loop over gradle dir');
+  // Assume that all folders with 'requirements.txt' have been copied to lib
+  // by the task 'copy-resources'
+  const dirPathInLib = dirname(dirPath.replace('src', 'lib'));
+  const gradleCmd = `cd ${dirPathInLib} && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null`;
+
+  gradleBuildTask.exec(gradleCmd);
+}
+
+/**
  * Run `copy-resources` and `pip-install` as part of compile
  */
 project.compileTask.exec('npx projen copy-resources');
 project.compileTask.exec('npx projen pip-install');
+project.compileTask.exec('npx projen gradle-build');
 
 /**
  * Find all directory that has a Python package.
@@ -156,6 +175,21 @@ function findAllPythonLambdaDir(rootDir) {
 
   return glob.sync(`${rootDir}/**/requirements.txt`).map((pathWithReq) => {
     return pathWithReq;
+  });
+}
+
+/**
+ * Find all directory that has a gradle package.
+ * Assume that they have build.gradle
+ *
+ * @param rootDir Root directory to begin finding
+ * @returns Array of directory paths
+ */
+function findAllGradleLambdaDir(rootDir) {
+  console.log('findAllGradleLambdaDir');
+
+  return glob.sync(`${rootDir}/**/build.gradle`).map((pathWithGradle) => {
+    return pathWithGradle;
   });
 }
 

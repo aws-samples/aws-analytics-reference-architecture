@@ -21,13 +21,6 @@ test('SingletonCfnLaunchTemplate', () => {
     LaunchTemplateName: 'testName',
     LaunchTemplateData: {
       UserData: 'testData',
-      //BlockDeviceMappings: [
-      //  {
-      //    Ebs: {
-      //      VolumeType: 'gp3',
-      //    },
-      //  },
-      //],
     },
   });
 });

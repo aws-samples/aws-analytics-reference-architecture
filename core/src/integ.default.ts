@@ -1,30 +1,27 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+// import { Role } from '@aws-cdk/aws-iam';
 import { App, Stack } from '@aws-cdk/core';
-import { DataPlatform } from './notebooks-data-platform/dataplatform';
-import { StudioAuthMode, StudioUserDefinition } from './notebooks-data-platform/dataplatform-notebook';
-
-const envInteg = { account: '', region: '' };
+import { EmrEksCluster } from '.';
 
 const mockApp = new App();
-const stack = new Stack(mockApp, 'deployment', { env: envInteg });
+const stack = new Stack(mockApp, 'stack');
+const cluster = new EmrEksCluster(stack, 'testCluster', { eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav' });
 
-const dept1 = DataPlatform.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
+
+/*const virtualCluster =*/ cluster.addEmrVirtualCluster({
+  name: 'sometest',
+  eksNamespace: 'sometest',
+  createNamespace: true,
 });
 
-dept1.addNotebookPlatform({
-  studioName: 'mystudio1',
-  emrVCNamespace: 'mystudio1ns',
-  studioAuthMode: StudioAuthMode.SSO,
-  acmCertificateArn: 'arn:aws:acm:eu-west-1:123456789012:certificate/8a5dceb1-ee9d-46a5-91d2-7b4a1ea0b64d',
+cluster.addEmrVirtualCluster({
+  name: 'anothertest',
+  eksNamespace: 'anothertest',
+  createNamespace: true,
 });
 
-let userList: StudioUserDefinition[] = [{
-  identityName: '', /*<username or Group as it appears in SSO>*/
-  identityType: 'USER' || 'SSO',
-  executionPolicyNames: ['policyManagedEndpoint'], // The name of the policy to be used by the role for an EMR on EKS managedendpoint
-}];
+// const execRole = Role.fromRoleArn(stack, 'execRole', 'arn:aws:iam::668876353122:role/gromav');
 
-dept1.addUsersNotebookPlatform('unit1', userList);
+// cluster.addManagedEndpoint(stack, cluster.managedEndpointProviderServiceToken, 'test', virtualCluster.attrId, execRole, 'arn:aws:acm:us-east-1:668876353122:certificate/aba0c2c8-c470-43a5-a3c0-07189ee96af0');

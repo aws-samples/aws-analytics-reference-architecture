@@ -146,4 +146,16 @@ export class EmrEksNodegroup {
       },
     ],
   };
+
+  public static readonly NOTEBOOK_WITHOUT_PODTEMPLATE: EmrEksNodegroupOptions = {
+    id: 'notebook-without-pod-template',
+    instanceTypes: [new InstanceType('t3.2xlarge'), new InstanceType('t3a.2xlarge')],
+    minSize: 0,
+    maxSize: 100,
+    capacityType: CapacityType.SPOT,
+    labels: {
+      'role': 'notebook',
+      'node-lifecycle': 'spot',
+    },
+  };
 }
