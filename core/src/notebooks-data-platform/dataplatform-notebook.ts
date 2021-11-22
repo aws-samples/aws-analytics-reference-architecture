@@ -66,6 +66,7 @@ export interface DataPlatformNotebookInfra {
 export interface DataPlatformNotebookProp {
   /**
    * Required the be given to the name of Amazon EMR Studio
+   * Must be unique across the AWS account
    * */
   readonly studioName: string;
   /**
@@ -386,7 +387,7 @@ export class DataPlatformNotebook extends Construct {
     });
 
     //set the path for the lambda code
-    let lambdaPath = 'resources/lambdas/';
+    let lambdaPath = 'lambdas/';
 
     //Create lambda to tag EMR notebook with UserID of the IAM principal that created it
     let workspaceTaggingLambda = new Function(this.nestedStack, 'CreateTagHandler', {
@@ -567,13 +568,17 @@ export class DataPlatformNotebook extends Construct {
         let sessionPolicyArn = createUserSessionPolicy(this.nestedStack, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
-        //Map a session to user or group
-        new CfnStudioSessionMapping(this.nestedStack, 'studioUser' + user.identityName + user.identityName, {
-          identityName: user.identityName!,
-          identityType: user.identityType!,
-          sessionPolicyArn: sessionPolicyArn,
-          studioId: this.studioId,
-        });
+        if (user.identityType == 'USER' || user.identityType == 'GROUP') {
+          //Map a session to user or group
+          new CfnStudioSessionMapping(this.nestedStack, 'studioUser' + user.identityName + user.identityName, {
+            identityName: user.identityName!,
+            identityType: user.identityType!,
+            sessionPolicyArn: sessionPolicyArn,
+            studioId: this.studioId,
+          });
+        } else {
+          throw new Error(`identityType should be either USER or GROUP not ${user.identityType}`);
+        }
       }
     }
 

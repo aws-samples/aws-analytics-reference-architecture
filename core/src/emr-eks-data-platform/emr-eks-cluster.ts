@@ -633,7 +633,7 @@ ${userData.join('\r\n')}
   ) {
 
     if (id.length > 64) {
-      throw new Error(`error managedendpoint name length is greater than 64 ${id}`);
+      throw new Error(`error managed endpoint name length is greater than 64 ${id}`);
     }
 
     if (emrOnEksVersion && ! EmrEksCluster.EMR_VERSIONS.includes(emrOnEksVersion)) {
