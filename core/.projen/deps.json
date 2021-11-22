@@ -10,6 +10,10 @@
       "type": "build"
     },
     {
+      "name": "@types/js-yaml",
+      "type": "build"
+    },
+    {
       "name": "@types/node",
       "version": "^14.17.0",
       "type": "build"
@@ -97,8 +101,11 @@
       "type": "bundled"
     },
     {
-      "name": "xmldom",
-      "version": "github:xmldom/xmldom#0.7.0",
+      "name": "js-yaml",
+      "type": "bundled"
+    },
+    {
+      "name": "uuid",
       "type": "bundled"
     },
     {
@@ -112,7 +119,22 @@
       "type": "peer"
     },
     {
+      "name": "@aws-cdk/aws-autoscaling",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
       "name": "@aws-cdk/aws-ec2",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-eks",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-emrcontainers",
       "version": "1.130",
       "type": "peer"
     },
@@ -208,6 +230,11 @@
     },
     {
       "name": "@aws-cdk/custom-resources",
+      "version": "1.130",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/lambda-layer-awscli",
       "version": "1.130",
       "type": "peer"
     },
@@ -227,7 +254,22 @@
       "type": "runtime"
     },
     {
+      "name": "@aws-cdk/aws-autoscaling",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
       "name": "@aws-cdk/aws-ec2",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-eks",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-emrcontainers",
       "version": "1.130",
       "type": "runtime"
     },
@@ -323,6 +365,11 @@
     },
     {
       "name": "@aws-cdk/custom-resources",
+      "version": "1.130",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/lambda-layer-awscli",
       "version": "1.130",
       "type": "runtime"
     }

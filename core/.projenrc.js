@@ -1,10 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
+
 const { basename, join, dirname, relative } = require('path');
 const glob = require('glob');
 
 
-const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism } = require('projen');
+const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism, Semver } = require('projen');
+
 const project = new AwsCdkConstructLibrary({
 
   authorName: 'Amazon Web Services',
@@ -23,7 +25,7 @@ const project = new AwsCdkConstructLibrary({
 
   cdkVersion: '1.130',
   defaultReleaseBranch: 'main',
-  license: 'MIT',
+  license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
   repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
   repositoryDirectory: 'core',
@@ -36,44 +38,57 @@ const project = new AwsCdkConstructLibrary({
   cdkVersionPinning: true,
 
   cdkDependencies: [
-    '@aws-cdk/core',
-    '@aws-cdk/custom-resources',
-    '@aws-cdk/aws-logs',
-    '@aws-cdk/aws-lambda',
-    '@aws-cdk/aws-lambda-python',
-    '@aws-cdk/aws-s3',
-    '@aws-cdk/aws-kinesis',
-    '@aws-cdk/aws-iam',
-    '@aws-cdk/aws-kinesisfirehose',
-    '@aws-cdk/aws-kinesisfirehose-destinations',
-    '@aws-cdk/aws-kinesis',
-    '@aws-cdk/aws-logs',
-    '@aws-cdk/aws-glue',
+    '@aws-cdk/assertions',
     '@aws-cdk/aws-athena',
-    '@aws-cdk/aws-glue',
-    '@aws-cdk/aws-stepfunctions',
-    '@aws-cdk/aws-stepfunctions-tasks',
+    '@aws-cdk/aws-autoscaling',
+    '@aws-cdk/aws-ec2',
+    '@aws-cdk/aws-emrcontainers',
+    '@aws-cdk/aws-eks',
     '@aws-cdk/aws-events',
     '@aws-cdk/aws-events-targets',
-    '@aws-cdk/aws-s3-deployment',
-    '@aws-cdk/aws-ec2',
+    '@aws-cdk/aws-glue',
+    '@aws-cdk/aws-iam',
+    '@aws-cdk/aws-kinesis',
+    '@aws-cdk/aws-kinesisfirehose',
+    '@aws-cdk/aws-kinesisfirehose-destinations',
+    '@aws-cdk/aws-lambda',
+    '@aws-cdk/aws-lambda-python',
+    '@aws-cdk/aws-logs',
     '@aws-cdk/aws-redshift',
-    '@aws-cdk/aws-secretsmanager',
+    '@aws-cdk/aws-s3',
     '@aws-cdk/aws-s3-assets',
-    '@aws-cdk/assertions',
-  ],
-  bundledDeps: [
-    'xmldom@github:xmldom/xmldom#0.7.0',
-    'aws-sdk',
+    '@aws-cdk/aws-s3-deployment',
+    '@aws-cdk/aws-secretsmanager',
+    '@aws-cdk/aws-stepfunctions',
+    '@aws-cdk/aws-stepfunctions-tasks',
+    '@aws-cdk/core',
+    '@aws-cdk/custom-resources',
+    '@aws-cdk/lambda-layer-awscli',
   ],
 
   devDeps: [
+    '@types/js-yaml',
+    '@types/jest',
     'esbuild',
+  ],
+
+  bundledDeps: [
+    'js-yaml',
+    'uuid',
+    'aws-sdk',
   ],
 
   python: {
     distName: 'aws_analytics_reference_architecture',
     module: 'aws_analytics_reference_architecture',
+  },
+
+  tsconfig: {
+    compilerOptions: {
+      resolveJsonModule: true,
+      esModuleInterop: true,
+    },
+    include: ['src/**/*.json', 'src/**/*.ts'],
   },
 
   stability: 'experimental',
