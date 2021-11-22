@@ -19,18 +19,20 @@ class PipelineStack(Stack):
     def __init__(self, scope: Construct, id: str, deploy_envs: list, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        connection_arn = self.node.try_get_context('ConnectionArn')
-        repo = self.node.try_get_context("RepositoryName")
-        branch = self.node.try_get_context("RepositoryBranch")
+        cicd_params = self.node.try_get_context('CICDParameters')
 
-        if connection_arn is None or connection_arn == '<CONNECTION_ARN>':
-            raise Exception('Connection ARN must be set in order to enable CICD pipelines')
+        connection_arn = cicd_params.get('ConnectionArn')
+        repo = cicd_params.get("RepositoryName")
+        branch = cicd_params.get("RepositoryBranch")
 
-        if repo is None or repo == '<REPOSITORY_NAME>':
-            raise Exception('Repository name must be set in order to enable CICD pipelines')
+        if connection_arn in [None, '', '<CONNECTION_ARN>']:
+            raise ValueError('"ConnectionArn" must be set in "cdk.json" to create CICD pipelines')
 
-        if branch is None or branch == '<REPOSITORY_BRANCH>':
-            raise Exception('Repository branch must be set in order to enable CICD pipelines')
+        if repo in [None, '', '<REPOSITORY_NAME>']:
+            raise ValueError('"RepositoryName" must be set in "cdk.json" to create CICD pipelines')
+
+        if branch in [None, '', '<REPOSITORY_BRANCH>']:
+            raise ValueError('"RepositoryBranch" must be set in "cdk.json" to create CICD pipelines')
 
         pipeline = CodePipeline(self, 'AnalyticsPipeline',
                                 synth=CodeBuildStep('Synth',
