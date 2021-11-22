@@ -64,6 +64,8 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/core',
     '@aws-cdk/custom-resources',
     '@aws-cdk/lambda-layer-awscli',
+    '@aws-cdk/aws-emr',
+    '@aws-cdk/aws-kms',
   ],
 
   devDeps: [

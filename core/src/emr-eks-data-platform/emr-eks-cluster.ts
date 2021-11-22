@@ -4,7 +4,7 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { SubnetType } from '@aws-cdk/aws-ec2';
+import { SubnetType, Vpc } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { PolicyStatement, PolicyDocument, Policy, Role, IRole, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
@@ -64,6 +64,17 @@ export interface EmrEksClusterProps {
    * @default - emr-6.3.0-latest
    */
   readonly emrOnEksVersion?: string;
+
+  /**
+   * Id of the VPC where to deploy the EKS cluster
+   * VPC should have at least two private and public subnets in different AZs
+   * All private subnets should have the following tags:
+   * 'for-use-with-amazon-emr-managed-policies'='true'
+   * 'kubernetes.io/role/internal-elb'='1'
+   * All public subnets should the following tag:
+   * 'kubernetes.io/role/elb'='1'
+   */
+  readonly eksVpcId?: string;
 }
 
 /**
@@ -74,7 +85,7 @@ export class EmrEksCluster extends Construct {
   public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_20;
   public static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
 
-  public static getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion, clusterName: string) {
+  public static getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion, clusterName: string, vpcId?: string) {
 
     const stack = Stack.of(scope);
     const id = `${clusterName}Singleton`;
@@ -86,6 +97,7 @@ export class EmrEksCluster extends Construct {
         kubernetesVersion: kubernetesVersion,
         eksAdminRoleArn: eksAdminRoleArn,
         eksClusterName: `${clusterName}-ara-cluster`,
+        eksVpcId: vpcId,
       });
 
       //Add a nodegroup for notebooks
@@ -125,11 +137,22 @@ export class EmrEksCluster extends Construct {
     this.clusterName = props.eksClusterName ?? 'emr-eks-cluster';
 
     // create an Amazon EKS CLuster with default paramaters if not provided in the properties
-    this.eksCluster = new Cluster(scope, this.clusterName, {
-      defaultCapacity: 0,
-      clusterName: this.clusterName,
-      version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
-    });
+    if ( props.eksVpcId != undefined) {
+      this.eksCluster = new Cluster(scope, this.clusterName, {
+        defaultCapacity: 0,
+        clusterName: this.clusterName,
+        version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
+        vpc: Vpc.fromLookup(this, 'providedVPC', {
+          vpcId: props.eksVpcId,
+        }),
+      });
+    } else {
+      this.eksCluster = new Cluster(scope, this.clusterName, {
+        defaultCapacity: 0,
+        clusterName: this.clusterName,
+        version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
+      });
+    }
 
     // Add the provided Amazon IAM Role as Amazon EKS Admin
     this.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( this, 'AdminRole', props.eksAdminRoleArn ), 'AdminRole');
