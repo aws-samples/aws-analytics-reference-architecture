@@ -17,9 +17,9 @@ export async function onEvent(event: any) {
 
       try {
         console.log(`lambda properties: ${JSON.stringify(event.ResourceProperties)}`);
+        // @ts-ignore
         const response = await emrcontainers
           .createManagedEndpoint({
-            clientToken: 'emr-managed-endpoint',
             virtualClusterId: event.ResourceProperties.clusterId,
             certificateArn: event.ResourceProperties.acmCertificateArn,
             executionRoleArn: event.ResourceProperties.executionRoleArn,

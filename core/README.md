@@ -97,7 +97,7 @@ dept3.addNotebookPlatform({
 
 dept1.addUsersNotebookPlatform('unit1', userList1);
 dept1.addUsersNotebookPlatform('unit2', userList2);
-dept3.addUsersNotebookPlatform('unit3', userList2);
+dept3*__*.addUsersNotebookPlatform('unit3', userList2);
 
 ```
 

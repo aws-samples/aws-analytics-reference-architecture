@@ -17,6 +17,7 @@ export interface DataPlatformProps {
     * Amazon EKS Admin Role
    * */
   readonly eksAdminRoleArn: string;
+  readonly vpcId?: string;
 
 }
 
@@ -56,7 +57,12 @@ export class DataPlatform extends Construct {
     //Create new Amazon EKS cluster for Amazon EMR or get one already create for previous EMR on EKS cluster
     //This avoid creating a new cluster everytime an object is initialized
 
-    this.emrEks = EmrEksCluster.getOrCreate(scope, props.eksAdminRoleArn, KubernetesVersion.V1_20, id);
+    if (props.vpcId != undefined) {
+      this.emrEks = EmrEksCluster.getOrCreate(scope, props.eksAdminRoleArn, KubernetesVersion.V1_20, id, props.vpcId);
+    } else {
+      this.emrEks = EmrEksCluster.getOrCreate(scope, props.eksAdminRoleArn, KubernetesVersion.V1_20, id);
+    }
+
     this.dataPlatformMapping = new Map<string, DataPlatformNotebook>();
 
   }
