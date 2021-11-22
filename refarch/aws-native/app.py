@@ -15,12 +15,7 @@ def make_env(scope: Construct, context_key: str):
     env_params = scope.node.try_get_context(context_key)
 
     if env_params is None:
-        Annotations.of(scope).add_warning("No environment found for context {}, using default".format(context_key))
-        return AnalyticsEnvironment(
-            name=context_key,
-            region=os.getenv("CDK_DEFAULT_REGION"),
-            account=os.getenv("CDK_DEFAULT_ACCOUNT")
-        )
+        raise ValueError(f'Please provide {context_key} account information on cdk.context.json')
     else:
         return AnalyticsEnvironment(
             name=env_params.get("name"),
