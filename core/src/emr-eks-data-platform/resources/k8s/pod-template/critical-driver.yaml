@@ -1,0 +1,15 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
+apiVersion: v1
+kind: Pod
+
+spec:
+  tolerations:
+  - key: role
+    operator: Equal
+    value: critical
+    effect: NoSchedule
+  nodeSelector:
+    role: critical
+    node-lifecycle: on-demand

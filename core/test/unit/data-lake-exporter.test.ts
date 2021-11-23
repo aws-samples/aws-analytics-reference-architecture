@@ -1,10 +1,19 @@
-import { Stream } from '@aws-cdk/aws-kinesis';
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+/**
+ * Tests Datalake Exporter
+ *
+ * @group unit/datalake/exporter
+ */
+
+import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Stack } from '@aws-cdk/core';
-import { DataLakeExporter } from '../src/data-lake-exporter';
+import { DataLakeExporter } from '../../src/data-lake-exporter';
 import '@aws-cdk/assert/jest';
 import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
-import { RetentionDays } from '@aws-cdk/aws-logs';
 import { SynthUtils } from '@aws-cdk/assert';
+import { Stream } from '@aws-cdk/aws-kinesis';
 
 
 test('dataLakeExporter', () => {

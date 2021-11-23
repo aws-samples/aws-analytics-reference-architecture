@@ -1,9 +1,15 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests signleton glue default role
+ *
+ * @group unit/singleton/glue-default-role
+ */
+
 import * as assertCDK from '@aws-cdk/assert';
 import { Stack } from '@aws-cdk/core';
-import { SingletonGlueDefaultRole } from '../src/singleton-glue-default-role';
+import { SingletonGlueDefaultRole } from '../../src/singleton-glue-default-role';
 import '@aws-cdk/assert/jest';
 
 test('SingletonGlueDefaultRole', () => {

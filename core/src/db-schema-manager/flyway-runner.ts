@@ -85,6 +85,8 @@ export interface FlywayRunnerProps {
  * ```
  */
 export class FlywayRunner extends cdk.Construct {
+  public readonly flywayRunner: CustomResource;
+
   constructor(scope: cdk.Construct, id: string, props: FlywayRunnerProps) {
     super(scope, id);
 
@@ -138,7 +140,7 @@ export class FlywayRunner extends cdk.Construct {
       vpc: props.vpc,
     });
 
-    new CustomResource(this, 'trigger', {
+    this.flywayRunner =new CustomResource(this, 'trigger', {
       serviceToken: flywayCustomResourceProvider.serviceToken,
       properties: {
         flywayRequest: {
