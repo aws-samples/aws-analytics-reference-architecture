@@ -1,7 +1,7 @@
-The AWS Analytics Reference Architecture is a set of modular analytics solutions put together as an end-to-end example.
-It can be used by AWS customers to help them implement analytics solution on AWS platform. The example solution regroups AWS best practices for designing, implementing and operating analytics platform through different purpose-built patterns answering common requirements and solving common challenges.
+The AWS Analytics Reference Architecture is a set of analytics solutions put together as end-to-end examples.
+It regroups AWS best practices for designing, implementing, and operating analytics platforms through different purpose-built patterns, handling common requirements, and solving customers' challenges.
 
-The AWS Analytics Reference Architecture explain the journey of a fake company, MyStore Inc., into implementing its data platform solution.
+The AWS native reference architecture explain the journey of a fake company, MyStore Inc., into implementing its data platform solution with AWS products and services.
 
 ## Business story
 
