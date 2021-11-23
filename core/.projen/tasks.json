@@ -179,13 +179,13 @@
       "description": "pip install all folders in lib that has requirements.txt",
       "steps": [
         {
-          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup"
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup --upgrade"
         },
         {
-          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas"
+          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas --upgrade"
         },
         {
-          "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas"
+          "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas --upgrade"
         }
       ]
     },
