@@ -1,8 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests singleton glue database
+ *
+ * @group unit/other/singleton-glue-database
+ */
+
 import { Stack } from '@aws-cdk/core';
-import { SingletonGlueDatabase } from '../src/singleton-glue-database';
+import { SingletonGlueDatabase } from '../../src/singleton-glue-database';
 import '@aws-cdk/assert/jest';
 
 test('SingleBucket', () => {
