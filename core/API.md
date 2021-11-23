@@ -743,6 +743,17 @@ new FlywayRunner(scope: Construct, id: string, props: FlywayRunnerProps)
 
 
 
+#### Properties <a name="Properties"></a>
+
+##### `flywayRunner`<sup>Required</sup> <a name="aws-analytics-reference-architecture.FlywayRunner.property.flywayRunner"></a>
+
+```typescript
+public readonly flywayRunner: CustomResource;
+```
+
+- *Type:* [`@aws-cdk/core.CustomResource`](#@aws-cdk/core.CustomResource)
+
+---
 
 
 ### SingletonBucket <a name="aws-analytics-reference-architecture.SingletonBucket"></a>

@@ -1,8 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests singleton launch template
+ *
+ * @group unit/singleton/launch-template
+ */
+
 import { Stack } from '@aws-cdk/core';
-import { SingletonCfnLaunchTemplate } from '../src/singleton-launch-template';
+import { SingletonCfnLaunchTemplate } from '../../src/singleton-launch-template';
 import '@aws-cdk/assert/jest';
 
 test('SingletonCfnLaunchTemplate', () => {

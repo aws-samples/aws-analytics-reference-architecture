@@ -1,8 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests data lake catalog
+ *
+ * @group unit/datalake/catalog
+ */
+
 import { Stack } from '@aws-cdk/core';
-import { DataLakeCatalog } from '../src/data-lake-catalog';
+import { DataLakeCatalog } from '../../src/data-lake-catalog';
 import '@aws-cdk/assert/jest';
 
 test('DataLakeCatalog', () => {

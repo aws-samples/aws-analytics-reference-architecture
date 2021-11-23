@@ -274,10 +274,7 @@
       "description": "Run tests",
       "steps": [
         {
-          "exec": "jest --passWithNoTests --all"
-        },
-        {
-          "spawn": "eslint"
+          "exec": "jest --group=unit"
         }
       ]
     },
@@ -297,6 +294,22 @@
       "steps": [
         {
           "exec": "cdk destroy --app=./lib/integ.default.js"
+        }
+      ]
+    },
+    "test:integ": {
+      "name": "test:integ",
+      "steps": [
+        {
+          "exec": "jest --group=integ"
+        }
+      ]
+    },
+    "test:unit": {
+      "name": "test:unit",
+      "steps": [
+        {
+          "exec": "jest --group=unit"
         }
       ]
     },

@@ -1,8 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests synchroneous crawler
+ *
+ * @group unit/other/synchroneous-crawler
+ */
+
 import { Stack } from '@aws-cdk/core';
-import { SynchronousCrawler } from '../src/synchronous-crawler';
+import { SynchronousCrawler } from '../../src/synchronous-crawler';
 import '@aws-cdk/assert/jest';
 
 test('CrawlerStartWait', () => {

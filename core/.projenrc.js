@@ -15,7 +15,6 @@ const project = new AwsCdkConstructLibrary({
   homepage: 'https://aws-samples.github.io/aws-analytics-reference-architecture/',
   copyrightPeriod: `2021-${new Date().getFullYear()}`,
   copyrightOwner: 'Amazon.com, Inc. or its affiliates. All Rights Reserved.',
-
   keywords: [
     'aws',
     'constructs',
@@ -70,7 +69,15 @@ const project = new AwsCdkConstructLibrary({
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
+    'aws-cdk@1.130.0',
+    'jest-runner-groups',
   ],
+
+  jestOptions: {
+    jestConfig: {
+      runner: 'groups',
+    },
+  },
 
   bundledDeps: [
     'js-yaml',
@@ -93,6 +100,17 @@ const project = new AwsCdkConstructLibrary({
 
   stability: 'experimental',
 
+});
+
+project.testTask.reset('jest --group=unit');
+project.testTask.spawn('eslint');
+
+project.addTask('test:unit', {
+  exec: 'jest --group=unit',
+});
+
+project.addTask('test:integ', {
+  exec: 'jest --group=integ',
 });
 
 const testDeploy = project.addTask('test:deploy', {
