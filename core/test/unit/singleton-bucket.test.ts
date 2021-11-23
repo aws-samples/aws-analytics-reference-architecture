@@ -1,8 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests Singleton Bucket
+ *
+ * @group unit/signleton/bucket
+ */
+
 import { Stack } from '@aws-cdk/core';
-import { SingletonBucket } from '../src/singleton-bucket';
+import { SingletonBucket } from '../../src/singleton-bucket';
 import '@aws-cdk/assert/jest';
 
 test('SingleBucket', () => {
