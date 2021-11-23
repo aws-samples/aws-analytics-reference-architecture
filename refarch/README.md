@@ -8,50 +8,18 @@ This project is composed of:
  * Reusable core components exposed in an AWS CDK (Cloud Development Kit) library currently available in [Typescript](https://www.npmjs.com/package/aws-analytics-reference-architecture) and [Python](https://pypi.org/project/aws-analytics-reference-architecture/). This library contains AWS CDK constructs that can be used to quickly provision analytics solutions in demos, prototypes, proof of concepts and end-to-end reference architectures. 
  * Reference architectures consumming the reusable components to demonstrate end-to-end examples in a business context
 
-
-This repository contains the codebase and getting started instructions for:
- * The [core components](core/README.md): how to consume the AWS CDK constructs to create new end-to-end examples
- * The [reference architectures](refarch/aws-native/README.md): how to provision end-to-end examples 
-
-The complete documentation of the core components including API and the reference architectures can be found [here](https://aws-samples.github.io/aws-analytics-reference-architecture/).
-
-
 ## Getting started
 
-  - [Consuming the core components](#consuming-the-core-components)
-  - [Deploying the AWS native data platform reference architecture](#deploying-the-aws-native-reference-architecture)
-    - [Prerequisites](#prerequisites)
-    - [Deployment](#deployment)
-  - [Step 4 and 5 only have to be executed if the data visualization module has been installed.](#step-4-and-5-only-have-to-be-executed-if-the-data-visualization-module-has-been-installed)
-    - [Adding users to Kibana](#adding-users-to-kibana)
-    - [Connecting to Amazon Redshift](#connecting-to-amazon-redshift)
-    - [psql](#psql)
-  - [Clean up](#clean-up)
+- [AWS Analytics Reference Architecture](#aws-analytics-reference-architecture)
+  - [Getting started](#getting-started)
+    - [Deploying the AWS native reference architecture](#deploying-the-aws-native-reference-architecture)
+      - [Prerequisites](#prerequisites)
+      - [Deployment](#deployment)
+      - [Adding users to Kibana](#adding-users-to-kibana)
+      - [Connecting to Amazon Redshift](#connecting-to-amazon-redshift)
+    - [Clean up](#clean-up)
   - [Contributing](#contributing)
 - [License Summary](#license-summary)
-
-### Consuming the core components
-
-#### Prerequisites
-
-1. [Create an AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
-2. The core components can be deployed in any AWS region
-3. Install the following components with the specified version on the machine from which the deployment will be executed:
-    1. Python [3.8-3.9.2]
-    2. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
-
-
-#### Initialization
-
-
-#### Development
-
-
-#### Deployment
-
-
-#### Cleanup
-
 
 ### Deploying the AWS native reference architecture
 
@@ -246,7 +214,7 @@ psql -h localhost -p 5400 -U dwsuser -d dev
 
 ## Contributing
 
-Please refer to the [contributing guidelines](CONTRIBUTING.md) for details.
+Please refer to the [contributing guidelines](../CONTRIBUTING.md) and [contributing FAQ](../CONTRIB_FAQ.md) for details.
 
 # License Summary
 
