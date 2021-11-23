@@ -1,50 +1,75 @@
 
 # AWS Analytics Reference Architecture
 
-The AWS Analytics Reference Architecture is a set of analytics solutions put together as an end-to-end example.
+The AWS Analytics Reference Architecture is a set of analytics solutions put together as end-to-end examples.
 It regroups AWS best practices for designing, implementing, and operating analytics platforms through different purpose-built patterns, handling common requirements, and solving customers' challenges.
 
-This repository contains the codebase and getting started instructions of the AWS Analytics Reference Architecture.
-<!-- TODO: Update the link in the next line -->
-The background of this project, the description of the business cases, architecture, and individual patterns can be found in the [documentation](https://aws-samples.github.io/aws-analytics-reference-architecture/).
-
-![Architecture ref](https://aws-samples.github.io/aws-analytics-reference-architecture/resources/global-design.png)
-
-## Table of Contents
-
-1. [Documentation](#getting-started---deploying-the-project)
-1. [Getting started - Deploying the Project](#getting-started---deploying-the-project)
-    1. [Prerequisites](#prerequisites)
-    1. [Deployment](#deployment)
-    1. [Adding users to Kibana](#adding-users-to-kibana)
-    1. [Connecting to Amazon Redshift](#connecting-to-amazon-redshift)
-         1. [psql](#psql)
-   1. [Clean up](#clean-up)
-1. [Contributing](#contributing)
+This project is composed of:
+ * Reusable core components exposed in an AWS CDK (Cloud Development Kit) library currently available in [Typescript]() and [Python](). This library contains high level AWS CDK constructs that can be used to quickly provision analytics solutions in demos, prototypes, proof of concepts and end-to-end reference architectures. 
+ * Reference architectures consumming the reusable components to demonstrate end-to-end examples in a business context
 
 
-## Documentation
+This repository contains the codebase and getting started instructions for:
+ * The core components: how to consume the AWS CDK constructs to create new end-to-end examples
+ * The reference architectures: how to provision end-to-end examples 
 
-Return to [Live Docs](https://aws-samples.github.io/aws-analytics-reference-architecture/).
+The complete documentation of the core componentns and the reference architectures can be found [here](https://aws-samples.github.io/aws-analytics-reference-architecture/).
 
-## Getting started - Deploying the Project
 
-This section describes all steps that have to be performed to deploy the AWS Analytics Reference Architecture into an AWS account.
+## Getting started
 
-### Prerequisites
+  - [Consuming the core components](#consuming-the-core-components)
+  - [Deploying the AWS native data platform reference architecture](#deploying-the-aws-native-reference-architecture)
+    - [Prerequisites](#prerequisites)
+    - [Deployment](#deployment)
+  - [Step 4 and 5 only have to be executed if the data visualization module has been installed.](#step-4-and-5-only-have-to-be-executed-if-the-data-visualization-module-has-been-installed)
+    - [Adding users to Kibana](#adding-users-to-kibana)
+    - [Connecting to Amazon Redshift](#connecting-to-amazon-redshift)
+    - [psql](#psql)
+  - [Clean up](#clean-up)
+  - [Contributing](#contributing)
+- [License Summary](#license-summary)
+
+### Consuming the core components
+
+#### Prerequisites
+
+1. [Create an AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
+2. The core components can be deployed in any AWS region
+3. Install the following components with the specified version on the machine from which the deployment will be executed:
+    1. Python [3.8-3.9.2]
+    2. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
+
+
+#### Initialization
+
+
+#### Development
+
+
+#### Deployment
+
+
+#### Cleanup
+
+
+### Deploying the AWS native reference architecture
+
+This section describes all steps that have to be performed to deploy the AWS native reference rchitecture into an AWS account.
+
+#### Prerequisites
 
 Before starting the deployment, ensure that the following steps are completed.
 
 1. [Create an AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
-2. The Analytics Reference Architecture can only be deployed in **eu-west-1** for the moment
+2. The AWS native reference architecture can only be deployed in **eu-west-1** for the moment
 3. [Subscribe to Amazon QuickSight](https://docs.aws.amazon.com/quicksight/latest/user/signing-up.html) (if you plan to deploy the data visualization module)
 4. Install the following components with the specified version on the machine from which the deployment will be executed:
     1. Python [3.8-3.9.2]
-    2. Node [<15.6]
-    3. Git
-    4. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
+    2. Git
+    3. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
 
-### Deployment
+#### Deployment
  
 1. Clone this repository onto the machine from which you want to execute the deployment.
 
@@ -74,10 +99,10 @@ To disable, for example, the data visualization module, the following argument h
    ```
    cdk deploy  -c EnableDataviz=false
    ```
-   ---
-   **NOTE:**
-   Step 4 and 5 only have to be executed if the data visualization module has been installed.
-   ---
+   
+   **NOTE:
+   Step 4 and 5 only have to be executed if the data visualization module has been installed.**
+   
 4. Configure Amazon QuickSight:
     * To link the clean data S3 bucket to the QuickSight account:
         * Visit the [QuickSight web console](https://quicksight.aws.amazon.com)
@@ -108,7 +133,7 @@ To disable, for example, the data visualization module, the following argument h
    cdk deploy --parameters VpcConnectionArn=<VPC_CONNECTION_ARN>
    ```
 
-### Adding users to Kibana
+#### Adding users to Kibana
 
 The main CDK stack also deploys the streaming module (if not explicitly disabled), which includes:
 
@@ -150,7 +175,7 @@ Once the master user is added, you can connect to Kibana using the URL exposed i
 
 The data is already being indexed in Elasticsearch, but you will need to [add a new index pattern](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-search.html#es-gsg-search-kibana) (use pattern `ara-sales-*` to get started) in Kibana to start seeing it.
 
-### Connecting to Amazon Redshift
+#### Connecting to Amazon Redshift
 
 For security reasons, the Redshift cluster is in a private subnet. 
 Therefore, you won't be able to connect directly to the cluster with a SQL client, 
@@ -160,9 +185,6 @@ Host and connection details for the bastion host are available in the CDK and Cl
  * The secret name containing the keypair is in `ara-Redshift-bastion-keypair-secret`
  * The bastion host DNS to connect is in `ara-Redshift-bastion-dns`
  * The Redshift hostname and port are in `ara-Redshift-hostname` and `ara-Redshift-port`
-
-
-### psql
 
 The following are the required syntax and examples of how to create the tunnel and connect via
 [psql](https://docs.aws.amazon.com/redshift/latest/mgmt/connecting-from-psql.html). The commands need to be run in a command line environment like Terminal on Mac or cmd on Windows.
@@ -206,7 +228,7 @@ e.g.
 psql -h localhost -p 5400 -U dwsuser -d dev
 ```
 
-## Clean up
+### Clean up
 
 1. (If the data visualisation module has been deployed) Delete the QuickSight VPC Connection, otherwise destroying the stack will fail.
 2. (If the data visualisation module has been deployed) Destroy the stack called `DataVizRedshiftStack`.
