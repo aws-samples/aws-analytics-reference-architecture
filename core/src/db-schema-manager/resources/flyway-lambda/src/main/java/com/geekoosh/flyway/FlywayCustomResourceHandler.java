@@ -35,6 +35,8 @@ public class FlywayCustomResourceHandler implements RequestHandler<CloudFormatio
     public Map handleRequest(CloudFormationCustomResourceEvent event, AmazonCloudFormation cloudFormationClient) {
         String physicalResourceId = event.getPhysicalResourceId();
         String requestType = event.getRequestType();
+        HashMap<String, Object> schemaVersion = new HashMap<>();
+        schemaVersion.put("version", "0");
         switch (requestType) {
       /*
         For create requests, attempt to connect to the on-premise Active Directory
@@ -45,7 +47,9 @@ public class FlywayCustomResourceHandler implements RequestHandler<CloudFormatio
                 DescribeStackResourceResult currentResource = cloudFormationClient.describeStackResource(new DescribeStackResourceRequest().withStackName(event.getStackId()).withLogicalResourceId(event.getLogicalResourceId()));
                 String currentResourceStatus = currentResource.getStackResourceDetail().getResourceStatus();
                 if(!currentResourceStatus.equals("UPDATE_ROLLBACK_IN_PROGRESS")) {
-                    callFlywayService();
+                    Response run = callFlywayService();
+                    schemaVersion.put("version", run.getInfo().getCurrent().getVersion().getVersion());
+
                 }
                 break;
             case "Delete":
@@ -55,8 +59,10 @@ public class FlywayCustomResourceHandler implements RequestHandler<CloudFormatio
         }
 
         HashMap<String, Object> cfnResponse = new HashMap<>();
+
         cfnResponse.put("PhysicalResourceId", physicalResourceId);
         cfnResponse.put("RequestType", event.getRequestType());
+        cfnResponse.put("Data", schemaVersion);
 
         System.out.println("result: Successfully " + event.getRequestType() + " migrations");
         System.out.println("response: " + cfnResponse);

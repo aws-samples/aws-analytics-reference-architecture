@@ -59,7 +59,7 @@ describe('deploy succeed', () => {
     });
 
     // THEN
-    expect(deployResult.outputs.schemaVersion).toEqual(1);
+    expect(deployResult.outputs.schemaVersion).toEqual('2');
   }, 9000000);
 });
 
