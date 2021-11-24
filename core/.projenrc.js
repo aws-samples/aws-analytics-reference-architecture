@@ -30,7 +30,7 @@ const project = new AwsCdkConstructLibrary({
   repositoryDirectory: 'core',
   workflow: false,
   buildWorkflow: false,
-  release: false,
+  release: true,
   depsUpgrade: false,
   stale: false,
   pullRequestTemplate: false,
