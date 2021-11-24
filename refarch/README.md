@@ -115,31 +115,31 @@ Once deployed, you need to create a master user for Elasticsearch and add it to 
 
 Open the Cognito UI in the AWS console, select "Manage User Pools", click on the user pool named `ara_user_pool`, and choose the "Users and groups" menu. To start adding a new user, click the "Create user" button:
 
-![step-1](doc/images/1.png)
+![step-1](../doc/images/1.png)
 
 In the pop-up dialog, provide a username, password, and e-mail address, check "Send an invitation to this new user?" and "Mark email as verified?", uncheck "Mark phone number as verified?", and confirm with "Create user" to add the new master user:
 
-![step-2](doc/images/2.png)
+![step-2](../doc/images/2.png)
 
 The master user is created with a temporary password that has to be changed at first authentication. Note the unique user identifier (UUID) displayed in the "Username" column as shown on the next screen:
 
-![step-3](doc/images/3.png)
+![step-3](../doc/images/3.png)
 
 Now, add the master user to the `master-user-group` that has been created by the CDK stack. Switch to the "Groups" tab and select the group's name:
 
-![step-4](doc/images/4.png)
+![step-4](../doc/images/4.png)
 
 Click the "Add users" button at the group's detail page:
 
-![step-5](doc/images/5.png)
+![step-5](../doc/images/5.png)
 
 Click the `+` icon in front of the master user shown in the list, identified by the UUID:
 
-![step-6](doc/images/6.png)
+![step-6](../doc/images/6.png)
 
 A message will confirm that the user has been added successfully to the group:
 
-![step-7](doc/images/7.png)
+![step-7](../doc/images/7.png)
 
 Once the master user is added, you can connect to Kibana using the URL exposed in the streaming module's nested stack outputs (stack name start with `ara-StreamingModuleNestedStack` and output key starts with `EsDomainkibanaUrl`) and the temporary credential used to create the user.
 
