@@ -7,6 +7,7 @@
   },
   "scripts": {
     "build": "npx projen build",
+    "bump": "npx projen bump",
     "clobber": "npx projen clobber",
     "compat": "npx projen compat",
     "compile": "npx projen compile",
@@ -19,6 +20,10 @@
     "pip-install": "npx projen pip-install",
     "post-compile": "npx projen post-compile",
     "pre-compile": "npx projen pre-compile",
+    "publish:github": "npx projen publish:github",
+    "publish:npm": "npx projen publish:npm",
+    "publish:pypi": "npx projen publish:pypi",
+    "release": "npx projen release",
     "test": "npx projen test",
     "test:deploy": "npx projen test:deploy",
     "test:destroy": "npx projen test:destroy",
@@ -26,6 +31,7 @@
     "test:unit": "npx projen test:unit",
     "test:update": "npx projen test:update",
     "test:watch": "npx projen test:watch",
+    "unbump": "npx projen unbump",
     "watch": "npx projen watch",
     "projen": "npx projen"
   },
@@ -57,6 +63,7 @@
     "jsii-pacmak": "^1.44.2",
     "json-schema": "^0.4.0",
     "projen": "^0.34.8",
+    "standard-version": "^9",
     "ts-jest": "^27.0.7",
     "typescript": "^4.5.2"
   },
