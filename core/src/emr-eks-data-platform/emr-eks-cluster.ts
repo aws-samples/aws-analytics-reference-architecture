@@ -3,23 +3,20 @@
 
 import { execSync } from 'child_process';
 import * as fs from 'fs';
-import * as path from 'path';
 import { SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { PolicyStatement, PolicyDocument, Policy, Role, IRole, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
-import * as lambda from '@aws-cdk/aws-lambda';
-import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
-import { Provider } from '@aws-cdk/custom-resources';
 import * as AWS from 'aws-sdk';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
 import { EmrVirtualClusterProps } from './emr-virtual-cluster';
 
+import { ManagedEndpointProvider } from './managed-endpoint-provider';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
@@ -53,17 +50,6 @@ export interface EmrEksClusterProps {
    * @default -  v1.20 version is used
    */
   readonly kubernetesVersion?: KubernetesVersion;
-
-  /**
-   * ACM Certificate ARN used with EMR on EKS managed endpoint
-   * @default - generate and import certificate using locally installed openssl utility
-   */
-  readonly acmCertificateArn?: string;
-  /**
-   * EMR on EKS managed endpoint version
-   * @default - emr-6.3.0-latest
-   */
-  readonly emrOnEksVersion?: string;
 }
 
 /**
@@ -71,21 +57,18 @@ export interface EmrEksClusterProps {
  */
 export class EmrEksCluster extends Construct {
 
-  public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_20;
-  public static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
-
-  public static getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion, clusterName: string) {
+  public static getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion?: KubernetesVersion, clusterName?: string) {
 
     const stack = Stack.of(scope);
-    const id = `${clusterName}Singleton`;
+    const id = `${clusterName}Singleton` || 'emr-eks-clusterSingleton';
 
     let emrEksCluster: EmrEksCluster;
 
     if (stack.node.tryFindChild(id) == undefined) {
       emrEksCluster = new EmrEksCluster(stack, id, {
-        kubernetesVersion: kubernetesVersion,
+        kubernetesVersion: kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
         eksAdminRoleArn: eksAdminRoleArn,
-        eksClusterName: `${clusterName}-ara-cluster`,
+        eksClusterName: clusterName || EmrEksCluster.DEFAULT_CLUSTER_NAME,
       });
 
       //Add a nodegroup for notebooks
@@ -95,20 +78,20 @@ export class EmrEksCluster extends Construct {
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-
   private static readonly EMR_VERSIONS = ['emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
+  private static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
+  private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_20;
+  private static readonly DEFAULT_CLUSTER_NAME = 'emr-eks-cluster';
   private static readonly AUTOSCALING_POLICY = PolicyStatement.fromJson(IamPolicyAutoscaler);
-  private readonly emrServiceRole: CfnServiceLinkedRole;
   public readonly eksCluster: Cluster;
   public readonly notebookDefaultConfig: string;
   public readonly criticalDefaultConfig: string;
   public readonly sharedDefaultConfig: string;
+  private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly eksOidcProvider: FederatedPrincipal;
   private defaultCertificateArn?: string;
   private readonly podTemplateLocation: Location;
   private readonly clusterName: string;
-  private readonly managedEndpointProvider: Provider;
-  public readonly managedEndpointProviderServiceToken: string;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -208,9 +191,9 @@ export class EmrEksCluster extends Construct {
       'sts:AssumeRoleWithWebIdentity',
     );
 
-    // Create the Nodegroup for tooling
+    // Create the Amazon EKS Nodegroup for tooling
     this.addNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
-    // Create default Nodegroups of each type in one subnet of each AZ
+    // Create default Amazon EMR on EKS Nodegroups. This will create one Amazon EKS nodegroup per AZ
     // Also create default configurations and pod templates for these nodegroups
     this.addEmrEksNodegroup(EmrEksNodegroup.CRITICAL_ALL);
     this.addEmrEksNodegroup(EmrEksNodegroup.SHARED_DRIVER);
@@ -339,108 +322,12 @@ export class EmrEksCluster extends Construct {
       description: 'Access Kubernetes Dashboard via kubectl proxy and this URL',
       value: 'http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:https/proxy/#/login',
     });
-
-    // Create the custom resource provider for adding managed endpoints to the cluster
-    const lambdaPath = 'lambdas/managed-endpoint';
-
-    // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
-    const onEvent = new lambda.Function(this, `${this.clusterName}ManagedEndpointOnEvent`, {
-      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
-      runtime: lambda.Runtime.NODEJS_12_X,
-      handler: 'index.onEvent',
-      timeout: Duration.seconds(120),
-      environment: {
-        REGION: Stack.of(this).region,
-      },
-      // TODO least priviliges
-      initialPolicy: [
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['acm:ImportCertificate', 'acm:DescribeCertificate'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['emr-containers:CreateManagedEndpoint',
-            'emr-containers:DeleteManagedEndpoint',
-            'emr-containers:DescribeManagedEndpoint'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['ec2:CreateSecurityGroup',
-            'ec2:DeleteSecurityGroup',
-            'ec2:AuthorizeSecurityGroupEgress',
-            'ec2:AuthorizeSecurityGroupIngress',
-            'ec2:RevokeSecurityGroupEgress',
-            'ec2:RevokeSecurityGroupIngress',
-            'ec2:DeleteSecurityGroup'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['kms:Decrypt'],
-        }),
-      ],
-    });
-
-    // AWS Lambda supporting the status check on asynchronous create, update and delete operations
-    const isComplete = new lambda.Function(this, `${this.clusterName}ManagedEndpointIsComplete`, {
-      code: lambda.Code.fromAsset(path.join(__dirname, lambdaPath)),
-      handler: 'index.isComplete',
-      runtime: lambda.Runtime.NODEJS_12_X,
-      timeout: Duration.seconds(120),
-      environment: {
-        REGION: Stack.of(this).region,
-      },
-      // TODO least priviliges
-      initialPolicy: [
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['acm:ImportCertificate', 'acm:DescribeCertificate'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['emr-containers:DescribeManagedEndpoint',
-            'emr-containers:CreateManagedEndpoint',
-            'emr-containers:DeleteManagedEndpoint'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['ec2:CreateSecurityGroup',
-            'ec2:DeleteSecurityGroup',
-            'ec2:AuthorizeSecurityGroupEgress',
-            'ec2:AuthorizeSecurityGroupIngress',
-            'ec2:RevokeSecurityGroupEgress',
-            'ec2:RevokeSecurityGroupIngress',
-            'ec2:DeleteSecurityGroup'],
-        }),
-        new PolicyStatement({
-          resources: ['*'],
-          actions: ['kms:Decrypt'],
-        }),
-      ],
-    });
-    this.managedEndpointProvider = new Provider(this, `CustomResourceProvider${id}`, {
-      onEventHandler: onEvent,
-      isCompleteHandler: isComplete,
-      logRetention: RetentionDays.ONE_DAY,
-      totalTimeout: Duration.minutes(30),
-      queryInterval: Duration.seconds(20),
-    });
-
-    this.managedEndpointProviderServiceToken = this.managedEndpointProvider.serviceToken;
-
   }
 
   /**
-   * Add a new Amazon EKS Nodegroup to the cluster with Amazon EMR on EKS best practices and configured for Cluster Autoscaler.
-   * CfnOutput can be customized. If no subnet is provided, it adds one nodegroup per private subnet in the Amazon EKS Cluster
+   * Add new Amazon EMR on EKS nodegroups to the cluster. This method overrides Amazon EKS nodegroup options then create the nodegroup.
+   * If no subnet is provided, it creates one nodegroup per private subnet in the Amazon EKS Cluster.
+   * If NVME local storage is used, the user_data is modified.
    * @param {Props} props the EmrEksNodegroupOptions [properties]{@link EmrEksNodegroupOptions}
    * @access public
    */
@@ -452,54 +339,51 @@ export class EmrEksCluster extends Construct {
       subnetType: SubnetType.PRIVATE_WITH_NAT,
     }).subnets;
 
-    // Create one Nodegroup per subnet
-    subnetList.forEach( (subnet, index) => {
+    // Add Amazon SSM agent to the user data
+    const userData = [
+      'yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm',
+      'systemctl enable amazon-ssm-agent',
+      'systemctl start amazon-ssm-agent',
+    ];
+    var launchTemplateName = `EmrEksLaunch-${this.clusterName}`;
+    // If the Nodegroup uses NVMe, add user data to configure them
+    if (props.mountNvme) {
+      userData.concat([
+        'INSTANCE_TYPE=$(ec2-metadata -t)',
+        'if [[ $INSTANCE_TYPE == *"2xlarge"* ]]; then',
+        'DEVICE="/dev/nvme1n1"',
+        'mkfs.ext4 $DEVICE',
+        'else',
+        'yum install -y mdadm',
+        'SSD_NVME_DEVICE_LIST=("/dev/nvme1n1" "/dev/nvme2n1")',
+        'SSD_NVME_DEVICE_COUNT=${#SSD_NVME_DEVICE_LIST[@]}',
+        'RAID_DEVICE=${RAID_DEVICE:-/dev/md0}',
+        'RAID_CHUNK_SIZE=${RAID_CHUNK_SIZE:-512}  # Kilo Bytes',
+        'FILESYSTEM_BLOCK_SIZE=${FILESYSTEM_BLOCK_SIZE:-4096}  # Bytes',
+        'STRIDE=$((RAID_CHUNK_SIZE * 1024 / FILESYSTEM_BLOCK_SIZE))',
+        'STRIPE_WIDTH=$((SSD_NVME_DEVICE_COUNT * STRIDE))',
 
-      // Add Amazon SSM agent to the user data
-      const userData = [
-        'yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm',
-        'systemctl enable amazon-ssm-agent',
-        'systemctl start amazon-ssm-agent',
-      ];
-      var launchTemplateName = `EmrEksLaunch-${this.clusterName}`;
-      // If the Nodegroup uses NVMe, add user data to configure them
-      if (props.mountNvme) {
-        userData.concat([
-          'INSTANCE_TYPE=$(ec2-metadata -t)',
-          'if [[ $INSTANCE_TYPE == *"2xlarge"* ]]; then',
-          'DEVICE="/dev/nvme1n1"',
-          'mkfs.ext4 $DEVICE',
-          'else',
-          'yum install -y mdadm',
-          'SSD_NVME_DEVICE_LIST=("/dev/nvme1n1" "/dev/nvme2n1")',
-          'SSD_NVME_DEVICE_COUNT=${#SSD_NVME_DEVICE_LIST[@]}',
-          'RAID_DEVICE=${RAID_DEVICE:-/dev/md0}',
-          'RAID_CHUNK_SIZE=${RAID_CHUNK_SIZE:-512}  # Kilo Bytes',
-          'FILESYSTEM_BLOCK_SIZE=${FILESYSTEM_BLOCK_SIZE:-4096}  # Bytes',
-          'STRIDE=$((RAID_CHUNK_SIZE * 1024 / FILESYSTEM_BLOCK_SIZE))',
-          'STRIPE_WIDTH=$((SSD_NVME_DEVICE_COUNT * STRIDE))',
+        'mdadm --create --verbose "$RAID_DEVICE" --level=0 -c "${RAID_CHUNK_SIZE}" --raid-devices=${#SSD_NVME_DEVICE_LIST[@]} "${SSD_NVME_DEVICE_LIST[@]}"',
+        'while [ -n "$(mdadm --detail "$RAID_DEVICE" | grep -ioE \'State :.*resyncing\')" ]; do',
+        'echo "Raid is resyncing.."',
+        'sleep 1',
+        'done',
+        'echo "Raid0 device $RAID_DEVICE has been created with disks ${SSD_NVME_DEVICE_LIST[*]}"',
+        'mkfs.ext4 -m 0 -b "$FILESYSTEM_BLOCK_SIZE" -E "stride=$STRIDE,stripe-width=$STRIPE_WIDTH" "$RAID_DEVICE"',
+        'DEVICE=$RAID_DEVICE',
+        'fi',
 
-          'mdadm --create --verbose "$RAID_DEVICE" --level=0 -c "${RAID_CHUNK_SIZE}" --raid-devices=${#SSD_NVME_DEVICE_LIST[@]} "${SSD_NVME_DEVICE_LIST[@]}"',
-          'while [ -n "$(mdadm --detail "$RAID_DEVICE" | grep -ioE \'State :.*resyncing\')" ]; do',
-          'echo "Raid is resyncing.."',
-          'sleep 1',
-          'done',
-          'echo "Raid0 device $RAID_DEVICE has been created with disks ${SSD_NVME_DEVICE_LIST[*]}"',
-          'mkfs.ext4 -m 0 -b "$FILESYSTEM_BLOCK_SIZE" -E "stride=$STRIDE,stripe-width=$STRIPE_WIDTH" "$RAID_DEVICE"',
-          'DEVICE=$RAID_DEVICE',
-          'fi',
+        'systemctl stop docker',
+        'mkdir -p /var/lib/kubelet/pods',
+        'mount $DEVICE /var/lib/kubelet/pods',
+        'chmod 750 /var/lib/docker',
+        'systemctl start docker',
+      ]);
+      launchTemplateName = `EmrEksNvmeLaunch-${this.clusterName}`;
+    }
 
-          'systemctl stop docker',
-          'mkdir -p /var/lib/kubelet/pods',
-          'mount $DEVICE /var/lib/kubelet/pods',
-          'chmod 750 /var/lib/docker',
-          'systemctl start docker',
-        ]);
-        launchTemplateName = `EmrEksNvmeLaunch-${this.clusterName}`;
-      }
-
-      // Add headers and footers to user data
-      const userDataMime = Fn.base64(`MIME-Version: 1.0
+    // Add headers and footers to user data
+    const userDataMime = Fn.base64(`MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
 
 --==MYBOUNDARY==
@@ -511,11 +395,14 @@ ${userData.join('\r\n')}
 --==MYBOUNDARY==--\\
 `);
 
+    // Create a new LaunchTemplate or reuse existing one
+    const lt = SingletonCfnLaunchTemplate.getOrCreate(this, launchTemplateName, userDataMime);
+
+    // Create one Amazon EKS Nodegroup per subnet
+    subnetList.forEach( (subnet, index) => {
+
       // Make the ID unique across AZ using the index of subnet in the subnet list
       const id = `${props.id}-${index}`;
-
-      // Create a new LaunchTemplate or reuse existing one
-      const lt = SingletonCfnLaunchTemplate.getOrCreate(this, launchTemplateName, userDataMime);
 
       // Add the user data to the NodegroupOptions
       const nodeGroupParameters = {
@@ -537,8 +424,7 @@ ${userData.join('\r\n')}
   }
 
   /**
-   * Add a new Amazon EMR Virtual Cluster linked to EKS Cluster.
-   * CfnOutput can be customized.
+   * Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster.
    * @param {EmrVirtualClusterProps} props the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}
    * @access public
    */
@@ -600,7 +486,6 @@ ${userData.join('\r\n')}
    */
   public addManagedEndpoint(
     scope: Construct,
-    serviceToken: string,
     id: string,
     virtualClusterId: string,
     executionRole: IRole,
@@ -630,7 +515,7 @@ ${userData.join('\r\n')}
     const endpointId = `managed-endpoint-${id}`;
 
     const cr = new CustomResource(scope, id, {
-      serviceToken: serviceToken,
+      serviceToken: ManagedEndpointProvider.getOrCreate(this, 'managedEndpointProvider').provider.serviceToken,
       properties: {
         clusterId: virtualClusterId,
         executionRoleArn:
@@ -685,7 +570,9 @@ ${userData.join('\r\n')}
   }
 
   /**
-   * Add a new Amazon EMR on EKS Nodegroup to the cluster
+   * Add a new Amazon EKS Nodegroup to the cluster.
+   * This method is be used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
+   *  so it can be used for the cluster autoscaler.
    * @param {string} nodegroupId the ID of the nodegroup
    * @param {EmrEksNodegroupOptions} options the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}
    * @access public
@@ -763,7 +650,8 @@ ${userData.join('\r\n')}
   }
 
   /**
-   * Create and configure a new Amazon IAM Role usable as an execution role
+   * Create and configure a new Amazon IAM Role usable as an execution role.
+   * This method links the makes the created role assumed by the Amazon EKS cluster Open ID Connect provider.
    * @param {Policy} policy the execution policy to attach to the role
    * @access public
    */
