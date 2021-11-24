@@ -8,7 +8,7 @@ This project is composed of:
  * Reusable core components exposed in an AWS CDK (Cloud Development Kit) library currently available in [Typescript](https://www.npmjs.com/package/aws-analytics-reference-architecture) and [Python](https://pypi.org/project/aws-analytics-reference-architecture/). This library contains AWS CDK constructs that can be used to quickly provision analytics solutions in demos, prototypes, proof of concepts and end-to-end reference architectures. 
  * Reference architectures consumming the reusable components to demonstrate end-to-end examples in a business context. Currently, the AWS native reference architecture is available.
 
-This documentation explains how to get started with the AWS native reference architecture.
+This documentation explains how to get started with the AWS native reference architecture. The complete documentation of the solution can be found [here](https://aws-samples.github.io/aws-analytics-reference-architecture/).
 
 ## Getting started
 
