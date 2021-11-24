@@ -11,7 +11,7 @@ This project is composed of:
 
 This repository contains the codebase and getting started instructions for:
  * The [core components](core/README.md): how to consume the AWS CDK constructs to create new end-to-end examples
- * The [reference architectures](refarch/aws-native/README.md): how to provision end-to-end examples 
+ * The [reference architectures](refarch/README.md): how to provision end-to-end examples 
 
 The complete documentation of the core components including API and the reference architectures can be found [here](https://aws-samples.github.io/aws-analytics-reference-architecture/).
 
