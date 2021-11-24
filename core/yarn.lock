@@ -2295,10 +2295,10 @@ co@^4.6.0:
   resolved "https://registry.npmjs.org/co/-/co-4.6.0.tgz"
   integrity sha1-bqa989hTrlTMuOR7+gvz+QMfsYQ=
 
-codemaker@^1.44.2:
-  version "1.44.2"
-  resolved "https://registry.npmjs.org/codemaker/-/codemaker-1.44.2.tgz"
-  integrity sha512-yS9//oDu07/TXyIsuQRqfqzB8z9Z9hq9sz/kxK5+ibUDiMr4q/k9HDn9UuK+OZPo0wisffYJCxe/9UjrETiy9Q==
+codemaker@^1.46.0:
+  version "1.46.0"
+  resolved "https://registry.yarnpkg.com/codemaker/-/codemaker-1.46.0.tgz#9889188c8085e3b1a1058c4f8e1f1b9458177e8c"
+  integrity sha512-sCGZXQkc6DOkchW9S1J5RPzQx7DP9HW2BtfThaCkiDGoKytbvDsUDFGxRX/6823jQxvjkOwZVooOwD+0+hYYEg==
   dependencies:
     camelcase "^6.2.0"
     decamelize "^5.0.1"
@@ -4643,19 +4643,19 @@ jsii-docgen@^4.1.3:
     yargs "^16.2.0"
 
 jsii-pacmak@^1.44.2:
-  version "1.44.2"
-  resolved "https://registry.npmjs.org/jsii-pacmak/-/jsii-pacmak-1.44.2.tgz"
-  integrity sha512-TWDNdqjX/h+3IdISdU0rx1TtwDOAW/z3ih+P4Td0Cg9Qgo6szhnJyUvTS/4FNJmwKOx7i5q7zfNchdnu/m9/qg==
+  version "1.46.0"
+  resolved "https://registry.yarnpkg.com/jsii-pacmak/-/jsii-pacmak-1.46.0.tgz#24c9a27dd280bf5ad66bc2c77c116a438ec1cb10"
+  integrity sha512-2nVdi3lv8IDFKyfYKtBPGBJVMB1wB/6/TZKqz7VIXFdBUHDYb8Z+wjfwhvOW9aiP07/YD357TTTMS7qKUNopew==
   dependencies:
-    "@jsii/check-node" "1.44.2"
-    "@jsii/spec" "^1.44.2"
+    "@jsii/check-node" "1.46.0"
+    "@jsii/spec" "^1.46.0"
     clone "^2.1.2"
-    codemaker "^1.44.2"
+    codemaker "^1.46.0"
     commonmark "^0.30.0"
     escape-string-regexp "^4.0.0"
     fs-extra "^9.1.0"
-    jsii-reflect "^1.44.2"
-    jsii-rosetta "^1.44.2"
+    jsii-reflect "^1.46.0"
+    jsii-rosetta "^1.46.0"
     semver "^7.3.5"
     spdx-license-list "^6.4.0"
     xmlbuilder "^15.1.1"
@@ -4673,7 +4673,7 @@ jsii-reflect@^1.44.2, jsii-reflect@^1.46.0:
     oo-ascii-tree "^1.46.0"
     yargs "^16.2.0"
 
-jsii-rosetta@^1.44.2, jsii-rosetta@^1.46.0:
+jsii-rosetta@^1.46.0:
   version "1.46.0"
   resolved "https://registry.npmjs.org/jsii-rosetta/-/jsii-rosetta-1.46.0.tgz"
   integrity sha512-EyGFTMcSiLw03aCcDmN8tjwIJ2+XbW7LZJiq8VkyHoKdMz6urHKtYGZTNDns9iNH2/WxfjFRt+d3S9tYi2AfRw==
