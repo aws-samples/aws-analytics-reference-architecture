@@ -141,6 +141,7 @@ A message will confirm that the user has been added successfully to the group:
 
 ![step-7](../doc/images/7.png)
 
+
 Once the master user is added, you can connect to Kibana using the URL exposed in the streaming module's nested stack outputs (stack name start with `ara-StreamingModuleNestedStack` and output key starts with `EsDomainkibanaUrl`) and the temporary credential used to create the user.
 
 The data is already being indexed in Elasticsearch, but you will need to [add a new index pattern](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-search.html#es-gsg-search-kibana) (use pattern `ara-sales-*` to get started) in Kibana to start seeing it.
