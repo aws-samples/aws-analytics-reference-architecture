@@ -83,38 +83,38 @@ export class LakeFormationTag extends cdk.Construct {
   /**
    * tagResource
    */
-  // public tagResource(resource: Database | Table | Column ) {
-  //   new AwsCustomResource(this, 'lfTagResource', {
-  //     logRetention: logs.RetentionDays.ONE_DAY,
-  //     onCreate: {
-  //       action: 'addLFTagToResource',
-  //       service: 'LakeFormation',
-  //       parameters: {
-  //         TagKey: props.key,
-  //         CatalogId: props.catalogId,
-  //         TagsValues: props.values,
-  //       },
-  //       physicalResourceId: PhysicalResourceId.of(),        
-  //     },
-  //     onUpdate: {
-  //       action: 'updateLFTag',
-  //       service: 'LakeFormation',
-  //       parameters: {
-  //         TagKey: props.key,
-  //         CatalogId: props.catalogId,
-  //         TagValuesToDelete: currentValues,
-  //         TagsValuesToAdd: props.values,
-  //       },
-  //       physicalResourceId: PhysicalResourceId.of(),
-  //     },
-  //     onDelete: {
-  //       action: 'deleteLFTag',
-  //       service: 'LakeFormation',
-  //       parameters: {
-  //         TagKey: props.key,
-  //         CatalogId: props.catalogId,        }
-  //     },
-  //     policy: AwsCustomResourcePolicy.fromSdkCalls({resources: AwsCustomResourcePolicy.ANY_RESOURCE}),
-  //   });
-  //}
+  public tagResource(resource: Database | Table | Column ) {
+    new AwsCustomResource(this, 'lfTagResource', {
+      logRetention: logs.RetentionDays.ONE_DAY,
+      onCreate: {
+        action: 'addLFTagToResource',
+        service: 'LakeFormation',
+        parameters: {
+          TagKey: props.key,
+          CatalogId: props.catalogId,
+          TagsValues: props.values,
+        },
+        physicalResourceId: PhysicalResourceId.of(),        
+      },
+      onUpdate: {
+        action: 'updateLFTag',
+        service: 'LakeFormation',
+        parameters: {
+          TagKey: props.key,
+          CatalogId: props.catalogId,
+          TagValuesToDelete: currentValues,
+          TagsValuesToAdd: props.values,
+        },
+        physicalResourceId: PhysicalResourceId.of(),
+      },
+      onDelete: {
+        action: 'deleteLFTag',
+        service: 'LakeFormation',
+        parameters: {
+          TagKey: props.key,
+          CatalogId: props.catalogId,        }
+      },
+      policy: AwsCustomResourcePolicy.fromSdkCalls({resources: AwsCustomResourcePolicy.ANY_RESOURCE}),
+    });
+  }
 }
