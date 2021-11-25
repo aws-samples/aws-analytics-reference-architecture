@@ -1,10 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 import * as path from 'path';
-import { PolicyDocument, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
-import { Function, Code, Runtime } from '@aws-cdk/aws-lambda';
+import { PolicyStatement } from '@aws-cdk/aws-iam';
+import { Code, Function, Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
-import { Duration, Stack, Construct } from '@aws-cdk/core';
+import { Construct, Duration, Stack } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 
 
@@ -41,6 +41,38 @@ export class ManagedEndpointProvider extends Construct {
     // Create the custom resource provider for adding managed endpoints to the cluster
     const lambdaPath = 'lambdas/managed-endpoint';
 
+    const lambdaPolicy = [
+      new PolicyStatement({
+        resources: ['*'],
+        actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
+      }),
+      new PolicyStatement({
+        resources: ['*'],
+        actions: ['acm:ImportCertificate', 'acm:DescribeCertificate'],
+      }),
+      new PolicyStatement({
+        resources: ['*'],
+        actions: ['emr-containers:DescribeManagedEndpoint',
+          'emr-containers:CreateManagedEndpoint',
+          'emr-containers:DeleteManagedEndpoint'],
+      }),
+      new PolicyStatement({
+        resources: ['*'],
+        actions: [
+          'ec2:CreateSecurityGroup',
+          'ec2:DeleteSecurityGroup',
+          'ec2:AuthorizeSecurityGroupEgress',
+          'ec2:AuthorizeSecurityGroupIngress',
+          'ec2:RevokeSecurityGroupEgress',
+          'ec2:RevokeSecurityGroupIngress',
+        ],
+      }),
+      new PolicyStatement({
+        resources: ['*'],
+        actions: ['kms:Decrypt'],
+      }),
+    ];
+
     // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
     const onEvent = new Function(this, 'ManagedEndpointOnEvent', {
       code: Code.fromAsset(path.join(__dirname, lambdaPath)),
@@ -50,6 +82,7 @@ export class ManagedEndpointProvider extends Construct {
       environment: {
         REGION: Stack.of(this).region,
       },
+      initialPolicy: lambdaPolicy,
     });
 
     // AWS Lambda supporting the status check on asynchronous create, update and delete operations
@@ -61,51 +94,7 @@ export class ManagedEndpointProvider extends Construct {
       environment: {
         REGION: Stack.of(this).region,
       },
-    });
-
-    const providerRole = new Role(this, 'managedEndpointProviderRole', {
-      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-      inlinePolicies: {
-        ManagedEndpointProvider: new PolicyDocument({
-          statements: [
-            new PolicyStatement({
-              resources: ['*'],
-              actions: [
-                's3:GetObject*', 's3:GetBucket*', 's3:List*',
-              ],
-            }),
-            new PolicyStatement({
-              resources: ['*'],
-              actions: [
-                'acm:ImportCertificate', 'acm:DescribeCertificate',
-              ],
-            }),
-            new PolicyStatement({
-              resources: ['*'],
-              actions: [
-                'emr-containers:CreateManagedEndpoint',
-                'emr-containers:DeleteManagedEndpoint',
-                'emr-containers:DescribeManagedEndpoint',
-              ],
-            }),
-            new PolicyStatement({
-              resources: ['*'],
-              actions: [
-                'ec2:CreateSecurityGroup',
-                'ec2:DeleteSecurityGroup',
-                'ec2:AuthorizeSecurityGroupEgress',
-                'ec2:AuthorizeSecurityGroupIngress',
-                'ec2:RevokeSecurityGroupEgress',
-                'ec2:RevokeSecurityGroupIngress',
-              ],
-            }),
-            new PolicyStatement({
-              resources: ['*'],
-              actions: ['kms:Decrypt'],
-            }),
-          ],
-        }),
-      },
+      initialPolicy: lambdaPolicy,
     });
 
     this.provider = new Provider(this, `CustomResourceProvider${id}`, {
@@ -114,7 +103,6 @@ export class ManagedEndpointProvider extends Construct {
       logRetention: RetentionDays.ONE_DAY,
       totalTimeout: Duration.minutes(30),
       queryInterval: Duration.seconds(20),
-      role: providerRole,
     });
   }
 }

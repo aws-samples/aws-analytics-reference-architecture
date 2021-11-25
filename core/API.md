@@ -525,6 +525,20 @@ the execution policy to attach to the role.
 
 ---
 
+##### `uploadPodTemplate` <a name="aws-analytics-reference-architecture.EmrEksCluster.uploadPodTemplate"></a>
+
+```typescript
+public uploadPodTemplate(path: string)
+```
+
+###### `path`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.path"></a>
+
+- *Type:* `string`
+
+The local path of the yaml podTemplate files to upload.
+
+---
+
 #### Static Functions <a name="Static Functions"></a>
 
 ##### `getOrCreate` <a name="aws-analytics-reference-architecture.EmrEksCluster.getOrCreate"></a>
@@ -588,6 +602,16 @@ public readonly notebookDefaultConfig: string;
 ```
 
 - *Type:* `string`
+
+---
+
+##### `podTemplateLocation`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.podTemplateLocation"></a>
+
+```typescript
+public readonly podTemplateLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
 
 ---
 

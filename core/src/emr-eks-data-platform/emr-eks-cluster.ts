@@ -3,11 +3,12 @@
 
 import { execSync } from 'child_process';
 import * as fs from 'fs';
+import { join } from 'path';
 import { SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { PolicyStatement, PolicyDocument, Policy, Role, IRole, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
-import { Location } from '@aws-cdk/aws-s3';
+import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
 import * as AWS from 'aws-sdk';
@@ -87,10 +88,12 @@ export class EmrEksCluster extends Construct {
   public readonly notebookDefaultConfig: string;
   public readonly criticalDefaultConfig: string;
   public readonly sharedDefaultConfig: string;
+  public readonly podTemplateLocation: Location;
+  private readonly managedEndpointProviderServiceToken: string;
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly eksOidcProvider: FederatedPrincipal;
   private defaultCertificateArn?: string;
-  private readonly podTemplateLocation: Location;
+  private readonly assetBucket: Bucket;
   private readonly clusterName: string;
 
   /**
@@ -200,31 +203,29 @@ export class EmrEksCluster extends Construct {
     this.addEmrEksNodegroup(EmrEksNodegroup.SHARED_EXECUTOR);
 
     // Create an Amazon S3 Bucket for default podTemplate assets
-    const assetBucket = SingletonBucket.getOrCreate(this, `${this.clusterName.toLowerCase()}-emr-eks-assets`);
-    // Deploy the default podTemplates
+    this.assetBucket = SingletonBucket.getOrCreate(this, `${this.clusterName.toLowerCase()}-emr-eks-assets`);
+    // Configure the podTemplate location
     this.podTemplateLocation = {
-      bucketName: assetBucket.bucketName,
+      bucketName: this.assetBucket.bucketName,
       objectKey: `${this.clusterName}/pod-template`,
     };
-    new BucketDeployment(this, 'assetDeployment', {
-      destinationBucket: assetBucket,
-      destinationKeyPrefix: this.podTemplateLocation.objectKey,
-      sources: [Source.asset('./src/emr-eks-data-platform/resources/k8s/pod-template')],
-    });
+
+    // Upload the default podTemplate to the Amazon S3 asset bucket
+    this.uploadPodTemplate(join(__dirname, 'resources/k8s/pod-template'));
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the notebook default config
-    // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-driver.yaml`);
-    // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-executor.yaml`);
+    // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-driver.yaml`);
+    // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-executor.yaml`);
     this.notebookDefaultConfig = JSON.stringify(NotebookDefaultConfig);
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the critical default config
-    CriticalDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/critical-driver.yaml`);
-    CriticalDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/critical-executor.yaml`);
+    CriticalDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/critical-driver.yaml`);
+    CriticalDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/critical-executor.yaml`);
     this.criticalDefaultConfig = JSON.stringify(CriticalDefaultConfig);
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the shared default config
-    SharedDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/shared-driver.yaml`);
-    SharedDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/shared-executor.yaml`);
+    SharedDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/shared-driver.yaml`);
+    SharedDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/shared-executor.yaml`);
     this.sharedDefaultConfig = JSON.stringify(SharedDefaultConfig);
 
     // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
@@ -317,10 +318,20 @@ export class EmrEksCluster extends Construct {
         },
       ],
     });
+
+    // Set the custom resource provider service token here to avoid circular dependencies
+    this.managedEndpointProviderServiceToken = new ManagedEndpointProvider(this, 'ManagedEndpointProvider').provider.serviceToken;
+
     // Provide the Kubernetes Dashboard URL in AWS CloudFormation output
     new CfnOutput(this, 'kubernetesDashboardURL', {
       description: 'Access Kubernetes Dashboard via kubectl proxy and this URL',
       value: 'http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:https/proxy/#/login',
+    });
+
+    // Provide the podTemplate location on Amazon S3
+    new CfnOutput(this, 'podTemplateLocation', {
+      description: 'Use podTemplates in Amazon EMR jobs from this Amazon S3 Location',
+      value: this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}`),
     });
   }
 
@@ -515,7 +526,7 @@ ${userData.join('\r\n')}
     const endpointId = `managed-endpoint-${id}`;
 
     const cr = new CustomResource(scope, id, {
-      serviceToken: ManagedEndpointProvider.getOrCreate(this, 'managedEndpointProvider').provider.serviceToken,
+      serviceToken: this.managedEndpointProviderServiceToken,
       properties: {
         clusterId: virtualClusterId,
         executionRoleArn:
@@ -662,6 +673,19 @@ ${userData.join('\r\n')}
     });
     executionRole.attachInlinePolicy(policy);
     return executionRole;
+  }
+
+  /**
+   * Upload podTemplates to the Amazon S3 location used by the cluster.
+   * @param path The local path of the yaml podTemplate files to upload
+   */
+  public uploadPodTemplate(path: string) {
+
+    new BucketDeployment(this, 'assetDeployment', {
+      destinationBucket: this.assetBucket,
+      destinationKeyPrefix: this.podTemplateLocation.objectKey,
+      sources: [Source.asset(path)],
+    });
   }
 
 }

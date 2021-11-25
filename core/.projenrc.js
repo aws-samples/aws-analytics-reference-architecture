@@ -70,6 +70,7 @@ const project = new AwsCdkConstructLibrary({
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
+    'cdk-dia',
   ],
 
   bundledDeps: [
