@@ -27,7 +27,8 @@
       "type": "build"
     },
     {
-      "name": "cdk-dia",
+      "name": "aws-cdk",
+      "version": "1.130.0",
       "type": "build"
     },
     {
@@ -61,6 +62,10 @@
     {
       "name": "jest-junit",
       "version": "^12",
+      "type": "build"
+    },
+    {
+      "name": "jest-runner-groups",
       "type": "build"
     },
     {

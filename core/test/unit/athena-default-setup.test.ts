@@ -1,8 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests Athena Default Setup
+ *
+ * @group unit/athena/default-setup
+ */
+
 import { Stack } from '@aws-cdk/core';
-import { AthenaDefaultSetup } from '../src/athena-default-setup';
+import { AthenaDefaultSetup } from '../../src/athena-default-setup';
 import '@aws-cdk/assert/jest';
 
 
