@@ -117,7 +117,7 @@ project.addTask('test:unit', {
 });
 
 project.addTask('test:integ', {
-  exec: 'jest --group=integ --onlyChanged',
+  exec: 'jest --group=integ --onlyChanged --changedSince=main',
 });
 
 const testDeploy = project.addTask('test:deploy', {

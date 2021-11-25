@@ -301,7 +301,7 @@
       "name": "test:integ",
       "steps": [
         {
-          "exec": "jest --group=integ --onlyChanged"
+          "exec": "jest --group=integ --onlyChanged --changedSince=main"
         }
       ]
     },
