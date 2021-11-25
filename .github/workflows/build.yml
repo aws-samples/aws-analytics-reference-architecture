@@ -18,7 +18,7 @@ jobs:
       - name: Manual checkout
         run: |
           git fetch --no-tags origin main
-          git checkout -b main
+          git checkout -t origin/main
           git checkout ${{ github.event.pull_request.head.sha }}
       - name: Setup Node 12
         uses: actions/setup-node@v2
