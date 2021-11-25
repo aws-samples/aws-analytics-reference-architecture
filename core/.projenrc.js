@@ -7,6 +7,8 @@ const glob = require('glob');
 
 const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism, Semver } = require('projen');
 
+const cdkVersion = '1.130.0';
+
 const project = new AwsCdkConstructLibrary({
 
   authorName: 'Amazon Web Services',
@@ -22,12 +24,13 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.130',
+  cdkVersion: cdkVersion,
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
   repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
   repositoryDirectory: 'core',
+  packageManager: 'npm',
   workflow: false,
   buildWorkflow: false,
   release: true,
@@ -72,8 +75,9 @@ const project = new AwsCdkConstructLibrary({
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
-    'aws-cdk@1.130.0',
+    `aws-cdk@${cdkVersion}`,
     'jest-runner-groups',
+    '@pahud/cdk-github-oidc',
   ],
 
   jestOptions: {
@@ -113,7 +117,7 @@ project.addTask('test:unit', {
 });
 
 project.addTask('test:integ', {
-  exec: 'jest --group=integ',
+  exec: 'jest --group=integ --onlyChanged',
 });
 
 const testDeploy = project.addTask('test:deploy', {

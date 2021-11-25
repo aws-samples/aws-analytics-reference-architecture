@@ -7,6 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CI: "true"
+    permissions:
+      id-token: write # needed to interact with GitHub's OIDC Token endpoint.
+      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -30,6 +33,13 @@ jobs:
           git config user.email "github-actions@github.com"
       - name: Build
         run: cd core && npx projen build
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
+          aws-region: eu-west-1
+      - name: Run integration tests
+        run: cd core && npm run projen test:integ
       - name: Check for changes
         id: git_diff
         run: git diff --exit-code || echo "::set-output name=has_changes::true"

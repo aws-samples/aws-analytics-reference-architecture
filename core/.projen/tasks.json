@@ -113,6 +113,9 @@
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
         },
         {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/build/resources lib/db-schema-manager/resources/flyway-lambda/build"
+        },
+        {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
         },
         {
@@ -301,7 +304,7 @@
       "name": "test:integ",
       "steps": [
         {
-          "exec": "jest --group=integ"
+          "exec": "jest --group=integ --onlyChanged"
         }
       ]
     },

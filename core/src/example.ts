@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Construct, CfnOutput } from '@aws-cdk/core';
+import { Construct, CfnOutput, CfnResource, CfnCondition, Fn } from '@aws-cdk/core';
 
 /**
  * The properties for the Example Construct class.
@@ -40,6 +40,13 @@ export class Example extends Construct {
   constructor(scope: Construct, id: string, props: ExampleProps) {
     super(scope, id);
 
+    const falseCond = new CfnCondition(this, 'Condition', {
+      expression: Fn.conditionEquals('A', 'B'),
+    });
+    const nullResource = new CfnResource(this, 'CustomResource', {
+      type: 'Custom::NullResource',
+    });
+    nullResource.cfnOptions.condition = falseCond;
     // add a fake CFN Output to the Stack
     // use an export name because the output name is defined by AWS CDK
     new CfnOutput(this, 'message', {

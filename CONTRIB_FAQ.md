@@ -265,10 +265,100 @@ Thus, we choose to prebundle Lambda function by installing all dependencies on p
 
 ## Testing
 
-#### How to test CDK Constructs logic with a deployment in AWS Account?
+Tests are under `test` folder and splitted into two categories: Unit tests and integration tests.
 
-AWS CDK logic can be tested by deploying a stack that instantiates AWS CDK components. Projen is configured to provide extra actions `test:deploy` and `test:destroy` to deploy in a testing account and destroy. [`./core/src/integ.default.ts`](./core/src/integ.default.ts) can be customized to deploy Constructs.
+This split happen thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups).
 
-### How to test private class members or methods in Typescript?
+Unit tests, under `test/unit` folder, don't need AWS Account to run and can only verify your construct's logic and it's capability to be synthesised to Cloud Formation.
 
-Typescript allows to access private members and methods using this syntax `customDataset["sqlTable"]()`. See example of testing `sqlTable()`private method from `Dataset` class [here](./core/test/dataset.test.ts)
+Integration tests, under `test/integ` folder, will test the deployability (cfn stack deploy) of your construct, potentially its functionality and its deprovisioning capability (cfn stack destroy) and therefore will need an AWS account.
+
+### Unit testing
+
+#### **Write**
+
+Unit testing are conducted using [jest](https://jestjs.io/), [@aws-cdk/assert](https://aws.amazon.com/blogs/developer/testing-infrastructure-with-the-aws-cloud-development-kit-cdk/) and the new [@aws-cdk/assertions](https://docs.aws.amazon.com/cdk/api/latest/docs/assertions-readme.html). The latter should be used now on, the former one being deprecated and not documented anymore. Check the following blog for more details on what can be tested : [https://aws.amazon.com/blogs/developer/testing-cdk-applications-in-any-language/](https://aws.amazon.com/blogs/developer/testing-cdk-applications-in-any-language/).
+
+As mentioned before, tests are splitted thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups) and therefore needs to be tagged properly by adding the following comments in your unit test file:
+
+```
+/**
+ * Tests data lake catalog
+ *
+ * @group unit/<YOUR CATEGORY>/<YOUR SUB CATEGORY>
+ */
+```
+
+
+##### **How to test private class members or methods in Typescript?**
+
+Typescript allows to access private members and methods using this syntax `customDataset["sqlTable"]()`. See example of testing `sqlTable()`private method from `Dataset` class [here](./core/test/dataset.test.ts).
+
+
+#### **Run**
+
+To run unit tests you can either use projen task
+* `test` which will lint as well
+* `test:unit` which will only run jest (no linting)
+* or jest directly `npx jest --group=unit`
+
+You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=unit/athena/default-setup`.
+
+### Integration testing
+
+#### **Write**
+
+As mentioned before, tests are splitted thanks to [jest-runner-groups](https://www.npmjs.com/package/jest-runner-groups) and therefore needs to be tagged properly by adding the following comments in your unit test file:
+
+```
+/**
+ * Tests data lake catalog
+ *
+ * @group integ/<YOUR CATEGORY>/<YOUR SUB CATEGORY>
+ */
+```
+
+and leverage `aws-cdk` package to programatically deploy and destroy stacks. See `test/integ/example.test.ts` as an example.
+
+
+#### **Run**
+
+To run unit tests you can either use projen task
+* `test:integ` which will only run jest integ tests
+* or jest directly `npx jest --group=integ`
+
+You can run selective tests by restricting the group to the one you want. For instance `npx jest --group=integ/other/example`.
+
+Two important env variable can be used:
+* `AWS_PROFILE` to use the right credentials
+* `DISABLE_TEARDOWN` if you don't want your stack to be destroyed at the end of the test (useful in dev mode when iterating over your code).
+
+Example: `DISABLE_TEARDOWN=true AWS_PROFILE=ara npx jest --group=integ/other/example`
+
+#### **Run as github actions**
+
+1. Setup AWS side
+    1. Set the right Registry config in `src/internals/integ.github-oidc-connector.ts`
+    ```
+    const role = provider.createRole('integ-test-role',
+      // sharing this role across multiple repositories
+      [
+        { owner: 'aws-samples', repo: 'aws-analytics-reference-architecture' },
+      ],
+    );
+    ```
+    To run in a github action you will need to get AWS credentials in it. A CDK construct is provided to setup the necessary architecture on AWS side:
+
+    ```
+    npx cdk  deploy --app=./lib/internals/integ.github-oidc-connector.js
+    ...
+    GithubOIDCConnector: creating CloudFormation changeset...
+
+    ✅  GithubOIDCConnector
+
+    Outputs:
+    GithubOIDCConnector.GithubActionIntegTestsRoleArn = arn:aws:iam::370081797186:role/GithubOIDCConnector-GithubOpenIdConnectProviderint-1F2U0CCVQA0NF
+    ```
+2. Setup Github side
+    Create a secret called `AWS_ROLE_ARN_TO_ASSUME` with the value you got from previous deployment.
+3. On pull request creation the actions `aws-actions/configure-aws-credentials` and `Run integration tests` should pass.
