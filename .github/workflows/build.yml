@@ -13,10 +13,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Manual checkout
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          git checkout -b main
+          git checkout ${{ github.event.pull_request.head.sha }}
       - name: Setup Node 12
         uses: actions/setup-node@v2
         with:
