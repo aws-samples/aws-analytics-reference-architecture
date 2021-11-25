@@ -90,7 +90,7 @@ const project = new AwsCdkConstructLibrary({
       resolveJsonModule: true,
       esModuleInterop: true,
     },
-    include: ['src/**/*.json', 'src/**/*.ts'],
+    include: ['src/**/*.json'],
   },
 
   stability: 'experimental',

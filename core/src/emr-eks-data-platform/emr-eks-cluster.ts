@@ -4,7 +4,7 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { SubnetType, Vpc } from '@aws-cdk/aws-ec2';
+import { IVpc, SubnetType, Vpc, VpcAttributes } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { PolicyStatement, PolicyDocument, Policy, Role, IRole, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
@@ -66,26 +66,30 @@ export interface EmrEksClusterProps {
   readonly emrOnEksVersion?: string;
 
   /**
-   * Id of the VPC where to deploy the EKS cluster
-   * VPC should have at least two private and public subnets in different AZs
+   * Attributes of the VPC where to deploy the EKS cluster
+   * VPC should have at least two private and public subnets in different Availability Zones
    * All private subnets should have the following tags:
    * 'for-use-with-amazon-emr-managed-policies'='true'
    * 'kubernetes.io/role/internal-elb'='1'
-   * All public subnets should the following tag:
+   * All public subnets should have the following tag:
    * 'kubernetes.io/role/elb'='1'
    */
-  readonly eksVpcId?: string;
+  readonly eksVpcAttribute?: VpcAttributes;
 }
 
 /**
- * EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
+ * EmrEksCluster Construct packaging all the resources required to run Amazon EMR on Amazon EKS.
  */
 export class EmrEksCluster extends Construct {
 
   public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_20;
   public static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
 
-  public static getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion, clusterName: string, vpcId?: string) {
+  public static getOrCreate(scope: Construct,
+    eksAdminRoleArn: string,
+    kubernetesVersion: KubernetesVersion,
+    clusterName: string,
+    vpcAttributes?: VpcAttributes) {
 
     const stack = Stack.of(scope);
     const id = `${clusterName}Singleton`;
@@ -97,7 +101,7 @@ export class EmrEksCluster extends Construct {
         kubernetesVersion: kubernetesVersion,
         eksAdminRoleArn: eksAdminRoleArn,
         eksClusterName: `${clusterName}-ara-cluster`,
-        eksVpcId: vpcId,
+        eksVpcAttribute: vpcAttributes,
       });
 
       //Add a nodegroup for notebooks
@@ -121,6 +125,7 @@ export class EmrEksCluster extends Construct {
   private readonly clusterName: string;
   private readonly managedEndpointProvider: Provider;
   public readonly managedEndpointProviderServiceToken: string;
+  private readonly eksVpc: IVpc | undefined;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -136,16 +141,20 @@ export class EmrEksCluster extends Construct {
 
     this.clusterName = props.eksClusterName ?? 'emr-eks-cluster';
 
-    // create an Amazon EKS CLuster with default paramaters if not provided in the properties
-    if ( props.eksVpcId != undefined) {
+    // create an Amazon EKS CLuster with default parameters if not provided in the properties
+    if ( props.eksVpcAttribute != undefined) {
+
+      this.eksVpc = Vpc.fromVpcAttributes(this, 'eksProvidedVpc', props.eksVpcAttribute);
+
       this.eksCluster = new Cluster(scope, this.clusterName, {
         defaultCapacity: 0,
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
         vpc: Vpc.fromLookup(this, 'providedVPC', {
-          vpcId: props.eksVpcId,
+          vpcId: this.eksVpc.vpcId,
         }),
       });
+
     } else {
       this.eksCluster = new Cluster(scope, this.clusterName, {
         defaultCapacity: 0,
@@ -475,6 +484,8 @@ export class EmrEksCluster extends Construct {
       subnetType: SubnetType.PRIVATE_WITH_NAT,
     }).subnets;
 
+    console.log(subnetList);
+
     // Create one Nodegroup per subnet
     subnetList.forEach( (subnet, index) => {
 
@@ -566,7 +577,7 @@ ${userData.join('\r\n')}
    * @access public
    */
 
-  public addEmrVirtualCluster(props: EmrVirtualClusterProps): CfnVirtualCluster {
+  public addEmrVirtualCluster(scope: Construct, props: EmrVirtualClusterProps): CfnVirtualCluster {
     const eksNamespace = props.eksNamespace ?? 'default';
 
     const regex = /^[a-z0-9]+$/g;
@@ -596,7 +607,7 @@ ${userData.join('\r\n')}
     const roleBinding = this.eksCluster.addManifest(`${props.name}RoleBinding`, k8sRoleBinding);
     roleBinding.node.addDependency(role);
 
-    const virtCluster = new CfnVirtualCluster(this, `${props.name}EmrCluster`, {
+    const virtCluster = new CfnVirtualCluster(scope, `${props.name}EmrCluster`, {
       name: props.name,
       containerProvider: {
         id: this.clusterName,

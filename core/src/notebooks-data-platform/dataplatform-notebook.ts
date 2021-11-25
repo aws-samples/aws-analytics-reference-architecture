@@ -223,7 +223,7 @@ export class DataPlatformNotebook extends Construct {
     this.authMode = props.dataPlatformProps.studioAuthMode;
     this.serviceToken = props.serviceToken;
 
-    this.nestedStack = new NestedStack(scope, props.dataPlatformProps.studioName + '-stack');
+    this.nestedStack = new NestedStack(scope, `${props.dataPlatformProps.studioName}-stack`);
 
     if (props.dataPlatformProps.idPArn !== undefined) {
       this.federatedIdPARN = props.dataPlatformProps.idPArn;
@@ -249,8 +249,8 @@ export class DataPlatformNotebook extends Construct {
     }).subnetIds;
 
 
-    //Create a virtual cluster a give it a name of 'multi-stack-'+studioName provided by user
-    this.emrVirtCluster = this.emrEks.addEmrVirtualCluster({
+    //Create a virtual cluster a give it a name of 'emr-vc-'+studioName provided by user
+    this.emrVirtCluster = this.emrEks.addEmrVirtualCluster(this.nestedStack, {
       createNamespace: true,
       eksNamespace: props.dataPlatformProps.emrVCNamespace,
       name: Utils.stringSanitizer(this.emrVcName),
