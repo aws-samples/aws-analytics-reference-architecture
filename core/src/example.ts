@@ -43,7 +43,7 @@ export class Example extends Construct {
     const falseCond = new CfnCondition(this, 'Condition', {
       expression: Fn.conditionEquals('A', 'B'),
     });
-    const nullResource = new CfnResource(this, 'CustomResource', {
+    const nullResource = new CfnResource(this, 'EmptyResource', {
       type: 'Custom::NullResource',
     });
     nullResource.cfnOptions.condition = falseCond;

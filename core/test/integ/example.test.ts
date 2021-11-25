@@ -15,10 +15,9 @@ import { Example } from '../../src/example';
 
 // GIVEN
 const expectedTestMessageOutput = 'Hello, World!';
-const expectedOutputName = 'CustomExample';
 
 const integTestApp = new App();
-const stack = new Stack(integTestApp, 'stack');
+const stack = new Stack(integTestApp, 'ExampleIntegTest');
 
 new Example(stack, 'example', { value: expectedTestMessageOutput });
 
