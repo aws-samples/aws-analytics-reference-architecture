@@ -2826,9 +2826,9 @@ dreamopt@~0.6.0:
     wordwrap ">=0.0.2"
 
 electron-to-chromium@^1.3.896:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.2.tgz#b81583847c25377027cca7d5a4e94ac23bdce2f4"
-  integrity sha512-SxHMmlSvpT83M/MLxTXQBqfqo3bK+UOk6Uup6w1paX86l+af1xwwTMLlyK3xJwE3Kq8/QnecuFKmnmRlAUJCXw==
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.3.tgz#82480df3ef607f04bb38cc3f30a628d8b895339f"
+  integrity sha512-hfpppjYhqIZB8jrNb0rNceQRkSnBN7QJl3W26O1jUv3F3BkQknqy1YTqVXkFnIcFtBc3Qnv5M7r5Lez2iOLgZA==
 
 emittery@^0.8.1:
   version "0.8.1"
@@ -4609,10 +4609,10 @@ jsii-diff@^1.46.0:
     typescript "~3.9.10"
     yargs "^16.2.0"
 
-jsii-docgen@^4.1.9:
-  version "4.1.9"
-  resolved "https://registry.yarnpkg.com/jsii-docgen/-/jsii-docgen-4.1.9.tgz#83c1eebabb212adbeba9dc8ea7530d6659aea1ac"
-  integrity sha512-w4dRWgyaI1Vl2BSQUT6OikeBawe1oPrJROvE37e7sXut60W7SrK3KorweFa9R7izt1YXsZkJ2iRzRxj5Et7Egg==
+jsii-docgen@^4.1.10:
+  version "4.1.10"
+  resolved "https://registry.yarnpkg.com/jsii-docgen/-/jsii-docgen-4.1.10.tgz#a1b79594a3f1738f8e28f05ab96d3d856c15317e"
+  integrity sha512-ngJ09d5M1Tw1Po4QOjy6GsoZRwm2b0wu/61ouJZRLZo+qOuNFv++CARCLgEFv/a+/Ls5pE7mM3Uz6h7Ft/11mA==
   dependencies:
     "@jsii/spec" "^1.46.0"
     case "^1.6.3"
@@ -5466,10 +5466,10 @@ progress@^2.0.0:
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
   integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
 
-projen@^0.34.20:
-  version "0.34.20"
-  resolved "https://registry.yarnpkg.com/projen/-/projen-0.34.20.tgz#e82860e54e4cd080452dbc5b47049246a75271d4"
-  integrity sha512-UoQLpHfkm0gFZicMRado+k5oBiPXWyKrLxa0ITa9SQri6Vdcqbp8PDZE+RxN/VLOYKWcF0wQ1bEs0g/oWjlsxA==
+projen@^0.34.22:
+  version "0.34.22"
+  resolved "https://registry.yarnpkg.com/projen/-/projen-0.34.22.tgz#9c48b68770c49583d87a41d86def88b2563d2341"
+  integrity sha512-pFrIYIgkRoUD2zUxfBiQZaCLtT1ePm2isjrtjwpfKx2uzcW3HrwvAZgm2Clax7gJS+D++ZUX1m8T0A9/NLyNvg==
   dependencies:
     "@iarna/toml" "^2.2.5"
     case "^1.6.3"
