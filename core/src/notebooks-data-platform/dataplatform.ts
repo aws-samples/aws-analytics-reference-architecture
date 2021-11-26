@@ -118,7 +118,7 @@ export class DataPlatform extends Construct {
    * @param {string} notebookPlatformName the name given to the EMR studio at its creation
    * @access public
    */
-  public addUsersNotebookPlatform (notebookPlatformName: string, userList: StudioUserDefinition[] ): void {
+  public addUsersNotebookPlatform(notebookPlatformName: string, userList: StudioUserDefinition []): void {
     if (this.dataPlatformMapping.has(notebookPlatformName)) {
       this.dataPlatformMapping.get(notebookPlatformName)!.addUser(userList);
     }

@@ -167,11 +167,11 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
   let policy = JSON.parse(JSON.stringify(studioServiceRolePolicy));
 
   //Update the policy with the bucketname to scope it down
-  policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
-  policy.Statement[12].Resource[1] = policy.Statement[12].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+  policy.Statement[11].Resource[0] = policy.Statement[11].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+  policy.Statement[11].Resource[1] = policy.Statement[11].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
 
   //Update with KMS key ARN encrypting the bucket
-  policy.Statement[13].Resource[0] = keyArn;
+  policy.Statement[12].Resource[0] = keyArn;
 
   //Create a the policy of service role
   let serviceRolePolicy = new ManagedPolicy(scope, 'studioServicePolicy' + studioName, {

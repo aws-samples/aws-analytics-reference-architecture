@@ -486,7 +486,7 @@ export class DataPlatformNotebook extends Construct {
    * @return {string[] } return a list of users that were created and their temporary passwords if IAM_AUTHENTICATED is used
    * @internal
    */
-  public addUser (userList: StudioUserDefinition[]): string [] {
+  public addUser(userList: StudioUserDefinition []): string[] {
     //Initialize the managedEndpointArns
     //Used to store the arn of managed endpoints after creation for each users
     //This is used to update the IAM policy
