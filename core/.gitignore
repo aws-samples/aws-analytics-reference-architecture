@@ -34,6 +34,7 @@ junit.xml
 /coverage/
 /dist/changelog.md
 /dist/version.txt
+!/.github/workflows/release.yml
 !/.mergify.yml
 !/test/
 !/tsconfig.dev.json
@@ -44,4 +45,3 @@ junit.xml
 .jsii
 tsconfig.json
 !/API.md
-!/.github/workflows/release.yml
