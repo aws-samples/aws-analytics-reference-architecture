@@ -2,16 +2,6 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "AllowEMRReadOnlyActions",
-      "Effect": "Allow",
-      "Action": [
-        "elasticmapreduce:ListInstances",
-        "elasticmapreduce:DescribeCluster",
-        "elasticmapreduce:ListSteps"
-      ],
-      "Resource": "*"
-    },
-    {
       "Sid": "AllowEC2ENIActionsWithEMRTags",
       "Effect": "Allow",
       "Action": [

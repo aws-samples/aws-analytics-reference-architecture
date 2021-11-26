@@ -14,13 +14,9 @@
         "elasticmapreduce:ListRepositories",
         "elasticmapreduce:LinkRepository",
         "elasticmapreduce:UnlinkRepository",
-        "elasticmapreduce:ListInstanceGroups",
-        "elasticmapreduce:ListClusters",
-        "elasticmapreduce:ListSteps",
         "elasticmapreduce:CreatePersistentAppUI",
         "elasticmapreduce:DescribePersistentAppUI",
-        "elasticmapreduce:GetPersistentAppUIPresignedURL",
-        "elasticmapreduce:GetOnClusterAppUIPresignedURL"
+        "elasticmapreduce:GetPersistentAppUIPresignedURL"
       ],
       "Resource": "*",
       "Effect": "Allow"
@@ -28,7 +24,6 @@
     {
       "Sid": "AllowEMRContainersBasicActions",
       "Action": [
-        "emr-containers:DescribeVirtualCluster",
         "emr-containers:ListVirtualClusters",
         "emr-containers:ListManagedEndpoints",
         "emr-containers:DescribeJobRun",

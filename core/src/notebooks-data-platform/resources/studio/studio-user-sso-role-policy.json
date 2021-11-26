@@ -19,15 +19,9 @@
         "elasticmapreduce:ListRepositories",
         "elasticmapreduce:LinkRepository",
         "elasticmapreduce:UnlinkRepository",
-        "elasticmapreduce:DescribeCluster",
-        "elasticmapreduce:ListInstanceGroups",
-        "elasticmapreduce:ListBootstrapActions",
-        "elasticmapreduce:ListClusters",
-        "elasticmapreduce:ListSteps",
         "elasticmapreduce:CreatePersistentAppUI",
         "elasticmapreduce:DescribePersistentAppUI",
-        "elasticmapreduce:GetPersistentAppUIPresignedURL",
-        "elasticmapreduce:GetOnClusterAppUIPresignedURL"
+        "elasticmapreduce:GetPersistentAppUIPresignedURL"
       ],
       "Resource": "*",
       "Effect": "Allow"
