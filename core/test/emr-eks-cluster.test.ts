@@ -11,7 +11,7 @@ const emrEksClusterStack = new Stack();
 const cluster = new EmrEksCluster(emrEksClusterStack, 'emrEksClusterTest', {
   eksAdminRoleArn: 'arn:aws:iam::1234567890:role/AdminAccess',
 });
-cluster.addEmrVirtualCluster({
+cluster.addEmrVirtualCluster(emrEksClusterStack, {
   name: 'test',
 });
 const policy = new Policy(emrEksClusterStack, 'testPolicy', {

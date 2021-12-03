@@ -15,7 +15,7 @@ const emrEks = new EmrEksCluster(stack, 'EmrEks', {
 });
 
 // const emrVirtCluster =
-emrEks.addEmrVirtualCluster({
+emrEks.addEmrVirtualCluster(stack, {
   createNamespace: false,
   eksNamespace: 'default',
   name: 'ec2VirtCluster',

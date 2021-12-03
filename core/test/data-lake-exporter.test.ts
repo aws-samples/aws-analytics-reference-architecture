@@ -1,10 +1,10 @@
-import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Stack } from '@aws-cdk/core';
 import { DataLakeExporter } from '../src/data-lake-exporter';
 import '@aws-cdk/assert/jest';
-import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
 import { SynthUtils } from '@aws-cdk/assert';
+import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
 import { Stream } from '@aws-cdk/aws-kinesis';
+import { RetentionDays } from '@aws-cdk/aws-logs';
 
 
 test('dataLakeExporter', () => {

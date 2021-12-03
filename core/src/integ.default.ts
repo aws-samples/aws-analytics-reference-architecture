@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-// import { Role } from '@aws-cdk/aws-iam';
+// import { Role } from '@aws-cdk/aws-iam';
 import { App, Stack } from '@aws-cdk/core';
 import { EmrEksCluster } from '.';
 
@@ -10,13 +10,13 @@ const stack = new Stack(mockApp, 'stack');
 const cluster = new EmrEksCluster(stack, 'testCluster', { eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav' });
 
 
-/*const virtualCluster =*/ cluster.addEmrVirtualCluster({
+/*const virtualCluster =*/ cluster.addEmrVirtualCluster(stack, {
   name: 'sometest',
   eksNamespace: 'sometest',
   createNamespace: true,
 });
 
-cluster.addEmrVirtualCluster({
+cluster.addEmrVirtualCluster(stack, {
   name: 'anothertest',
   eksNamespace: 'anothertest',
   createNamespace: true,

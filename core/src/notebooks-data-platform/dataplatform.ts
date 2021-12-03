@@ -1,11 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+import { VpcAttributes } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnOutput, Construct, Stack } from '@aws-cdk/core';
 import { EmrEksCluster } from '../emr-eks-data-platform/emr-eks-cluster';
 import { DataPlatformNotebook, DataPlatformNotebookProp, StudioUserDefinition } from './dataplatform-notebook';
-import { VpcAttributes } from '@aws-cdk/aws-ec2';
 
 /**
  * The properties for DataPlatform Infrastructure Construct.

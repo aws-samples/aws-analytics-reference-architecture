@@ -321,7 +321,7 @@ the RoleProps [properties]{@link RoleProps}.
 
 ### EmrEksCluster <a name="aws-analytics-reference-architecture.EmrEksCluster"></a>
 
-EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
+EmrEksCluster Construct packaging all the resources required to run Amazon EMR on Amazon EKS.
 
 #### Initializer <a name="aws-analytics-reference-architecture.EmrEksCluster.Initializer"></a>
 
@@ -374,8 +374,14 @@ the EmrEksNodegroupOptions [properties]{@link EmrEksNodegroupOptions}.
 ##### `addEmrVirtualCluster` <a name="aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster"></a>
 
 ```typescript
-public addEmrVirtualCluster(props: EmrVirtualClusterProps)
+public addEmrVirtualCluster(scope: Construct, props: EmrVirtualClusterProps)
 ```
+
+###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
 
 ###### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.props"></a>
 
@@ -494,7 +500,7 @@ the execution policy to attach to the role.
 ```typescript
 import { EmrEksCluster } from 'aws-analytics-reference-architecture'
 
-EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion, clusterName: string, vpcId?: string)
+EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion, clusterName: string, vpcAttributes?: VpcAttributes)
 ```
 
 ###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
@@ -521,9 +527,9 @@ EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesV
 
 ---
 
-###### `vpcId`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.vpcId"></a>
+###### `vpcAttributes`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.vpcAttributes"></a>
 
-- *Type:* `string`
+- *Type:* [`@aws-cdk/aws-ec2.VpcAttributes`](#@aws-cdk/aws-ec2.VpcAttributes)
 
 ---
 
@@ -1123,11 +1129,11 @@ Name of the Amazon EKS cluster to be created.
 
 ---
 
-##### `eksVpcId`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcId"></a>
+##### `eksVpcAttribute`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcAttribute"></a>
 
-- *Type:* `string`
+- *Type:* [`@aws-cdk/aws-ec2.VpcAttributes`](#@aws-cdk/aws-ec2.VpcAttributes)
 
-Id of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different AZs All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should the following tag: 'kubernetes.io/role/elb'='1'.
+Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'.
 
 ---
 
