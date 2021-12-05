@@ -1,6 +1,15 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+/**
+ * Tests ec2 ssm role
+ *
+ * @group unit/other/ec2-ssm-role
+ */
+
 import { ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Stack } from '@aws-cdk/core';
-import { Ec2SsmRole } from '../src/ec2-ssm-role';
+import { Ec2SsmRole } from '../../src/ec2-ssm-role';
 import '@aws-cdk/assert/jest';
 
 test('Ec2SsmRole construct', () => {

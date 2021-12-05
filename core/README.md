@@ -1,105 +1,160 @@
-# Construct Definition
+# AWS Analytics Reference Architecture
 
-This construct deploys an end-to-end platform to explore and experiment with data in a 
-data lake using spark engine deployed in EMR on EKS, and a Jupyter notebook infrastructure based on EMR Studio 
+The AWS Analytics Reference Architecture is a set of analytics solutions put together as end-to-end examples.
+It regroups AWS best practices for designing, implementing, and operating analytics platforms through different purpose-built patterns, handling common requirements, and solving customers' challenges.
 
-## What it deploys
+This project is composed of:
+ * Reusable core components exposed in an AWS CDK (Cloud Development Kit) library currently available in [Typescript](https://www.npmjs.com/package/aws-analytics-reference-architecture) and [Python](https://pypi.org/project/aws-analytics-reference-architecture/). This library contains [AWS CDK constructs](https://constructs.dev/packages/aws-analytics-reference-architecture) that can be used to quickly provision analytics solutions in demos, prototypes, proof of concepts and end-to-end reference architectures. 
+ * Reference architectures consumming the reusable components to demonstrate end-to-end examples in a business context. Currently, the [AWS native reference architecture](https://aws-samples.github.io/aws-analytics-reference-architecture/) is available.
 
-* An EKS cluster
-* An EMR virtual Cluster
-* A KMS encryption Key used to encrypt an S3 bucket and Cloudwatch GroupLog  
-* An S3 Bucket used by EMR Studio to store the Jupyter notebooks
-* An EMR Studio service Role as defined [here][1], and customize to access the S3 bucket and KMS key created above
-* An EMR Studio User Role as defined [here][2] - The policy template which is leveraged is the Basic one
-* An EMR Studio tenant
-* Multiple ManagedEnpdoints, each for a user or a group of users
-* Create an execution role to be passed to the Managed endpoint from a policy arn provided by the user  
-* Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are:
-    * EMR Virtual Cluster - created above
-    * ManagedEndpoint
-* An EventBridge Rule which detects the creation of a new EMR Studio Workspace
-* A Lambda triggered by the EventBridge rule created above and which tag the EMR Studio Workspace with the principalId of the user who created
+This documentation explains how to get started with the core components of the AWS Analytics Reference Architecture. 
+
+## Getting started
+
+- [AWS Analytics Reference Architecture](#aws-analytics-reference-architecture)
+  - [Getting started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Initialization (in Python)](#initialization-in-python)
+    - [Development](#development)
+    - [Deployment](#deployment)
+    - [Cleanup](#cleanup)
+  - [API Reference](#api-reference)
+  - [Contributing](#contributing)
+- [License Summary](#license-summary)
+
+### Prerequisites
+
+1. [Create an AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
+2. The core components can be deployed in any AWS region
+3. Install the following components with the specified version on the machine from which the deployment will be executed:
+    1. Python [3.8-3.9.2] or Typescript
+    2. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
 
 
-# How to use the construct
+### Initialization (in Python)
 
-In your CDK app, from the _dataplatform_ construct import the `DataPlatform` Class, and the `DataPlatformProps` interface.
+1. Initialize a new AWS CDK application in Python and use a virtual environment to install dependencies
 
-The `DataPlatform` is used to create a new construct and its constructor expects the following:
-
-```
-eksAdminRoleArn: <ARN of EKS admin role>
-```
-The initialization of the construct will create an EKS cluster. 
-The getOrCreate method expects the same EKS admin ARN role everytime it is invoked
-
-To create a notebook data platform supported by EMR Studio, you should use the object instantiated from `DataPlatform` Class
-and call the method `addNotebookPlatform`, the method expects one argument:
-* `dataPlatformNotebookProps` which defines the properties of the stack, you can import the `DataPlatformNotebookProp`
-from the `DataPlatformNotebook` construct to define the properties of the Studio.
-
-To add user to the notebook dataplaform created above you should use the method `addUsersNotebookPlatform` from the object instantiated  from `DataPlatform` Class
-The method expects two arguments:
-* The name of the `notebookPlatformName` as provided in the `addNotebookPlatform`
-* A user list as defined in the prop `StudioUserDefinition` interface define a user to be added to the studio and expects the following:
-
-```
-mappingIdentityName: <identity name as it appears in SSO>
-mappingIdentityType: <USER>
-executionPolicyNames: <List of the policies for the managedendpoints>
+```bash
+mkdir my_demo
+cd my_demo
+cdk init app --language python
+python3 -m venv .env
+source .venv/bin/activate
 ```
 
+2. Add the AWS Analytics Reference Architecture library in the dependencies of your project. Update **setup.py** 
 
-## The code snippet below shows how you can use the construct
-
-The code below instantiate a new `DataPlatform` called _dept1_ then use it to create two notebook dataplatfrom based on EMR Studio 
-with a stack called dept1 and dept2, then add a single user to both of them.
-
+```bash
+    install_requires=[
+        "aws-cdk.core==1.130.0",
+        "aws-analytics-reference-architecture==1.8.4",
+    ],
 ```
-const dept1 = DataPlatform.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::123456789012:role/EkRole',
-});
+3. Install The Packages via **pip**
 
-dept1.addNotebookPlatform({
-  studioName: 'unit1',
-  emrVCNamespace: 'unit1ns',
-  studioAuthMode: StudioAuthMode.SSO,
-  acmCertificateArn: 'ACM certificate ARN',
-});
-
-dept1.addNotebookPlatform({
-  studioName: 'unit2',
-  emrVCNamespace: 'unit2ns',
-  studioAuthMode: StudioAuthMode.SSO,
-  acmCertificateArn: 'ACM certificate ARN',
-});
-
-let userList1: StudioUserDefinition[] = [{
-  identityName: 'user',
-  identityType: 'USER',
-  executionPolicyNames: ['policyManagedEndpoint1'],
-}];
-
-let userList2: StudioUserDefinition[] = [{
-  identityName: 'user',
-  identityType: 'USER',
-  executionPolicyNames: ['policyManagedEndpoint3'],
-}];
-
-const dept3 = DataPlatform.getOrCreate(stack);
-
-dept3.addNotebookPlatform({
-  studioName: 'unit3',
-  emrVCNamespace: 'unit3ns',
-  studioAuthMode: StudioAuthMode.SSO,
-  acmCertificateArn: 'ACM certificate ARN',
-});
-
-dept1.addUsersNotebookPlatform('unit1', userList1);
-dept1.addUsersNotebookPlatform('unit2', userList2);
-dept3.addUsersNotebookPlatform('unit3', userList2);
-
+```bash
+python -m pip install -r requirements.txt
 ```
 
-[1]: [https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-studio-service-role.html]
-[2]: [https://docs.aws.amazon.com/emr/latest/ManagementGuide/emr-studio-user-permissions.html#emr-studio-basic-permissions-policy]
+### Development
+
+1. Import the AWS Analytics Reference Architecture in your code in **my_demo/my_demo_stack.py**
+
+```bash
+import aws_analytics_reference_architecture as ara
+```
+
+2. Now you can use all the constructs available from the core components library to quickly provision resources in your AWS CDK stack. For example:
+
+* The DataLakeStorage to provision a full set of pre-configured Amazon S3 Bucket for a data lake
+
+```bash
+        # Create a new DataLakeStorage with Raw, Clean and Transform buckets configured with data lake best practices
+        storage = ara.DataLakeStorage (self,"storage")     
+```
+
+* The DataLakeCatalog to provision a full set of AWS Glue databases for registring tables in your data lake
+
+```bash
+        # Create a new DataLakeCatalog with Raw, Clean and Transform databases
+        catalog = ara.DataLakeCatalog (self,"catalog")     
+```
+
+* The DataGenerator to generate live data in the data lake from a pre-configured retail dataset
+
+```bash
+        # Generate the Sales Data
+        sales_data = ara.DataGenerator(
+            scope = self, 
+            id = 'sale-data', 
+            dataset = ara.Dataset.RETAIL_1_GB_STORE_SALE, 
+            sink_arn = storage.raw_bucket.bucket_arn, 
+            frequency = 120
+        )
+```
+
+```bash
+        # Generate the Customer Data
+        customer_data = ara.DataGenerator(
+            scope = self, 
+            id = 'customer-data', 
+            dataset = ara.Dataset.RETAIL_1_GB_CUSTOMER, 
+            sink_arn = storage.raw_bucket.bucket_arn, 
+            frequency = 120
+        )
+```
+
+* Additionally, the library provides some helpers to quickly run demos:
+
+```bash
+        # Configure defaults for Athena console
+        ara.AthenaDefaultSetup(
+            scope = self,
+            id = 'defaultSetup'
+        )
+```
+
+```bash
+        # Configure a default role for AWS Glue jobs
+        ara.SingletonGlueDefaultRole.get_or_create(self)
+```
+
+### Deployment
+
+1. Bootstrap AWS CDK in your region (here **eu-west-1**). It will provision resources required to deploy AWS CDK applications
+
+```bash
+export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+export AWS_REGION=eu-west-1
+cdk bootstrap aws://$ACCOUNT_ID/eu-west-1
+```
+2. Deploy the AWS CDK application
+
+```bash
+cdk deploy
+```
+
+The time to deploy the application is depending on the constructs you are using
+
+### Cleanup
+
+Delete the AWS CDK application
+
+```bash
+cdk destroy
+```
+
+## API Reference
+
+More contructs, helpers and datasets are available in the AWS Analytics Reference Architecture. See the full API specification [here](https://constructs.dev/packages/aws-analytics-reference-architecture/v/1.8.4?lang=python)
+
+## Contributing
+
+Please refer to the [contributing guidelines](../CONTRIBUTING.md) and [contributing FAQ](../CONTRIB_FAQ.md) for details.
+
+# License Summary
+
+The documentation is made available under the Creative Commons Attribution-ShareAlike 4.0 International License. See the LICENSE file.
+
+The sample code within this documentation is made available under the MIT-0 license. See the LICENSE-SAMPLECODE file.

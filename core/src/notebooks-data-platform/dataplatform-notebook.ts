@@ -53,11 +53,6 @@ export interface DataPlatformNotebookInfra {
    * Required the EmrEks infrastructure used for the deployment
    * */
   readonly emrEks: EmrEksCluster;
-  /**
-   * Required service token of the addManagedEndpoint Custom Resource
-   * This used to create the CR deployed in the EMR on EKS stack
-   * */
-  readonly serviceToken: string;
 }
 
 /**
@@ -197,7 +192,6 @@ export class DataPlatformNotebook extends Construct {
   private readonly managedEndpointExcutionPolicyArnMapping: Map<string, string>;
   private readonly federatedIdPARN : string | undefined;
   private readonly authMode :string;
-  private readonly serviceToken: string;
 
   private readonly nestedStack: NestedStack;
 
@@ -221,7 +215,6 @@ export class DataPlatformNotebook extends Construct {
     this.managedEndpointExcutionPolicyArnMapping = new Map<string, string>();
     this.emrOnEksVersion = props.dataPlatformProps.emrOnEksVersion || DataPlatformNotebook.DEFAULT_EMR_VERSION;
     this.authMode = props.dataPlatformProps.studioAuthMode;
-    this.serviceToken = props.serviceToken;
 
     this.nestedStack = new NestedStack(scope, `${props.dataPlatformProps.studioName}-stack`);
 
@@ -513,7 +506,6 @@ export class DataPlatformNotebook extends Construct {
 
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.nestedStack,
-            this.serviceToken,
             this.studioName + '-' + Utils.stringSanitizer(executionPolicyName),
             this.emrVirtCluster.attrId,
             buildManagedEndpointExecutionRole(this, executionPolicyName,

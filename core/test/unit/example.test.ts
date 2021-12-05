@@ -1,8 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Test example
+ *
+ * @group unit/other/test-example
+ */
+
 import { Stack } from '@aws-cdk/core';
-import { Example } from '../src/example';
+import { Example } from '../../src';
 import '@aws-cdk/assert/jest';
 
 test('example construct', () => {

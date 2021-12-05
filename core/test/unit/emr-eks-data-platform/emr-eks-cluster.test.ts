@@ -1,16 +1,20 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests EMR on EKS cluster
+ *
+ * @group unit/other/emr-eks-cluster
+ */
+
 import * as assertCDK from '@aws-cdk/assert';
 import '@aws-cdk/assert/jest';
 import { Policy, PolicyDocument, PolicyStatement } from '@aws-cdk/aws-iam';
 import { Stack } from '@aws-cdk/core';
-import { EmrEksCluster } from '../src/emr-eks-data-platform/emr-eks-cluster';
+import { EmrEksCluster } from '../../../src/emr-eks-data-platform/emr-eks-cluster';
 
 const emrEksClusterStack = new Stack();
-const cluster = new EmrEksCluster(emrEksClusterStack, 'emrEksClusterTest', {
-  eksAdminRoleArn: 'arn:aws:iam::1234567890:role/AdminAccess',
-});
+const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, 'arn:aws:iam::1234567890:role/AdminAccess');
 cluster.addEmrVirtualCluster(emrEksClusterStack, {
   name: 'test',
 });
@@ -116,7 +120,7 @@ test('EKS should have a helm chart for deploying the Kubernetes Dashboard', () =
 
 test('EKS cluster should have the default Nodegroups', () => {
 
-  expect(emrEksClusterStack).toCountResources('AWS::EKS::Nodegroup', 7);
+  expect(emrEksClusterStack).toCountResources('AWS::EKS::Nodegroup', 11);
 
   expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
     AmiType: 'AL2_x86_64',

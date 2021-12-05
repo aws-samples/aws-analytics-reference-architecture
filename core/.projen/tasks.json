@@ -182,13 +182,13 @@
       "description": "pip install all folders in lib that has requirements.txt",
       "steps": [
         {
-          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup"
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup --upgrade"
         },
         {
-          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas"
+          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas --upgrade"
         },
         {
-          "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas"
+          "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas --upgrade"
         }
       ]
     },
@@ -277,10 +277,7 @@
       "description": "Run tests",
       "steps": [
         {
-          "exec": "jest --passWithNoTests --all"
-        },
-        {
-          "spawn": "eslint"
+          "exec": "jest --group=unit"
         }
       ]
     },
@@ -300,6 +297,22 @@
       "steps": [
         {
           "exec": "cdk destroy --app=./lib/integ.default.js"
+        }
+      ]
+    },
+    "test:integ": {
+      "name": "test:integ",
+      "steps": [
+        {
+          "exec": "jest --group=integ"
+        }
+      ]
+    },
+    "test:unit": {
+      "name": "test:unit",
+      "steps": [
+        {
+          "exec": "jest --group=unit"
         }
       ]
     },

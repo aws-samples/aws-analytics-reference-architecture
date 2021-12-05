@@ -92,7 +92,6 @@ export class DataPlatform extends Construct {
       let notebookPlatform = new DataPlatformNotebook(this, dataPlatformNotebookProps.studioName, {
         emrEks: this.emrEks,
         dataPlatformProps: dataPlatformNotebookProps,
-        serviceToken: this.emrEks.managedEndpointProviderServiceToken,
       });
 
       this.emrVCNamespaceAndStudioNameList.push(dataPlatformNotebookProps.studioName);

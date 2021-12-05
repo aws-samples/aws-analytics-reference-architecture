@@ -15,3 +15,5 @@ export { AthenaDefaultSetup } from './athena-default-setup';
 export { SingletonGlueDefaultRole } from './singleton-glue-default-role';
 export { EmrEksClusterProps, EmrEksCluster, EmrEksNodegroupOptions, EmrEksNodegroup, EmrVirtualClusterProps } from './emr-eks-data-platform';
 export { FlywayRunner, FlywayRunnerProps } from './db-schema-manager';
+export { DataPlatformNotebookProp, DataPlatformNotebook, StudioUserDefinition, StudioAuthMode, IdpRelayState, DataPlatformNotebookInfra } from './notebooks-data-platform/dataplatform-notebook';
+export { DataPlatformProps, DataPlatform } from './notebooks-data-platform/dataplatform';

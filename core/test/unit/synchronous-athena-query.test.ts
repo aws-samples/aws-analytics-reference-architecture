@@ -1,8 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests synchroneous Athena query
+ *
+ * @group unit/athena/synchroneous-query
+ */
+
 import { Stack } from '@aws-cdk/core';
-import { SynchronousAthenaQuery } from '../src/synchronous-athena-query';
+import { SynchronousAthenaQuery } from '../../src/synchronous-athena-query';
 import '@aws-cdk/assert/jest';
 
 test('CrawlerStartWait', () => {
