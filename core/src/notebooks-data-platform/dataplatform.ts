@@ -112,9 +112,9 @@ export class DataPlatform extends Construct {
   /**
    * Method to add users, takes the name of the EMR Studio hosting the notebook infrastructure
    * and takes a list of userDefinition and will create a managed endpoints for each user
-   * and create an IAM Policy and Role scoped to the list of managed endpoints it the user should have access to
-   * @param {StudioUserDefinition []} userList list of users defined in [properties]{@link StudioUserDefinition}
+   * and create an IAM Policy and Role scoped to the list of managed endpoints the user should have access to
    * @param {string} notebookPlatformName the name given to the EMR studio at its creation
+   * @param {StudioUserDefinition []} userList list of users defined in [properties]{@link StudioUserDefinition}
    * @access public
    */
   public addUsersNotebookPlatform(notebookPlatformName: string, userList: StudioUserDefinition []): void {
