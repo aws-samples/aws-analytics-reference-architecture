@@ -21,7 +21,7 @@ import { Key } from '@aws-cdk/aws-kms';
 import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
 import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
-import { Construct, Tags, Aws, Duration, NestedStack } from '@aws-cdk/core';
+import { Construct, Tags, Aws, Duration, NestedStack, CfnOutput } from '@aws-cdk/core';
 
 
 import { EmrEksCluster } from '../emr-eks-data-platform/emr-eks-cluster';
@@ -502,8 +502,6 @@ export class DataPlatformNotebook extends Construct {
         if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyName)) {
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
-
-
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.nestedStack,
             this.studioName + '-' + Utils.stringSanitizer(executionPolicyName),
@@ -548,13 +546,19 @@ export class DataPlatformNotebook extends Construct {
         iamRolePolicy = createIAMRolePolicy(this.nestedStack, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
-        iamUserList.push(createIAMUser(this.nestedStack, iamRolePolicy!, user.identityName));
+        let iamUserCredentials: string = createIAMUser(this.nestedStack, iamRolePolicy!, user.identityName);
+
+        new CfnOutput(this.nestedStack.nestedStackParent!, `${user.identityName}`, {
+          value: iamUserCredentials,
+        });
+
       } else if (this.authMode === 'IAM_FEDERATED') {
         //Create the role policy and gets its ARN
         iamRolePolicy = createIAMRolePolicy(this.nestedStack, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
         createIAMFederatedRole(this.nestedStack, iamRolePolicy!, this.federatedIdPARN!, user.identityName, this.studioId);
+
       } else if (this.authMode === 'SSO') {
         //Create the session policy and gets its ARN
         let sessionPolicyArn = createUserSessionPolicy(this.nestedStack, user, this.studioServiceRole.roleName,

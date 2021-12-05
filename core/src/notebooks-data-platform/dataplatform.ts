@@ -99,7 +99,7 @@ export class DataPlatform extends Construct {
 
       this.dataPlatformMapping.set(dataPlatformNotebookProps.studioName, notebookPlatform);
 
-      new CfnOutput(this, `emrStudioUrl-${dataPlatformNotebookProps.studioName}`, {
+      new CfnOutput(this, `emrStudioUrl-${dataPlatformNotebookProps.studioName}-`, {
         value: notebookPlatform.studioUrl,
       });
     } else {
