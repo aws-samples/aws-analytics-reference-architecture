@@ -548,9 +548,11 @@ export class DataPlatformNotebook extends Construct {
 
         let iamUserCredentials: string = createIAMUser(this.nestedStack, iamRolePolicy!, user.identityName);
 
-        new CfnOutput(this.nestedStack.nestedStackParent!, `${user.identityName}`, {
-          value: iamUserCredentials,
-        });
+        if (this.nestedStack.nestedStackParent != undefined) {
+          new CfnOutput(this.nestedStack.nestedStackParent, `${user.identityName}`, {
+            value: iamUserCredentials,
+          });
+        }
 
       } else if (this.authMode === 'IAM_FEDERATED') {
         //Create the role policy and gets its ARN

@@ -141,7 +141,7 @@ export class EmrEksCluster extends Construct {
       });
 
     } else {
-      this.eksCluster = new Cluster(scope, this.clusterName, {
+      this.eksCluster = new Cluster(scope, `${this.clusterName}-cluster`, {
         defaultCapacity: 0,
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
