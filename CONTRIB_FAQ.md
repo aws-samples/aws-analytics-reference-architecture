@@ -261,7 +261,7 @@ This code is passed on to consumer. When they run  `cdk synth`, CDK will detect 
 
 With this approach, consumers must set up Docker or their `cdk synth` will fail. Given the variety of audience we have for this reference architecture, we want to avoid additional prerequisite. (And support requests for Docker-related issues). 
 
-Thus, we choose to prebundle Lambda function by installing all dependencies on provider's side. There are extra steps in Projen to copy PYthon files and install depedencies during the build. This way, consumers do not need bundle Lambda packages themselves.
+Thus, we choose to prebundle Lambda function by installing all dependencies on provider's side. There are extra steps in Projen to copy Python files and install depedencies during the build. This way, consumers do not need bundle Lambda packages themselves.
 
 ## Testing
 
@@ -362,3 +362,20 @@ Example: `DISABLE_TEARDOWN=true AWS_PROFILE=ara npx jest --group=integ/other/exa
 2. Setup Github side
     Create a secret called `AWS_ROLE_ARN_TO_ASSUME` with the value you got from previous deployment.
 3. On pull request creation the actions `aws-actions/configure-aws-credentials` and `Run integration tests` should pass.
+
+### How to test the core components library in local
+
+ * Package the AWS Analytics Reference Architecture library. It will create `core/dist/js` and `core/dist/python` folders
+
+```bash
+npx projen package
+```
+
+ * For Python, create a new AWS CDK application in Python outside of this project and install a local dependency pointing to the `wheel` file in `core/dist/python`. In the `setup.py`, modify the dependencies like this
+
+```python
+    install_requires=[
+        "aws-cdk.core==1.130.0",
+        f"aws_analytics_reference_architecture @ file://localhost<LOCAL_PATH>/aws-analytics-reference-architecture/core/dist/python/aws_analytics_reference_architecture-0.0.0-py3-none-any.whl",
+    ],
+```
