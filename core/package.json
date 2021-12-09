@@ -27,6 +27,8 @@
     "test": "npx projen test",
     "test:deploy": "npx projen test:deploy",
     "test:destroy": "npx projen test:destroy",
+    "test:integ": "npx projen test:integ",
+    "test:unit": "npx projen test:unit",
     "test:update": "npx projen test:update",
     "test:watch": "npx projen test:watch",
     "unbump": "npx projen unbump",
@@ -45,6 +47,7 @@
     "@types/node": "^14.17.0",
     "@typescript-eslint/eslint-plugin": "^4.30.0",
     "@typescript-eslint/parser": "^4.30.0",
+    "aws-cdk": "1.130.0",
     "esbuild": "^0.12.24",
     "eslint": "^7.32.0",
     "eslint-import-resolver-node": "^0.3.6",
@@ -53,6 +56,7 @@
     "glob": "^7.2.0",
     "jest": "^27.1.0",
     "jest-junit": "^12",
+    "jest-runner-groups": "^2.1.0",
     "jsii": "^1.34.0",
     "jsii-diff": "^1.34.0",
     "jsii-docgen": "^3.3.8",
@@ -143,6 +147,7 @@
   "homepage": "https://aws-samples.github.io/aws-analytics-reference-architecture/",
   "version": "0.0.0",
   "jest": {
+    "runner": "groups",
     "testMatch": [
       "**/__tests__/**/*.ts?(x)",
       "**/?(*.)+(spec|test).ts?(x)"
