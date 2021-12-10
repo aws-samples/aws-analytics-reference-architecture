@@ -1,9 +1,16 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests tracking construct
+ *
+ * @group unit/othrer/tracking-construct
+ */
+
+
 import { App, Stack } from '@aws-cdk/core';
-import { ContextOptions } from '../src/common/context-options';
-import * as trackedConstruct from '../src/common/tracked-construct';
+import { ContextOptions } from '../../src/common/context-options';
+import * as trackedConstruct from '../../src/common/tracked-construct';
 
 import '@aws-cdk/assert/jest';
 
