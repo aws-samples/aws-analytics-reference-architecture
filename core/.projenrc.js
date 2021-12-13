@@ -30,11 +30,14 @@ const project = new AwsCdkConstructLibrary({
   repositoryDirectory: 'core',
   workflow: false,
   buildWorkflow: false,
-  releaseWorkflow: true,
+  release: true,
   depsUpgrade: false,
   stale: false,
   pullRequestTemplate: false,
   cdkVersionPinning: true,
+  githubOptions: {
+    pullRequestLint: false,
+  },
 
   cdkDependencies: [
     '@aws-cdk/assertions',

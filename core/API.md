@@ -206,8 +206,7 @@ AWS Glue Database for Transform data.
 
 DataLakeExporter Construct to export data from a stream to the data lake.
 
-Source can be an Amazon Kinesis Data Stream.
-Target can be an Amazon S3 bucket.
+Source can be an Amazon Kinesis Data Stream. Target can be an Amazon S3 bucket.
 
 #### Initializers <a name="aws-analytics-reference-architecture.DataLakeExporter.Initializer"></a>
 
@@ -432,18 +431,12 @@ the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}.
 ##### `addManagedEndpoint` <a name="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint"></a>
 
 ```typescript
-public addManagedEndpoint(scope: Construct, serviceToken: string, id: string, virtualClusterId: string, executionRole: IRole, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
+public addManagedEndpoint(scope: Construct, id: string, virtualClusterId: string, executionRole: IRole, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
 ```
 
 ###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
 
 - *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
-
----
-
-###### `serviceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.serviceToken"></a>
-
-- *Type:* `string`
 
 ---
 
@@ -531,6 +524,20 @@ the execution policy to attach to the role.
 
 ---
 
+##### `uploadPodTemplate` <a name="aws-analytics-reference-architecture.EmrEksCluster.uploadPodTemplate"></a>
+
+```typescript
+public uploadPodTemplate(path: string)
+```
+
+###### `path`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.path"></a>
+
+- *Type:* `string`
+
+The local path of the yaml podTemplate files to upload.
+
+---
+
 #### Static Functions <a name="Static Functions"></a>
 
 ##### `getOrCreate` <a name="aws-analytics-reference-architecture.EmrEksCluster.getOrCreate"></a>
@@ -538,7 +545,7 @@ the execution policy to attach to the role.
 ```typescript
 import { EmrEksCluster } from 'aws-analytics-reference-architecture'
 
-EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion, clusterName: string)
+EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion?: KubernetesVersion, clusterName?: string)
 ```
 
 ###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
@@ -553,13 +560,13 @@ EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesV
 
 ---
 
-###### `kubernetesVersion`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.kubernetesVersion"></a>
+###### `kubernetesVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.kubernetesVersion"></a>
 
 - *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
 
 ---
 
-###### `clusterName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.clusterName"></a>
+###### `clusterName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.clusterName"></a>
 
 - *Type:* `string`
 
@@ -587,16 +594,6 @@ public readonly eksCluster: Cluster;
 
 ---
 
-##### `managedEndpointProviderServiceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.managedEndpointProviderServiceToken"></a>
-
-```typescript
-public readonly managedEndpointProviderServiceToken: string;
-```
-
-- *Type:* `string`
-
----
-
 ##### `notebookDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig"></a>
 
 ```typescript
@@ -604,6 +601,16 @@ public readonly notebookDefaultConfig: string;
 ```
 
 - *Type:* `string`
+
+---
+
+##### `podTemplateLocation`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.podTemplateLocation"></a>
+
+```typescript
+public readonly podTemplateLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
 
 ---
 
@@ -617,26 +624,12 @@ public readonly sharedDefaultConfig: string;
 
 ---
 
-#### Constants <a name="Constants"></a>
-
-##### `DEFAULT_EKS_VERSION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EKS_VERSION"></a>
-
-- *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
-
----
-
-##### `DEFAULT_EMR_VERSION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EMR_VERSION"></a>
-
-- *Type:* `string`
-
----
 
 ### Example <a name="aws-analytics-reference-architecture.Example"></a>
 
 Example Construct to help onboarding contributors.
 
-This example includes best practices for code comment/documentation generation,
-and for default parameters pattern in CDK using Props with Optional properties
+This example includes best practices for code comment/documentation generation, and for default parameters pattern in CDK using Props with Optional properties
 
 #### Initializers <a name="aws-analytics-reference-architecture.Example.Initializer"></a>
 
@@ -678,42 +671,7 @@ the ExampleProps properties.
 
 A CDK construct that runs flyway migration scripts against a redshift cluster.
 
-This construct is based on two main resource, an AWS Lambda hosting a flyway runner
-and one custom resource invoking it when content of migrationScriptsFolderAbsolutePath changes.
-
-Usage example:
-
-*This example assume that migration SQL files are located in `resources/sql` of the cdk project.*
-```typescript
-import * as path from 'path';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as redshift from '@aws-cdk/aws-redshift';
-import * as cdk from '@aws-cdk/core';
-
-import { FlywayRunner } from 'aws-analytics-reference-architecture';
-
-const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'fywayRunnerTest');
-
-const vpc = new ec2.Vpc(stack, 'Vpc');
-
-const dbName = 'testdb';
-const cluster = new redshift.Cluster(stack, 'Redshift', {
-   removalPolicy: cdk.RemovalPolicy.DESTROY,
-   masterUser: {
-     masterUsername: 'admin',
-   },
-   vpc,
-   defaultDatabaseName: dbName,
-});
-
-new FlywayRunner(stack, 'testMigration', {
-   migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),
-   cluster: cluster,
-   vpc: vpc,
-   databaseName: dbName,
-});
-```
+This construct is based on two main resource, an AWS Lambda hosting a flyway runner and one custom resource invoking it when content of migrationScriptsFolderAbsolutePath changes.  Usage example:  *This example assume that migration SQL files are located in `resources/sql` of the cdk project.* ```typescript import * as path from 'path'; import * as ec2 from '@aws-cdk/aws-ec2'; import * as redshift from '@aws-cdk/aws-redshift'; import * as cdk from '@aws-cdk/core';  import { FlywayRunner } from 'aws-analytics-reference-architecture';  const integTestApp = new cdk.App(); const stack = new cdk.Stack(integTestApp, 'fywayRunnerTest');  const vpc = new ec2.Vpc(stack, 'Vpc');  const dbName = 'testdb'; const cluster = new redshift.Cluster(stack, 'Redshift', {    removalPolicy: cdk.RemovalPolicy.DESTROY,    masterUser: {      masterUsername: 'admin',    },    vpc,    defaultDatabaseName: dbName, });  new FlywayRunner(stack, 'testMigration', {    migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),    cluster: cluster,    vpc: vpc,    databaseName: dbName, }); ```
 
 #### Initializers <a name="aws-analytics-reference-architecture.FlywayRunner.Initializer"></a>
 
@@ -815,8 +773,7 @@ SingletonBucket.getOrCreate(scope: Construct, bucketName: string)
 
 SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
 
-The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
-The Construct provides a getOrCreate method for SingletonInstantiation
+The role is created with AWSGlueServiceRole policy and authorize all actions on S3. The Construct provides a getOrCreate method for SingletonInstantiation
 
 
 #### Static Functions <a name="Static Functions"></a>
@@ -1262,19 +1219,6 @@ Amazon IAM Role to be added to Amazon EKS master roles that will give access to 
 
 ---
 
-##### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.acmCertificateArn"></a>
-
-```typescript
-public readonly acmCertificateArn: string;
-```
-
-- *Type:* `string`
-- *Default:* generate and import certificate using locally installed openssl utility
-
-ACM Certificate ARN used with EMR on EKS managed endpoint.
-
----
-
 ##### `eksClusterName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName"></a>
 
 ```typescript
@@ -1301,19 +1245,6 @@ List of EmrEksNodegroup to create in the cluster in addition to the default [nod
 
 ---
 
-##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.emrOnEksVersion"></a>
-
-```typescript
-public readonly emrOnEksVersion: string;
-```
-
-- *Type:* `string`
-- *Default:* emr-6.3.0-latest
-
-EMR on EKS managed endpoint version.
-
----
-
 ##### `kubernetesVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion"></a>
 
 ```typescript
@@ -1331,10 +1262,7 @@ Kubernetes version for Amazon EKS cluster that will be created.
 
 The Options for adding EmrEksNodegroup to an EmrEksCluster.
 
-Some of the Amazon EKS Nodegroup parameters are overriden:
--  NodegroupName by the id and an index per AZ
--  LaunchTemplate spec
--  SubnetList by either the subnet parameter or one subnet per Amazon EKS Cluster AZ.
+Some of the Amazon EKS Nodegroup parameters are overriden: -  NodegroupName by the id and an index per AZ -  LaunchTemplate spec -  SubnetList by either the subnet parameter or one subnet per Amazon EKS Cluster AZ.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
@@ -1381,8 +1309,7 @@ public readonly desiredSize: number;
 
 The current number of worker nodes that the managed node group should maintain.
 
-If not specified,
-the nodewgroup will initially create `minSize` instances.
+If not specified, the nodewgroup will initially create `minSize` instances.
 
 ---
 
@@ -1410,9 +1337,7 @@ public readonly forceUpdate: boolean;
 
 Force the update if the existing node group's pods are unable to be drained due to a pod disruption budget issue.
 
-If an update fails because pods could not be drained, you can force the update after it fails to terminate the old
-node whether or not any pods are
-running on the node.
+If an update fails because pods could not be drained, you can force the update after it fails to terminate the old node whether or not any pods are running on the node.
 
 ---
 
@@ -1429,9 +1354,7 @@ public readonly instanceType: InstanceType;
 
 The instance type to use for your node group.
 
-Currently, you can specify a single instance type for a node group.
-The default value for this parameter is `t3.medium`. If you choose a GPU instance type, be sure to specify the
-`AL2_x86_64_GPU` with the amiType parameter.
+Currently, you can specify a single instance type for a node group. The default value for this parameter is `t3.medium`. If you choose a GPU instance type, be sure to specify the `AL2_x86_64_GPU` with the amiType parameter.
 
 ---
 
@@ -1532,10 +1455,7 @@ public readonly nodeRole: IRole;
 
 The IAM role to associate with your node group.
 
-The Amazon EKS worker node kubelet daemon
-makes calls to AWS APIs on your behalf. Worker nodes receive permissions for these API calls through
-an IAM instance profile and associated policies. Before you can launch worker nodes and register them
-into a cluster, you must create an IAM role for those worker nodes to use when they are launched.
+The Amazon EKS worker node kubelet daemon makes calls to AWS APIs on your behalf. Worker nodes receive permissions for these API calls through an IAM instance profile and associated policies. Before you can launch worker nodes and register them into a cluster, you must create an IAM role for those worker nodes to use when they are launched.
 
 ---
 
@@ -1563,9 +1483,7 @@ public readonly remoteAccess: NodegroupRemoteAccess;
 
 The remote access (SSH) configuration to use with your node group.
 
-Disabled by default, however, if you
-specify an Amazon EC2 SSH key but do not specify a source security group when you create a managed node group,
-then port 22 on the worker nodes is opened to the internet (0.0.0.0/0)
+Disabled by default, however, if you specify an Amazon EC2 SSH key but do not specify a source security group when you create a managed node group, then port 22 on the worker nodes is opened to the internet (0.0.0.0/0)
 
 ---
 
@@ -1580,10 +1498,7 @@ public readonly subnets: SubnetSelection;
 
 The subnets to use for the Auto Scaling group that is created for your node group.
 
-By specifying the
-SubnetSelection, the selected subnets will automatically apply required tags i.e.
-`kubernetes.io/cluster/CLUSTER_NAME` with a value of `shared`, where `CLUSTER_NAME` is replaced with
-the name of your cluster.
+By specifying the SubnetSelection, the selected subnets will automatically apply required tags i.e. `kubernetes.io/cluster/CLUSTER_NAME` with a value of `shared`, where `CLUSTER_NAME` is replaced with the name of your cluster.
 
 ---
 
@@ -1598,9 +1513,7 @@ public readonly tags: {[ key: string ]: string};
 
 The metadata to apply to the node group to assist with categorization and organization.
 
-Each tag consists of
-a key and an optional value, both of which you define. Node group tags do not propagate to any other resources
-associated with the node group, such as the Amazon EC2 instances or subnets.
+Each tag consists of a key and an optional value, both of which you define. Node group tags do not propagate to any other resources associated with the node group, such as the Amazon EC2 instances or subnets.
 
 ---
 
