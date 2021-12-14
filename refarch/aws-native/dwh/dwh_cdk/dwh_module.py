@@ -64,10 +64,11 @@ class DwhModule(core.NestedStack):
 
         self.__redshift_admin = RedshiftAdminCdkStack(self, "RedshiftAdmin",
                                                       vpc=self.__vpc,
+                                                      redshift_secret_arn=self.__redshift_secret_arn,
                                                       lambda_sg=self.__redshift.lambda_sg,
                                                       clean_glue_db=self.__clean_glue_db,
                                                       redshift_role_arn=self.__redshift.redshift_role_arn,
-                                                      redshift_cluster=self.__redshift.cluster)
+                                                      redshift_cluster_endpoint=self.__redshift.cluster.cluster_endpoint)
 
         self.__dwh_loader = DwhLoader(
             self, 'DwhLoader',

@@ -498,11 +498,12 @@ the EmrEksClusterProps [properties]{@link EmrEksClusterProps}.
 
 | **Name** | **Description** |
 | --- | --- |
-| [`addEmrEksNodegroup`](#awsanalyticsreferencearchitectureemreksclusteraddemreksnodegroup) | Add a new Amazon EKS Nodegroup to the cluster with Amazon EMR on EKS best practices and configured for Cluster Autoscaler. |
-| [`addEmrVirtualCluster`](#awsanalyticsreferencearchitectureemreksclusteraddemrvirtualcluster) | Add a new Amazon EMR Virtual Cluster linked to EKS Cluster. |
+| [`addEmrEksNodegroup`](#awsanalyticsreferencearchitectureemreksclusteraddemreksnodegroup) | Add new Amazon EMR on EKS nodegroups to the cluster. |
+| [`addEmrVirtualCluster`](#awsanalyticsreferencearchitectureemreksclusteraddemrvirtualcluster) | Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster. |
 | [`addManagedEndpoint`](#awsanalyticsreferencearchitectureemreksclusteraddmanagedendpoint) | Creates a new Amazon EMR managed endpoint to be used with Amazon EMR Virtual Cluster . |
-| [`addNodegroupCapacity`](#awsanalyticsreferencearchitectureemreksclusteraddnodegroupcapacity) | Add a new Amazon EMR on EKS Nodegroup to the cluster. |
+| [`addNodegroupCapacity`](#awsanalyticsreferencearchitectureemreksclusteraddnodegroupcapacity) | Add a new Amazon EKS Nodegroup to the cluster. |
 | [`createExecutionRole`](#awsanalyticsreferencearchitectureemreksclustercreateexecutionrole) | Create and configure a new Amazon IAM Role usable as an execution role. |
+| [`uploadPodTemplate`](#awsanalyticsreferencearchitectureemreksclusteruploadpodtemplate) | Upload podTemplates to the Amazon S3 location used by the cluster. |
 
 ---
 
@@ -537,18 +538,12 @@ the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}.
 ##### `addManagedEndpoint` <a name="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint" id="awsanalyticsreferencearchitectureemreksclusteraddmanagedendpoint"></a>
 
 ```typescript
-public addManagedEndpoint(scope: Construct, serviceToken: string, id: string, virtualClusterId: string, executionRole: IRole, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
+public addManagedEndpoint(scope: Construct, id: string, virtualClusterId: string, executionRole: IRole, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
 ```
 
 ###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope" id="awsanalyticsreferencearchitectureemreksclusterparameterscope"></a>
 
 - *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
-
----
-
-###### `serviceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.serviceToken" id="awsanalyticsreferencearchitectureemreksclusterparameterservicetoken"></a>
-
-- *Type:* `string`
 
 ---
 
@@ -636,6 +631,20 @@ the execution policy to attach to the role.
 
 ---
 
+##### `uploadPodTemplate` <a name="aws-analytics-reference-architecture.EmrEksCluster.uploadPodTemplate" id="awsanalyticsreferencearchitectureemreksclusteruploadpodtemplate"></a>
+
+```typescript
+public uploadPodTemplate(path: string)
+```
+
+###### `path`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.path" id="awsanalyticsreferencearchitectureemreksclusterparameterpath"></a>
+
+- *Type:* `string`
+
+The local path of the yaml podTemplate files to upload.
+
+---
+
 #### Static Functions <a name="Static Functions" id="static-functions"></a>
 
 | **Name** | **Description** |
@@ -649,7 +658,7 @@ the execution policy to attach to the role.
 ```typescript
 import { EmrEksCluster } from 'aws-analytics-reference-architecture'
 
-EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion: KubernetesVersion, clusterName: string)
+EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesVersion?: KubernetesVersion, clusterName?: string)
 ```
 
 ###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope" id="awsanalyticsreferencearchitectureemreksclusterparameterscope"></a>
@@ -664,13 +673,13 @@ EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesV
 
 ---
 
-###### `kubernetesVersion`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.kubernetesVersion" id="awsanalyticsreferencearchitectureemreksclusterparameterkubernetesversion"></a>
+###### `kubernetesVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.kubernetesVersion" id="awsanalyticsreferencearchitectureemreksclusterparameterkubernetesversion"></a>
 
 - *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
 
 ---
 
-###### `clusterName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.clusterName" id="awsanalyticsreferencearchitectureemreksclusterparameterclustername"></a>
+###### `clusterName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.clusterName" id="awsanalyticsreferencearchitectureemreksclusterparameterclustername"></a>
 
 - *Type:* `string`
 
@@ -682,8 +691,8 @@ EmrEksCluster.getOrCreate(scope: Construct, eksAdminRoleArn: string, kubernetesV
 | --- | --- | --- |
 | [`criticalDefaultConfig`](#awsanalyticsreferencearchitectureemreksclusterpropertycriticaldefaultconfig)<span title="Required">*</span> | `string` | *No description.* |
 | [`eksCluster`](#awsanalyticsreferencearchitectureemreksclusterpropertyekscluster)<span title="Required">*</span> | [`@aws-cdk/aws-eks.Cluster`](#@aws-cdk/aws-eks.Cluster) | *No description.* |
-| [`managedEndpointProviderServiceToken`](#awsanalyticsreferencearchitectureemreksclusterpropertymanagedendpointproviderservicetoken)<span title="Required">*</span> | `string` | *No description.* |
 | [`notebookDefaultConfig`](#awsanalyticsreferencearchitectureemreksclusterpropertynotebookdefaultconfig)<span title="Required">*</span> | `string` | *No description.* |
+| [`podTemplateLocation`](#awsanalyticsreferencearchitectureemreksclusterpropertypodtemplatelocation)<span title="Required">*</span> | [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location) | *No description.* |
 | [`sharedDefaultConfig`](#awsanalyticsreferencearchitectureemreksclusterpropertyshareddefaultconfig)<span title="Required">*</span> | `string` | *No description.* |
 
 ---
@@ -708,16 +717,6 @@ public readonly eksCluster: Cluster;
 
 ---
 
-##### `managedEndpointProviderServiceToken`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.managedEndpointProviderServiceToken" id="awsanalyticsreferencearchitectureemreksclusterpropertymanagedendpointproviderservicetoken"></a>
-
-```typescript
-public readonly managedEndpointProviderServiceToken: string;
-```
-
-- *Type:* `string`
-
----
-
 ##### `notebookDefaultConfig`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig" id="awsanalyticsreferencearchitectureemreksclusterpropertynotebookdefaultconfig"></a>
 
 ```typescript
@@ -725,6 +724,16 @@ public readonly notebookDefaultConfig: string;
 ```
 
 - *Type:* `string`
+
+---
+
+##### `podTemplateLocation`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.property.podTemplateLocation" id="awsanalyticsreferencearchitectureemreksclusterpropertypodtemplatelocation"></a>
+
+```typescript
+public readonly podTemplateLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
 
 ---
 
@@ -738,26 +747,6 @@ public readonly sharedDefaultConfig: string;
 
 ---
 
-#### Constants <a name="Constants" id="constants"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| [`DEFAULT_EKS_VERSION`](#awsanalyticsreferencearchitectureemreksclusterpropertydefaulteksversion)<span title="Required">*</span> | [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion) | *No description.* |
-| [`DEFAULT_EMR_VERSION`](#awsanalyticsreferencearchitectureemreksclusterpropertydefaultemrversion)<span title="Required">*</span> | `string` | *No description.* |
-
----
-
-##### `DEFAULT_EKS_VERSION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EKS_VERSION" id="awsanalyticsreferencearchitectureemreksclusterpropertydefaulteksversion"></a>
-
-- *Type:* [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion)
-
----
-
-##### `DEFAULT_EMR_VERSION` <a name="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EMR_VERSION" id="awsanalyticsreferencearchitectureemreksclusterpropertydefaultemrversion"></a>
-
-- *Type:* `string`
-
----
 
 ### Example <a name="aws-analytics-reference-architecture.Example" id="awsanalyticsreferencearchitectureexample"></a>
 
@@ -1458,10 +1447,8 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | [`eksAdminRoleArn`](#awsanalyticsreferencearchitectureemreksclusterpropspropertyeksadminrolearn)<span title="Required">*</span> | `string` | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
-| [`acmCertificateArn`](#awsanalyticsreferencearchitectureemreksclusterpropspropertyacmcertificatearn) | `string` | ACM Certificate ARN used with EMR on EKS managed endpoint. |
 | [`eksClusterName`](#awsanalyticsreferencearchitectureemreksclusterpropspropertyeksclustername) | `string` | Name of the Amazon EKS cluster to be created. |
 | [`emrEksNodegroups`](#awsanalyticsreferencearchitectureemreksclusterpropspropertyemreksnodegroups) | [`aws-analytics-reference-architecture.EmrEksNodegroup`](#aws-analytics-reference-architecture.EmrEksNodegroup)[] | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups] {@link EmrEksNodegroup}. |
-| [`emrOnEksVersion`](#awsanalyticsreferencearchitectureemreksclusterpropspropertyemroneksversion) | `string` | EMR on EKS managed endpoint version. |
 | [`kubernetesVersion`](#awsanalyticsreferencearchitectureemreksclusterpropspropertykubernetesversion) | [`@aws-cdk/aws-eks.KubernetesVersion`](#@aws-cdk/aws-eks.KubernetesVersion) | Kubernetes version for Amazon EKS cluster that will be created. |
 
 ---
@@ -1475,19 +1462,6 @@ public readonly eksAdminRoleArn: string;
 - *Type:* `string`
 
 Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
-
----
-
-##### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.acmCertificateArn" id="awsanalyticsreferencearchitectureemreksclusterpropspropertyacmcertificatearn"></a>
-
-```typescript
-public readonly acmCertificateArn: string;
-```
-
-- *Type:* `string`
-- *Default:* generate and import certificate using locally installed openssl utility
-
-ACM Certificate ARN used with EMR on EKS managed endpoint.
 
 ---
 
@@ -1514,19 +1488,6 @@ public readonly emrEksNodegroups: EmrEksNodegroup[];
 - *Default:* Don't create additional nodegroups
 
 List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups] {@link EmrEksNodegroup}.
-
----
-
-##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksClusterProps.property.emrOnEksVersion" id="awsanalyticsreferencearchitectureemreksclusterpropspropertyemroneksversion"></a>
-
-```typescript
-public readonly emrOnEksVersion: string;
-```
-
-- *Type:* `string`
-- *Default:* emr-6.3.0-latest
-
-EMR on EKS managed endpoint version.
 
 ---
 
