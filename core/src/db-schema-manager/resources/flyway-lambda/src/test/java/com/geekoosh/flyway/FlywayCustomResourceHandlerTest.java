@@ -1,19 +1,27 @@
 package com.geekoosh.flyway;
 
+import com.adobe.testing.s3mock.S3MockRule;
 import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourceRequest;
 import com.amazonaws.services.cloudformation.model.DescribeStackResourceResult;
 import com.amazonaws.services.cloudformation.model.StackResourceDetail;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
-
+import com.amazonaws.services.s3.AmazonS3;
+import com.geekoosh.flyway.request.FlywayMethod;
+import com.geekoosh.flyway.response.Response;
+import com.geekoosh.lambda.s3.S3Service;
 import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.HashMap;
+import java.io.File;
 import java.util.Map;
 
 import static org.mockito.Mockito.times;
@@ -36,13 +44,12 @@ public class FlywayCustomResourceHandlerTest extends TestCase {
         event.setLogicalResourceId(resourceLogicalId);
         event.setPhysicalResourceId(physicalResourceId);
         event.setRequestType("Create");
-        event.setResourceProperties(Map.of("flywayMethod", "migrate", "placeholders", Map.of("TABLE_NAME", "test")));
 
         FlywayCustomResourceHandler handler = new FlywayCustomResourceHandler();
         FlywayCustomResourceHandler handlerSpy = Mockito.spy(handler);
 
         Mockito.when(cfnMock.describeStackResource(new DescribeStackResourceRequest().withLogicalResourceId(resourceLogicalId))).thenReturn(new DescribeStackResourceResult().withStackResourceDetail(new StackResourceDetail().withResourceStatus("UPDATE_IN_PROGRESS")));
-        Mockito.doReturn(null).when(handlerSpy).callFlywayService(event);
+        Mockito.doReturn(null).when(handlerSpy).callFlywayService();
 
         // WHEN
         Map result = handlerSpy.handleRequest(event, cfnMock);
@@ -50,7 +57,7 @@ public class FlywayCustomResourceHandlerTest extends TestCase {
 
         // THEN
         assertEquals(result.get("PhysicalResourceId"), physicalResourceId);
-        verify(handlerSpy, times(1)).callFlywayService(event);
+        verify(handlerSpy, times(1)).callFlywayService();
     }
 
     @Test
@@ -75,6 +82,6 @@ public class FlywayCustomResourceHandlerTest extends TestCase {
 
         // THEN
         assertEquals(result.get("PhysicalResourceId"), physicalResourceId);
-        verify(handlerSpy, times(0)).callFlywayService(event);
+        verify(handlerSpy, times(0)).callFlywayService();
     }
 }

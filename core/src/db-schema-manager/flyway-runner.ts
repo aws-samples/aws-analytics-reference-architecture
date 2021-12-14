@@ -11,7 +11,6 @@ import * as cdk from '@aws-cdk/core';
 import { CustomResource } from '@aws-cdk/core';
 import * as cr from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-
 /**
  * Properties needed to run flyway migration scripts.
  */
@@ -43,26 +42,6 @@ export interface FlywayRunnerProps {
    * @default logs.RetentionDays.ONE_DAY (1 day)
    */
   readonly logRetention?: logs.RetentionDays;
-
-  /**
-   * A key-value map of string (encapsulated between `${` and `}`) to replace in the SQL files given.
-   * 
-   * Example:
-   * 
-   * * The SQL file:
-   * 
-   *   ```sql
-   *   SELECT * FROM ${TABLE_NAME};
-   *   ```
-   * * The replacement map:
-   * 
-   *   ```typescript
-   *   replaceDictionary = {
-   *     TABLE_NAME: 'my_table'
-   *   }
-   *   ```
-   */
-  readonly replaceDictionary?: { [key: string]: string };
 }
 
 /**
@@ -106,21 +85,19 @@ export interface FlywayRunnerProps {
  * ```
  */
 export class FlywayRunner extends cdk.Construct {
-  public readonly runner: CustomResource;
+  public readonly flywayRunner: CustomResource;
 
   constructor(scope: cdk.Construct, id: string, props: FlywayRunnerProps) {
     super(scope, id);
 
     const sqlFilesAsset = s3deploy.Source.asset(props.migrationScriptsFolderAbsolutePath);
 
-    const migrationFilesBucket = new s3.Bucket(this, 'migrationFilesBucket', {
-      versioned: true,
-    });
+    const migrationFilesBucket = new s3.Bucket(this, 'MigrationFilesBucket');
     const migrationFilesDeployment = new s3deploy.BucketDeployment(this, 'DeploySQLMigrationFiles', {
       sources: [sqlFilesAsset],
       destinationBucket: migrationFilesBucket,
     });
-    
+
     const flywayLambda = new PreBundledFunction(this, 'runner', {
       codePath: path.join(__dirname.split('/').slice(-1)[0], './resources/flyway-lambda/flyway-all.jar'),
       handler: 'com.geekoosh.flyway.FlywayCustomResourceHandler::handleRequest',
@@ -149,6 +126,7 @@ export class FlywayRunner extends cdk.Construct {
       ],
     });
 
+
     // Allowing connection to the cluster
     props.cluster.connections.allowDefaultPortInternally();
 
@@ -162,11 +140,12 @@ export class FlywayRunner extends cdk.Construct {
       vpc: props.vpc,
     });
 
-    this.runner = new CustomResource(this, 'trigger', {
+    this.flywayRunner =new CustomResource(this, 'trigger', {
       serviceToken: flywayCustomResourceProvider.serviceToken,
       properties: {
-        flywayMethod: 'migrate',
-        placeholders: props.replaceDictionary,
+        flywayRequest: {
+          flywayMethod: 'migrate',
+        },
         assetHash: (migrationFilesDeployment.node.findChild('Asset1') as Asset).assetHash,
       },
     });
