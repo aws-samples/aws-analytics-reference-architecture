@@ -28,6 +28,10 @@ class RedshiftAdminCdkStack(core.Construct):
         return self.etl.node.find_child(id='Secret')
 
     @property
+    def __quicksight_user_secret(self):
+        return self.dataviz.node.find_child(id='Secret')
+
+    @property
     def quicksight_secret_arn(self):
         return self.__quicksight_user_secret.secret_arn
 
