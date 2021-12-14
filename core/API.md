@@ -45,6 +45,77 @@ public readonly resultBucket: Bucket;
 ---
 
 
+### BatchReplayer <a name="aws-analytics-reference-architecture.BatchReplayer"></a>
+
+#### Initializers <a name="aws-analytics-reference-architecture.BatchReplayer.Initializer"></a>
+
+```typescript
+import { BatchReplayer } from 'aws-analytics-reference-architecture'
+
+new BatchReplayer(scope: Construct, id: string, props: BatchReplayerProps)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.parameter.id"></a>
+
+- *Type:* `string`
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.BatchReplayerProps`](#aws-analytics-reference-architecture.BatchReplayerProps)
+
+---
+
+
+
+#### Properties <a name="Properties"></a>
+
+##### `dataset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.property.dataset"></a>
+
+```typescript
+public readonly dataset: PartitionedDataset;
+```
+
+- *Type:* [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset)
+
+Dataset used for replay.
+
+---
+
+##### `frequency`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.property.frequency"></a>
+
+```typescript
+public readonly frequency: number;
+```
+
+- *Type:* `number`
+
+Frequency (in Seconds) of the replaying.
+
+The batch job will start for every given frequency and replay the data in that period
+
+---
+
+##### `sinkBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket"></a>
+
+```typescript
+public readonly sinkBucket: Bucket;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
+
+Sink bucket where the batch replayer will put data in.
+
+---
+
+
 ### DataGenerator <a name="aws-analytics-reference-architecture.DataGenerator"></a>
 
 DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime Target can be an Amazon S3 bucket or an Amazon Kinesis Data Stream.
@@ -887,6 +958,46 @@ the CrawlerStartWait [properties]{@link SynchronousCrawlerProps}.
 
 ## Structs <a name="Structs"></a>
 
+### BatchReplayerProps <a name="aws-analytics-reference-architecture.BatchReplayerProps"></a>
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { BatchReplayerProps } from 'aws-analytics-reference-architecture'
+
+const batchReplayerProps: BatchReplayerProps = { ... }
+```
+
+##### `dataset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayerProps.property.dataset"></a>
+
+```typescript
+public readonly dataset: PartitionedDataset;
+```
+
+- *Type:* [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset)
+
+---
+
+##### `sinkBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket"></a>
+
+```typescript
+public readonly sinkBucket: Bucket;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
+
+---
+
+##### `frequency`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.BatchReplayerProps.property.frequency"></a>
+
+```typescript
+public readonly frequency: number;
+```
+
+- *Type:* `number`
+
+---
+
 ### DataGeneratorProps <a name="aws-analytics-reference-architecture.DataGeneratorProps"></a>
 
 The properties for DataGenerator Construct.
@@ -1192,6 +1303,18 @@ public readonly createTargetTable: string;
 - *Default:* Use the same DDL as the source table
 
 The CREATE TABLE DDL command to create the target AWS Glue Table.
+
+---
+
+##### `manifestLocation`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.manifestLocation"></a>
+
+```typescript
+public readonly manifestLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Manifest file in csv format with two columns: start, path.
 
 ---
 
@@ -1735,6 +1858,66 @@ Period to keep the logs around.
 
 ---
 
+### PartitionedDatasetProps <a name="aws-analytics-reference-architecture.PartitionedDatasetProps"></a>
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { PartitionedDatasetProps } from 'aws-analytics-reference-architecture'
+
+const partitionedDatasetProps: PartitionedDatasetProps = { ... }
+```
+
+##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.location"></a>
+
+```typescript
+public readonly location: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+The Amazon S3 Location of the source dataset.
+
+It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
+
+---
+
+##### `startDatetime`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.startDatetime"></a>
+
+```typescript
+public readonly startDatetime: string;
+```
+
+- *Type:* `string`
+
+The minimum datetime value in the dataset used to calculate time offset.
+
+---
+
+##### `dateTimeColumnsToAdjust`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.dateTimeColumnsToAdjust"></a>
+
+```typescript
+public readonly dateTimeColumnsToAdjust: string[];
+```
+
+- *Type:* `string`[]
+
+Array of column names with datetime to adjust.
+
+---
+
+##### `manifestLocation`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.manifestLocation"></a>
+
+```typescript
+public readonly manifestLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Manifest file in csv format with two columns: start, path.
+
+---
+
 ### SynchronousAthenaQueryProps <a name="aws-analytics-reference-architecture.SynchronousAthenaQueryProps"></a>
 
 The properties for SynchronousAthenaQuery Construct.
@@ -2039,6 +2222,18 @@ The name of the SQL table extracted from path.
 
 ---
 
+##### `manifestLocation`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.Dataset.property.manifestLocation"></a>
+
+```typescript
+public readonly manifestLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Manifest file in csv format with two columns: start, path.
+
+---
+
 #### Constants <a name="Constants"></a>
 
 ##### `DATASETS_BUCKET` <a name="aws-analytics-reference-architecture.Dataset.property.DATASETS_BUCKET"></a>
@@ -2177,6 +2372,14 @@ The web sale dataset part of 1GB retail datasets.
 
 ---
 
+##### `RETAIL_1GB_WEB_SALE_WITH_MANIFEST` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_WEB_SALE_WITH_MANIFEST"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
+
+The web sale dataset part of 1GB retail datasets.
+
+---
+
 ### EmrEksNodegroup <a name="aws-analytics-reference-architecture.EmrEksNodegroup"></a>
 
 #### Initializers <a name="aws-analytics-reference-architecture.EmrEksNodegroup.Initializer"></a>
@@ -2233,6 +2436,108 @@ Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
 ##### `TOOLING_ALL` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.TOOLING_ALL"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+### PartitionedDataset <a name="aws-analytics-reference-architecture.PartitionedDataset"></a>
+
+Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+
+#### Initializers <a name="aws-analytics-reference-architecture.PartitionedDataset.Initializer"></a>
+
+```typescript
+import { PartitionedDataset } from 'aws-analytics-reference-architecture'
+
+new PartitionedDataset(props: PartitionedDatasetProps)
+```
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.PartitionedDatasetProps`](#aws-analytics-reference-architecture.PartitionedDatasetProps)
+
+the DatasetProps.
+
+---
+
+
+
+#### Properties <a name="Properties"></a>
+
+##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.location"></a>
+
+```typescript
+public readonly location: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+The Amazon S3 Location of the source dataset.
+
+---
+
+##### `offset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.offset"></a>
+
+```typescript
+public readonly offset: number;
+```
+
+- *Type:* `number`
+
+The offset of the Dataset (difference between min datetime and now) in Seconds.
+
+---
+
+##### `tableName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.tableName"></a>
+
+```typescript
+public readonly tableName: string;
+```
+
+- *Type:* `string`
+
+The name of the SQL table extracted from path.
+
+---
+
+##### `dateTimeColumnsToAdjust`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.dateTimeColumnsToAdjust"></a>
+
+```typescript
+public readonly dateTimeColumnsToAdjust: string[];
+```
+
+- *Type:* `string`[]
+
+Array of column names with datetime to adjust.
+
+---
+
+##### `manifestLocation`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.manifestLocation"></a>
+
+```typescript
+public readonly manifestLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Manifest file in csv format with two columns: start, path.
+
+---
+
+#### Constants <a name="Constants"></a>
+
+##### `DATASETS_BUCKET` <a name="aws-analytics-reference-architecture.PartitionedDataset.property.DATASETS_BUCKET"></a>
+
+- *Type:* `string`
+
+The bucket name of the AWS Analytics Reference Architecture datasets.
+
+---
+
+##### `RETAIL_1GB_WEB_SALE_WITH_MANIFEST` <a name="aws-analytics-reference-architecture.PartitionedDataset.property.RETAIL_1GB_WEB_SALE_WITH_MANIFEST"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset)
+
+The web sale dataset part of 1GB retail datasets.
 
 ---
 

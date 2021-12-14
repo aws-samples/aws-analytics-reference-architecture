@@ -93,9 +93,6 @@
         },
         {
           "exec": "npx projen pip-install"
-        },
-        {
-          "exec": "npx projen gradle-build"
         }
       ]
     },
