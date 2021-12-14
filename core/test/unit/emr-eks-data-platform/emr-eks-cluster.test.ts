@@ -11,7 +11,7 @@ import * as assertCDK from '@aws-cdk/assert';
 import '@aws-cdk/assert/jest';
 import { Policy, PolicyDocument, PolicyStatement } from '@aws-cdk/aws-iam';
 import { Stack } from '@aws-cdk/core';
-import { EmrEksCluster } from '../../src/emr-eks-data-platform/emr-eks-cluster';
+import { EmrEksCluster } from '../../../src/emr-eks-data-platform/emr-eks-cluster';
 
 const emrEksClusterStack = new Stack();
 const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, 'arn:aws:iam::1234567890:role/AdminAccess');

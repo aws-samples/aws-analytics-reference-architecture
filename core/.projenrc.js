@@ -139,7 +139,7 @@ const copyResourcesToLibTask = project.addTask('copy-resources', {
 
 for (const from of glob.sync('src/**/resources')) {
   const to = dirname(from.replace('src', 'lib'));
-  const cpCommand = `rsync -avr  ${from} ${to}`;
+  const cpCommand = `rsync -avr --exclude '*.ts' --exclude '*.js' ${from} ${to}`;
   copyResourcesToLibTask.exec(cpCommand);
 }
 
@@ -162,27 +162,10 @@ for (const dirPath of findAllPythonLambdaDir('src')) {
 }
 
 /**
- * Task to build typescript lambda with esbuild
- */
- const esbuildBuildTask = project.addTask('esbuild-build', {
-  description: 'esbuild any folder with an index.ts in resources',
-});
-
-for (const dirPath of findAllTypescriptLambdaDir('src')) {
-  console.log('loop over typescript dir');
-  // Assume that all folders with 'requirements.txt' have been copied to lib
-  // by the task 'copy-resources'
-  const dirPathInLib = dirname(dirPath.replace('src', 'lib'));
-  const esbuildCmd = `cd ${dirPathInLib} && npx esbuild --bundle --outfile index.js index.ts --external:aws-sdk`;
-
-  esbuildBuildTask.exec(esbuildCmd);
-}
-
-/**
  * Task to build java lambda jar with gradle
  */
 const gradleBuildTask = project.addTask('gradle-build', {
-  description: './gradlew shadowJar all folders in lib that has gradle.build',
+  description: './gradlew shadowJar all folders in lib that has requirements.txt',
 });
 
 for (const dirPath of findAllGradleLambdaDir('src')) {
@@ -228,20 +211,6 @@ function findAllGradleLambdaDir(rootDir) {
 
   return glob.sync(`${rootDir}/**/build.gradle`).map((pathWithGradle) => {
     return pathWithGradle;
-  });
-}
-
-/**
- * Find all directory that has a index.ts in resources.
- *
- * @param rootDir Root directory to begin finding
- * @returns Array of directory paths
- */
- function findAllTypescriptLambdaDir(rootDir) {
-  console.log('findAllTypescriptLambdaDir');
-
-  return glob.sync(`${rootDir}/**/resources/**/index.ts`).map((pathWithIndexTS) => {
-    return pathWithIndexTS;
   });
 }
 
