@@ -71,15 +71,15 @@ class DataVizModule(core.NestedStack):
                                                      athena_data_transformations=cfg.ATHENA_DATA_TRANSFORMATIONS
                                                      ).dataset_arn
 
-        # QuickSightAthenaAnalysis(self,
-        #                          'AthenaAnalysis',
-        #                          iam_policy=iam_policy,
-        #                          quicksight_group_arn=self.__quicksight_group_arn,
-        #                          athena_dataset_arn=athena_dataset_arn,
-        #                          athena_analysis_name=cfg.ATHENA_ANALYSIS_NAME,
-        #                          athena_analysis_template_alias=cfg.ATHENA_ANALYSIS_TEMPLATE_ALIAS,
-        #                          analysis_actions=cfg.ANALYSIS_ACTIONS
-        #                          )
+        QuickSightAthenaAnalysis(self,
+                                 'AthenaAnalysis',
+                                 iam_policy=iam_policy,
+                                 quicksight_group_arn=self.__quicksight_group_arn,
+                                 athena_dataset_arn=athena_dataset_arn,
+                                 athena_analysis_name=cfg.ATHENA_ANALYSIS_NAME,
+                                 athena_analysis_template_alias=cfg.ATHENA_ANALYSIS_TEMPLATE_ALIAS,
+                                 analysis_actions=cfg.ANALYSIS_ACTIONS
+                                 )
 
         self.__quicksight_security_group_id = QuickSightVpcConnectionReqs(self, 'VpcConnReqs', vpc=vpc,
                                                                           redshift_security_group_id=redshift_sg_id,

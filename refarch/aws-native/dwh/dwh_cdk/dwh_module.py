@@ -69,7 +69,7 @@ class DwhModule(core.NestedStack):
                                                       redshift_role_arn=self.__redshift.redshift_role_arn,
                                                       redshift_cluster=self.__redshift.cluster)
 
-        DwhLoader(
+        self.__dwh_loader = DwhLoader(
             self, 'DwhLoader',
             redshift_cluster_name=self.__redshift.cluster.cluster_name,
             user_secret=self.__redshift_admin.etl_user_secret

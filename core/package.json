@@ -14,6 +14,7 @@
     "copy-resources": "npx projen copy-resources",
     "default": "npx projen default",
     "docgen": "npx projen docgen",
+    "esbuild-build": "npx projen esbuild-build",
     "eslint": "npx projen eslint",
     "gradle-build": "npx projen gradle-build",
     "package": "npx projen package",
