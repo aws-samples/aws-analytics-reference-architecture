@@ -66,7 +66,7 @@ dependencies {
     implementation group: 'commons-io', name: 'commons-io', version: '2.5'
     implementation group: 'org.json', name: 'json', version: '20190722'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
-    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.12'
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.16.0'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.16.0'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
