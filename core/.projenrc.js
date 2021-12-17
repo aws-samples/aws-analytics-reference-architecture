@@ -183,7 +183,7 @@ for (const dirPath of findAllGradleLambdaDir('src')) {
  */
 project.compileTask.exec('npx projen copy-resources');
 project.compileTask.exec('npx projen pip-install');
-// project.compileTask.exec('npx projen gradle-build');
+project.compileTask.exec('npx projen gradle-build');
 
 /**
  * Find all directory that has a Python package.
