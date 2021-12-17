@@ -1,13 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-const { basename, join, dirname, relative } = require('path');
+const { dirname } = require('path');
 const glob = require('glob');
+const { awscdk } = require('projen');
 
-
-const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism, Semver } = require('projen');
-
-const project = new AwsCdkConstructLibrary({
+const project = new awscdk.AwsCdkConstructLibrary({
 
   authorName: 'Amazon Web Services',
   authorUrl: 'https://aws.amazon.com',
@@ -23,7 +21,7 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.130',
+  cdkVersion: '1.134.0',
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
