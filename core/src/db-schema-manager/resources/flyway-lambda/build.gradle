@@ -67,8 +67,8 @@ dependencies {
     implementation group: 'org.json', name: 'json', version: '20190722'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.2.5'
     implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.16.0'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.16.0'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.17.0'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.17.0'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     implementation group: 'com.amazonaws', name: 'aws-lambda-java-core', version: '1.2.0'
     implementation group: 'com.amazonaws', name: 'aws-lambda-java-log4j2', version: '1.4.0'
@@ -90,15 +90,16 @@ dependencies {
     testCompile group: 'org.testcontainers', name: 'postgresql', version: '1.16.2'
     testCompile group: 'org.testcontainers', name: 'mysql', version: '1.16.2'
 
-    // Prevent using feature log4j below 2.16.0 which can contain CVE-2021-44228
+    // Prevent using feature log4j below 2.17.0 which can contain CVE-2021-44228 and CVE-2021-45046
     // See step 3 in https://blog.gradle.org/log4j-vulnerability
     constraints {
         implementation("org.apache.logging.log4j:log4j-core") {
             version {
-                strictly("[2.16, 3[")
-                prefer("2.16.0")
+                strictly("[2.17, 3[")
+                prefer("2.17.0")
             }
             because("CVE-2021-44228: Log4j vulnerable to remote code execution")
+            because("CVE-2021-45046: Log4j vulnerable to DoS attack")
         }
     }
 }
