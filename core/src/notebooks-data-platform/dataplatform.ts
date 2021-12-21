@@ -5,7 +5,7 @@ import { VpcAttributes } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnOutput, Construct, Stack } from '@aws-cdk/core';
 import { EmrEksCluster } from '../emr-eks-data-platform/emr-eks-cluster';
-import { DataPlatformNotebook, DataPlatformNotebookProp, StudioUserDefinition } from './dataplatform-notebook';
+import { DataPlatformNotebook, DataPlatformNotebookProps, StudioUserDefinition } from './dataplatform-notebook';
 
 /**
  * The properties for DataPlatform Infrastructure Construct.
@@ -84,7 +84,7 @@ export class DataPlatform extends Construct {
    * @access public
    * @param {DataPlatformNotebookProp} dataPlatformNotebookProps the DataPlatformNotebooks as defined in [properties]{@link DataPlatformNotebookProp}
    */
-  public addNotebookPlatform (dataPlatformNotebookProps: DataPlatformNotebookProp) : void {
+  public addNotebookPlatform (dataPlatformNotebookProps: DataPlatformNotebookProps) : void {
 
     if (!this.emrVCNamespaceAndStudioNameList.includes(dataPlatformNotebookProps.studioName) ||
         !this.emrVCNamespaceAndStudioNameList.includes(dataPlatformNotebookProps.emrVCNamespace) ) {

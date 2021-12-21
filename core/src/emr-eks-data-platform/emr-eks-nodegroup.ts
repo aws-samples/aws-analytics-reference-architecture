@@ -13,16 +13,13 @@ import { NodegroupOptions, TaintEffect, CapacityType, NodegroupAmiType } from '@
 
 export interface EmrEksNodegroupOptions extends NodegroupOptions {
   /**
-   * Nodegroup ID
-   */
-  readonly id: string;
-  /**
    * Set to true if using instance types with local NVMe drives to mount them automatically at boot time
    * @default false
    */
   readonly mountNvme?: boolean;
   /**
-   * Configure the Amazon EKS NodeGroup in this subnet. Use this setting for resource dependencies like an Amazon RD
+   * Configure the Amazon EKS NodeGroup in this subnet. Use this setting for resource dependencies like an Amazon RDS database. 
+   * The subnet must include the availability zone information because the nodegroup is tagged with the AZ for the K8S Cluster Autoscaler.
    * @default - One NodeGroup is deployed per cluster AZ
    */
   readonly subnet?: ISubnet;
@@ -36,7 +33,7 @@ export class EmrEksNodegroup {
    ** Default nodegroup configuration for Kubernetes applications required by EMR on EKS (e.g cert manager and cluster autoscaler)
    */
   public static readonly TOOLING_ALL: EmrEksNodegroupOptions = {
-    id: 'tooling',
+    nodegroupName: 'tooling',
     instanceTypes: [new InstanceType('t3.medium')],
     minSize: 1,
     maxSize: 10,
@@ -47,7 +44,7 @@ export class EmrEksNodegroup {
    ** Default nodegroup configuration for EMR on EKS critical workloads
    */
   public static readonly CRITICAL_ALL: EmrEksNodegroupOptions = {
-    id: 'critical',
+    nodegroupName: 'critical',
     mountNvme: true,
     instanceTypes: [new InstanceType('m6gd.8xlarge')],
     amiType: NodegroupAmiType.AL2_ARM_64,
@@ -69,7 +66,7 @@ export class EmrEksNodegroup {
    ** Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads
    */
   public static readonly SHARED_DRIVER: EmrEksNodegroupOptions = {
-    id: 'shared-driver',
+    nodegroupName: 'shared-driver',
     instanceTypes: [new InstanceType('m6g.xlarge')],
     amiType: NodegroupAmiType.AL2_ARM_64,
     minSize: 0,
@@ -81,7 +78,7 @@ export class EmrEksNodegroup {
   };
 
   public static readonly SHARED_EXECUTOR: EmrEksNodegroupOptions = {
-    id: 'shared-executor',
+    nodegroupName: 'shared-executor',
     instanceTypes: [new InstanceType('m6g.8xlarge'), new InstanceType('m6gd.8xlarge')],
     minSize: 0,
     maxSize: 100,
@@ -104,7 +101,7 @@ export class EmrEksNodegroup {
    * Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
    */
   public static readonly NOTEBOOK_EXECUTOR: EmrEksNodegroupOptions = {
-    id: 'notebook-executor',
+    nodegroupName: 'notebook-executor',
     instanceTypes: [new InstanceType('t3.2xlarge'), new InstanceType('t3a.2xlarge')],
     minSize: 0,
     maxSize: 100,
@@ -129,7 +126,7 @@ export class EmrEksNodegroup {
   };
 
   public static readonly NOTEBOOK_DRIVER: EmrEksNodegroupOptions = {
-    id: 'notebook-driver',
+    nodegroupName: 'notebook-driver',
     instanceTypes: [new InstanceType('t3.large')],
     minSize: 0,
     maxSize: 10,
@@ -148,7 +145,7 @@ export class EmrEksNodegroup {
   };
 
   public static readonly NOTEBOOK_WITHOUT_PODTEMPLATE: EmrEksNodegroupOptions = {
-    id: 'notebook-without-pod-template',
+    nodegroupName: 'notebook-without-pod-template',
     instanceTypes: [new InstanceType('t3.2xlarge'), new InstanceType('t3a.2xlarge')],
     minSize: 0,
     maxSize: 100,

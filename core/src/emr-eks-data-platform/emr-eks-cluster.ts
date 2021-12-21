@@ -1,21 +1,19 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { execSync } from 'child_process';
-import * as fs from 'fs';
 import { join } from 'path';
 import { SubnetType, VpcAttributes, Vpc, IVpc } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { PolicyStatement, PolicyDocument, Policy, Role, IRole, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
+import { PolicyStatement, PolicyDocument, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
-import * as AWS from 'aws-sdk';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
-import { EmrVirtualClusterProps } from './emr-virtual-cluster';
+import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
+import { EmrManagedEndpointOptions } from './emr-managed-endpoint';
 
 import { ManagedEndpointProvider } from './managed-endpoint-provider';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
@@ -34,7 +32,7 @@ import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
 export interface EmrEksClusterProps {
   /**
    * Name of the Amazon EKS cluster to be created
-   * @default -  automatically generated cluster name
+   * @default -  The [default cluster name]{@link EmrEksCluster.DEFAULT_CLUSTER_NAME}
    */
   readonly eksClusterName?: string;
   /**
@@ -42,7 +40,7 @@ export interface EmrEksClusterProps {
    */
   readonly eksAdminRoleArn: string;
   /**
-   * List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups] {@link EmrEksNodegroup}
+   * List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}
    * @default -  Don't create additional nodegroups
    */
   readonly emrEksNodegroups?: EmrEksNodegroup[];
@@ -75,7 +73,7 @@ export class EmrEksCluster extends Construct {
     vpcAttributes?: VpcAttributes) {
 
     const stack = Stack.of(scope);
-    const id = `${clusterName}Singleton` || 'emr-eks-clusterSingleton';
+    const id = `${clusterName}Singleton` || `${EmrEksCluster.DEFAULT_CLUSTER_NAME}Singleton`;
 
     let emrEksCluster: EmrEksCluster;
 
@@ -86,18 +84,14 @@ export class EmrEksCluster extends Construct {
         eksClusterName: clusterName || EmrEksCluster.DEFAULT_CLUSTER_NAME,
         eksVpcAttribute: vpcAttributes,
       });
-
-      //Add a nodegroup for notebooks
-      emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_DRIVER);
-      emrEksCluster.addEmrEksNodegroup(EmrEksNodegroup.NOTEBOOK_EXECUTOR);
     }
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-  private static readonly EMR_VERSIONS = ['emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
-  private static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
-  private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_20;
-  private static readonly DEFAULT_CLUSTER_NAME = 'emr-eks-cluster';
+  private static readonly EMR_VERSIONS = ['emr-6.4.0-latest','emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
+  private static readonly DEFAULT_EMR_VERSION = 'emr-6.4.0-latest';
+  private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
+  private static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
   private static readonly AUTOSCALING_POLICY = PolicyStatement.fromJson(IamPolicyAutoscaler);
   public readonly eksCluster: Cluster;
   public readonly notebookDefaultConfig: string;
@@ -107,7 +101,6 @@ export class EmrEksCluster extends Construct {
   private readonly managedEndpointProviderServiceToken: string;
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly eksOidcProvider: FederatedPrincipal;
-  private defaultCertificateArn?: string;
   private readonly assetBucket: Bucket;
   private readonly clusterName: string;
   private readonly eksVpc: IVpc | undefined;
@@ -120,28 +113,25 @@ export class EmrEksCluster extends Construct {
    * @param {EmrEksClusterProps} props the EmrEksClusterProps [properties]{@link EmrEksClusterProps}
    * @access public
    */
-  constructor(scope:
-  Construct, id: string, props: EmrEksClusterProps) {
+  constructor(scope: Construct, id: string, props: EmrEksClusterProps) {
     super(scope, id);
 
-    this.clusterName = props.eksClusterName ?? 'emr-eks-cluster';
+    this.clusterName = props.eksClusterName ?? EmrEksCluster.DEFAULT_CLUSTER_NAME;
 
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
     if ( props.eksVpcAttribute != undefined) {
 
       this.eksVpc = Vpc.fromVpcAttributes(this, 'eksProvidedVpc', props.eksVpcAttribute);
 
-      this.eksCluster = new Cluster(scope, `${this.clusterName}-cluster`, {
+      this.eksCluster = new Cluster(scope, `${this.clusterName}Cluster`, {
         defaultCapacity: 0,
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
-        vpc: Vpc.fromLookup(this, 'providedVPC', {
-          vpcId: this.eksVpc.vpcId,
-        }),
+        vpc: this.eksVpc,
       });
 
     } else {
-      this.eksCluster = new Cluster(scope, `${this.clusterName}-cluster`, {
+      this.eksCluster = new Cluster(scope, `${this.clusterName}Cluster`, {
         defaultCapacity: 0,
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
@@ -204,7 +194,7 @@ export class EmrEksCluster extends Construct {
 
     // Create Amazon IAM ServiceLinkedRole for Amazon EMR and add to kubernetes configmap
     // required to add a dependency on the Amazon EMR virtual cluster
-    this.emrServiceRole = new CfnServiceLinkedRole(this, 'EmrServiceIAMRole', {
+    this.emrServiceRole = new CfnServiceLinkedRole(this, 'EmrServiceRole', {
       awsServiceName: 'emr-containers.amazonaws.com',
     });
     this.eksCluster.awsAuth.addMastersRole(
@@ -229,10 +219,12 @@ export class EmrEksCluster extends Construct {
     this.addNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
     // Create default Amazon EMR on EKS Nodegroups. This will create one Amazon EKS nodegroup per AZ
     // Also create default configurations and pod templates for these nodegroups
-    this.addEmrEksNodegroup(EmrEksNodegroup.CRITICAL_ALL);
-    this.addEmrEksNodegroup(EmrEksNodegroup.SHARED_DRIVER);
-    this.addEmrEksNodegroup(EmrEksNodegroup.SHARED_EXECUTOR);
-
+    this.addEmrEksNodegroup('criticalAll', EmrEksNodegroup.CRITICAL_ALL);
+    this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
+    this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
+    // Add a nodegroup for notebooks
+    this.addEmrEksNodegroup('notebookDriver',EmrEksNodegroup.NOTEBOOK_DRIVER);
+    this.addEmrEksNodegroup('notebookExecutor',EmrEksNodegroup.NOTEBOOK_EXECUTOR);
     // Create an Amazon S3 Bucket for default podTemplate assets
     this.assetBucket = SingletonBucket.getOrCreate(this, `${this.clusterName.toLowerCase()}-emr-eks-assets`);
     // Configure the podTemplate location
@@ -242,7 +234,7 @@ export class EmrEksCluster extends Construct {
     };
 
     // Upload the default podTemplate to the Amazon S3 asset bucket
-    this.uploadPodTemplate(join(__dirname, 'resources/k8s/pod-template'));
+    this.uploadPodTemplate('defaultPodTemplates',join(__dirname, 'resources/k8s/pod-template'));
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the notebook default config
     // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-driver.yaml`);
@@ -373,7 +365,7 @@ export class EmrEksCluster extends Construct {
    * @param {EmrEksNodegroupOptions} props the EmrEksNodegroupOptions [properties]{@link EmrEksNodegroupOptions}
    * @access public
    */
-  public addEmrEksNodegroup(props: EmrEksNodegroupOptions) {
+  public addEmrEksNodegroup(id: string, props: EmrEksNodegroupOptions) {
 
     // Get the subnet from Properties or one private subnet for each AZ
     const subnetList = props.subnet ? [props.subnet] : this.eksCluster.vpc.selectSubnets({
@@ -382,7 +374,7 @@ export class EmrEksCluster extends Construct {
     }).subnets;
 
     // Add Amazon SSM agent to the user data
-    const userData = [
+    var userData = [
       'yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm',
       'systemctl enable amazon-ssm-agent',
       'systemctl start amazon-ssm-agent',
@@ -390,7 +382,7 @@ export class EmrEksCluster extends Construct {
     var launchTemplateName = `EmrEksLaunch-${this.clusterName}`;
     // If the Nodegroup uses NVMe, add user data to configure them
     if (props.mountNvme) {
-      userData.concat([
+      userData = userData.concat([
         'INSTANCE_TYPE=$(ec2-metadata -t)',
         'if [[ $INSTANCE_TYPE == *"2xlarge"* ]]; then',
         'DEVICE="/dev/nvme1n1"',
@@ -444,7 +436,8 @@ ${userData.join('\r\n')}
     subnetList.forEach( (subnet, index) => {
 
       // Make the ID unique across AZ using the index of subnet in the subnet list
-      const id = `${props.id}-${index}`;
+      const resourceId = `${id}-${index}`;
+      const nodegroupName = props.nodegroupName ? `${props.nodegroupName}-${index}` : resourceId;
 
       // Add the user data to the NodegroupOptions
       const nodeGroupParameters = {
@@ -457,23 +450,24 @@ ${userData.join('\r\n')}
           subnets: {
             subnets: [subnet],
           },
+          nodegroupName: nodegroupName,
         },
       };
 
       // Create the Amazon EKS Nodegroup
-      this.addNodegroupCapacity(id, nodeGroupParameters);
+      this.addNodegroupCapacity(resourceId, nodeGroupParameters);
     });
   }
 
   /**
    * Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster.
    * @param {Construct} scope of the stack where virtual cluster is deployed
-   * @param {EmrVirtualClusterProps} props the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}
+   * @param {EmrVirtualClusterProps} props the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}
    * @access public
    */
 
-  public addEmrVirtualCluster(scope: Construct, props: EmrVirtualClusterProps): CfnVirtualCluster {
-    const eksNamespace = props.eksNamespace ?? 'default';
+  public addEmrVirtualCluster(scope: Construct, options: EmrVirtualClusterOptions): CfnVirtualCluster {
+    const eksNamespace = options.eksNamespace ?? 'default';
 
     const regex = /^[a-z0-9]+$/g;
 
@@ -481,8 +475,8 @@ ${userData.join('\r\n')}
       throw new Error(`Namespace provided violates the constraints of Namespace naming ${eksNamespace}`);
     }
 
-    const ns = props.createNamespace
-      ? this.eksCluster.addManifest(`${props.name}Namespace`, {
+    const ns = options.createNamespace
+      ? this.eksCluster.addManifest(`${options.name}Namespace`, {
         apiVersion: 'v1',
         kind: 'Namespace',
         metadata: { name: eksNamespace },
@@ -492,22 +486,22 @@ ${userData.join('\r\n')}
     // deep clone the Role template object and replace the namespace
     const k8sRole = JSON.parse(JSON.stringify(K8sRole));
     k8sRole.metadata.namespace = eksNamespace;
-    const role = this.eksCluster.addManifest(`${props.name}Role`, k8sRole);
+    const role = this.eksCluster.addManifest(`${options.name}Role`, k8sRole);
     role.node.addDependency(this.emrServiceRole);
     if (ns) role.node.addDependency(ns);
 
     // deep clone the Role Binding template object and replace the namespace
     const k8sRoleBinding = JSON.parse(JSON.stringify(K8sRoleBinding));
     k8sRoleBinding.metadata.namespace = eksNamespace;
-    const roleBinding = this.eksCluster.addManifest(`${props.name}RoleBinding`, k8sRoleBinding);
+    const roleBinding = this.eksCluster.addManifest(`${options.name}RoleBinding`, k8sRoleBinding);
     roleBinding.node.addDependency(role);
 
-    const virtCluster = new CfnVirtualCluster(scope, `${props.name}EmrCluster`, {
-      name: props.name,
+    const virtCluster = new CfnVirtualCluster(scope, `${options.name}VirtualCluster`, {
+      name: options.name,
       containerProvider: {
         id: this.clusterName,
         type: 'EKS',
-        info: { eksInfo: { namespace: props.eksNamespace || 'default' } },
+        info: { eksInfo: { namespace: options.eksNamespace || 'default' } },
       },
     });
 
@@ -521,29 +515,21 @@ ${userData.join('\r\n')}
    * CfnOutput can be customized.
    * @param {Construct} scope of the stack where managed endpoint is deployed
    * @param {string} id unique id for endpoint
-   * @param {string} virtualClusterId Amazon Emr Virtual Cluster Id
-   * @param {string} acmCertificateArn - ACM Certificate Arn to be attached to the managed endpoint, @default - creates new ACM Certificate
-   * @param {string} emrOnEksVersion - EmrOnEks version to be used. @default - emr-6.3.0-latest
-   * @param {Role} executionRole - IAM execution role to attach
-   * @param {string} configurationOverrides - The JSON configuration override for Amazon EMR Managed Endpoint, @default - Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+   * @param {EmrManagedEndpointOptions} options The EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint
    * @access public
    */
   public addManagedEndpoint(
     scope: Construct,
     id: string,
-    virtualClusterId: string,
-    executionRole: IRole,
-    acmCertificateArn?: string,
-    emrOnEksVersion?: string,
-    configurationOverrides?: string,
+    options: EmrManagedEndpointOptions,
   ) {
 
     if (id.length > 64) {
       throw new Error(`error managed endpoint name length is greater than 64 ${id}`);
     }
 
-    if (emrOnEksVersion && ! EmrEksCluster.EMR_VERSIONS.includes(emrOnEksVersion)) {
-      throw new Error(`error unsupported EMR version ${emrOnEksVersion}`);
+    if (options.emrOnEksVersion && ! EmrEksCluster.EMR_VERSIONS.includes(options.emrOnEksVersion)) {
+      throw new Error(`error unsupported EMR version ${options.emrOnEksVersion}`);
     }
 
     if (this.notebookDefaultConfig == undefined) {
@@ -551,66 +537,26 @@ ${userData.join('\r\n')}
     }
 
     try {
-      var jsonConfigurationOverrides = configurationOverrides ? JSON.stringify(configurationOverrides) : '';
+      var jsonConfigurationOverrides = options.configurationOverrides ? JSON.stringify(options.configurationOverrides) : this.notebookDefaultConfig;
     } catch (error) {
-      throw new Error(`The configuraton override is not valid JSON : ${configurationOverrides}`);
+      throw new Error(`The configuraton override is not valid JSON : ${options.configurationOverrides}`);
     }
     // Create custom resource with async waiter until the Amazon EMR Managed Endpoint is created
-    const endpointId = `managed-endpoint-${id}`;
 
     const cr = new CustomResource(scope, id, {
       serviceToken: this.managedEndpointProviderServiceToken,
       properties: {
-        clusterId: virtualClusterId,
+        clusterId: options.virtualClusterId,
         executionRoleArn:
-        executionRole.roleArn,
-        endpointName: endpointId,
-        releaseLabel: emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
-        configurationOverrides: configurationOverrides
-          ? jsonConfigurationOverrides
-          : this.notebookDefaultConfig,
-        acmCertificateArn:
-            acmCertificateArn ||
-            this.defaultCertificateArn ||
-            String(this.createAcmCertificate()),
+        options.executionRole.roleArn,
+        endpointName: `${id}-managed-endpoint`,
+        releaseLabel: options.emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
+        configurationOverrides: jsonConfigurationOverrides,
       },
     });
     cr.node.addDependency(this.eksCluster);
 
     return cr;
-  }
-
-  private createAcmCertificate(): any {
-    const clientAcm = new AWS.ACM({
-      apiVersion: '2015-12-08',
-      region: process.env.CDK_DEFAULT_REGION,
-    });
-    async () => {
-      try {
-        execSync(
-          `openssl req -x509 -newkey rsa:1024 -keyout /tmp/privateKey.pem  -out /tmp/certificateChain.pem -days 365 -nodes -subj "/C=US/ST=Washington/L=Seattle/O=MyOrg/OU=MyDept/CN=*.${this.clusterName}.com"`,
-        );
-      } catch (error) {
-        throw new Error(`Error generating certificate ${error}`);
-      }
-
-      try {
-        const command = {
-          Certificate: Buffer.from(
-            fs.readFileSync('/tmp/certificateChain.pem', 'binary'),
-          ),
-          PrivateKey: Buffer.from(
-            fs.readFileSync('/tmp/privateKey.pem', 'binary'),
-          ),
-        };
-        const response = await clientAcm.importCertificate(command).promise();
-        this.defaultCertificateArn = String(response.CertificateArn);
-        return this.defaultCertificateArn;
-      } catch (error) {
-        console.log(error);
-        throw new Error(`error importing certificate ${error}`);
-      }
-    };
   }
 
   /**
@@ -623,15 +569,7 @@ ${userData.join('\r\n')}
    */
   public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions): Nodegroup {
 
-    const nodeGroupParameters = {
-      ...options,
-      ...{
-        // Default nodegroupName should be the ID (according to CDK documentation)
-        nodegroupName: nodegroupId,
-      },
-    };
-
-    const nodegroup = this.eksCluster.addNodegroupCapacity(nodegroupId, nodeGroupParameters);
+    const nodegroup = this.eksCluster.addNodegroupCapacity(nodegroupId, options);
     // Adding the Amazon SSM policy
     nodegroup.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
 
@@ -699,10 +637,11 @@ ${userData.join('\r\n')}
    * @param {Policy} policy the execution policy to attach to the role
    * @access public
    */
-  public createExecutionRole(policy: Policy): Role {
+  public createExecutionRole(scope: Construct, id: string, policy: Policy, name?: string): Role {
     // Create an execution role assumable by EKS OIDC provider
-    const executionRole = new Role(this, 'executionRole', {
+    const executionRole = new Role(scope, `${id}ExecutionRole`, {
       assumedBy: this.eksOidcProvider,
+      roleName: name ? name : undefined,
     });
     executionRole.attachInlinePolicy(policy);
     return executionRole;
@@ -712,12 +651,12 @@ ${userData.join('\r\n')}
    * Upload podTemplates to the Amazon S3 location used by the cluster.
    * @param path The local path of the yaml podTemplate files to upload
    */
-  public uploadPodTemplate(path: string) {
+  public uploadPodTemplate(id: string, filePath: string) {
 
-    new BucketDeployment(this, 'assetDeployment', {
+    new BucketDeployment(this, `${id}AssetDeployment`, {
       destinationBucket: this.assetBucket,
       destinationKeyPrefix: this.podTemplateLocation.objectKey,
-      sources: [Source.asset(path)],
+      sources: [Source.asset(filePath)],
     });
   }
 

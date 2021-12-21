@@ -332,12 +332,12 @@ Construct to create an Amazon EKS cluster The construct is used to create a data
 ##### `addNotebookPlatform` <a name="aws-analytics-reference-architecture.DataPlatform.addNotebookPlatform"></a>
 
 ```typescript
-public addNotebookPlatform(dataPlatformNotebookProps: DataPlatformNotebookProp)
+public addNotebookPlatform(dataPlatformNotebookProps: DataPlatformNotebookProps)
 ```
 
 ###### `dataPlatformNotebookProps`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatform.parameter.dataPlatformNotebookProps"></a>
 
-- *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookProp`](#aws-analytics-reference-architecture.DataPlatformNotebookProp)
+- *Type:* [`aws-analytics-reference-architecture.DataPlatformNotebookProps`](#aws-analytics-reference-architecture.DataPlatformNotebookProps)
 
 the DataPlatformNotebooks as defined in [properties]{@link DataPlatformNotebookProp}.
 
@@ -470,8 +470,14 @@ the EmrEksClusterProps [properties]{@link EmrEksClusterProps}.
 ##### `addEmrEksNodegroup` <a name="aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup"></a>
 
 ```typescript
-public addEmrEksNodegroup(props: EmrEksNodegroupOptions)
+public addEmrEksNodegroup(id: string, props: EmrEksNodegroupOptions)
 ```
+
+###### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
+
+- *Type:* `string`
+
+---
 
 ###### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.props"></a>
 
@@ -484,7 +490,7 @@ the EmrEksNodegroupOptions [properties]{@link EmrEksNodegroupOptions}.
 ##### `addEmrVirtualCluster` <a name="aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster"></a>
 
 ```typescript
-public addEmrVirtualCluster(scope: Construct, props: EmrVirtualClusterProps)
+public addEmrVirtualCluster(scope: Construct, options: EmrVirtualClusterOptions)
 ```
 
 ###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
@@ -495,18 +501,16 @@ of the stack where virtual cluster is deployed.
 
 ---
 
-###### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.props"></a>
+###### `options`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.options"></a>
 
-- *Type:* [`aws-analytics-reference-architecture.EmrVirtualClusterProps`](#aws-analytics-reference-architecture.EmrVirtualClusterProps)
-
-the EmrEksNodegroupProps [properties]{@link EmrVirtualClusterProps}.
+- *Type:* [`aws-analytics-reference-architecture.EmrVirtualClusterOptions`](#aws-analytics-reference-architecture.EmrVirtualClusterOptions)
 
 ---
 
 ##### `addManagedEndpoint` <a name="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint"></a>
 
 ```typescript
-public addManagedEndpoint(scope: Construct, id: string, virtualClusterId: string, executionRole: IRole, acmCertificateArn?: string, emrOnEksVersion?: string, configurationOverrides?: string)
+public addManagedEndpoint(scope: Construct, id: string, options: EmrManagedEndpointOptions)
 ```
 
 ###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
@@ -525,43 +529,11 @@ unique id for endpoint.
 
 ---
 
-###### `virtualClusterId`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.virtualClusterId"></a>
+###### `options`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.options"></a>
 
-- *Type:* `string`
+- *Type:* [`aws-analytics-reference-architecture.EmrManagedEndpointOptions`](#aws-analytics-reference-architecture.EmrManagedEndpointOptions)
 
-Amazon Emr Virtual Cluster Id.
-
----
-
-###### `executionRole`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.executionRole"></a>
-
-- *Type:* [`@aws-cdk/aws-iam.IRole`](#@aws-cdk/aws-iam.IRole)
-
-IAM execution role to attach.
-
----
-
-###### `acmCertificateArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.acmCertificateArn"></a>
-
-- *Type:* `string`
-
-ACM Certificate Arn to be attached to the managed endpoint,.
-
----
-
-###### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.emrOnEksVersion"></a>
-
-- *Type:* `string`
-
-EmrOnEks version to be used.
-
----
-
-###### `configurationOverrides`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.configurationOverrides"></a>
-
-- *Type:* `string`
-
-The JSON configuration override for Amazon EMR Managed Endpoint,.
+The EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint.
 
 ---
 
@@ -590,8 +562,20 @@ the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}.
 ##### `createExecutionRole` <a name="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole"></a>
 
 ```typescript
-public createExecutionRole(policy: Policy)
+public createExecutionRole(scope: Construct, id: string, policy: Policy, name?: string)
 ```
+
+###### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+###### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
+
+- *Type:* `string`
+
+---
 
 ###### `policy`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.policy"></a>
 
@@ -601,17 +585,27 @@ the execution policy to attach to the role.
 
 ---
 
-##### `uploadPodTemplate` <a name="aws-analytics-reference-architecture.EmrEksCluster.uploadPodTemplate"></a>
-
-```typescript
-public uploadPodTemplate(path: string)
-```
-
-###### `path`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.path"></a>
+###### `name`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.name"></a>
 
 - *Type:* `string`
 
-The local path of the yaml podTemplate files to upload.
+---
+
+##### `uploadPodTemplate` <a name="aws-analytics-reference-architecture.EmrEksCluster.uploadPodTemplate"></a>
+
+```typescript
+public uploadPodTemplate(id: string, filePath: string)
+```
+
+###### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
+
+- *Type:* `string`
+
+---
+
+###### `filePath`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.filePath"></a>
+
+- *Type:* `string`
 
 ---
 
@@ -1242,19 +1236,19 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 
 ---
 
-### DataPlatformNotebookProp <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp"></a>
+### DataPlatformNotebookProps <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps"></a>
 
 The properties for DataPlatformNotebooks Construct.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
 ```typescript
-import { DataPlatformNotebookProp } from 'aws-analytics-reference-architecture'
+import { DataPlatformNotebookProps } from 'aws-analytics-reference-architecture'
 
-const dataPlatformNotebookProp: DataPlatformNotebookProp = { ... }
+const dataPlatformNotebookProps: DataPlatformNotebookProps = { ... }
 ```
 
-##### `acmCertificateArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.acmCertificateArn"></a>
+##### `acmCertificateArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.acmCertificateArn"></a>
 
 ```typescript
 public readonly acmCertificateArn: string;
@@ -1266,7 +1260,7 @@ Amazon ACM Certificate ARN.
 
 ---
 
-##### `emrVCNamespace`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.emrVCNamespace"></a>
+##### `emrVCNamespace`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.emrVCNamespace"></a>
 
 ```typescript
 public readonly emrVCNamespace: string;
@@ -1278,7 +1272,7 @@ the namespace where to deploy the EMR Virtual Cluster.
 
 ---
 
-##### `studioAuthMode`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.studioAuthMode"></a>
+##### `studioAuthMode`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.studioAuthMode"></a>
 
 ```typescript
 public readonly studioAuthMode: string;
@@ -1290,7 +1284,7 @@ Required the authentication mode of Amazon EMR Studio Either 'SSO' or 'IAM_FEDER
 
 ---
 
-##### `studioName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.studioName"></a>
+##### `studioName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.studioName"></a>
 
 ```typescript
 public readonly studioName: string;
@@ -1302,23 +1296,23 @@ Required the be given to the name of Amazon EMR Studio Must be unique across the
 
 ---
 
-##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.emrOnEksVersion"></a>
+##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.emrOnEksVersion"></a>
 
 ```typescript
 public readonly emrOnEksVersion: string;
 ```
 
 - *Type:* `string`
-- *Default:* v6.3 version is used
+- *Default:* The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
 
 The version of Amazon EMR to deploy.
 
 ---
 
-##### `idPArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.idPArn"></a>
+##### `idpArn`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.idpArn"></a>
 
 ```typescript
-public readonly idPArn: string;
+public readonly idpArn: string;
 ```
 
 - *Type:* `string`
@@ -1327,7 +1321,7 @@ Used when IAM Authentication is selected with IAM federation with an external id
 
 ---
 
-##### `idpAuthUrl`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.idpAuthUrl"></a>
+##### `idpAuthUrl`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.idpAuthUrl"></a>
 
 ```typescript
 public readonly idpAuthUrl: string;
@@ -1339,7 +1333,7 @@ Used when IAM Authentication is selected with IAM federation with an external id
 
 ---
 
-##### `idpRelayStateParameterName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.idpRelayStateParameterName"></a>
+##### `idpRelayStateParameterName`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.idpRelayStateParameterName"></a>
 
 ```typescript
 public readonly idpRelayStateParameterName: string;
@@ -1351,7 +1345,7 @@ Used when IAM Authentication is selected with IAM federation with an external id
 
 ---
 
-##### `kubernetesVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProp.property.kubernetesVersion"></a>
+##### `kubernetesVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.kubernetesVersion"></a>
 
 ```typescript
 public readonly kubernetesVersion: KubernetesVersion;
@@ -1508,7 +1502,7 @@ public readonly eksClusterName: string;
 ```
 
 - *Type:* `string`
-- *Default:* automatically generated cluster name
+- *Default:* The [default cluster name]{@link EmrEksCluster.DEFAULT_CLUSTER_NAME}
 
 Name of the Amazon EKS cluster to be created.
 
@@ -1535,7 +1529,7 @@ public readonly emrEksNodegroups: EmrEksNodegroup[];
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroup`](#aws-analytics-reference-architecture.EmrEksNodegroup)[]
 - *Default:* Don't create additional nodegroups
 
-List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups] {@link EmrEksNodegroup}.
+List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}.
 
 ---
 
@@ -1842,18 +1836,6 @@ The Kubernetes taints to be applied to the nodes in the node group when they are
 
 ---
 
-##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.id"></a>
-
-```typescript
-public readonly id: string;
-```
-
-- *Type:* `string`
-
-Nodegroup ID.
-
----
-
 ##### `mountNvme`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.mountNvme"></a>
 
 ```typescript
@@ -1878,23 +1860,86 @@ public readonly subnet: ISubnet;
 
 Configure the Amazon EKS NodeGroup in this subnet.
 
-Use this setting for resource dependencies like an Amazon RD
+Use this setting for resource dependencies like an Amazon RDS database. 
+The subnet must include the availability zone information because the nodegroup is tagged with the AZ for the K8S Cluster Autoscaler.
 
 ---
 
-### EmrVirtualClusterProps <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps"></a>
+### EmrManagedEndpointOptions <a name="aws-analytics-reference-architecture.EmrManagedEndpointOptions"></a>
 
 The properties for the EmrVirtualCluster Construct class.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
 ```typescript
-import { EmrVirtualClusterProps } from 'aws-analytics-reference-architecture'
+import { EmrManagedEndpointOptions } from 'aws-analytics-reference-architecture'
 
-const emrVirtualClusterProps: EmrVirtualClusterProps = { ... }
+const emrManagedEndpointOptions: EmrManagedEndpointOptions = { ... }
 ```
 
-##### `name`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.name"></a>
+##### `executionRole`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.executionRole"></a>
+
+```typescript
+public readonly executionRole: IRole;
+```
+
+- *Type:* [`@aws-cdk/aws-iam.IRole`](#@aws-cdk/aws-iam.IRole)
+
+The Amazon IAM role used as the execution role.
+
+---
+
+##### `virtualClusterId`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.virtualClusterId"></a>
+
+```typescript
+public readonly virtualClusterId: string;
+```
+
+- *Type:* `string`
+
+The Id of the Amazon EMR virtual cluster containing the managed endpoint.
+
+---
+
+##### `configurationOverrides`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.configurationOverrides"></a>
+
+```typescript
+public readonly configurationOverrides: string;
+```
+
+- *Type:* `string`
+- *Default:* Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+
+The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint.
+
+---
+
+##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.emrOnEksVersion"></a>
+
+```typescript
+public readonly emrOnEksVersion: string;
+```
+
+- *Type:* `string`
+- *Default:* The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
+
+The Amazon EMR version to use.
+
+---
+
+### EmrVirtualClusterOptions <a name="aws-analytics-reference-architecture.EmrVirtualClusterOptions"></a>
+
+The properties for the EmrVirtualCluster Construct class.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { EmrVirtualClusterOptions } from 'aws-analytics-reference-architecture'
+
+const emrVirtualClusterOptions: EmrVirtualClusterOptions = { ... }
+```
+
+##### `name`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterOptions.property.name"></a>
 
 ```typescript
 public readonly name: string;
@@ -1902,11 +1947,11 @@ public readonly name: string;
 
 - *Type:* `string`
 
-name of the  EmrVirtualCluster to be created.
+name of the Amazon Emr virtual cluster to be created.
 
 ---
 
-##### `createNamespace`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.createNamespace"></a>
+##### `createNamespace`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterOptions.property.createNamespace"></a>
 
 ```typescript
 public readonly createNamespace: boolean;
@@ -1915,11 +1960,11 @@ public readonly createNamespace: boolean;
 - *Type:* `boolean`
 - *Default:* Do not create the namespace
 
-creates EKS namespace.
+creates Amazon EKS namespace.
 
 ---
 
-##### `eksNamespace`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterProps.property.eksNamespace"></a>
+##### `eksNamespace`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrVirtualClusterOptions.property.eksNamespace"></a>
 
 ```typescript
 public readonly eksNamespace: string;
@@ -1928,7 +1973,7 @@ public readonly eksNamespace: string;
 - *Type:* `string`
 - *Default:* Use the default namespace
 
-name of the  EKS namespace to be linked to the EMR virtual Cluster.
+name of the Amazon EKS namespace to be linked to the Amazon EMR virtual cluster.
 
 ---
 

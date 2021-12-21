@@ -41,7 +41,7 @@ export function createLambdaNoteBookAddTagPolicy (scope: Construct, logArn: stri
 
   return lambdaPolicy.managedPolicyArn;
 }
-
+// TODO merge with EmrEksCluster
 /**
  * @internal
  * Create the role to be used with the ManagedEndpoint

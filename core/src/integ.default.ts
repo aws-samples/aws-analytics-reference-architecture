@@ -7,7 +7,7 @@ import { EmrEksCluster } from '.';
 
 const mockApp = new App();
 const stack = new Stack(mockApp, 'stack');
-const cluster = new EmrEksCluster(stack, 'testCluster', { eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav' });
+const cluster = new EmrEksCluster(stack, 'testCluster', { eksAdminRoleArn: '<MY_ROLE_ARN>' });
 
 
 const virtualCluster = cluster.addEmrVirtualCluster(stack, {
@@ -16,11 +16,11 @@ const virtualCluster = cluster.addEmrVirtualCluster(stack, {
   createNamespace: true,
 });
 
-cluster.addEmrVirtualCluster(stack, {
-  name: 'anothertest',
-  eksNamespace: 'anothertest',
-  createNamespace: true,
-});
-const execRole = Role.fromRoleArn(stack, 'execRole', 'arn:aws:iam::668876353122:role/gromav');
+// cluster.addEmrVirtualCluster(stack, {
+//   name: 'anothertest',
+//   eksNamespace: 'anothertest',
+//   createNamespace: true,
+// });
+const execRole = Role.fromRoleArn(stack, 'execRole', '<MY_ROLE_ARN>');
 
-cluster.addManagedEndpoint(stack, 'ME', virtualCluster.attrId, execRole, 'arn:aws:acm:us-east-1:668876353122:certificate/aba0c2c8-c470-43a5-a3c0-07189ee96af0');
+cluster.addManagedEndpoint(stack, 'ME', {virtualClusterId: virtualCluster.attrId,executionRole: execRole});

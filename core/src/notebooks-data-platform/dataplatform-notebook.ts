@@ -48,7 +48,7 @@ export interface DataPlatformNotebookInfra {
   /**
    * Required the props of the notebooks dataplatform to be deployed
    * */
-  readonly dataPlatformProps: DataPlatformNotebookProp;
+  readonly dataPlatformProps: DataPlatformNotebookProps
   /**
    * Required the EmrEks infrastructure used for the deployment
    * */
@@ -58,7 +58,7 @@ export interface DataPlatformNotebookInfra {
 /**
  * The properties for DataPlatformNotebooks Construct.
  */
-export interface DataPlatformNotebookProp {
+export interface DataPlatformNotebookProps {
   /**
    * Required the be given to the name of Amazon EMR Studio
    * Must be unique across the AWS account
@@ -96,10 +96,11 @@ export interface DataPlatformNotebookProp {
    * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
    * Value taken from the IAM console in the Identity providers console
    * */
-  readonly idPArn?: string;
+  readonly idpArn?: string;
+  // TODO move this parameter to StudioUserDefinition
   /**
    * The version of Amazon EMR to deploy
-   * @default - v6.3 version is used
+   * @default - The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
    * */
   readonly emrOnEksVersion?: string;
 }
@@ -158,23 +159,21 @@ export enum IdpRelayState {
  */
 export class DataPlatformNotebook extends Construct {
 
-  public static readonly DEFAULT_EMR_VERSION = 'emr-6.3.0-latest';
-
   private readonly studioSubnetList: string[] | undefined ;
   public readonly studioUrl: string;
   public readonly studioId: string;
   private readonly studioPrincipal: string = 'elasticmapreduce.amazonaws.com';
   private readonly lambdaPrincipal: string = 'lambda.amazonaws.com';
-  private readonly certificateArn: string;
   private readonly studioName: string;
-  private readonly emrOnEksVersion: string;
   private readonly emrVcName: string;
 
   private readonly workSpaceSecurityGroup: SecurityGroup;
   private readonly engineSecurityGroup: ISecurityGroup | undefined;
   private readonly emrVpc: IVpc;
   private readonly workspacesBucket: Bucket;
+  // TODO use IRole only
   private studioServiceRole: Role | IRole;
+  // TODO use IRole only
   private readonly studioUserRole: Role | IRole | undefined;
   private readonly studioServicePolicy: IManagedPolicy [];
   private readonly studioUserPolicy: IManagedPolicy [];
@@ -211,15 +210,13 @@ export class DataPlatformNotebook extends Construct {
     this.studioUserPolicy = [];
     this.lambdaNotebookTagOnCreatePolicy = [];
     this.studioSubnetList = [];
-    this.certificateArn = props.dataPlatformProps.acmCertificateArn;
     this.managedEndpointExcutionPolicyArnMapping = new Map<string, string>();
-    this.emrOnEksVersion = props.dataPlatformProps.emrOnEksVersion || DataPlatformNotebook.DEFAULT_EMR_VERSION;
     this.authMode = props.dataPlatformProps.studioAuthMode;
 
     this.nestedStack = new NestedStack(scope, `${props.dataPlatformProps.studioName}-stack`);
 
-    if (props.dataPlatformProps.idPArn !== undefined) {
-      this.federatedIdPARN = props.dataPlatformProps.idPArn;
+    if (props.dataPlatformProps.idpArn !== undefined) {
+      this.federatedIdPARN = props.dataPlatformProps.idpArn;
     }
 
     //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
@@ -282,9 +279,6 @@ export class DataPlatformNotebook extends Construct {
       encryption: BucketEncryption.KMS,
     });
 
-    //Wait until the EMR Virtual cluster is deployed then create an S3 bucket
-    //this.workspacesBucket.node.addDependency(this.emrVirtCluster);
-
     //Create a Managed policy for Studio service role
     this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this.nestedStack,
       'StudioServiceManagedPolicy', createStudioServiceRolePolicy(this.nestedStack, this.dataPlatformEncryptionKey.keyArn, this.workspacesBucket.bucketName,
@@ -332,6 +326,7 @@ export class DataPlatformNotebook extends Construct {
     this.studioUrl = this.studioInstance.attrUrl;
     this.studioId = this.studioInstance.attrStudioId;
 
+    // TODO delete 
     /**
      * The next code block is to tag an EMR notebook to restrict who can access it
      * once workspaces have the tag-on-create it should be deleted
@@ -418,6 +413,7 @@ export class DataPlatformNotebook extends Construct {
 
   }
 
+  // TODO merge cases and use undefined
   /**
    * @internal
    * Constructs a new object of CfnStudio
@@ -425,7 +421,7 @@ export class DataPlatformNotebook extends Construct {
    * @param {string} securityGroupId engine SecurityGroupId
    * @param {string} studioUserRoleRoleArn if used in SSO mode pass the user role that is by Amazon EMR Studio
    */
-  private studioInstanceBuilder (props: DataPlatformNotebookProp, securityGroupId: string, studioUserRoleRoleArn?: string ): CfnStudio {
+  private studioInstanceBuilder (props: DataPlatformNotebookProps, securityGroupId: string, studioUserRoleRoleArn?: string ): CfnStudio {
 
     let studioInstance: CfnStudio;
 
@@ -472,6 +468,7 @@ export class DataPlatformNotebook extends Construct {
     return studioInstance!;
   }
 
+  // TODO add configoverride in the options
   /**
    * Method to add users, take a list of userDefinition and will create a managed endpoints for each user
    * and create an IAM Policy scoped to the list managed endpoints
@@ -504,13 +501,17 @@ export class DataPlatformNotebook extends Construct {
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.nestedStack,
-            this.studioName + '-' + Utils.stringSanitizer(executionPolicyName),
-            this.emrVirtCluster.attrId,
-            buildManagedEndpointExecutionRole(this, executionPolicyName,
-              this.emrEks.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
-              this.studioName, this.emrVcName),
-            this.certificateArn,
-            this.emrOnEksVersion,
+            this.studioName + '-' + Utils.stringSanitizer(executionPolicyName), {
+              virtualClusterId: this.emrVirtCluster.attrId,
+              executionRole: buildManagedEndpointExecutionRole(
+                this, 
+                executionPolicyName,
+                this.emrEks.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+                this.studioName, 
+                this.emrVcName
+              ),
+            }
+            
           );
 
           managedEndpoint.node.addDependency(this.emrEks);
@@ -532,6 +533,8 @@ export class DataPlatformNotebook extends Construct {
           //Add the managedendpointArn to @managedEndpointExcutionPolicyArnMapping
           //This is to avoid the creation an endpoint with the same policy twice
           //Save resources and reduce the deployment time
+          // TODO check the emr version is the same
+          // TODO check multiple users/notebooks can share a JEG and trigger multiple spark apps
           this.managedEndpointExcutionPolicyArnMapping.set(executionPolicyName, managedEndpoint.getAttString('arn'));
 
           //Push the managedendpoint arn to be used in to build the policy to attach to it

@@ -12,9 +12,6 @@ export async function onEvent(event: any) {
   switch (event.RequestType) {
     case 'Create':
     case 'Update':
-      //create
-      //const certArn = await getOrCreateCertificate();
-
       try {
         console.log(`lambda properties: ${JSON.stringify(event.ResourceProperties)}`);
         const uuid = uuidv4();
@@ -22,7 +19,6 @@ export async function onEvent(event: any) {
           .createManagedEndpoint({
             clientToken: uuid,
             virtualClusterId: event.ResourceProperties.clusterId,
-            certificateArn: event.ResourceProperties.acmCertificateArn,
             executionRoleArn: event.ResourceProperties.executionRoleArn,
             configurationOverrides: JSON.parse(event.ResourceProperties.configurationOverrides || ''),
             releaseLabel: event.ResourceProperties.releaseLabel ?? 'emr-6.3.0-latest',
@@ -42,12 +38,6 @@ export async function onEvent(event: any) {
         console.log(String(error));
         throw new Error(`error creating new managed endpoint ${error} `);
       }
-      /*case 'Update':
-      console.log('update not implemented');
-      return {
-        PhysicalResourceId: event.PhysicalResourceId,
-        Data: event.ResourceProperties,
-      };*/
 
     case 'Delete':
       try {
