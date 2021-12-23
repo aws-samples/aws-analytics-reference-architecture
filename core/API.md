@@ -1248,18 +1248,6 @@ import { DataPlatformNotebookProps } from 'aws-analytics-reference-architecture'
 const dataPlatformNotebookProps: DataPlatformNotebookProps = { ... }
 ```
 
-##### `acmCertificateArn`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.acmCertificateArn"></a>
-
-```typescript
-public readonly acmCertificateArn: string;
-```
-
-- *Type:* `string`
-
-Amazon ACM Certificate ARN.
-
----
-
 ##### `emrVCNamespace`<sup>Required</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.emrVCNamespace"></a>
 
 ```typescript
@@ -1293,19 +1281,6 @@ public readonly studioName: string;
 - *Type:* `string`
 
 Required the be given to the name of Amazon EMR Studio Must be unique across the AWS account.
-
----
-
-##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DataPlatformNotebookProps.property.emrOnEksVersion"></a>
-
-```typescript
-public readonly emrOnEksVersion: string;
-```
-
-- *Type:* `string`
-- *Default:* The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
-
-The version of Amazon EMR to deploy.
 
 ---
 
@@ -2130,6 +2105,31 @@ Name of the identity as it appears in AWS SSO console, or the name to be given t
 
 ---
 
+##### `configurationOverrides`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.StudioUserDefinition.property.configurationOverrides"></a>
+
+```typescript
+public readonly configurationOverrides: string;
+```
+
+- *Type:* `string`
+- *Default:* Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+
+The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint.
+
+---
+
+##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.StudioUserDefinition.property.emrOnEksVersion"></a>
+
+```typescript
+public readonly emrOnEksVersion: string;
+```
+
+- *Type:* `string`
+
+The version of Amazon EMR to deploy.
+
+---
+
 ##### `identityType`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.StudioUserDefinition.property.identityType"></a>
 
 ```typescript
@@ -2669,12 +2669,7 @@ Enum to define the RelayState of different IdPs Used in EMR Studio Prop in the I
 
 Enum to define authentication mode for Amazon EMR Studio.
 
-#### `IAM_FEDERATED` <a name="aws-analytics-reference-architecture.StudioAuthMode.IAM_FEDERATED"></a>
-
----
-
-
-#### `IAM_AUTHENTICATED` <a name="aws-analytics-reference-architecture.StudioAuthMode.IAM_AUTHENTICATED"></a>
+#### `IAM` <a name="aws-analytics-reference-architecture.StudioAuthMode.IAM"></a>
 
 ---
 

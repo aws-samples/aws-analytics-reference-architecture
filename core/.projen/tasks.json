@@ -185,6 +185,9 @@
           "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup --upgrade"
         },
         {
+          "exec": "pip3 install -r lib/emr-eks-data-platform/resources/lambdas/managed-endpoint/requirements.txt --target lib/emr-eks-data-platform/resources/lambdas/managed-endpoint --upgrade"
+        },
+        {
           "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas --upgrade"
         },
         {
