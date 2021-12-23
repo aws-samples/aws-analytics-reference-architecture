@@ -172,6 +172,11 @@
       "type": "peer"
     },
     {
+      "name": "@aws-cdk/aws-lakeformation",
+      "version": "1.134.0",
+      "type": "peer"
+    },
+    {
       "name": "@aws-cdk/aws-lambda-python",
       "version": "1.134.0",
       "type": "peer"
@@ -303,6 +308,11 @@
     },
     {
       "name": "@aws-cdk/aws-kinesisfirehose",
+      "version": "1.134.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-lakeformation",
       "version": "1.134.0",
       "type": "runtime"
     },
