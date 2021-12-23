@@ -17,30 +17,11 @@ import { Utils } from '../utils';
 import { StudioUserDefinition } from './dataplatform-notebook';
 
 import * as studioS3Policy from './resources/studio/emr-studio-s3-policy.json';
-import * as lambdaNotebookTagPolicy from './resources/studio/notenook-add-tag-on-create-lambda-policy.json';
 import * as studioServiceRolePolicy from './resources/studio/studio-service-role-policy.json';
 import * as studioUserRolePolicy from './resources/studio/studio-user-iam-role-policy.json';
 import * as studioSessionPolicy from './resources/studio/studio-user-session-policy.json';
 import * as studioUserPolicy from './resources/studio/studio-user-sso-role-policy.json';
 
-/**
- * @internal
- * Create a policy for Lambda function
- * @returns Return a string with IAM policy ARN
- */
-export function createLambdaNoteBookAddTagPolicy (scope: Construct, logArn: string, studioName: string): string {
-  let policy = JSON.parse(JSON.stringify(lambdaNotebookTagPolicy));
-
-  policy.Statement[0].Resource[0] = logArn;
-  policy.Statement[1].Resource[0] = policy.Statement[1].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
-
-  let lambdaPolicy = new ManagedPolicy(scope, 'lambdaPolicy', {
-    document: PolicyDocument.fromJson(policy),
-    managedPolicyName: 'lambdaPolicy' + studioName,
-  });
-
-  return lambdaPolicy.managedPolicyArn;
-}
 // TODO merge with EmrEksCluster
 /**
  * @internal

@@ -1,44 +1,27 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import * as path from 'path';
-
-import { SecurityGroup, ISecurityGroup, IVpc, SubnetType, Port } from '@aws-cdk/aws-ec2';
+import { ISecurityGroup, IVpc, Peer, Port, SecurityGroup, SubnetType } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from '@aws-cdk/aws-emr';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { Rule, IRuleTarget, EventPattern } from '@aws-cdk/aws-events';
-import { LambdaFunction } from '@aws-cdk/aws-events-targets';
-import {
-  Role,
-  IManagedPolicy,
-  ManagedPolicy,
-  ServicePrincipal,
-  IRole,
-  PolicyStatement,
-} from '@aws-cdk/aws-iam';
+import { IManagedPolicy, IRole, ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Key } from '@aws-cdk/aws-kms';
-import { Function, Runtime, Code } from '@aws-cdk/aws-lambda';
-import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
-import { Construct, Tags, Aws, Duration, NestedStack, CfnOutput } from '@aws-cdk/core';
+import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
 
 
 import { EmrEksCluster } from '../emr-eks-data-platform/emr-eks-cluster';
 import { Utils } from '../utils';
 import {
-  createLambdaNoteBookAddTagPolicy,
-  createStudioUserRolePolicy,
-  createStudioServiceRolePolicy,
-  createUserSessionPolicy,
+  buildManagedEndpointExecutionRole,
   createIAMFederatedRole,
   createIAMRolePolicy,
   createIAMUser,
-  buildManagedEndpointExecutionRole,
+  createStudioServiceRolePolicy,
+  createStudioUserRolePolicy,
+  createUserSessionPolicy,
 } from './dataplatform-notebook-helpers';
-
-import * as eventPattern from './resources/studio/create-editor-event-pattern.json';
-import * as kmsLogPolicyTemplate from './resources/studio/kms-key-policy.json';
 
 /**
  * The properties of Data Platform Infrastructure where the notebook infrastructure should be deployed
@@ -48,7 +31,7 @@ export interface DataPlatformNotebookInfra {
   /**
    * Required the props of the notebooks dataplatform to be deployed
    * */
-  readonly dataPlatformProps: DataPlatformNotebookProps
+  readonly dataPlatformProps: DataPlatformNotebookProps;
   /**
    * Required the EmrEks infrastructure used for the deployment
    * */
@@ -79,10 +62,6 @@ export interface DataPlatformNotebookProps {
    * */
   readonly kubernetesVersion?: KubernetesVersion;
   /**
-   * Amazon ACM Certificate ARN
-   */
-  readonly acmCertificateArn: string;
-  /**
    * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
    * This is is the URL used to sign in the AWS console
    * */
@@ -98,11 +77,7 @@ export interface DataPlatformNotebookProps {
    * */
   readonly idpArn?: string;
   // TODO move this parameter to StudioUserDefinition
-  /**
-   * The version of Amazon EMR to deploy
-   * @default - The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
-   * */
-  readonly emrOnEksVersion?: string;
+  // MOVED EMR version
 }
 
 /**
@@ -127,14 +102,24 @@ export interface StudioUserDefinition {
    * */
   readonly executionPolicyNames: string [];
 
+  /**
+   * The version of Amazon EMR to deploy
+   * */
+  readonly emrOnEksVersion?: string;
+
+  /**
+   * The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint
+   * @default - Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+   */
+  readonly configurationOverrides?: string;
+
 }
 
 /**
  * Enum to define authentication mode for Amazon EMR Studio
  */
 export enum StudioAuthMode {
-  IAM_FEDERATED = 'IAM_FEDERATED',
-  IAM_AUTHENTICATED = 'IAM_AUTHENTICATED',
+  IAM = 'IAM',
   SSO = 'SSO',
 }
 
@@ -163,7 +148,6 @@ export class DataPlatformNotebook extends Construct {
   public readonly studioUrl: string;
   public readonly studioId: string;
   private readonly studioPrincipal: string = 'elasticmapreduce.amazonaws.com';
-  private readonly lambdaPrincipal: string = 'lambda.amazonaws.com';
   private readonly studioName: string;
   private readonly emrVcName: string;
 
@@ -172,9 +156,11 @@ export class DataPlatformNotebook extends Construct {
   private readonly emrVpc: IVpc;
   private readonly workspacesBucket: Bucket;
   // TODO use IRole only
-  private studioServiceRole: Role | IRole;
+  // DONE
+  private studioServiceRole: IRole;
   // TODO use IRole only
-  private readonly studioUserRole: Role | IRole | undefined;
+  //DONE
+  private readonly studioUserRole: IRole | undefined;
   private readonly studioServicePolicy: IManagedPolicy [];
   private readonly studioUserPolicy: IManagedPolicy [];
 
@@ -182,9 +168,6 @@ export class DataPlatformNotebook extends Construct {
   private readonly emrEks: EmrEksCluster;
 
   private readonly emrVirtCluster: CfnVirtualCluster;
-
-  private readonly lambdaNotebookTagOnCreatePolicy: IManagedPolicy [];
-  private readonly lambdaNotebookAddTagOnCreate: Role;
 
   private readonly dataPlatformEncryptionKey: Key;
 
@@ -200,7 +183,7 @@ export class DataPlatformNotebook extends Construct {
    * Constructs a new instance of the DataGenerator class
    * @param {Construct} scope the Scope of the AWS CDK Construct
    * @param {string} id the ID of the AWS CDK Construct
-   * @param {DataPlatformNotebookProp} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProp}
+   * @param {DataPlatformNotebookInfra} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebookInfra}
    */
 
   constructor(scope: Construct, id: string, props: DataPlatformNotebookInfra) {
@@ -208,7 +191,6 @@ export class DataPlatformNotebook extends Construct {
 
     this.studioServicePolicy = [];
     this.studioUserPolicy = [];
-    this.lambdaNotebookTagOnCreatePolicy = [];
     this.studioSubnetList = [];
     this.managedEndpointExcutionPolicyArnMapping = new Map<string, string>();
     this.authMode = props.dataPlatformProps.studioAuthMode;
@@ -326,94 +308,13 @@ export class DataPlatformNotebook extends Construct {
     this.studioUrl = this.studioInstance.attrUrl;
     this.studioId = this.studioInstance.attrStudioId;
 
-    // TODO delete 
-    /**
-     * The next code block is to tag an EMR notebook to restrict who can access it
-     * once workspaces have the tag-on-create it should be deleted
-     * */
-
-    //Create LogGroup for lambda which tag the EMR Notebook (EMR Studio Workspaces)
-    let lambdaNotebookTagOnCreateLog = new LogGroup(this.nestedStack, 'lambdaNotebookTagOnCreateLog' + props.dataPlatformProps.studioName, {
-      logGroupName: '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.dataPlatformProps.studioName,
-      encryptionKey: this.dataPlatformEncryptionKey,
-      retention: RetentionDays.ONE_MONTH,
-    });
-
-    //Wait until the EMR virtual cluser and kms key are succefully created before creating the LogGroup
-    //lambdaNotebookTagOnCreateLog.node.addDependency(this.dataPlatformEncryptionKey);
-
-    let kmsLogPolicy = JSON.parse(JSON.stringify(kmsLogPolicyTemplate));
-
-    //Create resource policy for KMS to allow Cloudwatch loggroup access to access the key
-    kmsLogPolicy.Principal.Service = kmsLogPolicy.Principal.Service.replace(/region/gi, Aws.REGION);
-
-    kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
-        kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/region/gi, Aws.REGION);
-
-    kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
-        kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/account-id/gi, Aws.ACCOUNT_ID);
-
-    kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0] =
-        kmsLogPolicy.Condition.ArnEquals['kms:EncryptionContext:aws:logs:arn'][0].replace(/log-group-name/gi, '/aws/lambda/' + 'lambdaNotebookCreateTagOnCreate' + props.dataPlatformProps.studioName);
-
-    //Applying the policy to the KMS key
-    this.dataPlatformEncryptionKey.addToResourcePolicy(PolicyStatement.fromJson(kmsLogPolicy));
-
-    //Create Policy for Lambda to put logs in LogGroup
-    //Create Policy for Lambda to AddTags to EMR Notebooks
-    this.lambdaNotebookTagOnCreatePolicy.push(ManagedPolicy.fromManagedPolicyArn(
-      this.nestedStack,
-      'lambdaNotebookTagOnCreatePolicy'+ props.dataPlatformProps.studioName,
-      createLambdaNoteBookAddTagPolicy(this.nestedStack, lambdaNotebookTagOnCreateLog.logGroupArn, props.dataPlatformProps.studioName)),
-    );
-
-    //Create IAM role for Lambda and attach policy
-    this.lambdaNotebookAddTagOnCreate = new Role(this.nestedStack, 'addLambdaTagRole' + props.dataPlatformProps.studioName, {
-      assumedBy: new ServicePrincipal(this.lambdaPrincipal),
-      roleName: 'lambdaRoleNotebookAddTagOnCreate' + props.dataPlatformProps.studioName,
-      managedPolicies: this.lambdaNotebookTagOnCreatePolicy,
-    });
-
-    //set the path for the lambda code
-    let lambdaPath = 'lambdas/';
-
-    //Create lambda to tag EMR notebook with UserID of the IAM principal that created it
-    let workspaceTaggingLambda = new Function(this.nestedStack, 'CreateTagHandler', {
-      runtime: Runtime.NODEJS_14_X, // execution environment
-      code: Code.fromAsset(path.join(__dirname, lambdaPath)), // code loaded from "lambda" directory
-      handler: 'index.handler', // file is "index", function is "handler"
-      role: this.lambdaNotebookAddTagOnCreate,
-      timeout: Duration.seconds(10),
-      functionName: 'lambdaNotebookCreateTagOnCreate' + props.dataPlatformProps.studioName,
-    });
-
-    //Create an event Target for event Bridge
-    let createTagEventTarget: IRuleTarget [] = [];
-
-    //Create the lambda as a target for event bridge
-    let eventTriggerLambda: LambdaFunction = new LambdaFunction(workspaceTaggingLambda);
-
-    //Register the lambda as a target for event bridge
-    createTagEventTarget.push(eventTriggerLambda);
-
-    //Create the event pattern to trigger the lambda
-    //Event trigger lambda on the CreateEditor API call
-    let createTagEventPattern: EventPattern = JSON.parse(JSON.stringify(eventPattern));
-
-    //Create Event on EventBridge/Cloudwatch Event
-    /*let eventRule: Rule = */
-    new Rule(this.nestedStack, this.studioName + 'eventRule', {
-      enabled: true,
-      eventPattern: createTagEventPattern,
-      targets: createTagEventTarget,
-    });
-
-    //Event should not be created unless the lambda has been successfully created
-    //eventRule.node.addDependency(workspaceTaggingLambda);
+    // TODO delete
+    // DONE, DELETED THE LAMBDA TO TAG A NOTEBOOK WORKSPACE
 
   }
 
   // TODO merge cases and use undefined
+  // MERGED
   /**
    * @internal
    * Constructs a new object of CfnStudio
@@ -425,9 +326,10 @@ export class DataPlatformNotebook extends Construct {
 
     let studioInstance: CfnStudio;
 
-    if (props.studioAuthMode === 'SSO') {
+    if (props.studioAuthMode === 'SSO' ||
+        props.studioAuthMode === 'IAM') {
       studioInstance = new CfnStudio(this.nestedStack, 'Studio', <CfnStudioProps>{
-        authMode: 'SSO',
+        authMode: props.studioAuthMode,
         defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
         engineSecurityGroupId: securityGroupId,
         name: props.studioName,
@@ -436,39 +338,19 @@ export class DataPlatformNotebook extends Construct {
         userRole: studioUserRoleRoleArn,
         vpcId: this.emrVpc.vpcId,
         workspaceSecurityGroupId: this.workSpaceSecurityGroup.securityGroupId,
+        idpAuthUrl: props.idpAuthUrl ? props.idpAuthUrl : undefined,
+        idpRelayStateParameterName: props.idpRelayStateParameterName ? props.idpRelayStateParameterName: undefined,
       });
 
-    } else if (props.studioAuthMode === 'IAM_FEDERATED') {
-      studioInstance = new CfnStudio(this.nestedStack, 'Studio', <CfnStudioProps>{
-        authMode: 'IAM',
-        defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
-        engineSecurityGroupId: securityGroupId,
-        name: props.studioName,
-        serviceRole: this.studioServiceRole.roleArn,
-        subnetIds: this.studioSubnetList,
-        vpcId: this.emrVpc.vpcId,
-        workspaceSecurityGroupId: this.workSpaceSecurityGroup.securityGroupId,
-        idpAuthUrl: props.idpAuthUrl,
-        idpRelayStateParameterName: props.idpRelayStateParameterName,
-      });
-
-    } else if (props.studioAuthMode === 'IAM_AUTHENTICATED') {
-      studioInstance = new CfnStudio(this.nestedStack, 'Studio', <CfnStudioProps>{
-        authMode: 'IAM',
-        defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
-        engineSecurityGroupId: securityGroupId,
-        name: props.studioName,
-        serviceRole: this.studioServiceRole.roleArn,
-        subnetIds: this.studioSubnetList,
-        vpcId: this.emrVpc.vpcId,
-        workspaceSecurityGroupId: this.workSpaceSecurityGroup.securityGroupId,
-      });
+    } else {
+      throw new Error( 'Authentication mode should be either SSO or IAM');
     }
 
     return studioInstance!;
   }
 
   // TODO add configoverride in the options
+  // DONE
   /**
    * Method to add users, take a list of userDefinition and will create a managed endpoints for each user
    * and create an IAM Policy scoped to the list managed endpoints
@@ -504,14 +386,16 @@ export class DataPlatformNotebook extends Construct {
             this.studioName + '-' + Utils.stringSanitizer(executionPolicyName), {
               virtualClusterId: this.emrVirtCluster.attrId,
               executionRole: buildManagedEndpointExecutionRole(
-                this, 
+                this,
                 executionPolicyName,
                 this.emrEks.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
-                this.studioName, 
-                this.emrVcName
+                this.studioName,
+                this.emrVcName,
               ),
-            }
-            
+              emrOnEksVersion: user.emrOnEksVersion ? user.emrOnEksVersion : undefined,
+              configurationOverrides: user.configurationOverrides ? user.configurationOverrides : undefined,
+            },
+
           );
 
           managedEndpoint.node.addDependency(this.emrEks);
@@ -524,8 +408,14 @@ export class DataPlatformNotebook extends Construct {
 
           Tags.of(engineSecurityGroup).add('for-use-by-analytics-reference-architecture', 'true');
 
+          let vpcCidrBlock: string = this.emrEks.eksCluster.vpc.vpcCidrBlock;
+
           //Update workspace Security Group to allow outbound traffic on port 18888 toward Engine Security Group
-          this.workSpaceSecurityGroup.addEgressRule(engineSecurityGroup, Port.tcp(18888), 'Allow traffic to EMR', true);
+          this.workSpaceSecurityGroup.addEgressRule(Peer.ipv4(vpcCidrBlock), Port.tcp(18888), 'Allow traffic to EMR');
+
+          this.engineSecurityGroup?.addIngressRule(Peer.ipv4(vpcCidrBlock), Port.tcp(18888), 'Allow traffic from EMR Studio');
+
+          this.workSpaceSecurityGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
           //Tag the Security Group of the ManagedEndpoint to be used with EMR Studio
           Tags.of(engineSecurityGroup).add('for-use-with-amazon-emr-managed-policies', 'true');
@@ -533,7 +423,7 @@ export class DataPlatformNotebook extends Construct {
           //Add the managedendpointArn to @managedEndpointExcutionPolicyArnMapping
           //This is to avoid the creation an endpoint with the same policy twice
           //Save resources and reduce the deployment time
-          // TODO check the emr version is the same
+          // TODO check the emr version is the same => to be fixed on a later commit need to solve adding a tuple to a JS map
           // TODO check multiple users/notebooks can share a JEG and trigger multiple spark apps
           this.managedEndpointExcutionPolicyArnMapping.set(executionPolicyName, managedEndpoint.getAttString('arn'));
 
@@ -544,7 +434,7 @@ export class DataPlatformNotebook extends Construct {
         }
       }
 
-      if (this.authMode === 'IAM_AUTHENTICATED') {
+      if (this.authMode === 'IAM' && this.federatedIdPARN === undefined) {
         //Create the role policy and gets its ARN
         iamRolePolicy = createIAMRolePolicy(this.nestedStack, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
@@ -557,7 +447,7 @@ export class DataPlatformNotebook extends Construct {
           });
         }
 
-      } else if (this.authMode === 'IAM_FEDERATED') {
+      } else if (this.authMode === 'IAM' && this.federatedIdPARN != undefined) {
         //Create the role policy and gets its ARN
         iamRolePolicy = createIAMRolePolicy(this.nestedStack, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);

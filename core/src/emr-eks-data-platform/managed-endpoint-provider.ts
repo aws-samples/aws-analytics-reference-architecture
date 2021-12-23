@@ -3,7 +3,6 @@
 import * as path from 'path';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Code, Function, Runtime } from '@aws-cdk/aws-lambda';
-import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Construct, Duration, Stack } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 
@@ -39,7 +38,7 @@ export class ManagedEndpointProvider extends Construct {
     super(scope, id);
 
     // Create the custom resource provider for adding managed endpoints to the cluster
-    const lambdaPath = 'lambdas/managed-endpoint';
+    const lambdaPath = 'resources/lambdas/managed-endpoint';
 
     const lambdaPolicy = [
       new PolicyStatement({
@@ -76,8 +75,8 @@ export class ManagedEndpointProvider extends Construct {
     // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
     const onEvent = new Function(this, 'ManagedEndpointOnEvent', {
       code: Code.fromAsset(path.join(__dirname, lambdaPath)),
-      runtime: Runtime.NODEJS_12_X,
-      handler: 'index.onEvent',
+      runtime: Runtime.PYTHON_3_8,
+      handler: 'lambda.on_event',
       timeout: Duration.seconds(120),
       environment: {
         REGION: Stack.of(this).region,
@@ -88,8 +87,8 @@ export class ManagedEndpointProvider extends Construct {
     // AWS Lambda supporting the status check on asynchronous create, update and delete operations
     const isComplete = new Function(this, 'ManagedEndpointIsComplete', {
       code: Code.fromAsset(path.join(__dirname, lambdaPath)),
-      handler: 'index.isComplete',
-      runtime: Runtime.NODEJS_12_X,
+      handler: 'lambda.is_complete',
+      runtime: Runtime.PYTHON_3_8,
       timeout: Duration.seconds(120),
       environment: {
         REGION: Stack.of(this).region,
@@ -100,7 +99,6 @@ export class ManagedEndpointProvider extends Construct {
     this.provider = new Provider(this, `CustomResourceProvider${id}`, {
       onEventHandler: onEvent,
       isCompleteHandler: isComplete,
-      logRetention: RetentionDays.ONE_DAY,
       totalTimeout: Duration.minutes(30),
       queryInterval: Duration.seconds(20),
     });

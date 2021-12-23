@@ -122,7 +122,7 @@
       "Resource": "*",
       "Condition": {
         "StringEquals": {
-          "elasticmapreduce:ResourceTag/creatorId": "${aws:userId}"
+          "elasticmapreduce:ResourceTag/creatorUserId": "${aws:userId}"
         }
       }
     },
