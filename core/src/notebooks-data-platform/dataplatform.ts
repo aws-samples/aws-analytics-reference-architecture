@@ -120,6 +120,8 @@ export class DataPlatform extends Construct {
   public addUsersNotebookPlatform(notebookPlatformName: string, userList: StudioUserDefinition []): void {
     if (this.dataPlatformMapping.has(notebookPlatformName)) {
       this.dataPlatformMapping.get(notebookPlatformName)!.addUser(userList);
+    } else {
+      throw new Error(`The dataplatform name ${notebookPlatformName} provided is not part of this deployment`);
     }
   }
 
