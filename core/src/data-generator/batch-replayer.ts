@@ -114,7 +114,8 @@ export class BatchReplayer extends Construct {
       lambdaFunction: writeInBatchFn,
       payload: TaskInput.fromObject({
         // Array from the last step to be mapped
-        filePath: JsonPath.stringAt('$'),
+        outputFileIndex: JsonPath.stringAt('$.index'),
+        filePath: JsonPath.stringAt('$.filePath'),
         
         // For calculating the start/end time
         frequency: props.frequency,
@@ -124,7 +125,6 @@ export class BatchReplayer extends Construct {
         // For file processing
         dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
         dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
-        outputFileIndex: JsonPath.stringAt('$$.Map.Item.Index'),
         sinkPath: this.sinkBucket.s3UrlForObject(`${this.dataset.tableName}`),
       }),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
@@ -137,6 +137,10 @@ export class BatchReplayer extends Construct {
      */
     const writeInBatchMapTask = new Map(this, "writeInBatchMapTask", {
       itemsPath: JsonPath.stringAt('$.filePaths'),
+      parameters: {
+        index: JsonPath.stringAt('$$.Map.Item.Index'),
+        filePath: JsonPath.stringAt('$$.Map.Item.Value'),
+      }
     });
     writeInBatchMapTask.iterator(writeInBatchFnTask);
 

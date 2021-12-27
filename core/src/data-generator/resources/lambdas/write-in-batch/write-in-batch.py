@@ -32,7 +32,7 @@ def filter_rows_by_datetime(df, col_name, start_time, end_time):
 
 def handler(event, ctx):
     # Params from the last step
-    file_path = event.get('filePath', [])
+    file_path = event.get('filePath', '')
     
     # Params for calculating start/end time
     frequency = int(event.get('frequency'))
