@@ -19,6 +19,26 @@ export interface BatchReplayerProps {
   readonly sinkBucket: Bucket;
 }
 
+export interface BatchReplayerProps {
+  readonly dataset: PartitionedDataset;
+  readonly frequency?: number;
+  readonly sinkBucket: Bucket;
+  readonly outputFileMaxSizeInBytes?: number;
+}
+
+/**
+ * Replay the data in the given PartitionedDataset.
+ * 
+ * It will dump files into the `sinkBucket` based on the given `frequency`.
+ * The computation is in a Step Function with two Lambda steps.
+ * 
+ * 1. resources/lambdas/find-file-paths
+ * Read the manifest file and output a list of S3 file paths within that batch time range
+ * 
+ * 2. resources/lambdas/write-in-batch
+ * Take a file path, filter only records within given time range, adjust the the time with offset to
+ * make it looks like just being generated. Then write the output to the `sinkBucket`
+ */
 export class BatchReplayer extends Construct {
 
   /**
@@ -37,12 +57,21 @@ export class BatchReplayer extends Construct {
    */
   public readonly sinkBucket: Bucket;
 
+  /**
+   * Maximum file size for each output file. If the output batch file is,
+   * larger than that, it will be splitted into multiple files that fit this size.
+   * 
+   * Default to 100MB (max value)
+   */
+  public readonly outputFileMaxSizeInBytes?: number;
+
   constructor(scope: Construct, id: string, props: BatchReplayerProps) {
     super(scope, id);
 
     this.dataset = props.dataset;
     this.frequency = props.frequency || 60;
     this.sinkBucket = props.sinkBucket;
+    this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
     
 
     /**
@@ -126,6 +155,7 @@ export class BatchReplayer extends Construct {
         dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
         dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
         sinkPath: this.sinkBucket.s3UrlForObject(`${this.dataset.tableName}`),
+        outputFileMaxSizeInBytes: 20480,
       }),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
       retryOnServiceExceptions: true,

@@ -14,5 +14,6 @@ const integTestBucket = new Bucket(testStack, "IntegTestBucket");
 new BatchReplayer(testStack, "CoreIntegBatchReplayer", {
   dataset: PartitionedDataset.RETAIL_1GB_WEB_SALE,
   frequency: 600, 
-  sinkBucket: integTestBucket
+  sinkBucket: integTestBucket,
+  outputFileMaxSizeInBytes: 20480,
 });

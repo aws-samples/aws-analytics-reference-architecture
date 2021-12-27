@@ -35,7 +35,30 @@ export interface PartitionedDatasetProps {
 }
 
 /**
- * Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+ * PartitionedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+ * 
+ * PartitionDataset has following properties:
+ * 
+ * 1. Data is partitioned by timestamp (in seconds). Each folder stores data within a given range. 
+ * There is no constraint on how long the timestange range can be. But each file must not be larger tahn 100MB.
+ * Here is an example:
+ * |- time_range_start=16000000000
+ *    |- file1.csv 100MB
+ *    |- file2.csv 50MB
+ * |- time_range_start=16000000300 // 5 minute range (300 sec)
+ *    |- file1.csv 1MB
+ * |- time_range_start=16000000600
+ *    |- file1.csv 100MB
+ *    |- file2.csv 100MB
+ *    |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB
+ * 2. It has a manefest CSV file with two columns: start and path. Start is the timestamp
+ * start        , path
+ * 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file1.csv
+ * 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file2.csv
+ * 16000000300  , s3://<path>/<to>/<folder>/time_range_start=16000000300/file1.csv
+ * 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file1.csv
+ * 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv
+ * 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
  */
 export class PartitionedDataset {
   /**

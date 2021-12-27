@@ -47,6 +47,10 @@ public readonly resultBucket: Bucket;
 
 ### BatchReplayer <a name="aws-analytics-reference-architecture.BatchReplayer"></a>
 
+Replay the data in the given PartitionedDataset.
+
+It will dump files into the `sinkBucket` based on the given `frequency`. The computation is in a Step Function with two Lambda steps.  1. resources/lambdas/find-file-paths Read the manifest file and output a list of S3 file paths within that batch time range  2. resources/lambdas/write-in-batch Take a file path, filter only records within given time range, adjust the the time with offset to make it looks like just being generated. Then write the output to the `sinkBucket`
+
 #### Initializers <a name="aws-analytics-reference-architecture.BatchReplayer.Initializer"></a>
 
 ```typescript
@@ -112,6 +116,20 @@ public readonly sinkBucket: Bucket;
 - *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
 
 Sink bucket where the batch replayer will put data in.
+
+---
+
+##### `outputFileMaxSizeInBytes`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.property.outputFileMaxSizeInBytes"></a>
+
+```typescript
+public readonly outputFileMaxSizeInBytes: number;
+```
+
+- *Type:* `number`
+
+Maximum file size for each output file.
+
+If the output batch file is, larger than that, it will be splitted into multiple files that fit this size.  Default to 100MB (max value)
 
 ---
 
@@ -992,6 +1010,16 @@ public readonly sinkBucket: Bucket;
 
 ```typescript
 public readonly frequency: number;
+```
+
+- *Type:* `number`
+
+---
+
+##### `outputFileMaxSizeInBytes`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes"></a>
+
+```typescript
+public readonly outputFileMaxSizeInBytes: number;
 ```
 
 - *Type:* `number`
@@ -2423,7 +2451,9 @@ Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
 
 ### PartitionedDataset <a name="aws-analytics-reference-architecture.PartitionedDataset"></a>
 
-Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+PartitionedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+
+PartitionDataset has following properties:  1. Data is partitioned by timestamp (in seconds). Each folder stores data within a given range.  There is no constraint on how long the timestange range can be. But each file must not be larger tahn 100MB. Here is an example: |- time_range_start=16000000000     |- file1.csv 100MB     |- file2.csv 50MB |- time_range_start=16000000300 // 5 minute range (300 sec)     |- file1.csv 1MB |- time_range_start=16000000600     |- file1.csv 100MB     |- file2.csv 100MB     |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB 2. It has a manefest CSV file with two columns: start and path. Start is the timestamp start        , path 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file1.csv 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file2.csv 16000000300  , s3://<path>/<to>/<folder>/time_range_start=16000000300/file1.csv 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file1.csv 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
 
 #### Initializers <a name="aws-analytics-reference-architecture.PartitionedDataset.Initializer"></a>
 
