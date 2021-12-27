@@ -21,7 +21,15 @@ export interface PartitionedDatasetProps {
   readonly manifestLocation: Location;
 
   /**
-   * Array of column names with datetime to adjust
+   * Datetime column for filtering data
+   */
+  readonly dateTimeColumnToFilter: string;
+
+  /**
+   * Array of column names with datetime to adjust.
+   * The source data will have date in the past 2021-01-01T00:00:00 while
+   * the data replayer will have have the current time. The difference (aka. offset)
+   * must be added to all datetime columns
    */
   readonly dateTimeColumnsToAdjust?: string[];
 }
@@ -45,11 +53,11 @@ export class PartitionedDataset {
       objectKey: "sample-datasets/prepared-data/web-sales",
     },
     startDatetime: "2021-01-01T00:00:00.000Z",
-    // createSourceTable: retailWebSaleCreate,
     manifestLocation: {
       bucketName: PartitionedDataset.DATASETS_BUCKET,
       objectKey: "sample-datasets/prepared-data/web-sales-manifest.csv",
     },
+    dateTimeColumnToFilter: "sale_datetime",
     dateTimeColumnsToAdjust: ["sale_datetime"],
   });
 
@@ -91,6 +99,11 @@ export class PartitionedDataset {
   readonly manifestLocation: Location;
 
   /**
+   * Datetime column for filtering data
+   */
+   readonly dateTimeColumnToFilter: string;
+
+  /**
    * Array of column names with datetime to adjust
    */
   readonly dateTimeColumnsToAdjust?: string[];
@@ -106,6 +119,7 @@ export class PartitionedDataset {
     this.location = props.location;
     this.tableName = this.sqlTable();
     this.manifestLocation = props.manifestLocation;
+    this.dateTimeColumnToFilter = props.dateTimeColumnToFilter;
     this.dateTimeColumnsToAdjust = props.dateTimeColumnsToAdjust;
   }
 

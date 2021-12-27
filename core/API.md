@@ -1306,18 +1306,6 @@ The CREATE TABLE DDL command to create the target AWS Glue Table.
 
 ---
 
-##### `manifestLocation`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.DatasetProps.property.manifestLocation"></a>
-
-```typescript
-public readonly manifestLocation: Location;
-```
-
-- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
-
-Manifest file in csv format with two columns: start, path.
-
----
-
 ### EmrEksClusterProps <a name="aws-analytics-reference-architecture.EmrEksClusterProps"></a>
 
 The properties for the EmrEksCluster Construct class.
@@ -1868,6 +1856,18 @@ import { PartitionedDatasetProps } from 'aws-analytics-reference-architecture'
 const partitionedDatasetProps: PartitionedDatasetProps = { ... }
 ```
 
+##### `dateTimeColumnToFilter`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.dateTimeColumnToFilter"></a>
+
+```typescript
+public readonly dateTimeColumnToFilter: string;
+```
+
+- *Type:* `string`
+
+Datetime column for filtering data.
+
+---
+
 ##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.location"></a>
 
 ```typescript
@@ -1879,6 +1879,18 @@ public readonly location: Location;
 The Amazon S3 Location of the source dataset.
 
 It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
+
+---
+
+##### `manifestLocation`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.manifestLocation"></a>
+
+```typescript
+public readonly manifestLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Manifest file in csv format with two columns: start, path.
 
 ---
 
@@ -1904,17 +1916,7 @@ public readonly dateTimeColumnsToAdjust: string[];
 
 Array of column names with datetime to adjust.
 
----
-
-##### `manifestLocation`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.manifestLocation"></a>
-
-```typescript
-public readonly manifestLocation: Location;
-```
-
-- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
-
-Manifest file in csv format with two columns: start, path.
+The source data will have date in the past 2021-01-01T00:00:00 while the data replayer will have have the current time. The difference (aka. offset) must be added to all datetime columns
 
 ---
 
@@ -2222,18 +2224,6 @@ The name of the SQL table extracted from path.
 
 ---
 
-##### `manifestLocation`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.Dataset.property.manifestLocation"></a>
-
-```typescript
-public readonly manifestLocation: Location;
-```
-
-- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
-
-Manifest file in csv format with two columns: start, path.
-
----
-
 #### Constants <a name="Constants"></a>
 
 ##### `DATASETS_BUCKET` <a name="aws-analytics-reference-architecture.Dataset.property.DATASETS_BUCKET"></a>
@@ -2372,14 +2362,6 @@ The web sale dataset part of 1GB retail datasets.
 
 ---
 
-##### `RETAIL_1GB_WEB_SALE_WITH_MANIFEST` <a name="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_WEB_SALE_WITH_MANIFEST"></a>
-
-- *Type:* [`aws-analytics-reference-architecture.Dataset`](#aws-analytics-reference-architecture.Dataset)
-
-The web sale dataset part of 1GB retail datasets.
-
----
-
 ### EmrEksNodegroup <a name="aws-analytics-reference-architecture.EmrEksNodegroup"></a>
 
 #### Initializers <a name="aws-analytics-reference-architecture.EmrEksNodegroup.Initializer"></a>
@@ -2463,6 +2445,18 @@ the DatasetProps.
 
 #### Properties <a name="Properties"></a>
 
+##### `dateTimeColumnToFilter`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.dateTimeColumnToFilter"></a>
+
+```typescript
+public readonly dateTimeColumnToFilter: string;
+```
+
+- *Type:* `string`
+
+Datetime column for filtering data.
+
+---
+
 ##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.location"></a>
 
 ```typescript
@@ -2475,6 +2469,18 @@ The Amazon S3 Location of the source dataset.
 
 ---
 
+##### `manifestLocation`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.manifestLocation"></a>
+
+```typescript
+public readonly manifestLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Manifest file in csv format with two columns: start, path.
+
+---
+
 ##### `offset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.offset"></a>
 
 ```typescript
@@ -2484,6 +2490,20 @@ public readonly offset: number;
 - *Type:* `number`
 
 The offset of the Dataset (difference between min datetime and now) in Seconds.
+
+---
+
+##### `startDateTime`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.startDateTime"></a>
+
+```typescript
+public readonly startDateTime: string;
+```
+
+- *Type:* `string`
+
+Start datetime replaying this dataset.
+
+Your data set may start from 1 Jan 2020  But you can specify this to 1 Feb 2020 to omit the first month data.
 
 ---
 
@@ -2511,18 +2531,6 @@ Array of column names with datetime to adjust.
 
 ---
 
-##### `manifestLocation`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.manifestLocation"></a>
-
-```typescript
-public readonly manifestLocation: Location;
-```
-
-- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
-
-Manifest file in csv format with two columns: start, path.
-
----
-
 #### Constants <a name="Constants"></a>
 
 ##### `DATASETS_BUCKET` <a name="aws-analytics-reference-architecture.PartitionedDataset.property.DATASETS_BUCKET"></a>
@@ -2533,7 +2541,7 @@ The bucket name of the AWS Analytics Reference Architecture datasets.
 
 ---
 
-##### `RETAIL_1GB_WEB_SALE_WITH_MANIFEST` <a name="aws-analytics-reference-architecture.PartitionedDataset.property.RETAIL_1GB_WEB_SALE_WITH_MANIFEST"></a>
+##### `RETAIL_1GB_WEB_SALE` <a name="aws-analytics-reference-architecture.PartitionedDataset.property.RETAIL_1GB_WEB_SALE"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset)
 

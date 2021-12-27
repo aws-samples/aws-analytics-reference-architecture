@@ -11,8 +11,8 @@ const testStack = new Stack(mockApp, 'DataReplayerTestStack');
 
 const integTestBucket = new Bucket(testStack, "IntegTestBucket");
 
-new BatchReplayer(testStack, "TestBatchReplayer", {
+new BatchReplayer(testStack, "CoreIntegBatchReplayer", {
   dataset: PartitionedDataset.RETAIL_1GB_WEB_SALE,
-  frequency: 120, 
+  frequency: 600, 
   sinkBucket: integTestBucket
 });

@@ -4,7 +4,7 @@
 import { Construct, Duration } from "@aws-cdk/core";
 import { RetentionDays } from "@aws-cdk/aws-logs";
 import { LambdaInvoke } from "@aws-cdk/aws-stepfunctions-tasks";
-import { JsonPath, StateMachine, TaskInput } from "@aws-cdk/aws-stepfunctions";
+import { JsonPath, Map, StateMachine, TaskInput } from "@aws-cdk/aws-stepfunctions";
 import * as lambda from "@aws-cdk/aws-lambda";
 import { SfnStateMachine } from "@aws-cdk/aws-events-targets";
 import { Rule, Schedule } from "@aws-cdk/aws-events";
@@ -45,17 +45,59 @@ export class BatchReplayer extends Construct {
     this.sinkBucket = props.sinkBucket;
     
 
-    // Aggregate all data in the given frequency, prepend header, and write to S3
-    const batchReplayFn = new lambda.DockerImageFunction(this, "batchReplayFnV2", {
-      memorySize: 1024 * 5,
-      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lib/data-generator/resources/lambdas/batch-replayer')),
+    /**
+     * Find all paths within the time range from the manifest file
+     */
+    const findFilePathsFn = new lambda.DockerImageFunction(this, "findFilePathFn", {
+      memorySize: 1024,
+      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lib/data-generator/resources/lambdas/find-file-paths')),
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.minutes(15),
     });
 
     // Grant access to read S3
-    batchReplayFn.role?.attachInlinePolicy(
-      new Policy(this, 'list-buckets-policy', {
+    const { bucketName, objectKey } = this.dataset.manifestLocation;
+    findFilePathsFn.role?.attachInlinePolicy(
+      new Policy(this, 'read-manifest-file-policy', {
+        statements: [
+          new PolicyStatement({
+            actions: ['s3:GetObject'],
+            resources: [
+              `arn:aws:s3:::${bucketName}/${objectKey}`
+            ],
+          }),
+        ],
+      }),
+    );
+
+    const findFilePathsFnTask = new LambdaInvoke(this, "findFilePathFnTask", {
+      lambdaFunction: findFilePathsFn,
+      payload: TaskInput.fromObject({
+        frequency: props.frequency,
+        manifestFileBucket: this.dataset.manifestLocation?.bucketName,
+        manifestFileKey: this.dataset.manifestLocation?.objectKey,
+        triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
+        offset: '' + this.dataset.offset,
+      }),
+      // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
+      retryOnServiceExceptions: true,
+      outputPath: "$.Payload",
+    });
+
+
+    /**
+     * Write data in batch step
+     */
+    const writeInBatchFn = new lambda.DockerImageFunction(this, "writeInBatchFn", {
+      memorySize: 1024 * 5,
+      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lib/data-generator/resources/lambdas/write-in-batch')),
+      logRetention: RetentionDays.ONE_DAY,
+      timeout: Duration.minutes(15),
+    });
+
+    // Grant access to all s3 file in the dataset bucket
+    writeInBatchFn.role?.attachInlinePolicy(
+      new Policy(this, 'read-dataset-buckets-policy', {
         statements: [
           new PolicyStatement({
             actions: ['s3:GetObject'],
@@ -66,27 +108,43 @@ export class BatchReplayer extends Construct {
         ],
       }),
     );
+    this.sinkBucket.grantPut(writeInBatchFn);
 
-    this.sinkBucket.grantPut(batchReplayFn);
-
-    const batchReplayFnTask = new LambdaInvoke(this, "batchReplayFnTask", {
-      lambdaFunction: batchReplayFn,
+    const writeInBatchFnTask = new LambdaInvoke(this, "writeInBatchFnTask", {
+      lambdaFunction: writeInBatchFn,
       payload: TaskInput.fromObject({
+        // Array from the last step to be mapped
+        filePath: JsonPath.stringAt('$'),
+        
+        // For calculating the start/end time
         frequency: props.frequency,
-        manifestFileBucket: this.dataset.manifestLocation?.bucketName,
-        manifestFileKey: this.dataset.manifestLocation?.objectKey,
-        triggerTime: JsonPath.stringAt('$.time'),
+        triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
         offset: '' + this.dataset.offset,
+        
+        // For file processing
+        dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
         dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
-        sinkPath: this.sinkBucket.s3UrlForObject(`data_generator/${this.dataset.tableName}`),
+        outputFileIndex: JsonPath.stringAt('$$.Map.Item.Index'),
+        sinkPath: this.sinkBucket.s3UrlForObject(`${this.dataset.tableName}`),
       }),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
       retryOnServiceExceptions: true,
       outputPath: "$.Payload",
     });
 
+    /**
+     * Use "Map" step to write each filePath parallelly
+     */
+    const writeInBatchMapTask = new Map(this, "writeInBatchMapTask", {
+      itemsPath: JsonPath.stringAt('$.filePaths'),
+    });
+    writeInBatchMapTask.iterator(writeInBatchFnTask);
+
+    /**
+     * Overarching Step Function StateMachine
+     */
     const batchReplayStepFn = new StateMachine(this, "batchReplayStepFn", {
-      definition: batchReplayFnTask,
+      definition: findFilePathsFnTask.next(writeInBatchMapTask),
       timeout: Duration.minutes(20),
     });
 
