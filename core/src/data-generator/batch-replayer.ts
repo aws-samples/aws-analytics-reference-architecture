@@ -17,12 +17,6 @@ export interface BatchReplayerProps {
   readonly dataset: PartitionedDataset;
   readonly frequency?: number;
   readonly sinkBucket: Bucket;
-}
-
-export interface BatchReplayerProps {
-  readonly dataset: PartitionedDataset;
-  readonly frequency?: number;
-  readonly sinkBucket: Bucket;
   readonly outputFileMaxSizeInBytes?: number;
 }
 

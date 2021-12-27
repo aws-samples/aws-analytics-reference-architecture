@@ -13,10 +13,12 @@ import { BatchReplayer } from "../../../src/data-generator/batch-replayer";
 import { PartitionedDataset } from "../../../src/datasets";
 import "@aws-cdk/assert/jest";
 import { Bucket } from "@aws-cdk/aws-s3";
+import { Template } from "@aws-cdk/assertions";
 
 let testStack: Stack;
 let testSinkBucket: Bucket;
 let batchReplayer: BatchReplayer;
+let template: Template;
 
 beforeEach(() => {
   testStack = new Stack();
@@ -26,6 +28,7 @@ beforeEach(() => {
     frequency: 120,
     sinkBucket: testSinkBucket,
   });
+  template = Template.fromStack(testStack);
 });
 
 test("BatchReplayer should use given frequency", () => {
@@ -40,14 +43,32 @@ test("BatchReplayer should use default frequency", () => {
   expect(batchReplayerWithNoFreqProp.frequency).toBe(60);
 });
 
-test("BatchReplayer should create a batch replay function with 15 mins timeout", () => {
-  expect(testStack).toHaveResourceLike("AWS::Lambda::Function", {
-    Timeout: 900,
+test("BatchReplayer should use given max output file size", () => {
+  const batchReplayerWithFilesizeProp = new BatchReplayer(testStack, "TestBatchReplayerWithNoFreqProp", {
+    dataset: PartitionedDataset.RETAIL_1GB_WEB_SALE,
+    sinkBucket: testSinkBucket,
+    outputFileMaxSizeInBytes: 20480,
   });
+  expect(batchReplayerWithFilesizeProp.outputFileMaxSizeInBytes).toBe(20480);
 });
 
-test("BatchReplayer should create a batch replay function with a step function", () => {
-  expect(testStack).toHaveResource("AWS::StepFunctions::StateMachine");
+test("BatchReplayer should use default max output file size 100MB", () => {
+  const batchReplayerWithNoFilesizeProp = new BatchReplayer(testStack, "TestBatchReplayerWithNoFreqProp", {
+    dataset: PartitionedDataset.RETAIL_1GB_WEB_SALE,
+    sinkBucket: testSinkBucket,
+  });
+  expect(batchReplayerWithNoFilesizeProp.outputFileMaxSizeInBytes).toBe(100 * 1024 * 1024);
+});
+
+test("BatchReplayer should create 2 lambda functions from Dockerfile with 15 mins timeout", () => {
+  template.hasResourceProperties("AWS::Lambda::Function", {
+    "PackageType": "Image",
+    "Timeout": 900
+  })
+});
+
+test("BatchReplayer should create a step function", () => {
+  template.resourceCountIs("AWS::StepFunctions::StateMachine", 1);
 });
 
 
