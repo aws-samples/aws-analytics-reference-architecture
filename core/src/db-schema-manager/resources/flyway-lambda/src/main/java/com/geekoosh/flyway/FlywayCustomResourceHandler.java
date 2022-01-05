@@ -17,6 +17,7 @@ import com.amazonaws.services.cloudformation.AmazonCloudFormation;
 
 import java.security.InvalidParameterException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -47,9 +48,8 @@ public class FlywayCustomResourceHandler implements RequestHandler<CloudFormatio
                 DescribeStackResourceResult currentResource = cloudFormationClient.describeStackResource(new DescribeStackResourceRequest().withStackName(event.getStackId()).withLogicalResourceId(event.getLogicalResourceId()));
                 String currentResourceStatus = currentResource.getStackResourceDetail().getResourceStatus();
                 if(!currentResourceStatus.equals("UPDATE_ROLLBACK_IN_PROGRESS")) {
-                    Response run = callFlywayService();
+                    Response run = callFlywayService(event);
                     schemaVersion.put("version", run.getInfo().getCurrent().getVersion().getVersion());
-
                 }
                 break;
             case "Delete":
@@ -72,6 +72,15 @@ public class FlywayCustomResourceHandler implements RequestHandler<CloudFormatio
 
     public Response callFlywayService() {
         Request input = new Request().setFlywayRequest(new FlywayRequest().setFlywayMethod(FlywayMethod.MIGRATE));
+        return new FlywayHandler().handleRequest(input, null);
+    }
+
+    public Response callFlywayService(CloudFormationCustomResourceEvent event) {
+        System.out.println("event.getResourceProperties: " + event.getResourceProperties().toString());
+        System.out.println("event.getResourceProperties.get(\"flywayMethod\"): " + event.getResourceProperties().get("flywayMethod"));
+        System.out.println("event.getResourceProperties.get(\"placeholders\"): " + event.getResourceProperties().get("placeholders"));
+
+        Request input = new Request().setFlywayRequest(new FlywayRequest().setFlywayMethod(FlywayMethod.valueOf(((String) event.getResourceProperties().get("flywayMethod")).toUpperCase(Locale.ROOT))).setPlaceholders(( Map<String, String>) event.getResourceProperties().get("placeholders")));
         return new FlywayHandler().handleRequest(input, null);
     }
 }
