@@ -18,7 +18,7 @@ const policy = new ManagedPolicy(stack, 'MyPolicy',{
 })
 
 const emrEks = EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav',
+  eksAdminRoleArn: 'MY_ROLE_ARN',
 });
 
 const notebookPlatform =new NotebookPlatform(stack, 'platform1',{
@@ -29,7 +29,7 @@ const notebookPlatform =new NotebookPlatform(stack, 'platform1',{
 })
 
 notebookPlatform.addUser([{
-  identityName: 'gromav',
+  identityName: 'MY_USER',
   identityType: 'USER',
   executionPolicyNames: [policy.managedPolicyName],
   emrOnEksVersion: 'emr-6.3.0-latest',
