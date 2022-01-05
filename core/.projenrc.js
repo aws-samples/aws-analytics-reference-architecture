@@ -119,7 +119,7 @@ project.addTask('test:integ', {
 });
 
 const testDeploy = project.addTask('test:deploy', {
-  exec: 'cdk deploy --app=./lib/integ.default.js',
+  exec: 'cdk --version && cdk deploy --app=./lib/integ.default.js',
 });
 
 testDeploy.prependExec('npx projen build');

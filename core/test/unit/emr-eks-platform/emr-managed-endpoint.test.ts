@@ -1,44 +1,41 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests Amazon EMR Managed Endpoint custom resource provider 
+ *
+ * @group unit/other/emr-eks-cluster
+ */
+
 import { Stack } from '@aws-cdk/core';
-import { ManagedEndpointProvider } from '../../../src/emr-eks-data-platform/managed-endpoint-provider';
+import { EmrManagedEndpointProvider } from '../../../src/emr-eks-platform/emr-managed-endpoint';
 import '@aws-cdk/assert/jest';
-import * as assertCDK from '@aws-cdk/assert';
+import { Template, Match} from '@aws-cdk/assertions';
 
 
-test('ManagedEndpointProvider', () => {
-
+describe ('ManagedEndpointProvider', () => {
   const ManagedEndpointProviderStack = new Stack();
-
   // Instantiate 2 ManagedEndpointProvider Constructs
-  ManagedEndpointProvider.getOrCreate(ManagedEndpointProviderStack, 'test');
-  ManagedEndpointProvider.getOrCreate(ManagedEndpointProviderStack, 'test');
+  EmrManagedEndpointProvider.getOrCreate(ManagedEndpointProviderStack, 'test');
+  EmrManagedEndpointProvider.getOrCreate(ManagedEndpointProviderStack, 'test');
 
-  // Test if ManagedEndpointProvider is a singleton
-  // It should only contain 6 AWS Lambda function (2 for onEvent and isComplete, 4 for the Provider framework)
-  expect(ManagedEndpointProviderStack).toCountResources('AWS::Lambda::Function', 6);
-  // It should only contain 5 Amazon IAM Role (2 for onEvent and isComplete, 4 for the Provider framework)
-  expect(ManagedEndpointProviderStack).toCountResources('AWS::IAM::Role', 7);
+  const template = Template.fromStack(ManagedEndpointProviderStack);
 
+  test('ManagedEndpointProvider is a singleton', () => {
 
-  expect(ManagedEndpointProviderStack).toHaveResource('AWS::IAM::Role', {
-    AssumeRolePolicyDocument: {
-      Statement: [
+    // Test if ManagedEndpointProvider is a singleton
+    // It should only contain 5 AWS Lambda function (2 for onEvent and isComplete, 3 for the Provider framework)
+    template.resourceCountIs('AWS::Lambda::Function', 5);
+    // It should only contain 6 Amazon IAM Role (2 for onEvent and isComplete, 4 for the Provider framework)
+    template.resourceCountIs('AWS::IAM::Role', 6);
+  });
+
+  test('EmrManagedEndpointPorvider contains the right permissions', () => {
+    template.hasResourceProperties('AWS::IAM::Policy', 
+      Match.objectLike({
+        PolicyDocument: 
         {
-          Action: 'sts:AssumeRole',
-          Effect: 'Allow',
-          Principal: {
-            Service: 'lambda.amazonaws.com',
-          },
-        },
-      ],
-      Version: '2012-10-17',
-    },
-    Policies: [
-      {
-        PolicyDocument: assertCDK.objectLike({
-          Statement: assertCDK.arrayWith(
+          Statement: Match.arrayEquals([
             {
               Action: [
                 's3:GetObject*',
@@ -58,9 +55,9 @@ test('ManagedEndpointProvider', () => {
             },
             {
               Action: [
+                'emr-containers:DescribeManagedEndpoint',
                 'emr-containers:CreateManagedEndpoint',
                 'emr-containers:DeleteManagedEndpoint',
-                'emr-containers:DescribeManagedEndpoint',
               ],
               Effect: 'Allow',
               Resource: '*',
@@ -81,10 +78,9 @@ test('ManagedEndpointProvider', () => {
               Action: 'kms:Decrypt',
               Effect: 'Allow',
               Resource: '*',
-            }),
-        }),
-        PolicyName: 'ManagedEndpointProvider',
-      },
-    ],
+            },
+          ]),
+        },
+      }));
   });
 });

@@ -5,7 +5,7 @@ import { join } from 'path';
 import { SubnetType, VpcAttributes, Vpc, IVpc } from '@aws-cdk/aws-ec2';
 import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { PolicyStatement, PolicyDocument, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
+import { PolicyStatement, PolicyDocument, IManagedPolicy, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
@@ -13,9 +13,7 @@ import { SingletonBucket } from '../singleton-bucket';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
 import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
-import { EmrManagedEndpointOptions } from './emr-managed-endpoint';
-
-import { ManagedEndpointProvider } from './managed-endpoint-provider';
+import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
@@ -58,7 +56,7 @@ export interface EmrEksClusterProps {
    * All public subnets should have the following tag:
    * 'kubernetes.io/role/elb'='1'
    */
-  readonly eksVpcAttribute?: VpcAttributes;
+  readonly eksVpcAttributes?: VpcAttributes;
 }
 
 /**
@@ -66,24 +64,18 @@ export interface EmrEksClusterProps {
  */
 export class EmrEksCluster extends Construct {
 
-  public static getOrCreate(scope: Construct,
-    eksAdminRoleArn: string,
-    kubernetesVersion?: KubernetesVersion,
-    clusterName?: string,
-    vpcAttributes?: VpcAttributes) {
+  /**
+   * Get an existing EmrEksCluster based on the cluster name property or create a new one 
+   */
+  public static getOrCreate(scope: Construct, props: EmrEksClusterProps) {
 
     const stack = Stack.of(scope);
-    const id = `${clusterName}Singleton` || `${EmrEksCluster.DEFAULT_CLUSTER_NAME}Singleton`;
+    const id = props.eksClusterName || EmrEksCluster.DEFAULT_CLUSTER_NAME;
 
     let emrEksCluster: EmrEksCluster;
 
     if (stack.node.tryFindChild(id) == undefined) {
-      emrEksCluster = new EmrEksCluster(stack, id, {
-        kubernetesVersion: kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
-        eksAdminRoleArn: eksAdminRoleArn,
-        eksClusterName: clusterName || EmrEksCluster.DEFAULT_CLUSTER_NAME,
-        eksVpcAttribute: vpcAttributes,
-      });
+      emrEksCluster = new EmrEksCluster(stack, id, props);
     }
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
@@ -111,17 +103,17 @@ export class EmrEksCluster extends Construct {
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
    * @param {EmrEksClusterProps} props the EmrEksClusterProps [properties]{@link EmrEksClusterProps}
-   * @access public
+   * @access private
    */
-  constructor(scope: Construct, id: string, props: EmrEksClusterProps) {
+  private constructor(scope: Construct, id: string, props: EmrEksClusterProps) {
     super(scope, id);
 
     this.clusterName = props.eksClusterName ?? EmrEksCluster.DEFAULT_CLUSTER_NAME;
 
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
-    if ( props.eksVpcAttribute != undefined) {
+    if ( props.eksVpcAttributes != undefined) {
 
-      this.eksVpc = Vpc.fromVpcAttributes(this, 'eksProvidedVpc', props.eksVpcAttribute);
+      this.eksVpc = Vpc.fromVpcAttributes(this, 'eksProvidedVpc', props.eksVpcAttributes);
 
       this.eksCluster = new Cluster(scope, `${this.clusterName}Cluster`, {
         defaultCapacity: 0,
@@ -225,6 +217,7 @@ export class EmrEksCluster extends Construct {
     // Add a nodegroup for notebooks
     this.addEmrEksNodegroup('notebookDriver',EmrEksNodegroup.NOTEBOOK_DRIVER);
     this.addEmrEksNodegroup('notebookExecutor',EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+    this.addEmrEksNodegroup('notebook',EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
     // Create an Amazon S3 Bucket for default podTemplate assets
     this.assetBucket = SingletonBucket.getOrCreate(this, `${this.clusterName.toLowerCase()}-emr-eks-assets`);
     // Configure the podTemplate location
@@ -343,7 +336,7 @@ export class EmrEksCluster extends Construct {
     });
 
     // Set the custom resource provider service token here to avoid circular dependencies
-    this.managedEndpointProviderServiceToken = new ManagedEndpointProvider(this, 'ManagedEndpointProvider').provider.serviceToken;
+    this.managedEndpointProviderServiceToken = new EmrManagedEndpointProvider(this, 'ManagedEndpointProvider').provider.serviceToken;
 
     // Provide the Kubernetes Dashboard URL in AWS CloudFormation output
     new CfnOutput(this, 'kubernetesDashboardURL', {
@@ -462,7 +455,7 @@ ${userData.join('\r\n')}
   /**
    * Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster.
    * @param {Construct} scope of the stack where virtual cluster is deployed
-   * @param {EmrVirtualClusterProps} props the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}
+   * @param {EmrVirtualClusterOptions} options the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}
    * @access public
    */
 
@@ -547,9 +540,8 @@ ${userData.join('\r\n')}
       serviceToken: this.managedEndpointProviderServiceToken,
       properties: {
         clusterId: options.virtualClusterId,
-        executionRoleArn:
-        options.executionRole.roleArn,
-        endpointName: `${id}-managed-endpoint`,
+        executionRoleArn: options.executionRole.roleArn,
+        endpointName: `${options.executionRole}-managed-endpoint`,
         releaseLabel: options.emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
         configurationOverrides: jsonConfigurationOverrides,
       },
@@ -634,22 +626,23 @@ ${userData.join('\r\n')}
   /**
    * Create and configure a new Amazon IAM Role usable as an execution role.
    * This method links the makes the created role assumed by the Amazon EKS cluster Open ID Connect provider.
-   * @param {Policy} policy the execution policy to attach to the role
+   * @param {IManagedPolicy} policy the execution policy to attach to the role
    * @access public
    */
-  public createExecutionRole(scope: Construct, id: string, policy: Policy, name?: string): Role {
-    // Create an execution role assumable by EKS OIDC provider
+  public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, name?: string): Role {
+
+     // Create an execution role assumable by EKS OIDC provider
     const executionRole = new Role(scope, `${id}ExecutionRole`, {
       assumedBy: this.eksOidcProvider,
       roleName: name ? name : undefined,
+      managedPolicies: [policy],
     });
-    executionRole.attachInlinePolicy(policy);
     return executionRole;
   }
 
   /**
    * Upload podTemplates to the Amazon S3 location used by the cluster.
-   * @param path The local path of the yaml podTemplate files to upload
+   * @param filePath The local path of the yaml podTemplate files to upload
    */
   public uploadPodTemplate(id: string, filePath: string) {
 

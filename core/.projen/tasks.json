@@ -119,10 +119,10 @@
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
         },
         {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/emr-eks-data-platform/resources lib/emr-eks-data-platform"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/emr-eks-platform/resources lib/emr-eks-platform"
         },
         {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/notebooks-data-platform/resources lib/notebooks-data-platform"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/notebook-platform/resources lib/notebook-platform"
         },
         {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-athena-query/resources lib/synchronous-athena-query"
@@ -185,7 +185,7 @@
           "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup --upgrade"
         },
         {
-          "exec": "pip3 install -r lib/emr-eks-data-platform/resources/lambdas/managed-endpoint/requirements.txt --target lib/emr-eks-data-platform/resources/lambdas/managed-endpoint --upgrade"
+          "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/managed-endpoint/requirements.txt --target lib/emr-eks-platform/resources/lambdas/managed-endpoint --upgrade"
         },
         {
           "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas --upgrade"
@@ -291,7 +291,7 @@
           "exec": "npx projen build"
         },
         {
-          "exec": "cdk deploy --app=./lib/integ.default.js"
+          "exec": "cdk --version && cdk deploy --app=./lib/integ.default.js"
         }
       ]
     },

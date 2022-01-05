@@ -14,7 +14,7 @@ import {
 } from '@aws-cdk/aws-iam';
 import { Aws, Construct, SecretValue } from '@aws-cdk/core';
 import { Utils } from '../utils';
-import { StudioUserDefinition } from './dataplatform-notebook';
+import { NotebookUserOptions } from './notebook-user';
 
 import * as studioS3Policy from './resources/studio/emr-studio-s3-policy.json';
 import * as studioServiceRolePolicy from './resources/studio/studio-service-role-policy.json';
@@ -22,40 +22,13 @@ import * as studioUserRolePolicy from './resources/studio/studio-user-iam-role-p
 import * as studioSessionPolicy from './resources/studio/studio-user-session-policy.json';
 import * as studioUserPolicy from './resources/studio/studio-user-sso-role-policy.json';
 
-// TODO merge with EmrEksCluster
-/**
- * @internal
- * Create the role to be used with the ManagedEndpoint
- * @returns Return a string with Role ARN
- */
-export function buildManagedEndpointExecutionRole (
-  scope: Construct,
-  policyName: string,
-  emrEksOIDCProvider: string,
-  studioName: string,
-  emrVcName: string): Role {
-
-  let managedPolicy = ManagedPolicy.fromManagedPolicyName(scope, 'managedEndpointPolicy' + policyName + studioName + emrVcName, policyName);
-
-  let managedEndpointExecutionRole: Role = new Role(scope, 'EMRWorkerIAMRole'+ policyName + studioName + emrVcName, {
-    assumedBy: new FederatedPrincipal(
-      emrEksOIDCProvider,
-      [],
-      'sts:AssumeRoleWithWebIdentity',
-    ),
-    managedPolicies: [managedPolicy],
-    roleName: policyName + '-' + emrVcName + '-' + studioName,
-  });
-
-  return managedEndpointExecutionRole;
-}
 
 /**
  * @internal
  * Create a session policy for each user scoped down to the managed endpoint
  * @returns Return the ARN of the policy created
  */
-export function createUserSessionPolicy(scope: Construct, user: StudioUserDefinition,
+export function createUserSessionPolicy(scope: Construct, user: NotebookUserOptions,
   studioServiceRoleName: string,
   managedEndpointArns: string [], studioId: string): string {
 
@@ -170,7 +143,7 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
  * @returns Return the ARN of the policy created
  */
 export function createIAMRolePolicy(scope: Construct,
-  user: StudioUserDefinition,
+  user: NotebookUserOptions,
   studioServiceRoleName: string,
   managedEndpointArns: string [],
   studioId: string): ManagedPolicy {

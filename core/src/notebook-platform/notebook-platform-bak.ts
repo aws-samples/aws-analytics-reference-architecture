@@ -11,17 +11,16 @@ import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
 
 
-import { EmrEksCluster } from '../emr-eks-data-platform/emr-eks-cluster';
+import { EmrEksCluster } from '../emr-eks-platform/emr-eks-cluster';
 import { Utils } from '../utils';
 import {
-  buildManagedEndpointExecutionRole,
   createIAMFederatedRole,
   createIAMRolePolicy,
   createIAMUser,
   createStudioServiceRolePolicy,
   createStudioUserRolePolicy,
   createUserSessionPolicy,
-} from './dataplatform-notebook-helpers';
+} from './notebook-platform-helpers';
 
 /**
  * The properties of Data Platform Infrastructure where the notebook infrastructure should be deployed
@@ -39,7 +38,7 @@ export interface DataPlatformNotebookInfra {
 }
 
 /**
- * The properties for DataPlatformNotebooks Construct.
+ * The properties for DataPlatformNotebook Construct.
  */
 export interface DataPlatformNotebookProps {
   /**
@@ -76,8 +75,6 @@ export interface DataPlatformNotebookProps {
    * Value taken from the IAM console in the Identity providers console
    * */
   readonly idpArn?: string;
-  // TODO move this parameter to StudioUserDefinition
-  // MOVED EMR version
 }
 
 /**
@@ -143,39 +140,28 @@ export enum IdpRelayState {
  * Construct is then used to assign users to the created EMR Studio
  */
 export class DataPlatformNotebook extends Construct {
-
-  private readonly studioSubnetList: string[] | undefined ;
+  private static readonly STUDIO_PRINCIPAL: string = 'elasticmapreduce.amazonaws.com';
   public readonly studioUrl: string;
   public readonly studioId: string;
-  private readonly studioPrincipal: string = 'elasticmapreduce.amazonaws.com';
+  private readonly studioSubnetList: string[] | undefined ;
   private readonly studioName: string;
   private readonly emrVcName: string;
-
   private readonly workSpaceSecurityGroup: SecurityGroup;
   private readonly engineSecurityGroup: ISecurityGroup | undefined;
   private readonly emrVpc: IVpc;
   private readonly workspacesBucket: Bucket;
-  // TODO use IRole only
-  // DONE
-  private studioServiceRole: IRole;
-  // TODO use IRole only
-  //DONE
   private readonly studioUserRole: IRole | undefined;
   private readonly studioServicePolicy: IManagedPolicy [];
   private readonly studioUserPolicy: IManagedPolicy [];
-
   private readonly studioInstance: CfnStudio;
   private readonly emrEks: EmrEksCluster;
-
   private readonly emrVirtCluster: CfnVirtualCluster;
-
   private readonly dataPlatformEncryptionKey: Key;
-
-  private readonly managedEndpointExcutionPolicyArnMapping: Map<string, string>;
+  private readonly managedEndpointExecutionPolicyArnMapping: Map<string, string>;
   private readonly federatedIdPARN : string | undefined;
   private readonly authMode :string;
-
   private readonly nestedStack: NestedStack;
+  private studioServiceRole: IRole;
 
   /**
    * @access private
@@ -192,7 +178,7 @@ export class DataPlatformNotebook extends Construct {
     this.studioServicePolicy = [];
     this.studioUserPolicy = [];
     this.studioSubnetList = [];
-    this.managedEndpointExcutionPolicyArnMapping = new Map<string, string>();
+    this.managedEndpointExecutionPolicyArnMapping = new Map<string, string>();
     this.authMode = props.dataPlatformProps.studioAuthMode;
 
     this.nestedStack = new NestedStack(scope, `${props.dataPlatformProps.studioName}-stack`);
@@ -269,7 +255,7 @@ export class DataPlatformNotebook extends Construct {
 
     //Create a role for the Studio
     this.studioServiceRole = new Role(this.nestedStack, 'studioServiceRole', {
-      assumedBy: new ServicePrincipal(this.studioPrincipal),
+      assumedBy: new ServicePrincipal(DataPlatformNotebook.STUDIO_PRINCIPAL),
       roleName: 'studioServiceRole+' + Utils.stringSanitizer(props.dataPlatformProps.studioName),
       managedPolicies: this.studioServicePolicy,
     });
@@ -284,7 +270,7 @@ export class DataPlatformNotebook extends Construct {
 
       //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
       this.studioUserRole = new Role(this.nestedStack, 'studioUserRole', {
-        assumedBy: new ServicePrincipal(this.studioPrincipal),
+        assumedBy: new ServicePrincipal(DataPlatformNotebook.STUDIO_PRINCIPAL),
         roleName: 'studioUserRole+' + Utils.stringSanitizer(props.dataPlatformProps.studioName),
         managedPolicies: this.studioUserPolicy,
       });
@@ -300,21 +286,15 @@ export class DataPlatformNotebook extends Construct {
       this.studioInstance = this.studioInstanceBuilder(props.dataPlatformProps, this.engineSecurityGroup.securityGroupId);
     }
 
-    //Set the Studio URL and Studio Id this is used in session Mapping for
+    // Set the Studio URL and Studio Id this is used in session Mapping for
     // EMR Studio when {@linkcode addFederatedUsers} or {@linkcode addSSOUsers} are called
     this.studioName = props.dataPlatformProps.studioName;
 
     //Set the Studio URL and Studio Id to return as CfnOutput later
     this.studioUrl = this.studioInstance.attrUrl;
     this.studioId = this.studioInstance.attrStudioId;
-
-    // TODO delete
-    // DONE, DELETED THE LAMBDA TO TAG A NOTEBOOK WORKSPACE
-
   }
 
-  // TODO merge cases and use undefined
-  // MERGED
   /**
    * @internal
    * Constructs a new object of CfnStudio
@@ -349,8 +329,6 @@ export class DataPlatformNotebook extends Construct {
     return studioInstance!;
   }
 
-  // TODO add configoverride in the options
-  // DONE
   /**
    * Method to add users, take a list of userDefinition and will create a managed endpoints for each user
    * and create an IAM Policy scoped to the list managed endpoints
@@ -378,19 +356,20 @@ export class DataPlatformNotebook extends Construct {
         //Check if the managedendpoint is already used in role which is created for a managed endpoint
         //if there is no managedendpointArn create a new managedendpoint
         //else get managedendpoint and push it to  @managedEndpointArns
-        if (!this.managedEndpointExcutionPolicyArnMapping.has(executionPolicyName)) {
+        if (!this.managedEndpointExecutionPolicyArnMapping.has(executionPolicyName)) {
+          // load the policy
+          let managedPolicy = ManagedPolicy.fromManagedPolicyName(this, `Policy`, executionPolicyName);
+
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.nestedStack,
             this.studioName + '-' + Utils.stringSanitizer(executionPolicyName), {
               virtualClusterId: this.emrVirtCluster.attrId,
-              executionRole: buildManagedEndpointExecutionRole(
+              executionRole: this.emrEks.createExecutionRole(
                 this,
                 executionPolicyName,
-                this.emrEks.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
-                this.studioName,
-                this.emrVcName,
+                managedPolicy,
               ),
               emrOnEksVersion: user.emrOnEksVersion ? user.emrOnEksVersion : undefined,
               configurationOverrides: user.configurationOverrides ? user.configurationOverrides : undefined,
@@ -425,12 +404,12 @@ export class DataPlatformNotebook extends Construct {
           //Save resources and reduce the deployment time
           // TODO check the emr version is the same => to be fixed on a later commit need to solve adding a tuple to a JS map
           // TODO check multiple users/notebooks can share a JEG and trigger multiple spark apps
-          this.managedEndpointExcutionPolicyArnMapping.set(executionPolicyName, managedEndpoint.getAttString('arn'));
+          this.managedEndpointExecutionPolicyArnMapping.set(executionPolicyName, managedEndpoint.getAttString('arn'));
 
           //Push the managedendpoint arn to be used in to build the policy to attach to it
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
-          managedEndpointArns.push(<string> this.managedEndpointExcutionPolicyArnMapping.get(executionPolicyName));
+          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(executionPolicyName));
         }
       }
 

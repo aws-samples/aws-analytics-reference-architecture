@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: MIT-0
 
 import { VpcAttributes } from '@aws-cdk/aws-ec2';
-import { KubernetesVersion } from '@aws-cdk/aws-eks';
 import { CfnOutput, Construct, Stack } from '@aws-cdk/core';
-import { EmrEksCluster } from '../emr-eks-data-platform/emr-eks-cluster';
-import { DataPlatformNotebook, DataPlatformNotebookProps, StudioUserDefinition } from './dataplatform-notebook';
+import { EmrEksCluster } from '../emr-eks-platform';
+import { DataPlatformNotebook, DataPlatformNotebookProps, StudioUserDefinition } from './notebook-platform-bak';
 
 /**
  * The properties for DataPlatform Infrastructure Construct.
@@ -69,14 +68,10 @@ export class DataPlatform extends Construct {
     //Create new Amazon EKS cluster for Amazon EMR or get one already create for previous EMR on EKS cluster
     //This avoid creating a new cluster everytime an object is initialized
 
-    if (props.vpcAttributes != undefined) {
-      this.emrEks = EmrEksCluster.getOrCreate(scope, props.eksAdminRoleArn, KubernetesVersion.V1_20, id, props.vpcAttributes);
-    } else {
-      this.emrEks = EmrEksCluster.getOrCreate(scope, props.eksAdminRoleArn, KubernetesVersion.V1_20, id);
-    }
-
+    this.emrEks = EmrEksCluster.getOrCreate(scope, {
+      eksAdminRoleArn: props.eksAdminRoleArn, eksVpcAttributes: props.vpcAttributes
+    });
     this.dataPlatformMapping = new Map<string, DataPlatformNotebook>();
-
   }
 
   /**

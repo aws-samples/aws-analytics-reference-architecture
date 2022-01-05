@@ -9,16 +9,20 @@
 
  import * as assertCDK from '@aws-cdk/assert';
  import '@aws-cdk/assert/jest';
- import { Policy, PolicyDocument, PolicyStatement } from '@aws-cdk/aws-iam';
+ import { ManagedPolicy, PolicyDocument, PolicyStatement } from '@aws-cdk/aws-iam';
  import { Stack } from '@aws-cdk/core';
- import { EmrEksCluster } from '../../../src/emr-eks-data-platform/emr-eks-cluster';
+ import { EmrEksCluster } from '../../../src/emr-eks-platform/emr-eks-cluster';
+ import { TaintEffect } from '@aws-cdk/aws-eks';
+
  
  const emrEksClusterStack = new Stack();
- const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, 'arn:aws:iam::1234567890:role/AdminAccess');
+ const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, {
+   eksAdminRoleArn: 'arn:aws:iam::1234567890:role/AdminAccess',
+ });
  cluster.addEmrVirtualCluster(emrEksClusterStack, {
    name: 'test',
  });
- const policy = new Policy(emrEksClusterStack, 'testPolicy', {
+ const policy = new ManagedPolicy(emrEksClusterStack, 'testPolicy', {
    document: new PolicyDocument({
      statements: [new PolicyStatement({
        resources: ['*'],
@@ -219,6 +223,58 @@
        'k8s.io/cluster-autoscaler/node-template/taint/node-lifecycle': 'spot:NO_SCHEDULE',
      }),
    });
+
+   expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
+     NodegroupName: 'notebook-driver-0',
+     InstanceTypes: ['t3.large'],
+     Labels: {
+       'role': 'notebook',
+       'spark-role': 'driver',
+       'node-lifecycle': 'on-demand',
+     },
+     Taints: [
+       {
+         Key: 'role',
+         Value: 'notebook',
+         Effect: TaintEffect.NO_SCHEDULE,
+       },
+     ],
+     ScalingConfig: {
+       DesiredSize: 0,
+       MaxSize: 10,
+       MinSize: 0,
+     },
+    });
+
+    expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
+      NodegroupName: 'notebook-executor-0',
+      InstanceTypes: ['t3.2xlarge',
+        't3a.2xlarge'],
+      CapacityType: 'SPOT',
+      Labels: {
+        'role': 'notebook',
+        'spark-role': 'executor',
+        'node-lifecycle': 'spot',
+      },
+      Taints: [
+        {
+          Key: 'role',
+          Value: 'notebook',
+          Effect: 'NO_SCHEDULE',
+        },
+        {
+          Effect: 'NO_SCHEDULE',
+          Key: 'node-lifecycle',
+          Value: 'spot',
+        },
+      ],
+      ScalingConfig: {
+        DesiredSize: 0,
+        MaxSize: 100,
+        MinSize: 0,
+      },
+     });
+
  });
  
  test('EMR virtual cluster should be created with proper configuration', () => {
@@ -236,7 +292,7 @@
  });
  
  test('Execution role policy should be created with attached policy', () => {
-   expect(emrEksClusterStack).toHaveResource('AWS::IAM::Policy', {
+   expect(emrEksClusterStack).toHaveResource('AWS::IAM::ManagedPolicy', {
      PolicyDocument: assertCDK.objectLike({
        Statement: assertCDK.arrayWith(assertCDK.objectLike({
          Action: 's3:*',

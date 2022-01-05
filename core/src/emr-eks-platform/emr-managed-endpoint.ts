@@ -1,5 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
+
+import { IRole } from '@aws-cdk/aws-iam';
 import * as path from 'path';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Code, Function, Runtime } from '@aws-cdk/aws-lambda';
@@ -8,20 +10,43 @@ import { Provider } from '@aws-cdk/custom-resources';
 
 
 /**
+ * The properties for the EmrVirtualCluster Construct class.
+ */
+ export interface EmrManagedEndpointOptions {
+   /**
+      * The Id of the Amazon EMR virtual cluster containing the managed endpoint
+      */
+   readonly virtualClusterId: string;
+   /**
+      * The Amazon IAM role used as the execution role
+      */
+   readonly executionRole: IRole;
+   /**
+      * The Amazon EMR version to use
+      * @default - The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
+      */
+   readonly emrOnEksVersion?: string;
+   /**
+      * The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint
+      * @default - Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+      */
+   readonly configurationOverrides?: string;
+ }
+
+/**
  * ManagedEndpointProvider Construct implementing a custom resource provider for managing Amazon EMR on Amazon EKS Managed Endpoints.
  */
-export class ManagedEndpointProvider extends Construct {
+export class EmrManagedEndpointProvider extends Construct {
 
   /**
    * Get the ManagedEndpointProvider from the AWS CDK Stack based on the provided ID.
    * If no ManagedEndpointProvider exists, creates a new one.
    * @param {Construct} scope The scope of the CDK Construct to search
    * @param {string} id The ID of the ManagedEndpointProvider to retrieve
-   * @returns
    */
   public static getOrCreate(scope: Construct, id: string) {
     const stack = Stack.of(scope);
-    return stack.node.tryFindChild(id) as ManagedEndpointProvider || new ManagedEndpointProvider(scope, id);
+    return stack.node.tryFindChild(id) as EmrManagedEndpointProvider || new EmrManagedEndpointProvider(scope, id);
   }
   /**
    * The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources
