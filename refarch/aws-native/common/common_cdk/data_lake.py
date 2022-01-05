@@ -86,20 +86,19 @@ class DataLake(Stack):
 
         # DATA VISUALIZATION module
         if is_module_enabled(dataviz_module_param):
-            quicksight_username = CfnParameter(self, "QuickSightUsername",
-                                               type="String",
-                                               description="The QuickSight username to add to the group.")
+            quicksight_username = self.node.try_get_context('QuickSightUsername')
 
-            quicksight_identity_region = CfnParameter(self, "QuickSightIdentityRegion",
-                                                      type="String",
-                                                      description="The identity region for QuickSight.")
+            quicksight_identity_region = self.node.try_get_context('QuickSightIdentityRegion')
+
+            if quicksight_username is None or quicksight_identity_region is None:
+                raise Exception('QuickSightUsername and QuickSightIdentityRegion must be specified if data visualization is enabled')
 
             dataviz_stack = DataVizModule(self, "dataviz",
                                           vpc=data_lake.vpc,
                                           clean_glue_db_name=data_lake.clean_glue_db.database_name,
                                           redshift_sg_id=dwh_stack.redshift_sg_id,
-                                          quicksight_username=quicksight_username.value_as_string,
-                                          quicksight_identity_region=quicksight_identity_region.value_as_string)
+                                          quicksight_username=quicksight_username,
+                                          quicksight_identity_region=quicksight_identity_region)
 
             CfnOutput(self, 'QuickSight-Security-Group-Id',
                       value=dataviz_stack.quicksight_security_group_id)
