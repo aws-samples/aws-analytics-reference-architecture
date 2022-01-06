@@ -58,6 +58,112 @@ public readonly resultBucket: Bucket;
 ---
 
 
+### BatchReplayer <a name="aws-analytics-reference-architecture.BatchReplayer" id="awsanalyticsreferencearchitecturebatchreplayer"></a>
+
+Replay the data in the given PartitionedDataset.
+
+It will dump files into the `sinkBucket` based on the given `frequency`. The computation is in a Step Function with two Lambda steps.  1. resources/lambdas/find-file-paths Read the manifest file and output a list of S3 file paths within that batch time range  2. resources/lambdas/write-in-batch Take a file path, filter only records within given time range, adjust the the time with offset to make it looks like just being generated. Then write the output to the `sinkBucket`
+
+#### Initializers <a name="aws-analytics-reference-architecture.BatchReplayer.Initializer" id="awsanalyticsreferencearchitecturebatchreplayerinitializer"></a>
+
+```typescript
+import { BatchReplayer } from 'aws-analytics-reference-architecture'
+
+new BatchReplayer(scope: Construct, id: string, props: BatchReplayerProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| [`scope`](#awsanalyticsreferencearchitecturebatchreplayerparameterscope)<span title="Required">*</span> | [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct) | *No description.* |
+| [`id`](#awsanalyticsreferencearchitecturebatchreplayerparameterid)<span title="Required">*</span> | `string` | *No description.* |
+| [`props`](#awsanalyticsreferencearchitecturebatchreplayerparameterprops)<span title="Required">*</span> | [`aws-analytics-reference-architecture.BatchReplayerProps`](#aws-analytics-reference-architecture.BatchReplayerProps) | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.parameter.scope" id="awsanalyticsreferencearchitecturebatchreplayerparameterscope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.parameter.id" id="awsanalyticsreferencearchitecturebatchreplayerparameterid"></a>
+
+- *Type:* `string`
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.parameter.props" id="awsanalyticsreferencearchitecturebatchreplayerparameterprops"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.BatchReplayerProps`](#aws-analytics-reference-architecture.BatchReplayerProps)
+
+---
+
+
+
+#### Properties <a name="Properties" id="properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| [`dataset`](#awsanalyticsreferencearchitecturebatchreplayerpropertydataset)<span title="Required">*</span> | [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset) | Dataset used for replay. |
+| [`frequency`](#awsanalyticsreferencearchitecturebatchreplayerpropertyfrequency)<span title="Required">*</span> | `number` | Frequency (in Seconds) of the replaying. |
+| [`sinkBucket`](#awsanalyticsreferencearchitecturebatchreplayerpropertysinkbucket)<span title="Required">*</span> | [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket) | Sink bucket where the batch replayer will put data in. |
+| [`outputFileMaxSizeInBytes`](#awsanalyticsreferencearchitecturebatchreplayerpropertyoutputfilemaxsizeinbytes) | `number` | Maximum file size for each output file. |
+
+---
+
+##### `dataset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.property.dataset" id="awsanalyticsreferencearchitecturebatchreplayerpropertydataset"></a>
+
+```typescript
+public readonly dataset: PartitionedDataset;
+```
+
+- *Type:* [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset)
+
+Dataset used for replay.
+
+---
+
+##### `frequency`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.property.frequency" id="awsanalyticsreferencearchitecturebatchreplayerpropertyfrequency"></a>
+
+```typescript
+public readonly frequency: number;
+```
+
+- *Type:* `number`
+
+Frequency (in Seconds) of the replaying.
+
+The batch job will start for every given frequency and replay the data in that period
+
+---
+
+##### `sinkBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket" id="awsanalyticsreferencearchitecturebatchreplayerpropertysinkbucket"></a>
+
+```typescript
+public readonly sinkBucket: Bucket;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
+
+Sink bucket where the batch replayer will put data in.
+
+---
+
+##### `outputFileMaxSizeInBytes`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.BatchReplayer.property.outputFileMaxSizeInBytes" id="awsanalyticsreferencearchitecturebatchreplayerpropertyoutputfilemaxsizeinbytes"></a>
+
+```typescript
+public readonly outputFileMaxSizeInBytes: number;
+```
+
+- *Type:* `number`
+
+Maximum file size for each output file.
+
+If the output batch file is, larger than that, it will be splitted into multiple files that fit this size.  Default to 100MB (max value)
+
+---
+
+
 ### DataGenerator <a name="aws-analytics-reference-architecture.DataGenerator" id="awsanalyticsreferencearchitecturedatagenerator"></a>
 
 DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime Target can be an Amazon S3 bucket or an Amazon Kinesis Data Stream.
@@ -1074,6 +1180,67 @@ the CrawlerStartWait [properties]{@link SynchronousCrawlerProps}.
 
 ## Structs <a name="Structs" id="structs"></a>
 
+### BatchReplayerProps <a name="aws-analytics-reference-architecture.BatchReplayerProps" id="awsanalyticsreferencearchitecturebatchreplayerprops"></a>
+
+#### Initializer <a name="[object Object].Initializer" id="object-objectinitializer"></a>
+
+```typescript
+import { BatchReplayerProps } from 'aws-analytics-reference-architecture'
+
+const batchReplayerProps: BatchReplayerProps = { ... }
+```
+
+#### Properties <a name="Properties" id="properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| [`dataset`](#awsanalyticsreferencearchitecturebatchreplayerpropspropertydataset)<span title="Required">*</span> | [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset) | *No description.* |
+| [`sinkBucket`](#awsanalyticsreferencearchitecturebatchreplayerpropspropertysinkbucket)<span title="Required">*</span> | [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket) | *No description.* |
+| [`frequency`](#awsanalyticsreferencearchitecturebatchreplayerpropspropertyfrequency) | `number` | *No description.* |
+| [`outputFileMaxSizeInBytes`](#awsanalyticsreferencearchitecturebatchreplayerpropspropertyoutputfilemaxsizeinbytes) | `number` | *No description.* |
+
+---
+
+##### `dataset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayerProps.property.dataset" id="awsanalyticsreferencearchitecturebatchreplayerpropspropertydataset"></a>
+
+```typescript
+public readonly dataset: PartitionedDataset;
+```
+
+- *Type:* [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset)
+
+---
+
+##### `sinkBucket`<sup>Required</sup> <a name="aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket" id="awsanalyticsreferencearchitecturebatchreplayerpropspropertysinkbucket"></a>
+
+```typescript
+public readonly sinkBucket: Bucket;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Bucket`](#@aws-cdk/aws-s3.Bucket)
+
+---
+
+##### `frequency`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.BatchReplayerProps.property.frequency" id="awsanalyticsreferencearchitecturebatchreplayerpropspropertyfrequency"></a>
+
+```typescript
+public readonly frequency: number;
+```
+
+- *Type:* `number`
+
+---
+
+##### `outputFileMaxSizeInBytes`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes" id="awsanalyticsreferencearchitecturebatchreplayerpropspropertyoutputfilemaxsizeinbytes"></a>
+
+```typescript
+public readonly outputFileMaxSizeInBytes: number;
+```
+
+- *Type:* `number`
+
+---
+
 ### DataGeneratorProps <a name="aws-analytics-reference-architecture.DataGeneratorProps" id="awsanalyticsreferencearchitecturedatageneratorprops"></a>
 
 The properties for DataGenerator Construct.
@@ -2055,6 +2222,92 @@ Example:  * The SQL file:     ```sql    SELECT * FROM ${TABLE_NAME};    ``` * Th
 
 ---
 
+### PartitionedDatasetProps <a name="aws-analytics-reference-architecture.PartitionedDatasetProps" id="awsanalyticsreferencearchitecturepartitioneddatasetprops"></a>
+
+#### Initializer <a name="[object Object].Initializer" id="object-objectinitializer"></a>
+
+```typescript
+import { PartitionedDatasetProps } from 'aws-analytics-reference-architecture'
+
+const partitionedDatasetProps: PartitionedDatasetProps = { ... }
+```
+
+#### Properties <a name="Properties" id="properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| [`dateTimeColumnToFilter`](#awsanalyticsreferencearchitecturepartitioneddatasetpropspropertydatetimecolumntofilter)<span title="Required">*</span> | `string` | Datetime column for filtering data. |
+| [`location`](#awsanalyticsreferencearchitecturepartitioneddatasetpropspropertylocation)<span title="Required">*</span> | [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location) | The Amazon S3 Location of the source dataset. |
+| [`manifestLocation`](#awsanalyticsreferencearchitecturepartitioneddatasetpropspropertymanifestlocation)<span title="Required">*</span> | [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location) | Manifest file in csv format with two columns: start, path. |
+| [`startDatetime`](#awsanalyticsreferencearchitecturepartitioneddatasetpropspropertystartdatetime)<span title="Required">*</span> | `string` | The minimum datetime value in the dataset used to calculate time offset. |
+| [`dateTimeColumnsToAdjust`](#awsanalyticsreferencearchitecturepartitioneddatasetpropspropertydatetimecolumnstoadjust) | `string`[] | Array of column names with datetime to adjust. |
+
+---
+
+##### `dateTimeColumnToFilter`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.dateTimeColumnToFilter" id="awsanalyticsreferencearchitecturepartitioneddatasetpropspropertydatetimecolumntofilter"></a>
+
+```typescript
+public readonly dateTimeColumnToFilter: string;
+```
+
+- *Type:* `string`
+
+Datetime column for filtering data.
+
+---
+
+##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.location" id="awsanalyticsreferencearchitecturepartitioneddatasetpropspropertylocation"></a>
+
+```typescript
+public readonly location: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+The Amazon S3 Location of the source dataset.
+
+It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
+
+---
+
+##### `manifestLocation`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.manifestLocation" id="awsanalyticsreferencearchitecturepartitioneddatasetpropspropertymanifestlocation"></a>
+
+```typescript
+public readonly manifestLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Manifest file in csv format with two columns: start, path.
+
+---
+
+##### `startDatetime`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.startDatetime" id="awsanalyticsreferencearchitecturepartitioneddatasetpropspropertystartdatetime"></a>
+
+```typescript
+public readonly startDatetime: string;
+```
+
+- *Type:* `string`
+
+The minimum datetime value in the dataset used to calculate time offset.
+
+---
+
+##### `dateTimeColumnsToAdjust`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.PartitionedDatasetProps.property.dateTimeColumnsToAdjust" id="awsanalyticsreferencearchitecturepartitioneddatasetpropspropertydatetimecolumnstoadjust"></a>
+
+```typescript
+public readonly dateTimeColumnsToAdjust: string[];
+```
+
+- *Type:* `string`[]
+
+Array of column names with datetime to adjust.
+
+The source data will have date in the past 2021-01-01T00:00:00 while the data replayer will have have the current time. The difference (aka. offset) must be added to all datetime columns
+
+---
+
 ### SynchronousAthenaQueryProps <a name="aws-analytics-reference-architecture.SynchronousAthenaQueryProps" id="awsanalyticsreferencearchitecturesynchronousathenaqueryprops"></a>
 
 The properties for SynchronousAthenaQuery Construct.
@@ -2637,6 +2890,161 @@ Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
 ##### `TOOLING_ALL` <a name="aws-analytics-reference-architecture.EmrEksNodegroup.property.TOOLING_ALL" id="awsanalyticsreferencearchitectureemreksnodegrouppropertytoolingall"></a>
 
 - *Type:* [`aws-analytics-reference-architecture.EmrEksNodegroupOptions`](#aws-analytics-reference-architecture.EmrEksNodegroupOptions)
+
+---
+
+### PartitionedDataset <a name="aws-analytics-reference-architecture.PartitionedDataset" id="awsanalyticsreferencearchitecturepartitioneddataset"></a>
+
+PartitionedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+
+PartitionDataset has following properties:  1. Data is partitioned by timestamp (in seconds). Each folder stores data within a given range.  There is no constraint on how long the timestange range can be. But each file must not be larger tahn 100MB. Here is an example: |- time_range_start=16000000000     |- file1.csv 100MB     |- file2.csv 50MB |- time_range_start=16000000300 // 5 minute range (300 sec)     |- file1.csv 1MB |- time_range_start=16000000600     |- file1.csv 100MB     |- file2.csv 100MB     |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB 2. It has a manefest CSV file with two columns: start and path. Start is the timestamp start        , path 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file1.csv 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file2.csv 16000000300  , s3://<path>/<to>/<folder>/time_range_start=16000000300/file1.csv 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file1.csv 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
+
+#### Initializers <a name="aws-analytics-reference-architecture.PartitionedDataset.Initializer" id="awsanalyticsreferencearchitecturepartitioneddatasetinitializer"></a>
+
+```typescript
+import { PartitionedDataset } from 'aws-analytics-reference-architecture'
+
+new PartitionedDataset(props: PartitionedDatasetProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| [`props`](#awsanalyticsreferencearchitecturepartitioneddatasetparameterprops)<span title="Required">*</span> | [`aws-analytics-reference-architecture.PartitionedDatasetProps`](#aws-analytics-reference-architecture.PartitionedDatasetProps) | the DatasetProps. |
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.parameter.props" id="awsanalyticsreferencearchitecturepartitioneddatasetparameterprops"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.PartitionedDatasetProps`](#aws-analytics-reference-architecture.PartitionedDatasetProps)
+
+the DatasetProps.
+
+---
+
+
+
+#### Properties <a name="Properties" id="properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| [`dateTimeColumnToFilter`](#awsanalyticsreferencearchitecturepartitioneddatasetpropertydatetimecolumntofilter)<span title="Required">*</span> | `string` | Datetime column for filtering data. |
+| [`location`](#awsanalyticsreferencearchitecturepartitioneddatasetpropertylocation)<span title="Required">*</span> | [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location) | The Amazon S3 Location of the source dataset. |
+| [`manifestLocation`](#awsanalyticsreferencearchitecturepartitioneddatasetpropertymanifestlocation)<span title="Required">*</span> | [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location) | Manifest file in csv format with two columns: start, path. |
+| [`offset`](#awsanalyticsreferencearchitecturepartitioneddatasetpropertyoffset)<span title="Required">*</span> | `number` | The offset of the Dataset (difference between min datetime and now) in Seconds. |
+| [`startDateTime`](#awsanalyticsreferencearchitecturepartitioneddatasetpropertystartdatetime)<span title="Required">*</span> | `string` | Start datetime replaying this dataset. |
+| [`tableName`](#awsanalyticsreferencearchitecturepartitioneddatasetpropertytablename)<span title="Required">*</span> | `string` | The name of the SQL table extracted from path. |
+| [`dateTimeColumnsToAdjust`](#awsanalyticsreferencearchitecturepartitioneddatasetpropertydatetimecolumnstoadjust) | `string`[] | Array of column names with datetime to adjust. |
+
+---
+
+##### `dateTimeColumnToFilter`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.dateTimeColumnToFilter" id="awsanalyticsreferencearchitecturepartitioneddatasetpropertydatetimecolumntofilter"></a>
+
+```typescript
+public readonly dateTimeColumnToFilter: string;
+```
+
+- *Type:* `string`
+
+Datetime column for filtering data.
+
+---
+
+##### `location`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.location" id="awsanalyticsreferencearchitecturepartitioneddatasetpropertylocation"></a>
+
+```typescript
+public readonly location: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+The Amazon S3 Location of the source dataset.
+
+---
+
+##### `manifestLocation`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.manifestLocation" id="awsanalyticsreferencearchitecturepartitioneddatasetpropertymanifestlocation"></a>
+
+```typescript
+public readonly manifestLocation: Location;
+```
+
+- *Type:* [`@aws-cdk/aws-s3.Location`](#@aws-cdk/aws-s3.Location)
+
+Manifest file in csv format with two columns: start, path.
+
+---
+
+##### `offset`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.offset" id="awsanalyticsreferencearchitecturepartitioneddatasetpropertyoffset"></a>
+
+```typescript
+public readonly offset: number;
+```
+
+- *Type:* `number`
+
+The offset of the Dataset (difference between min datetime and now) in Seconds.
+
+---
+
+##### `startDateTime`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.startDateTime" id="awsanalyticsreferencearchitecturepartitioneddatasetpropertystartdatetime"></a>
+
+```typescript
+public readonly startDateTime: string;
+```
+
+- *Type:* `string`
+
+Start datetime replaying this dataset.
+
+Your data set may start from 1 Jan 2020  But you can specify this to 1 Feb 2020 to omit the first month data.
+
+---
+
+##### `tableName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.tableName" id="awsanalyticsreferencearchitecturepartitioneddatasetpropertytablename"></a>
+
+```typescript
+public readonly tableName: string;
+```
+
+- *Type:* `string`
+
+The name of the SQL table extracted from path.
+
+---
+
+##### `dateTimeColumnsToAdjust`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.PartitionedDataset.property.dateTimeColumnsToAdjust" id="awsanalyticsreferencearchitecturepartitioneddatasetpropertydatetimecolumnstoadjust"></a>
+
+```typescript
+public readonly dateTimeColumnsToAdjust: string[];
+```
+
+- *Type:* `string`[]
+
+Array of column names with datetime to adjust.
+
+---
+
+#### Constants <a name="Constants" id="constants"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| [`DATASETS_BUCKET`](#awsanalyticsreferencearchitecturepartitioneddatasetpropertydatasetsbucket)<span title="Required">*</span> | `string` | The bucket name of the AWS Analytics Reference Architecture datasets. |
+| [`RETAIL_1GB_WEB_SALE`](#awsanalyticsreferencearchitecturepartitioneddatasetpropertyretail1gbwebsale)<span title="Required">*</span> | [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset) | The web sale dataset part of 1GB retail datasets. |
+
+---
+
+##### `DATASETS_BUCKET` <a name="aws-analytics-reference-architecture.PartitionedDataset.property.DATASETS_BUCKET" id="awsanalyticsreferencearchitecturepartitioneddatasetpropertydatasetsbucket"></a>
+
+- *Type:* `string`
+
+The bucket name of the AWS Analytics Reference Architecture datasets.
+
+---
+
+##### `RETAIL_1GB_WEB_SALE` <a name="aws-analytics-reference-architecture.PartitionedDataset.property.RETAIL_1GB_WEB_SALE" id="awsanalyticsreferencearchitecturepartitioneddatasetpropertyretail1gbwebsale"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.PartitionedDataset`](#aws-analytics-reference-architecture.PartitionedDataset)
+
+The web sale dataset part of 1GB retail datasets.
 
 ---
 
