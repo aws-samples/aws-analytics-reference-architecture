@@ -511,11 +511,7 @@ ${userData.join('\r\n')}
    * @param {EmrManagedEndpointOptions} options The EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint
    * @access public
    */
-  public addManagedEndpoint(
-    scope: Construct,
-    id: string,
-    options: EmrManagedEndpointOptions,
-  ) {
+  public addManagedEndpoint(scope: Construct, id: string, options: EmrManagedEndpointOptions) {
 
     if (id.length > 64) {
       throw new Error(`error managed endpoint name length is greater than 64 ${id}`);
@@ -541,7 +537,7 @@ ${userData.join('\r\n')}
       properties: {
         clusterId: options.virtualClusterId,
         executionRoleArn: options.executionRole.roleArn,
-        endpointName: `${options.executionRole}-managed-endpoint`,
+        endpointName: options.managedEndpointName,
         releaseLabel: options.emrOnEksVersion || EmrEksCluster.DEFAULT_EMR_VERSION,
         configurationOverrides: jsonConfigurationOverrides,
       },

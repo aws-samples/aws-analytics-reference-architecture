@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
-import { App, Stack } from '@aws-cdk/core';
+import { App, Stack, Aws, ArnFormat } from '@aws-cdk/core';
 import { EmrEksCluster, NotebookPlatform, StudioAuthMode } from '.';
 
 const mockApp = new App();
@@ -14,11 +14,25 @@ const policy = new ManagedPolicy(stack, 'MyPolicy',{
       resources: ['*'],
       actions: ['s3:*'],
     }),
+    new PolicyStatement({
+      resources: [
+        stack.formatArn({
+          account: Aws.ACCOUNT_ID,
+          region: Aws.REGION,
+          service: 'logs',
+          resource: '*',
+          arnFormat: ArnFormat.NO_RESOURCE_NAME,
+        }),
+      ],
+      actions: [
+        'logs:*',
+      ],
+    }),
   ]
 })
 
 const emrEks = EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'MY_ROLE_ARN',
+  eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav',
 });
 
 const notebookPlatform =new NotebookPlatform(stack, 'platform1',{
@@ -29,8 +43,8 @@ const notebookPlatform =new NotebookPlatform(stack, 'platform1',{
 })
 
 notebookPlatform.addUser([{
-  identityName: 'MY_USER',
+  identityName: 'gromav',
   identityType: 'USER',
-  executionPolicyNames: [policy.managedPolicyName],
+  executionPolicies: [policy],
   emrOnEksVersion: 'emr-6.3.0-latest',
 }]);

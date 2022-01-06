@@ -259,25 +259,25 @@ export class NotebookPlatform extends Construct {
     for (let user of userList) {
 
       //For each policy create a role and then pass it to addManageEndpoint to create an endpoint
-      user.executionPolicyNames.forEach( (executionPolicyName, index) => {
+      user.executionPolicies.forEach( (executionPolicy, index) => {
 
         //Check if the managedendpoint is already used in role which is created for a managed endpoint
         //if there is no managedendpointArn create a new managedendpoint
         //else get managedendpoint and push it to  @managedEndpointArns
-        if (!this.managedEndpointExecutionPolicyArnMapping.has(executionPolicyName)) {
-          // load the policy
-          let managedPolicy = ManagedPolicy.fromManagedPolicyName(this, `Policy`, executionPolicyName);
+        if (!this.managedEndpointExecutionPolicyArnMapping.has(executionPolicy.managedPolicyName)) {
 
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.nestedStack,
-            this.studioName + '-' + Utils.stringSanitizer(executionPolicyName), {
+            `${this.studioName}${Utils.stringSanitizer(executionPolicy.managedPolicyName)}`,
+            {
+              managedEndpointName: `${executionPolicy.managedPolicyName}`,
               virtualClusterId: this.emrVirtCluster.attrId,
               executionRole: this.emrEks.createExecutionRole(
                 this,
-                `execRole-${user.identityName}-${index}`,
-                managedPolicy,
+                `${user.identityName}${index}`,
+                executionPolicy,
               ),
               emrOnEksVersion: user.emrOnEksVersion ? user.emrOnEksVersion : undefined,
               configurationOverrides: user.configurationOverrides ? user.configurationOverrides : undefined,
@@ -290,7 +290,7 @@ export class NotebookPlatform extends Construct {
           //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
           let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(
             this.nestedStack,
-            `engineSecurityGroup-${user.identityName}-${index}`,
+            `engineSecurityGroup${user.identityName}${index}`,
             managedEndpoint.getAttString('securityGroup'));
 
           Tags.of(engineSecurityGroup).add('for-use-by-analytics-reference-architecture', 'true');
@@ -312,12 +312,12 @@ export class NotebookPlatform extends Construct {
           //Save resources and reduce the deployment time
           // TODO check the emr version is the same => to be fixed on a later commit need to solve adding a tuple to a JS map
           // TODO check multiple users/notebooks can share a JEG and trigger multiple spark apps
-          this.managedEndpointExecutionPolicyArnMapping.set(executionPolicyName, managedEndpoint.getAttString('arn'));
+          this.managedEndpointExecutionPolicyArnMapping.set(executionPolicy.managedPolicyName, managedEndpoint.getAttString('arn'));
 
           //Push the managedendpoint arn to be used in to build the policy to attach to it
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
-          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(executionPolicyName));
+          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(executionPolicy.managedPolicyName));
         }
       })
 

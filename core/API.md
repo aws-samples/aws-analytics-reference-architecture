@@ -1615,6 +1615,18 @@ The Amazon IAM role used as the execution role.
 
 ---
 
+##### `managedEndpointName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.managedEndpointName"></a>
+
+```typescript
+public readonly managedEndpointName: string;
+```
+
+- *Type:* `string`
+
+The name of the EMR managed endpoint.
+
+---
+
 ##### `virtualClusterId`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.virtualClusterId"></a>
 
 ```typescript
@@ -1929,13 +1941,13 @@ import { NotebookUserOptions } from 'aws-analytics-reference-architecture'
 const notebookUserOptions: NotebookUserOptions = { ... }
 ```
 
-##### `executionPolicyNames`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookUserOptions.property.executionPolicyNames"></a>
+##### `executionPolicies`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookUserOptions.property.executionPolicies"></a>
 
 ```typescript
-public readonly executionPolicyNames: string[];
+public readonly executionPolicies: ManagedPolicy[];
 ```
 
-- *Type:* `string`[]
+- *Type:* [`@aws-cdk/aws-iam.ManagedPolicy`](#@aws-cdk/aws-iam.ManagedPolicy)[]
 
 The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB.
 

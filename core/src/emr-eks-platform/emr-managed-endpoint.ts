@@ -10,34 +10,38 @@ import { Provider } from '@aws-cdk/custom-resources';
 
 
 /**
- * The properties for the EmrVirtualCluster Construct class.
- */
- export interface EmrManagedEndpointOptions {
-   /**
-      * The Id of the Amazon EMR virtual cluster containing the managed endpoint
-      */
-   readonly virtualClusterId: string;
-   /**
-      * The Amazon IAM role used as the execution role
-      */
-   readonly executionRole: IRole;
-   /**
-      * The Amazon EMR version to use
-      * @default - The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
-      */
-   readonly emrOnEksVersion?: string;
-   /**
-      * The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint
-      * @default - Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
-      */
-   readonly configurationOverrides?: string;
- }
+* The properties for the EmrVirtualCluster Construct class.
+*/
+export interface EmrManagedEndpointOptions {
+  /**
+   * The name of the EMR managed endpoint
+   */
+  readonly managedEndpointName: string;
+  /**
+   * The Id of the Amazon EMR virtual cluster containing the managed endpoint
+   */
+  readonly virtualClusterId: string;
+  /**
+   * The Amazon IAM role used as the execution role
+   */
+  readonly executionRole: IRole;
+  /**
+   * The Amazon EMR version to use
+   * @default - The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
+   */
+  readonly emrOnEksVersion?: string;
+  /**
+   * The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint
+   * @default - Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+   */
+  readonly configurationOverrides?: string;
+}
 
 /**
  * ManagedEndpointProvider Construct implementing a custom resource provider for managing Amazon EMR on Amazon EKS Managed Endpoints.
  */
 export class EmrManagedEndpointProvider extends Construct {
-
+  
   /**
    * Get the ManagedEndpointProvider from the AWS CDK Stack based on the provided ID.
    * If no ManagedEndpointProvider exists, creates a new one.
@@ -52,19 +56,19 @@ export class EmrManagedEndpointProvider extends Construct {
    * The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources
    */
   public readonly provider: Provider;
-
+  
   /**
    * Constructs a new instance of the ManageEndpointProvider. The provider can then be used to create Amazon EMR on EKS Managed Endpoint custom resources
    * @param { Construct} scope the Scope of the CDK Construct
    * @param id the ID of the CDK Construct
    */
-
+  
   constructor(scope: Construct, id: string) {
     super(scope, id);
-
+    
     // Create the custom resource provider for adding managed endpoints to the cluster
     const lambdaPath = 'resources/lambdas/managed-endpoint';
-
+    
     const lambdaPolicy = [
       new PolicyStatement({
         resources: ['*'],
@@ -77,8 +81,8 @@ export class EmrManagedEndpointProvider extends Construct {
       new PolicyStatement({
         resources: ['*'],
         actions: ['emr-containers:DescribeManagedEndpoint',
-          'emr-containers:CreateManagedEndpoint',
-          'emr-containers:DeleteManagedEndpoint'],
+        'emr-containers:CreateManagedEndpoint',
+        'emr-containers:DeleteManagedEndpoint'],
       }),
       new PolicyStatement({
         resources: ['*'],
@@ -96,7 +100,7 @@ export class EmrManagedEndpointProvider extends Construct {
         actions: ['kms:Decrypt'],
       }),
     ];
-
+    
     // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
     const onEvent = new Function(this, 'ManagedEndpointOnEvent', {
       code: Code.fromAsset(path.join(__dirname, lambdaPath)),
@@ -108,7 +112,7 @@ export class EmrManagedEndpointProvider extends Construct {
       },
       initialPolicy: lambdaPolicy,
     });
-
+    
     // AWS Lambda supporting the status check on asynchronous create, update and delete operations
     const isComplete = new Function(this, 'ManagedEndpointIsComplete', {
       code: Code.fromAsset(path.join(__dirname, lambdaPath)),
@@ -120,7 +124,7 @@ export class EmrManagedEndpointProvider extends Construct {
       },
       initialPolicy: lambdaPolicy,
     });
-
+    
     this.provider = new Provider(this, `CustomResourceProvider${id}`, {
       onEventHandler: onEvent,
       isCompleteHandler: isComplete,
