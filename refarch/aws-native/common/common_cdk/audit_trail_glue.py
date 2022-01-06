@@ -1,7 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-from aws_cdk.core import Aws, Construct
+from aws_cdk.core import Aws, Construct, Stack
 from aws_cdk.aws_cloudtrail import DataResourceType, Trail
 from aws_cdk.aws_glue import CfnCrawler, Database, DataFormat, InputFormat, OutputFormat, SerializationLibrary, Table
 from aws_cdk.aws_iam import ManagedPolicy, Role, PolicyDocument, PolicyStatement, ServicePrincipal
@@ -17,7 +17,11 @@ class AuditTrailGlue(Construct):
         super().__init__(scope, id, **kwargs)
 
         # CloudTrail - S3 event Logging for the requested bucket
-        self.__trail = Trail(self, 'AuditTrail', bucket=log_bucket)
+        # CloudFormation has a bug that put double "--" in the trail name
+        # This violates the naming constraint of cloudtrail
+        self.__trail = Trail(self, 'AuditTrail', 
+            bucket=log_bucket,
+            trail_name=f'{id}-{Stack.of(self).stack_name}-{Stack.of(self).account}')
         self.__trail.add_event_selector(
 
             data_resource_type=DataResourceType.S3_OBJECT,
