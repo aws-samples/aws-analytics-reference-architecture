@@ -9,6 +9,7 @@ import { NodegroupOptions, TaintEffect, CapacityType, NodegroupAmiType } from '@
  * -  NodegroupName by the id and an index per AZ
  * -  LaunchTemplate spec
  * -  SubnetList by either the subnet parameter or one subnet per Amazon EKS Cluster AZ.
+ * -  Labels and Taints are automatically used to tag the nodegroup for the cluster autoscaler
  */
 
 export interface EmrEksNodegroupOptions extends NodegroupOptions {
@@ -52,6 +53,7 @@ export class EmrEksNodegroup {
     maxSize: 100,
     labels: {
       role: 'critical',
+      'node-lifecycle': 'on-demand',
     },
     taints: [
       {
@@ -74,6 +76,7 @@ export class EmrEksNodegroup {
     labels: {
       'role': 'shared',
       'spark-role': 'driver',
+      'node-lifecycle': 'on-demand',
     },
   };
 
@@ -87,6 +90,7 @@ export class EmrEksNodegroup {
     labels: {
       'role': 'shared',
       'spark-role': 'executor',
+      'node-lifecycle': 'spot',
     },
     taints: [
       {

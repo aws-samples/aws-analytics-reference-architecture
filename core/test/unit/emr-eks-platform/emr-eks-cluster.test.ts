@@ -150,6 +150,7 @@
      InstanceTypes: ['m6gd.8xlarge'],
      Labels: {
        role: 'critical',
+       'node-lifecycle': 'on-demand',
      },
      ScalingConfig: {
        DesiredSize: 0,
@@ -179,6 +180,7 @@
      Labels: {
        'role': 'shared',
        'spark-role': 'driver',
+       'node-lifecycle': 'on-demand',
      },
      ScalingConfig: {
        DesiredSize: 0,
@@ -201,6 +203,7 @@
      Labels: {
        'role': 'shared',
        'spark-role': 'executor',
+       'node-lifecycle': 'spot',
      },
      ScalingConfig: {
        DesiredSize: 0,
@@ -244,6 +247,14 @@
        MaxSize: 10,
        MinSize: 0,
      },
+     Tags: assertCDK.objectLike({
+      'k8s.io/cluster-autoscaler/data-platform': 'owned',
+      'k8s.io/cluster-autoscaler/enabled': 'true',
+      'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'on-demand',
+      'k8s.io/cluster-autoscaler/node-template/label/role': 'notebook',
+      'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'driver',
+      'k8s.io/cluster-autoscaler/node-template/taint/role': 'notebook:NO_SCHEDULE',
+    }),
     });
 
     expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
@@ -273,6 +284,15 @@
         MaxSize: 100,
         MinSize: 0,
       },
+      Tags: assertCDK.objectLike({
+        'k8s.io/cluster-autoscaler/data-platform': 'owned',
+        'k8s.io/cluster-autoscaler/enabled': 'true',
+        'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'spot',
+        'k8s.io/cluster-autoscaler/node-template/label/role': 'notebook',
+        'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'executor',
+        'k8s.io/cluster-autoscaler/node-template/taint/role': 'notebook:NO_SCHEDULE',
+        'k8s.io/cluster-autoscaler/node-template/taint/node-lifecycle': 'spot:NO_SCHEDULE',
+      }),
      });
 
  });

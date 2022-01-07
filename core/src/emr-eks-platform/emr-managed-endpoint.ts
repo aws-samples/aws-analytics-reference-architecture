@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: MIT-0
 
 import { IRole } from '@aws-cdk/aws-iam';
-import * as path from 'path';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { Code, Function, Runtime } from '@aws-cdk/aws-lambda';
-import { Construct, Duration, Stack } from '@aws-cdk/core';
+import { Runtime } from '@aws-cdk/aws-lambda';
+import { Construct, Duration } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
+import { PreBundledFunction } from '../common/pre-bundled-function';
+import { RetentionDays } from '@aws-cdk/aws-logs';
 
 
 /**
-* The properties for the EmrVirtualCluster Construct class.
+* The properties for the EMR Managed Endpoint to create.
 */
 export interface EmrManagedEndpointOptions {
   /**
@@ -41,17 +42,6 @@ export interface EmrManagedEndpointOptions {
  * ManagedEndpointProvider Construct implementing a custom resource provider for managing Amazon EMR on Amazon EKS Managed Endpoints.
  */
 export class EmrManagedEndpointProvider extends Construct {
-  
-  /**
-   * Get the ManagedEndpointProvider from the AWS CDK Stack based on the provided ID.
-   * If no ManagedEndpointProvider exists, creates a new one.
-   * @param {Construct} scope The scope of the CDK Construct to search
-   * @param {string} id The ID of the ManagedEndpointProvider to retrieve
-   */
-  public static getOrCreate(scope: Construct, id: string) {
-    const stack = Stack.of(scope);
-    return stack.node.tryFindChild(id) as EmrManagedEndpointProvider || new EmrManagedEndpointProvider(scope, id);
-  }
   /**
    * The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources
    */
@@ -65,10 +55,7 @@ export class EmrManagedEndpointProvider extends Construct {
   
   constructor(scope: Construct, id: string) {
     super(scope, id);
-    
-    // Create the custom resource provider for adding managed endpoints to the cluster
-    const lambdaPath = 'resources/lambdas/managed-endpoint';
-    
+       
     const lambdaPolicy = [
       new PolicyStatement({
         resources: ['*'],
@@ -102,30 +89,26 @@ export class EmrManagedEndpointProvider extends Construct {
     ];
     
     // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
-    const onEvent = new Function(this, 'ManagedEndpointOnEvent', {
-      code: Code.fromAsset(path.join(__dirname, lambdaPath)),
+    const onEvent = new PreBundledFunction(this, 'OnEvent', {
+      codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',
       runtime: Runtime.PYTHON_3_8,
       handler: 'lambda.on_event',
+      logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(120),
-      environment: {
-        REGION: Stack.of(this).region,
-      },
       initialPolicy: lambdaPolicy,
     });
     
     // AWS Lambda supporting the status check on asynchronous create, update and delete operations
-    const isComplete = new Function(this, 'ManagedEndpointIsComplete', {
-      code: Code.fromAsset(path.join(__dirname, lambdaPath)),
+    const isComplete = new PreBundledFunction(this, 'IsComplete', {
+      codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',
       handler: 'lambda.is_complete',
       runtime: Runtime.PYTHON_3_8,
+      logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(120),
-      environment: {
-        REGION: Stack.of(this).region,
-      },
       initialPolicy: lambdaPolicy,
     });
     
-    this.provider = new Provider(this, `CustomResourceProvider${id}`, {
+    this.provider = new Provider(this, 'CustomResourceProvider', {
       onEventHandler: onEvent,
       isCompleteHandler: isComplete,
       totalTimeout: Duration.minutes(30),

@@ -114,3 +114,4 @@ def is_complete(event, ctx):
         raise Exception('managed endpoint failed.')
     else:
         return {"IsComplete": False}
+

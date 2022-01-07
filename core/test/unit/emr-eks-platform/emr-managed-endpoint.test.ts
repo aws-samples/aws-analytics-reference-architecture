@@ -15,19 +15,17 @@ import { Template, Match} from '@aws-cdk/assertions';
 
 describe ('ManagedEndpointProvider', () => {
   const ManagedEndpointProviderStack = new Stack();
-  // Instantiate 2 ManagedEndpointProvider Constructs
-  EmrManagedEndpointProvider.getOrCreate(ManagedEndpointProviderStack, 'test');
-  EmrManagedEndpointProvider.getOrCreate(ManagedEndpointProviderStack, 'test');
+  new EmrManagedEndpointProvider(ManagedEndpointProviderStack, 'test');
 
   const template = Template.fromStack(ManagedEndpointProviderStack);
 
-  test('ManagedEndpointProvider is a singleton', () => {
+  test('ManagedEndpointProvider contains the right number of resources', () => {
 
     // Test if ManagedEndpointProvider is a singleton
     // It should only contain 5 AWS Lambda function (2 for onEvent and isComplete, 3 for the Provider framework)
-    template.resourceCountIs('AWS::Lambda::Function', 5);
+    template.resourceCountIs('AWS::Lambda::Function', 6);
     // It should only contain 6 Amazon IAM Role (2 for onEvent and isComplete, 4 for the Provider framework)
-    template.resourceCountIs('AWS::IAM::Role', 6);
+    template.resourceCountIs('AWS::IAM::Role', 7);
   });
 
   test('EmrManagedEndpointPorvider contains the right permissions', () => {

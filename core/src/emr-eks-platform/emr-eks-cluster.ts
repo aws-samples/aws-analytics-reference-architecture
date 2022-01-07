@@ -21,6 +21,7 @@ import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as IamPolicyAutoscaler from './resources/k8s/iam-policy-autoscaler.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
+import { EmrEksNodegroupAsgTagsProvider } from './emr-eks-nodegroup-asg-tags';
 
 
 /**
@@ -91,6 +92,7 @@ export class EmrEksCluster extends Construct {
   public readonly sharedDefaultConfig: string;
   public readonly podTemplateLocation: Location;
   private readonly managedEndpointProviderServiceToken: string;
+  private readonly nodegroupAsgTagsProviderServiceToken: string;
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly eksOidcProvider: FederatedPrincipal;
   private readonly assetBucket: Bucket;
@@ -207,6 +209,11 @@ export class EmrEksCluster extends Construct {
       'sts:AssumeRoleWithWebIdentity',
     );
 
+    // Create the custom resource provider for tagging the EC2 Auto Scaling groups
+    this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagsProvider(this, 'AsgTagProvider', {
+      eksClusterName: this.clusterName,
+    }).provider.serviceToken
+    
     // Create the Amazon EKS Nodegroup for tooling
     this.addNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
     // Create default Amazon EMR on EKS Nodegroups. This will create one Amazon EKS nodegroup per AZ
@@ -531,7 +538,6 @@ ${userData.join('\r\n')}
       throw new Error(`The configuraton override is not valid JSON : ${options.configurationOverrides}`);
     }
     // Create custom resource with async waiter until the Amazon EMR Managed Endpoint is created
-
     const cr = new CustomResource(scope, id, {
       serviceToken: this.managedEndpointProviderServiceToken,
       properties: {
@@ -584,9 +590,10 @@ ${userData.join('\r\n')}
         },
       );
     }
+    // Add tag for the lifecycle type (spot or on-demand)
     Tags.of(nodegroup).add(
-      'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle',
-      (options.capacityType == CapacityType.SPOT) ? 'spot' : 'on-demand',
+      'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType',
+      (options.capacityType == CapacityType.SPOT) ? 'SPOT' : 'ON_DEMAND',
       {
         applyToLaunchedInstances: true,
       },
@@ -601,6 +608,13 @@ ${userData.join('\r\n')}
             applyToLaunchedInstances: true,
           },
         );
+        new CustomResource(this, `${nodegroupId}Label${key}`,{
+          serviceToken: this.nodegroupAsgTagsProviderServiceToken,
+          properties: {
+            tagKey: `k8s.io/cluster-autoscaler/node-template/label/${key}`,
+            tagValue: value,
+          }
+        });
       }
     }
     // Iterate over taints and add appropriate tags
@@ -613,6 +627,13 @@ ${userData.join('\r\n')}
             applyToLaunchedInstances: true,
           },
         );
+        new CustomResource(this, `${nodegroupId}Taint${taint.key}`,{
+          serviceToken: this.nodegroupAsgTagsProviderServiceToken,
+          properties: {
+            tagKey: `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
+            tagValue: `${taint.value}:${taint.effect}`,
+          }
+        });
       });
     }
 
