@@ -11,6 +11,7 @@ import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
+//import { schemaValidation } from './jsonSchemaValidation';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
 import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
 import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
@@ -526,6 +527,8 @@ ${userData.join('\r\n')}
     }
 
     try {
+      //TO DO IMPLEMENT THE CONFIGOVERRIDE VALIDATION
+
       var jsonConfigurationOverrides = options.configurationOverrides ? JSON.stringify(options.configurationOverrides) : this.notebookDefaultConfig;
     } catch (error) {
       throw new Error(`The configuraton override is not valid JSON : ${options.configurationOverrides}`);

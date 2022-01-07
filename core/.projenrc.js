@@ -70,12 +70,17 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-kms',
   ],
 
+  deps: [
+    'ajv',
+  ],
+
   devDeps: [
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
     'aws-cdk@1.130.0',
     'jest-runner-groups',
+    'ajv',
   ],
 
   jestOptions: {
