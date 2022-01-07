@@ -8,7 +8,7 @@ import { EmrEksCluster, NotebookPlatform, StudioAuthMode } from '.';
 const mockApp = new App();
 const stack = new Stack(mockApp, 'stack');
 
-const policy = new ManagedPolicy(stack, 'MyPolicy',{
+const policy = new ManagedPolicy(stack, 'MyPolicy', {
   statements: [
     new PolicyStatement({
       resources: ['*'],
@@ -28,22 +28,22 @@ const policy = new ManagedPolicy(stack, 'MyPolicy',{
         'logs:*',
       ],
     }),
-  ]
-})
-
-const emrEks = EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav',
+  ],
 });
 
-const notebookPlatform =new NotebookPlatform(stack, 'platform1',{
+const emrEks = EmrEksCluster.getOrCreate(stack, {
+  eksAdminRoleArn: 'YOUR-EKS-ADMIN-ROLE-ARN',
+});
+
+const notebookPlatform =new NotebookPlatform(stack, 'platform1', {
   emrEks: emrEks,
   eksNamespace: 'test',
   studioName: 'platform1',
   studioAuthMode: StudioAuthMode.IAM,
-})
+});
 
 notebookPlatform.addUser([{
-  identityName: 'gromav',
+  identityName: 'IF-USING-SS0-PUT-YOUR-USER-OR-GROUP-NAME-AS-IT-APPEARS-IN-SS0',
   identityType: 'USER',
   executionPolicies: [policy],
   emrOnEksVersion: 'emr-6.3.0-latest',

@@ -69,6 +69,11 @@ export enum StudioAuthMode {
   SSO = 'SSO',
 }
 
+export enum SSOIdentityType {
+  USER = 'USER',
+  GROUP = 'GROUP',
+}
+
 /**
  * Enum to define the RelayState of different IdPs
  * Used in EMR Studio Prop in the IAM_FEDERATED scenario
@@ -213,7 +218,7 @@ export class NotebookPlatform extends Construct {
         roleName: 'studioUserRole+' + Utils.stringSanitizer(props.studioName),
         managedPolicies: this.studioUserPolicy,
       });
-    } 
+    }
     // Create the EMR Studio
     this.studioInstance = new CfnStudio(this.nestedStack, 'Studio', <CfnStudioProps>{
       authMode: props.studioAuthMode,
@@ -319,7 +324,7 @@ export class NotebookPlatform extends Construct {
         } else {
           managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(executionPolicy.managedPolicyName));
         }
-      })
+      });
 
       if (this.authMode === 'IAM' && this.federatedIdPARN === undefined) {
         //Create the role policy and gets its ARN

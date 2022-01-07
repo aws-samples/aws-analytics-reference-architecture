@@ -1,2 +1,2 @@
-export { NotebookPlatform, NotebookPlatformProps, StudioAuthMode, IdpRelayState } from './notebook-platform';
+export { NotebookPlatform, NotebookPlatformProps, StudioAuthMode, IdpRelayState, SSOIdentityType } from './notebook-platform';
 export { NotebookUserOptions } from './notebook-user';
