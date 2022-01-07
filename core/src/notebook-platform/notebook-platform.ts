@@ -95,8 +95,7 @@ export enum IdpRelayState {
  */
 export class NotebookPlatform extends Construct {
   private static readonly STUDIO_PRINCIPAL: string = 'elasticmapreduce.amazonaws.com';
-  public readonly studioUrl: string;
-  public readonly studioId: string;
+  private readonly studioId: string;
   private readonly workSpaceSecurityGroup: SecurityGroup;
   private readonly engineSecurityGroup: ISecurityGroup | undefined;
   private readonly workspacesBucket: Bucket;
@@ -238,9 +237,15 @@ export class NotebookPlatform extends Construct {
     // EMR Studio when {@linkcode addFederatedUsers} or {@linkcode addSSOUsers} are called
     this.studioName = props.studioName;
 
-    //Set the Studio URL and Studio Id to return as CfnOutput later
-    this.studioUrl = this.studioInstance.attrUrl;
+    //Set the Studio Id to use for SessionMapping
     this.studioId = this.studioInstance.attrStudioId;
+
+    //Return EMR Studio URL as CfnOutput
+    if (this.nestedStack.nestedStackParent != undefined) {
+      new CfnOutput(this.nestedStack.nestedStackParent, `URL for EMR Studio: ${this.studioName}`, {
+        value: this.studioInstance.attrUrl,
+      });
+    }
   }
 
   /**
@@ -277,7 +282,7 @@ export class NotebookPlatform extends Construct {
             this.nestedStack,
             `${this.studioName}${Utils.stringSanitizer(executionPolicy.managedPolicyName)}`,
             {
-              managedEndpointName: `${executionPolicy.managedPolicyName}`,
+              managedEndpointName: Utils.stringSanitizer(`${this.studioName}-${executionPolicy.managedPolicyName}`),
               virtualClusterId: this.emrVirtCluster.attrId,
               executionRole: this.emrEks.createExecutionRole(
                 this,
@@ -354,8 +359,8 @@ export class NotebookPlatform extends Construct {
         if (user.identityType == 'USER' || user.identityType == 'GROUP') {
           //Map a session to user or group
           new CfnStudioSessionMapping(this.nestedStack, 'studioUser' + user.identityName + user.identityName, {
-            identityName: user.identityName!,
-            identityType: user.identityType!,
+            identityName: user.identityName,
+            identityType: user.identityType,
             sessionPolicyArn: sessionPolicyArn,
             studioId: this.studioId,
           });

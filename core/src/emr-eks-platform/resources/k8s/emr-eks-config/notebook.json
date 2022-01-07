@@ -19,7 +19,9 @@
                 "spark.driver.memory": "2G",
                 "spark.dynamicAllocation.executorAllocationRatio": "1",
                 "spark.dynamicAllocation.shuffleTracking.enabled": "true",
-                "spark.dynamicAllocation.shuffleTracking.timeout": "300s"
+                "spark.dynamicAllocation.shuffleTracking.timeout": "300s",
+                "spark.kubernetes.node.selector.role": "notebook",
+                "spark.kubernetes.node.selector.node-lifecycle": "spot"
             }
         }
     ],
