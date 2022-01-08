@@ -11,11 +11,13 @@ import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
-//import { schemaValidation } from './jsonSchemaValidation';
+import { schemaValidation } from './configOverrideSchemaValidation';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
 import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
 import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
+import * as configOverrideSchema from './resources/k8s/emr-eks-config/configOverrideJSONSchema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
+import * as podReadyConfig from './resources/k8s/emr-eks-config/notebook-pod-template-ready.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
@@ -529,9 +531,11 @@ ${userData.join('\r\n')}
     try {
       //TO DO IMPLEMENT THE CONFIGOVERRIDE VALIDATION
 
-      var jsonConfigurationOverrides = options.configurationOverrides ? JSON.stringify(options.configurationOverrides) : this.notebookDefaultConfig;
+      let configOverride: string = JSON.stringify(podReadyConfig);
+      schemaValidation(JSON.stringify(configOverrideSchema), configOverride);
+      var jsonConfigurationOverrides = options.configurationOverrides ? configOverride : this.notebookDefaultConfig;
     } catch (error) {
-      throw new Error(`The configuraton override is not valid JSON : ${options.configurationOverrides}`);
+      throw new Error(`The configuration override is not valid JSON : ${options.configurationOverrides}`);
     }
     // Create custom resource with async waiter until the Amazon EMR Managed Endpoint is created
 

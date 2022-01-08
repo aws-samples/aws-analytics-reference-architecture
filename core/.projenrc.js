@@ -71,7 +71,7 @@ const project = new AwsCdkConstructLibrary({
   ],
 
   deps: [
-    'ajv',
+    '@exodus/schemasafe',
   ],
 
   devDeps: [
@@ -80,7 +80,6 @@ const project = new AwsCdkConstructLibrary({
     'esbuild',
     'aws-cdk@1.130.0',
     'jest-runner-groups',
-    'ajv',
   ],
 
   jestOptions: {
@@ -93,6 +92,7 @@ const project = new AwsCdkConstructLibrary({
     'js-yaml',
     'uuid',
     'aws-sdk',
+    '@exodus/schemasafe',
   ],
 
   python: {
