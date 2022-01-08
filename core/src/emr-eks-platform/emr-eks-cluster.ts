@@ -17,7 +17,6 @@ import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-man
 import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 import * as configOverrideSchema from './resources/k8s/emr-eks-config/configOverrideJSONSchema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
-import * as podReadyConfig from './resources/k8s/emr-eks-config/notebook-pod-template-ready.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
@@ -529,11 +528,10 @@ ${userData.join('\r\n')}
     }
 
     try {
-      //TO DO IMPLEMENT THE CONFIGOVERRIDE VALIDATION
+      //Check if the configOverride provided by user is valid
+      let isConfigOverrideValid: boolean = schemaValidation(JSON.stringify(configOverrideSchema), options.configurationOverrides);
 
-      let configOverride: string = JSON.stringify(podReadyConfig);
-      schemaValidation(JSON.stringify(configOverrideSchema), configOverride);
-      var jsonConfigurationOverrides = options.configurationOverrides ? configOverride : this.notebookDefaultConfig;
+      var jsonConfigurationOverrides = options.configurationOverrides ? isConfigOverrideValid : this.notebookDefaultConfig;
     } catch (error) {
       throw new Error(`The configuration override is not valid JSON : ${options.configurationOverrides}`);
     }

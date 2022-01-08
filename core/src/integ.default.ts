@@ -35,6 +35,25 @@ const emrEks = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'YOUR-EKS-ADMIN-ROLE-ARN',
 });
 
+let configOverride: string = '{' +
+    '    "applicationConfiguration": [' +
+    '      {' +
+    '        "classification": "spark-defaults", ' +
+    '        "properties": {' +
+    '          "spark.dynamicAllocation.enabled":"false"' +
+    '         }' +
+    '      }' +
+    '    ], ' +
+    '    "monitoringConfiguration": {' +
+    '      "cloudWatchMonitoringConfiguration": {' +
+    '        "logGroupName": "/emr-containers/jobs", ' +
+    '        "logStreamNamePrefix": "demo"' +
+    '      }, ' +
+    '      "s3MonitoringConfiguration": {' +
+    '        "logUri": "s3://joblogs"' +
+    '      }' +
+    '    }}';
+
 const notebookPlatform =new NotebookPlatform(stack, 'platform1', {
   emrEks: emrEks,
   eksNamespace: 'test',
@@ -47,4 +66,5 @@ notebookPlatform.addUser([{
   identityType: 'USER',
   executionPolicies: [policy],
   emrOnEksVersion: 'emr-6.3.0-latest',
+  configurationOverrides: configOverride,
 }]);

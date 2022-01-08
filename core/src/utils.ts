@@ -16,7 +16,7 @@ export class Utils {
 
   /**
    * Create a random string to be used as a seed for IAM User password
-   * @param {string} name the string to sanitize
+   * @param {string} name the string to which to append a random string
    */
   public static randomize(name: string) {
     return `${name}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
