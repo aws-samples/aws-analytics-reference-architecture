@@ -527,11 +527,14 @@ ${userData.join('\r\n')}
       throw new Error('error empty configuration override is not supported on non-default nodegroups');
     }
 
+    let jsonConfigurationOverrides: string | undefined;
+
     try {
       //Check if the configOverride provided by user is valid
       let isConfigOverrideValid: boolean = schemaValidation(JSON.stringify(configOverrideSchema), options.configurationOverrides);
 
-      var jsonConfigurationOverrides = options.configurationOverrides ? isConfigOverrideValid : this.notebookDefaultConfig;
+      jsonConfigurationOverrides = isConfigOverrideValid ? options.configurationOverrides : this.notebookDefaultConfig;
+
     } catch (error) {
       throw new Error(`The configuration override is not valid JSON : ${options.configurationOverrides}`);
     }

@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { ManagedPolicy } from "@aws-cdk/aws-iam";
+import { NotebookManagedEndpointOptions } from './notebook-managed-endpoint';
 
 /**
  * The properties for defining a user.
@@ -16,18 +16,7 @@ export interface NotebookUserOptions {
    * Type of the identity either GROUP or USER, to be used when SSO is used as an authentication mode
    * */
   readonly identityType?: string;
-  /**
-   * The name of the policy to be used for the execution Role to pass to ManagedEndpoint,
-   * this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB
-   * */
-  readonly executionPolicies: ManagedPolicy [];
-  /**
-   * The version of Amazon EMR to deploy
-   * */
-  readonly emrOnEksVersion?: string;
-  /**
-   * The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint
-   * @default - Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
-   */
-  readonly configurationOverrides?: string;
+
+  readonly notebookManagedEndpoints: NotebookManagedEndpointOptions [];
+
 }

@@ -35,6 +35,8 @@ const emrEks = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'YOUR-EKS-ADMIN-ROLE-ARN',
 });
 
+
+//Sample Managed Endpoint config
 let configOverride: string = '{' +
     '    "applicationConfiguration": [' +
     '      {' +
@@ -45,13 +47,11 @@ let configOverride: string = '{' +
     '      }' +
     '    ], ' +
     '    "monitoringConfiguration": {' +
+    '    "persistentAppUI": "ENABLED", ' +
     '      "cloudWatchMonitoringConfiguration": {' +
     '        "logGroupName": "/emr-containers/jobs", ' +
     '        "logStreamNamePrefix": "demo"' +
-    '      }, ' +
-    '      "s3MonitoringConfiguration": {' +
-    '        "logUri": "s3://joblogs"' +
-    '      }' +
+    '      }, '+
     '    }}';
 
 const notebookPlatform =new NotebookPlatform(stack, 'platform1', {
@@ -64,7 +64,10 @@ const notebookPlatform =new NotebookPlatform(stack, 'platform1', {
 notebookPlatform.addUser([{
   identityName: 'IF-USING-SS0-PUT-YOUR-USER-OR-GROUP-NAME-AS-IT-APPEARS-IN-SS0',
   identityType: 'USER',
-  executionPolicies: [policy],
-  emrOnEksVersion: 'emr-6.3.0-latest',
-  configurationOverrides: configOverride,
+  notebookManagedEndpoints: [{
+    emrOnEksVersion: 'emr-6.3.0-latest',
+    executionPolicy: policy,
+    configurationOverrides: configOverride,
+  }],
 }]);
+

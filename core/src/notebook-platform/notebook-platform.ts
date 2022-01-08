@@ -8,7 +8,7 @@ import { IManagedPolicy, IRole, ManagedPolicy, Role, ServicePrincipal } from '@a
 import { Key } from '@aws-cdk/aws-kms';
 import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
-import { EmrEksCluster } from '../emr-eks-platform/emr-eks-cluster';
+import { EmrEksCluster } from '../emr-eks-platform';
 import { Utils } from '../utils';
 import {
   createIAMFederatedRole,
@@ -269,28 +269,32 @@ export class NotebookPlatform extends Construct {
     for (let user of userList) {
 
       //For each policy create a role and then pass it to addManageEndpoint to create an endpoint
-      user.executionPolicies.forEach( (executionPolicy, index) => {
+      user.notebookManagedEndpoints.forEach( (notebookManagedEndpoint, index) => {
 
         //Check if the managedendpoint is already used in role which is created for a managed endpoint
         //if there is no managedendpointArn create a new managedendpoint
         //else get managedendpoint and push it to  @managedEndpointArns
-        if (!this.managedEndpointExecutionPolicyArnMapping.has(executionPolicy.managedPolicyName)) {
+        if (!this.managedEndpointExecutionPolicyArnMapping.has(notebookManagedEndpoint.executionPolicy.managedPolicyName)) {
 
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
+
+          let emrOnEksVersion: string | undefined = user.notebookManagedEndpoints[index].emrOnEksVersion;
+          let configOverride: string | undefined = user.notebookManagedEndpoints[index].configurationOverrides;
+
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.nestedStack,
-            `${this.studioName}${Utils.stringSanitizer(executionPolicy.managedPolicyName)}`,
+            `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.executionPolicy.managedPolicyName)}`,
             {
-              managedEndpointName: Utils.stringSanitizer(`${this.studioName}-${executionPolicy.managedPolicyName}`),
+              managedEndpointName: Utils.stringSanitizer(`${this.studioName}-${notebookManagedEndpoint.executionPolicy.managedPolicyName}`),
               virtualClusterId: this.emrVirtCluster.attrId,
               executionRole: this.emrEks.createExecutionRole(
                 this,
                 `${user.identityName}${index}`,
-                executionPolicy,
+                notebookManagedEndpoint.executionPolicy,
               ),
-              emrOnEksVersion: user.emrOnEksVersion ? user.emrOnEksVersion : undefined,
-              configurationOverrides: user.configurationOverrides ? user.configurationOverrides : undefined,
+              emrOnEksVersion: emrOnEksVersion ? emrOnEksVersion : undefined,
+              configurationOverrides: configOverride ? configOverride : undefined,
             },
 
           );
@@ -321,13 +325,13 @@ export class NotebookPlatform extends Construct {
           //This is to avoid the creation an endpoint with the same policy twice
           //Save resources and reduce the deployment time
           // TODO check the emr version is the same => to be fixed on a later commit need to solve adding a tuple to a JS map
-          // TODO check multiple users/notebooks can share a JEG and trigger multiple spark apps
-          this.managedEndpointExecutionPolicyArnMapping.set(executionPolicy.managedPolicyName, managedEndpoint.getAttString('arn'));
+          this.managedEndpointExecutionPolicyArnMapping.set(notebookManagedEndpoint.executionPolicy.managedPolicyName, managedEndpoint.getAttString('arn'));
 
           //Push the managedendpoint arn to be used in to build the policy to attach to it
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
-          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(executionPolicy.managedPolicyName));
+          let managedPolicyName = notebookManagedEndpoint.executionPolicy.managedPolicyName;
+          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(managedPolicyName));
         }
       });
 
