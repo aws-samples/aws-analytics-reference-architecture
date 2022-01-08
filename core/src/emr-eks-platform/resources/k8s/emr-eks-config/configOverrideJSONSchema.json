@@ -15,15 +15,16 @@
               "patternProperties": {
                 "^spark.\\w+(?:\\.\\w+)+": {
                   "type": "string"
-                },
-                "additionalProperties": false
-              }
+                }
+              },
+              "additionalProperties": false
             }
           },
           "required": [
             "classification",
             "properties"
-          ]
+          ],
+          "additionalProperties": false
         }
       ]
     },
@@ -46,7 +47,8 @@
           "required": [
             "logGroupName",
             "logStreamNamePrefix"
-          ]
+          ],
+          "additionalProperties": false
         },
         "s3MonitoringConfiguration": {
           "type": "object",
@@ -57,7 +59,8 @@
           },
           "required": [
             "logUri"
-          ]
+          ],
+          "additionalProperties": false
         }
       }
     }
@@ -65,5 +68,6 @@
   "required": [
     "applicationConfiguration",
     "monitoringConfiguration"
-  ]
+  ],
+  "additionalProperties": false
 }
