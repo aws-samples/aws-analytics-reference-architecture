@@ -1458,10 +1458,25 @@
     chalk "^4.1.2"
     semver "^7.3.5"
 
-"@jsii/spec@1.51.0", "@jsii/spec@^1.50.0", "@jsii/spec@^1.51.0":
+"@jsii/check-node@1.52.0":
+  version "1.52.0"
+  resolved "https://registry.yarnpkg.com/@jsii/check-node/-/check-node-1.52.0.tgz#9ac383da07af9d45089ec0226c29fb5d2c39480c"
+  integrity sha512-HPLKOU9MnnEcOSovLgvbHfEIovxlRLOQOWcdltG/xXbqVlVApm2H/w0h4L8ZNoaiF2xyoeDWxZtt0ZiUGd8HnQ==
+  dependencies:
+    chalk "^4.1.2"
+    semver "^7.3.5"
+
+"@jsii/spec@1.51.0":
   version "1.51.0"
   resolved "https://registry.npmjs.org/@jsii/spec/-/spec-1.51.0.tgz"
   integrity sha512-MIzDSTzjKbEIW6mvu+u/Ed2gRAVv87BopWbYVIXWc2pJlkHXilHhQdbY7BdDx8h77nu76+0YumthO6mEX/fROA==
+  dependencies:
+    jsonschema "^1.4.0"
+
+"@jsii/spec@^1.50.0", "@jsii/spec@^1.51.0", "@jsii/spec@^1.52.0":
+  version "1.52.0"
+  resolved "https://registry.yarnpkg.com/@jsii/spec/-/spec-1.52.0.tgz#d09c0f897de8735c897310f8e6f18eae77401351"
+  integrity sha512-Ipzx+t5RshGOlR7fDdV7p5M7z9RYqooqiO27n3FkCiTboRp+GFJH1wrtE8H4YqzwjAwGjyTXIcGk5le3hriMfg==
   dependencies:
     jsonschema "^1.4.0"
 
@@ -4711,13 +4726,32 @@ jsii-rosetta@^1.50.0, jsii-rosetta@^1.51.0:
     workerpool "^6.1.5"
     yargs "^16.2.0"
 
-jsii@1.51.0, jsii@^1.46.0:
+jsii@1.51.0:
   version "1.51.0"
   resolved "https://registry.npmjs.org/jsii/-/jsii-1.51.0.tgz"
   integrity sha512-8oKAcPH+NW2eIZoW7oiEixFjz0X45dzxZKnxOw5W7JTs/5WwfNEdldU1NkaqEGIB1JKT+WZQjNXAa1IBVO9Crw==
   dependencies:
     "@jsii/check-node" "1.51.0"
     "@jsii/spec" "^1.51.0"
+    case "^1.6.3"
+    colors "^1.4.0"
+    deep-equal "^2.0.5"
+    fs-extra "^9.1.0"
+    log4js "^6.3.0"
+    semver "^7.3.5"
+    semver-intersect "^1.4.0"
+    sort-json "^2.0.0"
+    spdx-license-list "^6.4.0"
+    typescript "~3.9.10"
+    yargs "^16.2.0"
+
+jsii@^1.46.0:
+  version "1.52.0"
+  resolved "https://registry.yarnpkg.com/jsii/-/jsii-1.52.0.tgz#c2a9452f8a87600bdf17fb4c22e84934a75e87d4"
+  integrity sha512-g/G8dMuCkqb7mEyo5g21x4cbto7+PFCQtsT/mGjPSKVDUNHfEQwZ0x+XUHRInmTEz/41fs4HpDRDwGZDzvnMzA==
+  dependencies:
+    "@jsii/check-node" "1.52.0"
+    "@jsii/spec" "^1.52.0"
     case "^1.6.3"
     colors "^1.4.0"
     deep-equal "^2.0.5"
