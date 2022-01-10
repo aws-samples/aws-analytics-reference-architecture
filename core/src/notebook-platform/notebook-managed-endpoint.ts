@@ -12,7 +12,8 @@ export interface NotebookManagedEndpointOptions {
 
   /**
      * The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint
-     * @default - Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+     * an example can be found here
+     * https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json
      */
   readonly configurationOverrides?: string;
 

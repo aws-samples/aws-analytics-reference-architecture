@@ -22,36 +22,37 @@ import { NotebookUserOptions } from './notebook-user';
 
 
 /**
- * The properties for DataPlatformNotebook Construct.
+ * The properties for NotebookPlatform Construct.
  */
 export interface NotebookPlatformProps {
   /**
-   * Required the EmrEks infrastructure used for the deployment
+   * Required
+   * the EmrEks infrastructure used for the deployment
    * */
   readonly emrEks: EmrEksCluster;
   /**
-   * Required the be given to the name of Amazon EMR Studio
+   * Required the name to be given to the Amazon EMR Studio
    * Must be unique across the AWS account
    * */
   readonly studioName: string;
   /**
    * Required the authentication mode of Amazon EMR Studio
-   * Either 'SSO' or 'IAM' defined in the Enum {@linkcode studioAuthMode}
+   * Either 'SSO' or 'IAM' defined in the Enum {@link studioAuthMode}
    * */
   readonly studioAuthMode: StudioAuthMode;
   /**
    * the namespace where to deploy the EMR Virtual Cluster
-   * @default - Use the {@linkcode EmrVirtualClusterOptions} default namespace
+   * @default - Use the {@link EmrVirtualClusterOptions} default namespace
    * */
   readonly eksNamespace?: string;
   /**
    * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
-   * This is is the URL used to sign in the AWS console
+   * This is the URL used to sign in the AWS console
    * */
   readonly idpAuthUrl?: string;
   /**
    * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
-   * Value can be set with {@linkcode idpRelayState} Enum or through a value provided by the user
+   * Value can be set with {@link IdpRelayState} Enum or through a value provided by the user
    * */
   readonly idpRelayStateParameterName?: string;
   /**
@@ -69,6 +70,9 @@ export enum StudioAuthMode {
   SSO = 'SSO',
 }
 
+/**
+ * Enum to define the type of identity Type in EMR studio
+ */
 export enum SSOIdentityType {
   USER = 'USER',
   GROUP = 'GROUP',
@@ -88,10 +92,74 @@ export enum IdpRelayState {
 }
 
 /**
- * @internal
- * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
- * Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio
- * Construct is then used to assign users to the created EMR Studio
+ * A CDK construct to create a notebook infrastructure based on Amazon EMR Studio and assign users to it
+ *
+ * This construct is initialized through a constructor that takes as argument an interface defined in {@link NotebookPlatformProps}
+ * The construct has a method to add users {@link addUser} the method take as argument {@link NotebookUserOptions}
+ *
+ * What it deploys:
+ *
+ * A KMS encryption Key used to encrypt an S3 bucket
+ * An S3 Bucket used by EMR Studio to store the Jupyter notebooks
+ * An EMR Studio service Role as defined here, and allowed to access the S3 bucket and KMS key created above
+ * An EMR Studio User Role as defined here - The policy template which is leveraged is the Basic one from the Amazon EMR Studio documentation
+ * Multiple EMR on EKS Managed Enpdoints, each for a user or a group of users
+ * Create an execution role to be passed to the Managed endpoint from a policy arn provided by the user
+ * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are:
+ *  => EMR Virtual Cluster - created above
+ *  => ManagedEndpoint
+ *
+ *
+ * Usage example:
+ *
+ * *This example assume that migration SQL files are located in `resources/sql` of the cdk project.*
+ * ```typescript
+ * const emrEks = EmrEksCluster.getOrCreate(stack, {
+ *   eksAdminRoleArn: 'arn:aws:iam::012345678912:role/Admin-Admin',
+ *   eksClusterName: 'cluster',
+ * });
+ *
+ * const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {
+ *   emrEks: emrEks,
+ *   eksNamespace: 'platformns',
+ *   studioName: 'platform',
+ *   studioAuthMode: StudioAuthMode.SSO,
+ * });
+ *
+ *
+ * const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
+ *   statements: [
+ *     new PolicyStatement({
+ *       resources: ['*'],
+ *       actions: ['s3:*'],
+ *     }),
+ *     new PolicyStatement({
+ *       resources: [
+ *         stack.formatArn({
+ *           account: Aws.ACCOUNT_ID,
+ *           region: Aws.REGION,
+ *           service: 'logs',
+ *           resource: '*',
+ *           arnFormat: ArnFormat.NO_RESOURCE_NAME,
+ *         }),
+ *       ],
+ *       actions: [
+ *         'logs:*',
+ *       ],
+ *     }),
+ *   ],
+ * });
+ *
+ * notebookPlatform.addUser([{
+ *   identityName: 'user1',
+ *   identityType: SSOIdentityType.USER,
+ *   notebookManagedEndpoints: [{
+ *     emrOnEksVersion: 'emr-6.3.0-latest',
+ *     executionPolicy: policy1,
+ *   }],
+ * }]);
+ *
+ * ```
  */
 export class NotebookPlatform extends Construct {
   private static readonly STUDIO_PRINCIPAL: string = 'elasticmapreduce.amazonaws.com';
@@ -116,10 +184,10 @@ export class NotebookPlatform extends Construct {
   private studioServiceRole: IRole;
 
   /**
-   * Constructs a new instance of the DataGenerator class
+   * Constructs a new instance of the DataPlatform class
    * @param {Construct} scope the Scope of the AWS CDK Construct
    * @param {string} id the ID of the AWS CDK Construct
-   * @param {DataPlatformNotebookProps} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProps}
+   * @param {NotebookPlatformProps} props the DataPlatformNotebooks [properties]{@link NotebookPlatformProps}
    */
 
   constructor(scope: Construct, id: string, props: NotebookPlatformProps) {
@@ -251,10 +319,9 @@ export class NotebookPlatform extends Construct {
   /**
    * Method to add users, take a list of userDefinition and will create a managed endpoints for each user
    * and create an IAM Policy scoped to the list managed endpoints
-   * @param {StudioUserDefinition} userList list of users
-   * @return {string[] } return a list of users that were created and their temporary passwords if IAM_AUTHENTICATED is used
+   * @param {NotebookUserOptions} userList list of users
    */
-  public addUser(userList: NotebookUserOptions []): string[] {
+  public addUser(userList: NotebookUserOptions []) {
     //Initialize the managedEndpointArns
     //Used to store the arn of managed endpoints after creation for each users
     //This is used to update the IAM policy
