@@ -19,7 +19,7 @@ const cluster = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
 });
 
-new NotebookPlatform(stack, 'platform1', {
+const notebookPlatformSSO: NotebookPlatform = new NotebookPlatform(stack, 'platform1', {
   emrEks: cluster,
   eksNamespace: 'integrationtestssons',
   studioName: 'integration-test-sso',
@@ -33,3 +33,35 @@ test('The stack should have nested stacks for the notebooks infrastructure', () 
   );
 });
 
+test('EMR virtual cluster should be created with proper configuration', () => {
+  assertCDK.expect(notebookPlatformSSO).to (
+    assertCDK.countResources('AWS::EMRContainers::VirtualCluster', 1),
+  );
+
+  assertCDK.expect(notebookPlatformSSO).to(
+    assertCDK.haveResource('AWS::EMRContainers::VirtualCluster', {
+      ContainerProvider: assertCDK.objectLike({
+        Type: 'EKS',
+        Info: assertCDK.objectLike({
+          EksInfo: {
+            Namespace: 'integrationtestssons',
+          },
+        }),
+      }),
+      Name: 'emrvcintegrationtestsso',
+    }),
+  );
+});
+
+test('Should find a an EMR Studio with SSO Auth Mode', () => {
+
+  assertCDK.expect(notebookPlatformSSO).to(
+    assertCDK.countResources('AWS::EMR::Studio', 1),
+  );
+
+  assertCDK.expect(notebookPlatformSSO).to(
+    assertCDK.haveResource('AWS::EMR::Studio', {
+      AuthMode: 'SSO',
+    }),
+  );
+});
