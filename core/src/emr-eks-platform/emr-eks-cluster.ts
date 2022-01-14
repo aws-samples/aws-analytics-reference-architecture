@@ -11,9 +11,11 @@ import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
+import { validateSchema } from './config-override-schema-validation';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
-import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
+import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
+import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
@@ -21,7 +23,7 @@ import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as IamPolicyAutoscaler from './resources/k8s/iam-policy-autoscaler.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-import { EmrEksNodegroupAsgTagsProvider } from './emr-eks-nodegroup-asg-tags';
+import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 
 
 /**
@@ -66,7 +68,7 @@ export interface EmrEksClusterProps {
 export class EmrEksCluster extends Construct {
 
   /**
-   * Get an existing EmrEksCluster based on the cluster name property or create a new one 
+   * Get an existing EmrEksCluster based on the cluster name property or create a new one
    */
   public static getOrCreate(scope: Construct, props: EmrEksClusterProps) {
 
@@ -81,7 +83,7 @@ export class EmrEksCluster extends Construct {
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-  private static readonly EMR_VERSIONS = ['emr-6.4.0-latest','emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
+  private static readonly EMR_VERSIONS = ['emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
   private static readonly DEFAULT_EMR_VERSION = 'emr-6.4.0-latest';
   private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
   private static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
@@ -210,7 +212,7 @@ export class EmrEksCluster extends Construct {
     );
 
     // Create the custom resource provider for tagging the EC2 Auto Scaling groups
-    this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagsProvider(this, 'AsgTagProvider', {
+    this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagProvider(this, 'AsgTagProvider', {
       eksClusterName: this.clusterName,
     }).provider.serviceToken
     
@@ -222,9 +224,9 @@ export class EmrEksCluster extends Construct {
     this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
     this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
     // Add a nodegroup for notebooks
-    this.addEmrEksNodegroup('notebookDriver',EmrEksNodegroup.NOTEBOOK_DRIVER);
-    this.addEmrEksNodegroup('notebookExecutor',EmrEksNodegroup.NOTEBOOK_EXECUTOR);
-    this.addEmrEksNodegroup('notebook',EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
+    this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
+    this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+    this.addEmrEksNodegroup('notebook', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
     // Create an Amazon S3 Bucket for default podTemplate assets
     this.assetBucket = SingletonBucket.getOrCreate(this, `${this.clusterName.toLowerCase()}-emr-eks-assets`);
     // Configure the podTemplate location
@@ -234,7 +236,7 @@ export class EmrEksCluster extends Construct {
     };
 
     // Upload the default podTemplate to the Amazon S3 asset bucket
-    this.uploadPodTemplate('defaultPodTemplates',join(__dirname, 'resources/k8s/pod-template'));
+    this.uploadPodTemplate('defaultPodTemplates', join(__dirname, 'resources/k8s/pod-template'));
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the notebook default config
     // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-driver.yaml`);
@@ -520,7 +522,7 @@ ${userData.join('\r\n')}
    */
   public addManagedEndpoint(scope: Construct, id: string, options: EmrManagedEndpointOptions) {
 
-    if (id.length > 64) {
+    if (options.managedEndpointName.length > 64) {
       throw new Error(`error managed endpoint name length is greater than 64 ${id}`);
     }
 
@@ -532,10 +534,16 @@ ${userData.join('\r\n')}
       throw new Error('error empty configuration override is not supported on non-default nodegroups');
     }
 
+    let jsonConfigurationOverrides: string | undefined;
+
     try {
-      var jsonConfigurationOverrides = options.configurationOverrides ? JSON.stringify(options.configurationOverrides) : this.notebookDefaultConfig;
+      //Check if the configOverride provided by user is valid
+      let isConfigOverrideValid: boolean = validateSchema(JSON.stringify(configOverrideSchema), options.configurationOverrides);
+
+      jsonConfigurationOverrides = isConfigOverrideValid ? options.configurationOverrides : this.notebookDefaultConfig;
+
     } catch (error) {
-      throw new Error(`The configuraton override is not valid JSON : ${options.configurationOverrides}`);
+      throw new Error(`The configuration override is not valid JSON : ${options.configurationOverrides}`);
     }
     // Create custom resource with async waiter until the Amazon EMR Managed Endpoint is created
     const cr = new CustomResource(scope, id, {
@@ -611,6 +619,7 @@ ${userData.join('\r\n')}
         new CustomResource(this, `${nodegroupId}Label${key}`,{
           serviceToken: this.nodegroupAsgTagsProviderServiceToken,
           properties: {
+            nodegroupName: options.nodegroupName,
             tagKey: `k8s.io/cluster-autoscaler/node-template/label/${key}`,
             tagValue: value,
           }
@@ -630,6 +639,7 @@ ${userData.join('\r\n')}
         new CustomResource(this, `${nodegroupId}Taint${taint.key}`,{
           serviceToken: this.nodegroupAsgTagsProviderServiceToken,
           properties: {
+            nodegroupName: options.nodegroupName,
             tagKey: `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
             tagValue: `${taint.value}:${taint.effect}`,
           }
@@ -644,17 +654,41 @@ ${userData.join('\r\n')}
    * Create and configure a new Amazon IAM Role usable as an execution role.
    * This method links the makes the created role assumed by the Amazon EKS cluster Open ID Connect provider.
    * @param {IManagedPolicy} policy the execution policy to attach to the role
+   * @param {string} name for the Managed Endpoint
+   * @param {Construct} scope of the IAM role
+   * @param {string} id of the CDK resource to be created, it should be unique across the stack
    * @access public
    */
   public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, name?: string): Role {
 
-     // Create an execution role assumable by EKS OIDC provider
-    const executionRole = new Role(scope, `${id}ExecutionRole`, {
+     const stack = Stack.of(this);
+
+    // Create an execution role assumable by EKS OIDC provider
+    return new Role(scope, `${id}ExecutionRole`, {
       assumedBy: this.eksOidcProvider,
       roleName: name ? name : undefined,
       managedPolicies: [policy],
+      inlinePolicies: {
+        PodTemplateAccess: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                's3:getObject'
+              ],
+              resources: [
+                stack.formatArn({
+                  region: '',
+                  account: '',
+                  service: 's3',
+                  resource: this.podTemplateLocation.bucketName,
+                  resourceName: this.podTemplateLocation.objectKey,
+                }),
+              ],
+            })
+          ]
+        }),
+      }
     });
-    return executionRole;
   }
 
   /**

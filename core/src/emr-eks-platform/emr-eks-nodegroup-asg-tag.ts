@@ -12,7 +12,7 @@ import { RetentionDays } from '@aws-cdk/aws-logs';
 /**
 * The properties for the EmrEksNodegroupAsgTagsProvider Construct class.
 */
-export interface EmrEksNodegroupAsgTagsProviderProps {
+export interface EmrEksNodegroupAsgTagProviderProps {
   /**
    * The name of the EKS cluster
    */
@@ -24,7 +24,7 @@ export interface EmrEksNodegroupAsgTagsProviderProps {
  * By default EKS Managed Nodegroups are using EC2 Auto Scaling Group that are not tagged for Kubernetes Cluster Autoscaler usage. 
  * If minimum number of node is 0, the Cluster Autoscaler is [not able to scale the nodegroup](https://github.com/aws/containers-roadmap/issues/724)
  */
-export class EmrEksNodegroupAsgTagsProvider extends Construct {
+export class EmrEksNodegroupAsgTagProvider extends Construct {
   
   /**
    * The custom resource Provider for creating custom resources
@@ -38,7 +38,7 @@ export class EmrEksNodegroupAsgTagsProvider extends Construct {
    * @param id the ID of the CDK Construct
    */
   
-  constructor(scope: Construct, id: string, props: EmrEksNodegroupAsgTagsProviderProps) {
+  constructor(scope: Construct, id: string, props: EmrEksNodegroupAsgTagProviderProps) {
     super(scope, id);
     
     const lambdaPolicy = [
@@ -51,10 +51,11 @@ export class EmrEksNodegroupAsgTagsProvider extends Construct {
       new PolicyStatement({
         resources: ['*'],
         actions: [
-          'autoscaling:CreateOrUpdateTags'
+          'autoscaling:CreateOrUpdateTags',
+          'autoscaling:DeleteTags',
         ],
         conditions: {
-          'ForAnyValues:StringEquals': {
+          'ForAnyValue:StringEquals': {
             'aws:ResourceTag': ['eks:cluster-name', props.eksClusterName],
           },
         }

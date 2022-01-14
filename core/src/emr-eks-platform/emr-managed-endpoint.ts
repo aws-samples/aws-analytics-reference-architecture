@@ -46,13 +46,13 @@ export class EmrManagedEndpointProvider extends Construct {
    * The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources
    */
   public readonly provider: Provider;
-  
+
   /**
    * Constructs a new instance of the ManageEndpointProvider. The provider can then be used to create Amazon EMR on EKS Managed Endpoint custom resources
    * @param { Construct} scope the Scope of the CDK Construct
    * @param id the ID of the CDK Construct
    */
-  
+
   constructor(scope: Construct, id: string) {
     super(scope, id);
        
@@ -68,8 +68,8 @@ export class EmrManagedEndpointProvider extends Construct {
       new PolicyStatement({
         resources: ['*'],
         actions: ['emr-containers:DescribeManagedEndpoint',
-        'emr-containers:CreateManagedEndpoint',
-        'emr-containers:DeleteManagedEndpoint'],
+          'emr-containers:CreateManagedEndpoint',
+          'emr-containers:DeleteManagedEndpoint'],
       }),
       new PolicyStatement({
         resources: ['*'],
@@ -87,7 +87,7 @@ export class EmrManagedEndpointProvider extends Construct {
         actions: ['kms:Decrypt'],
       }),
     ];
-    
+
     // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
     const onEvent = new PreBundledFunction(this, 'OnEvent', {
       codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',
@@ -97,7 +97,7 @@ export class EmrManagedEndpointProvider extends Construct {
       timeout: Duration.seconds(120),
       initialPolicy: lambdaPolicy,
     });
-    
+
     // AWS Lambda supporting the status check on asynchronous create, update and delete operations
     const isComplete = new PreBundledFunction(this, 'IsComplete', {
       codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',

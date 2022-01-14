@@ -8,7 +8,7 @@ import { IManagedPolicy, IRole, ManagedPolicy, Role, ServicePrincipal } from '@a
 import { Key } from '@aws-cdk/aws-kms';
 import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
-import { EmrEksCluster } from '../emr-eks-platform/emr-eks-cluster';
+import { EmrEksCluster } from '../emr-eks-platform';
 import { Utils } from '../utils';
 import {
   createIAMFederatedRole,
@@ -69,6 +69,11 @@ export enum StudioAuthMode {
   SSO = 'SSO',
 }
 
+export enum SSOIdentityType {
+  USER = 'USER',
+  GROUP = 'GROUP',
+}
+
 /**
  * Enum to define the RelayState of different IdPs
  * Used in EMR Studio Prop in the IAM_FEDERATED scenario
@@ -90,8 +95,7 @@ export enum IdpRelayState {
  */
 export class NotebookPlatform extends Construct {
   private static readonly STUDIO_PRINCIPAL: string = 'elasticmapreduce.amazonaws.com';
-  public readonly studioUrl: string;
-  public readonly studioId: string;
+  private readonly studioId: string;
   private readonly workSpaceSecurityGroup: SecurityGroup;
   private readonly engineSecurityGroup: ISecurityGroup | undefined;
   private readonly workspacesBucket: Bucket;
@@ -213,7 +217,7 @@ export class NotebookPlatform extends Construct {
         roleName: 'studioUserRole+' + Utils.stringSanitizer(props.studioName),
         managedPolicies: this.studioUserPolicy,
       });
-    } 
+    }
     // Create the EMR Studio
     this.studioInstance = new CfnStudio(this.nestedStack, 'Studio', <CfnStudioProps>{
       authMode: props.studioAuthMode,
@@ -233,9 +237,15 @@ export class NotebookPlatform extends Construct {
     // EMR Studio when {@linkcode addFederatedUsers} or {@linkcode addSSOUsers} are called
     this.studioName = props.studioName;
 
-    //Set the Studio URL and Studio Id to return as CfnOutput later
-    this.studioUrl = this.studioInstance.attrUrl;
+    //Set the Studio Id to use for SessionMapping
     this.studioId = this.studioInstance.attrStudioId;
+
+    //Return EMR Studio URL as CfnOutput
+    if (this.nestedStack.nestedStackParent != undefined) {
+      new CfnOutput(this.nestedStack.nestedStackParent, `URL for EMR Studio: ${this.studioName}`, {
+        value: this.studioInstance.attrUrl,
+      });
+    }
   }
 
   /**
@@ -259,28 +269,32 @@ export class NotebookPlatform extends Construct {
     for (let user of userList) {
 
       //For each policy create a role and then pass it to addManageEndpoint to create an endpoint
-      user.executionPolicies.forEach( (executionPolicy, index) => {
+      user.notebookManagedEndpoints.forEach( (notebookManagedEndpoint, index) => {
 
         //Check if the managedendpoint is already used in role which is created for a managed endpoint
         //if there is no managedendpointArn create a new managedendpoint
         //else get managedendpoint and push it to  @managedEndpointArns
-        if (!this.managedEndpointExecutionPolicyArnMapping.has(executionPolicy.managedPolicyName)) {
+        if (!this.managedEndpointExecutionPolicyArnMapping.has(notebookManagedEndpoint.executionPolicy.managedPolicyName)) {
 
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
+
+          let emrOnEksVersion: string | undefined = user.notebookManagedEndpoints[index].emrOnEksVersion;
+          let configOverride: string | undefined = user.notebookManagedEndpoints[index].configurationOverrides;
+
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this.nestedStack,
-            `${this.studioName}${Utils.stringSanitizer(executionPolicy.managedPolicyName)}`,
+            `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.executionPolicy.managedPolicyName)}`,
             {
-              managedEndpointName: `${executionPolicy.managedPolicyName}`,
+              managedEndpointName: Utils.stringSanitizer(`${this.studioName}-${notebookManagedEndpoint.executionPolicy.managedPolicyName}`),
               virtualClusterId: this.emrVirtCluster.attrId,
               executionRole: this.emrEks.createExecutionRole(
                 this,
                 `${user.identityName}${index}`,
-                executionPolicy,
+                notebookManagedEndpoint.executionPolicy,
               ),
-              emrOnEksVersion: user.emrOnEksVersion ? user.emrOnEksVersion : undefined,
-              configurationOverrides: user.configurationOverrides ? user.configurationOverrides : undefined,
+              emrOnEksVersion: emrOnEksVersion ? emrOnEksVersion : undefined,
+              configurationOverrides: configOverride ? configOverride : undefined,
             },
 
           );
@@ -311,15 +325,15 @@ export class NotebookPlatform extends Construct {
           //This is to avoid the creation an endpoint with the same policy twice
           //Save resources and reduce the deployment time
           // TODO check the emr version is the same => to be fixed on a later commit need to solve adding a tuple to a JS map
-          // TODO check multiple users/notebooks can share a JEG and trigger multiple spark apps
-          this.managedEndpointExecutionPolicyArnMapping.set(executionPolicy.managedPolicyName, managedEndpoint.getAttString('arn'));
+          this.managedEndpointExecutionPolicyArnMapping.set(notebookManagedEndpoint.executionPolicy.managedPolicyName, managedEndpoint.getAttString('arn'));
 
           //Push the managedendpoint arn to be used in to build the policy to attach to it
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
-          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(executionPolicy.managedPolicyName));
+          let managedPolicyName = notebookManagedEndpoint.executionPolicy.managedPolicyName;
+          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(managedPolicyName));
         }
-      })
+      });
 
       if (this.authMode === 'IAM' && this.federatedIdPARN === undefined) {
         //Create the role policy and gets its ARN
@@ -349,8 +363,8 @@ export class NotebookPlatform extends Construct {
         if (user.identityType == 'USER' || user.identityType == 'GROUP') {
           //Map a session to user or group
           new CfnStudioSessionMapping(this.nestedStack, 'studioUser' + user.identityName + user.identityName, {
-            identityName: user.identityName!,
-            identityType: user.identityType!,
+            identityName: user.identityName,
+            identityType: user.identityType,
             sessionPolicyArn: sessionPolicyArn,
             studioId: this.studioId,
           });

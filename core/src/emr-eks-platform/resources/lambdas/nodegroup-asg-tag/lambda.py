@@ -32,12 +32,13 @@ def on_create(event):
     tag_key = event['ResourceProperties']['tagKey']
     tag_value = event['ResourceProperties']['tagValue']
     response = client.create_or_update_tags(
-        tags=[
+        Tags=[
             {
+                'Value': str(tag_value),
+                'ResourceType': 'auto-scaling-group',
                 'ResourceId': asg_name,
                 'Key': tag_key,
-                'Value': tag_value,
-                'PropagateAtLaunch': True,
+                'PropagateAtLaunch': True
             }
         ]
     )
@@ -59,12 +60,13 @@ def on_delete(event):
     tag_value = event['ResourceProperties']['tagValue']
     # Delete the tag from the EC2 Auto Scaling Group
     response = client.delete_tags(
-        tags=[
+        Tags=[
             {
+                'Value': str(tag_value),
+                'ResourceType': 'auto-scaling-group',
                 'ResourceId': asg_name,
                 'Key': tag_key,
-                'Value': tag_value,
-                'PropagateAtLaunch': True,
+                'PropagateAtLaunch': True
             }
         ]
     )
@@ -76,18 +78,18 @@ def on_delete(event):
 
 def get_asg_name(nodegroup_name):
     response = client.describe_auto_scaling_groups(
-        maxRecord=100,
-        filters=[
+        MaxRecords=100,
+        Filters=[
             {
                 'Name':'tag:eks:cluster-name',
                 'Values':[eks_cluster_name],
             },
             {
                 'Name':'tag:eks:nodegroup-name',
-                'Values': nodegroup_name,
+                'Values': [nodegroup_name],
             },
         ],
     )
     log.info(response)
-    return response(0)['AutoScalingGroupName']
+    return response['AutoScalingGroups'][0]['AutoScalingGroupName']
 

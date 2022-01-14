@@ -1,0 +1,73 @@
+{
+  "type": "object",
+  "properties": {
+    "applicationConfiguration": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "classification": {
+              "type": "string"
+            },
+            "properties": {
+              "type": "object",
+              "patternProperties": {
+                "^spark.\\w+(?:\\.\\w+)+": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "classification",
+            "properties"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "monitoringConfiguration": {
+      "type": "object",
+      "properties": {
+        "persistentAppUI": {
+          "type": "string"
+        },
+        "cloudWatchMonitoringConfiguration": {
+          "type": "object",
+          "properties": {
+            "logGroupName": {
+              "type": "string"
+            },
+            "logStreamNamePrefix": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "logGroupName",
+            "logStreamNamePrefix"
+          ],
+          "additionalProperties": false
+        },
+        "s3MonitoringConfiguration": {
+          "type": "object",
+          "properties": {
+            "logUri": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "logUri"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  },
+  "required": [
+    "applicationConfiguration",
+    "monitoringConfiguration"
+  ],
+  "additionalProperties": false
+}

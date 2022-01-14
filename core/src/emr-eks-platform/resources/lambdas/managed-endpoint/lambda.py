@@ -98,13 +98,12 @@ def is_complete(event, ctx):
 
     if state == "ACTIVE_CREATEUPDATE":
         ##Reducing the data returned to the custom resource
-        if (state == "ACTIVE_CREATEUPDATE"):
-            data = {
-                "securityGroup": response['endpoint']['securityGroup'],
-                "subnetIds": response['endpoint']['securityGroup'],
-                "id": response['endpoint']['id'],
-                "arn": response['endpoint']['arn']
-            }
+        data = {
+            "securityGroup": response['endpoint']['securityGroup'],
+            "subnetIds": response['endpoint']['securityGroup'],
+            "id": response['endpoint']['id'],
+            "arn": response['endpoint']['arn']
+        }
 
         log.info({"IsComplete": True, "Data": data})
         return {"IsComplete": True, "Data": data}

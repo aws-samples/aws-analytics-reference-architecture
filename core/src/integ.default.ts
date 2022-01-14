@@ -3,12 +3,12 @@
 
 import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
 import { App, Stack, Aws, ArnFormat } from '@aws-cdk/core';
-import { EmrEksCluster, NotebookPlatform, StudioAuthMode } from '.';
+import { EmrEksCluster, /*NotebookPlatform, StudioAuthMode*/ } from '.';
 
 const mockApp = new App();
 const stack = new Stack(mockApp, 'stack');
 
-const policy = new ManagedPolicy(stack, 'MyPolicy',{
+/*const policy = */new ManagedPolicy(stack, 'MyPolicy', {
   statements: [
     new PolicyStatement({
       resources: ['*'],
@@ -28,23 +28,26 @@ const policy = new ManagedPolicy(stack, 'MyPolicy',{
         'logs:*',
       ],
     }),
-  ]
-})
+  ],
+});
 
-const emrEks = EmrEksCluster.getOrCreate(stack, {
+/*const emrEks =*/ EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav',
 });
 
-const notebookPlatform =new NotebookPlatform(stack, 'platform1',{
-  emrEks: emrEks,
-  eksNamespace: 'test',
-  studioName: 'platform1',
-  studioAuthMode: StudioAuthMode.IAM,
-})
+// /* notebookPlatform = */new NotebookPlatform(stack, 'platform1', {
+//   emrEks: emrEks,
+//   eksNamespace: 'test',
+//   studioName: 'notebook1',
+//   studioAuthMode: StudioAuthMode.IAM,
+// });
 
-notebookPlatform.addUser([{
-  identityName: 'gromav',
-  identityType: 'USER',
-  executionPolicies: [policy],
-  emrOnEksVersion: 'emr-6.3.0-latest',
-}]);
+// // notebookPlatform.addUser([{
+// //   identityName: 'vincent',
+// //   identityType: 'USER',
+// //   notebookManagedEndpoints: [{
+// //     emrOnEksVersion: 'emr-6.4.0-latest',
+// //     executionPolicy: policy,
+// //   }],
+// // }]);
+

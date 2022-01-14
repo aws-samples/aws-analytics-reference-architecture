@@ -473,11 +473,15 @@ public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy,
 
 - *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
 
+of the IAM role.
+
 ---
 
 ###### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.id"></a>
 
 - *Type:* `string`
+
+of the CDK resource to be created, it should be unique across the stack.
 
 ---
 
@@ -492,6 +496,8 @@ the execution policy to attach to the role.
 ###### `name`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.EmrEksCluster.parameter.name"></a>
 
 - *Type:* `string`
+
+for the Managed Endpoint.
 
 ---
 
@@ -1280,6 +1286,7 @@ Some of the Amazon EKS Nodegroup parameters are overriden:
 -  NodegroupName by the id and an index per AZ
 -  LaunchTemplate spec
 -  SubnetList by either the subnet parameter or one subnet per Amazon EKS Cluster AZ.
+-  Labels and Taints are automatically used to tag the nodegroup for the cluster autoscaler
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
@@ -1593,7 +1600,7 @@ The subnet must include the availability zone information because the nodegroup 
 
 ### EmrManagedEndpointOptions <a name="aws-analytics-reference-architecture.EmrManagedEndpointOptions"></a>
 
-The properties for the EmrVirtualCluster Construct class.
+The properties for the EMR Managed Endpoint to create.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
@@ -1830,6 +1837,55 @@ Period to keep the logs around.
 
 ---
 
+### NotebookManagedEndpointOptions <a name="aws-analytics-reference-architecture.NotebookManagedEndpointOptions"></a>
+
+The properties for defining a Managed Endpoint The interface is used to create a managed Endpoint which can be leveraged by multiple users.
+
+#### Initializer <a name="[object Object].Initializer"></a>
+
+```typescript
+import { NotebookManagedEndpointOptions } from 'aws-analytics-reference-architecture'
+
+const notebookManagedEndpointOptions: NotebookManagedEndpointOptions = { ... }
+```
+
+##### `executionPolicy`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.executionPolicy"></a>
+
+```typescript
+public readonly executionPolicy: ManagedPolicy;
+```
+
+- *Type:* [`@aws-cdk/aws-iam.ManagedPolicy`](#@aws-cdk/aws-iam.ManagedPolicy)
+
+The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB.
+
+---
+
+##### `configurationOverrides`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides"></a>
+
+```typescript
+public readonly configurationOverrides: string;
+```
+
+- *Type:* `string`
+- *Default:* Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+
+The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint.
+
+---
+
+##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion"></a>
+
+```typescript
+public readonly emrOnEksVersion: string;
+```
+
+- *Type:* `string`
+
+The version of Amazon EMR to deploy.
+
+---
+
 ### NotebookPlatformProps <a name="aws-analytics-reference-architecture.NotebookPlatformProps"></a>
 
 The properties for DataPlatformNotebook Construct.
@@ -1941,18 +1997,6 @@ import { NotebookUserOptions } from 'aws-analytics-reference-architecture'
 const notebookUserOptions: NotebookUserOptions = { ... }
 ```
 
-##### `executionPolicies`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookUserOptions.property.executionPolicies"></a>
-
-```typescript
-public readonly executionPolicies: ManagedPolicy[];
-```
-
-- *Type:* [`@aws-cdk/aws-iam.ManagedPolicy`](#@aws-cdk/aws-iam.ManagedPolicy)[]
-
-The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB.
-
----
-
 ##### `identityName`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookUserOptions.property.identityName"></a>
 
 ```typescript
@@ -1965,28 +2009,13 @@ Name of the identity as it appears in AWS SSO console, or the name to be given t
 
 ---
 
-##### `configurationOverrides`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.NotebookUserOptions.property.configurationOverrides"></a>
+##### `notebookManagedEndpoints`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookUserOptions.property.notebookManagedEndpoints"></a>
 
 ```typescript
-public readonly configurationOverrides: string;
+public readonly notebookManagedEndpoints: NotebookManagedEndpointOptions[];
 ```
 
-- *Type:* `string`
-- *Default:* Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
-
-The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint.
-
----
-
-##### `emrOnEksVersion`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.NotebookUserOptions.property.emrOnEksVersion"></a>
-
-```typescript
-public readonly emrOnEksVersion: string;
-```
-
-- *Type:* `string`
-
-The version of Amazon EMR to deploy.
+- *Type:* [`aws-analytics-reference-architecture.NotebookManagedEndpointOptions`](#aws-analytics-reference-architecture.NotebookManagedEndpointOptions)[]
 
 ---
 
@@ -2521,6 +2550,18 @@ Enum to define the RelayState of different IdPs Used in EMR Studio Prop in the I
 
 
 #### `PING_ONE` <a name="aws-analytics-reference-architecture.IdpRelayState.PING_ONE"></a>
+
+---
+
+
+### SSOIdentityType <a name="SSOIdentityType"></a>
+
+#### `USER` <a name="aws-analytics-reference-architecture.SSOIdentityType.USER"></a>
+
+---
+
+
+#### `GROUP` <a name="aws-analytics-reference-architecture.SSOIdentityType.GROUP"></a>
 
 ---
 

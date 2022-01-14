@@ -1,5 +1,5 @@
-{ 
-    "applicationConfiguration": 
+{
+    "applicationConfiguration":
     [
         {
             "classification": "spark-defaults",
@@ -20,7 +20,9 @@
                 "spark.executor.memory": "14G",
                 "spark.driver.cores": "1",
                 "spark.kubernetes.driver.request.cores": "0.5",
-                "spark.driver.memory": "2G"
+                "spark.driver.memory": "2G",
+                "spark.kubernetes.node.selector.role": "notebook",
+                "spark.kubernetes.node.selector.node-lifecycle": "spot"
             }
         }
     ],

@@ -106,6 +106,10 @@
       "type": "build"
     },
     {
+      "name": "@exodus/schemasafe",
+      "type": "bundled"
+    },
+    {
       "name": "aws-sdk",
       "type": "bundled"
     },
@@ -400,6 +404,10 @@
     {
       "name": "@aws-cdk/lambda-layer-awscli",
       "version": "1.134",
+      "type": "runtime"
+    },
+    {
+      "name": "@exodus/schemasafe",
       "type": "runtime"
     }
   ],

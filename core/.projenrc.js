@@ -70,6 +70,10 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/aws-kms',
   ],
 
+  deps: [
+    '@exodus/schemasafe',
+  ],
+
   devDeps: [
     '@types/js-yaml',
     '@types/jest',
@@ -88,6 +92,7 @@ const project = new AwsCdkConstructLibrary({
     'js-yaml',
     'uuid',
     'aws-sdk',
+    '@exodus/schemasafe',
   ],
 
   python: {
