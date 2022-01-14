@@ -12,13 +12,14 @@ export interface NotebookManagedEndpointOptions {
 
   /**
      * The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint
-     * @default - Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+     * an example can be found [here]
+     * (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json)
      */
   readonly configurationOverrides?: string;
 
   /**
      * The name of the policy to be used for the execution Role to pass to ManagedEndpoint,
-     * this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB
+     * this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog
      * */
   readonly executionPolicy: ManagedPolicy;
 }

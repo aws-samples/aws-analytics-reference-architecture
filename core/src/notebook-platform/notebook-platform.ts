@@ -22,36 +22,37 @@ import { NotebookUserOptions } from './notebook-user';
 
 
 /**
- * The properties for DataPlatformNotebook Construct.
+ * The properties for NotebookPlatform Construct.
  */
 export interface NotebookPlatformProps {
   /**
-   * Required the EmrEks infrastructure used for the deployment
+   * Required
+   * the EmrEks infrastructure used for the deployment
    * */
   readonly emrEks: EmrEksCluster;
   /**
-   * Required the be given to the name of Amazon EMR Studio
+   * Required the name to be given to the Amazon EMR Studio
    * Must be unique across the AWS account
    * */
   readonly studioName: string;
   /**
    * Required the authentication mode of Amazon EMR Studio
-   * Either 'SSO' or 'IAM' defined in the Enum {@linkcode studioAuthMode}
+   * Either 'SSO' or 'IAM' defined in the Enum {@link studioAuthMode}
    * */
   readonly studioAuthMode: StudioAuthMode;
   /**
    * the namespace where to deploy the EMR Virtual Cluster
-   * @default - Use the {@linkcode EmrVirtualClusterOptions} default namespace
+   * @default - Use the {@link EmrVirtualClusterOptions} default namespace
    * */
   readonly eksNamespace?: string;
   /**
    * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
-   * This is is the URL used to sign in the AWS console
+   * This is the URL used to sign in the AWS console
    * */
   readonly idpAuthUrl?: string;
   /**
    * Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio
-   * Value can be set with {@linkcode idpRelayState} Enum or through a value provided by the user
+   * Value can be set with {@link IdpRelayState} Enum or through a value provided by the user
    * */
   readonly idpRelayStateParameterName?: string;
   /**
@@ -69,6 +70,9 @@ export enum StudioAuthMode {
   SSO = 'SSO',
 }
 
+/**
+ * Enum to define the type of identity Type in EMR studio
+ */
 export enum SSOIdentityType {
   USER = 'USER',
   GROUP = 'GROUP',
@@ -88,12 +92,75 @@ export enum IdpRelayState {
 }
 
 /**
- * @internal
- * Construct to create an Amazon EKS cluster, Amazon EMR virtual cluster and Amazon EMR Studio
- * Construct can also take as parameters Amazon EKS id, Amazon VPC Id and list of subnets then create Amazon EMR virtual cluster and Amazon EMR Studio
- * Construct is then used to assign users to the created EMR Studio
+ * A CDK construct to create a notebook infrastructure based on Amazon EMR Studio and assign users to it
+ *
+ * This construct is initialized through a constructor that takes as argument an interface defined in {@link NotebookPlatformProps}
+ * The construct has a method to add users {@link addUser} the method take as argument {@link NotebookUserOptions}
+ *
+ * Services deployed:
+ *
+ * * An S3 Bucket used by EMR Studio to store the Jupyter notebooks
+ * * A KMS encryption Key used to encrypt an S3 bucket used by EMR Studio to store jupyter notebooks
+ * * An EMR Studio service Role as defined here, and allowed to access the S3 bucket and KMS key created above
+ * * An EMR Studio User Role as defined here - The policy template which is leveraged is the Basic one from the Amazon EMR Studio documentation
+ * * Multiple EMR on EKS Managed Endpoints, each for a user or a group of users
+ * * Create an execution role to be passed to the Managed endpoint from a policy arn provided by the user
+ * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are: <br />
+ *   - EMR Virtual Cluster - created above <br />
+ *   - ManagedEndpoint <br />
+ *
+ *
+ * Usage example:
+ *
+ * ```typescript
+ * const emrEks = EmrEksCluster.getOrCreate(stack, {
+ *   eksAdminRoleArn: 'arn:aws:iam::012345678912:role/Admin-Admin',
+ *   eksClusterName: 'cluster',
+ * });
+ *
+ * const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {
+ *   emrEks: emrEks,
+ *   eksNamespace: 'platformns',
+ *   studioName: 'platform',
+ *   studioAuthMode: StudioAuthMode.SSO,
+ * });
+ *
+ *
+ * const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
+ *   statements: [
+ *     new PolicyStatement({
+ *       resources: ['*'],
+ *       actions: ['s3:*'],
+ *     }),
+ *     new PolicyStatement({
+ *       resources: [
+ *         stack.formatArn({
+ *           account: Aws.ACCOUNT_ID,
+ *           region: Aws.REGION,
+ *           service: 'logs',
+ *           resource: '*',
+ *           arnFormat: ArnFormat.NO_RESOURCE_NAME,
+ *         }),
+ *       ],
+ *       actions: [
+ *         'logs:*',
+ *       ],
+ *     }),
+ *   ],
+ * });
+ *
+ * notebookPlatform.addUser([{
+ *   identityName: 'user1',
+ *   identityType: SSOIdentityType.USER,
+ *   notebookManagedEndpoints: [{
+ *     emrOnEksVersion: 'emr-6.3.0-latest',
+ *     executionPolicy: policy1,
+ *   }],
+ * }]);
+ *
+ * ```
  */
-export class NotebookPlatform extends Construct {
+export class NotebookPlatform extends NestedStack {
   private static readonly STUDIO_PRINCIPAL: string = 'elasticmapreduce.amazonaws.com';
   private readonly studioId: string;
   private readonly workSpaceSecurityGroup: SecurityGroup;
@@ -112,14 +179,14 @@ export class NotebookPlatform extends Construct {
   private readonly managedEndpointExecutionPolicyArnMapping: Map<string, string>;
   private readonly federatedIdPARN : string | undefined;
   private readonly authMode :string;
-  private readonly nestedStack: NestedStack;
   private studioServiceRole: IRole;
 
   /**
-   * Constructs a new instance of the DataGenerator class
+   * @public
+   * Constructs a new instance of the DataPlatform class
    * @param {Construct} scope the Scope of the AWS CDK Construct
    * @param {string} id the ID of the AWS CDK Construct
-   * @param {DataPlatformNotebookProps} props the DataPlatformNotebooks [properties]{@link DataPlatformNotebookProps}
+   * @param {NotebookPlatformProps} props the DataPlatformNotebooks [properties]{@link NotebookPlatformProps}
    */
 
   constructor(scope: Construct, id: string, props: NotebookPlatformProps) {
@@ -131,15 +198,13 @@ export class NotebookPlatform extends Construct {
     this.managedEndpointExecutionPolicyArnMapping = new Map<string, string>();
     this.authMode = props.studioAuthMode;
 
-    this.nestedStack = new NestedStack(scope, `${props.studioName}-stack`);
-
     if (props.idpArn !== undefined) {
       this.federatedIdPARN = props.idpArn;
     }
 
     //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
     this.notebookPlatformEncryptionKey = new Key(
-      this.nestedStack,
+      this,
       'KMS-key-'+ Utils.stringSanitizer(props.studioName),
     );
 
@@ -154,14 +219,14 @@ export class NotebookPlatform extends Construct {
 
 
     //Create a virtual cluster a give it a name of 'emr-vc-'+studioName provided by user
-    this.emrVirtCluster = this.emrEks.addEmrVirtualCluster(this.nestedStack, {
+    this.emrVirtCluster = this.emrEks.addEmrVirtualCluster(this, {
       createNamespace: true,
       eksNamespace: props.eksNamespace,
       name: Utils.stringSanitizer(this.emrVirtualClusterName),
     });
 
     //Create a security group to be attached to the studio workspaces
-    this.workSpaceSecurityGroup = new SecurityGroup(this.nestedStack, 'workspaceSecurityGroup', {
+    this.workSpaceSecurityGroup = new SecurityGroup(this, 'workspaceSecurityGroup', {
       vpc: this.emrEks.eksCluster.vpc,
       securityGroupName: 'workSpaceSecurityGroup-'+props.studioName,
       allowAllOutbound: false,
@@ -172,7 +237,7 @@ export class NotebookPlatform extends Construct {
 
     //Create a security group to be attached to the engine for EMR
     //This is mandatory for Amazon EMR Studio although we are not using EMR on EC2
-    this.engineSecurityGroup = new SecurityGroup(this.nestedStack, 'engineSecurityGroup', {
+    this.engineSecurityGroup = new SecurityGroup(this, 'engineSecurityGroup', {
       vpc: this.emrEks.eksCluster.vpc,
       securityGroupName: 'engineSecurityGroup-'+props.studioName,
       allowAllOutbound: false,
@@ -183,7 +248,7 @@ export class NotebookPlatform extends Construct {
 
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
-    this.workspacesBucket = new Bucket(this.nestedStack, 'WorkspacesBucket' + props.studioName, {
+    this.workspacesBucket = new Bucket(this, 'WorkspacesBucket' + props.studioName, {
       bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + Utils.stringSanitizer(props.studioName),
       enforceSSL: true,
       encryptionKey: this.notebookPlatformEncryptionKey,
@@ -191,13 +256,13 @@ export class NotebookPlatform extends Construct {
     });
 
     //Create a Managed policy for Studio service role
-    this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this.nestedStack,
-      'StudioServiceManagedPolicy', createStudioServiceRolePolicy(this.nestedStack, this.notebookPlatformEncryptionKey.keyArn, this.workspacesBucket.bucketName,
+    this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
+      'StudioServiceManagedPolicy', createStudioServiceRolePolicy(this, this.notebookPlatformEncryptionKey.keyArn, this.workspacesBucket.bucketName,
         props.studioName),
     ));
 
     //Create a role for the Studio
-    this.studioServiceRole = new Role(this.nestedStack, 'studioServiceRole', {
+    this.studioServiceRole = new Role(this, 'studioServiceRole', {
       assumedBy: new ServicePrincipal(NotebookPlatform.STUDIO_PRINCIPAL),
       roleName: 'studioServiceRole+' + Utils.stringSanitizer(props.studioName),
       managedPolicies: this.studioServicePolicy,
@@ -206,20 +271,20 @@ export class NotebookPlatform extends Construct {
     // Create an EMR Studio user role only if the user uses SSO as authentication mode
     if (props.studioAuthMode === 'SSO') {
       //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
-      this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this.nestedStack,
+      this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
         'StudioUserManagedPolicy',
-        createStudioUserRolePolicy(this.nestedStack, props.studioName, this.studioServiceRole.roleName),
+        createStudioUserRolePolicy(this, props.studioName, this.studioServiceRole.roleName),
       ));
 
       //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
-      this.studioUserRole = new Role(this.nestedStack, 'studioUserRole', {
+      this.studioUserRole = new Role(this, 'studioUserRole', {
         assumedBy: new ServicePrincipal(NotebookPlatform.STUDIO_PRINCIPAL),
         roleName: 'studioUserRole+' + Utils.stringSanitizer(props.studioName),
         managedPolicies: this.studioUserPolicy,
       });
     }
     // Create the EMR Studio
-    this.studioInstance = new CfnStudio(this.nestedStack, 'Studio', <CfnStudioProps>{
+    this.studioInstance = new CfnStudio(this, 'Studio', <CfnStudioProps>{
       authMode: props.studioAuthMode,
       defaultS3Location: 's3://' + this.workspacesBucket.bucketName + '/',
       engineSecurityGroupId: this.engineSecurityGroup.securityGroupId,
@@ -241,20 +306,20 @@ export class NotebookPlatform extends Construct {
     this.studioId = this.studioInstance.attrStudioId;
 
     //Return EMR Studio URL as CfnOutput
-    if (this.nestedStack.nestedStackParent != undefined) {
-      new CfnOutput(this.nestedStack.nestedStackParent, `URL for EMR Studio: ${this.studioName}`, {
+    if (this.nestedStackParent != undefined) {
+      new CfnOutput(this.nestedStackParent, `URL for EMR Studio: ${this.studioName}`, {
         value: this.studioInstance.attrUrl,
       });
     }
   }
 
   /**
+   * @public
    * Method to add users, take a list of userDefinition and will create a managed endpoints for each user
    * and create an IAM Policy scoped to the list managed endpoints
-   * @param {StudioUserDefinition} userList list of users
-   * @return {string[] } return a list of users that were created and their temporary passwords if IAM_AUTHENTICATED is used
+   * @param {NotebookUserOptions} userList list of users
    */
-  public addUser(userList: NotebookUserOptions []): string[] {
+  public addUser(userList: NotebookUserOptions []) {
     //Initialize the managedEndpointArns
     //Used to store the arn of managed endpoints after creation for each users
     //This is used to update the IAM policy
@@ -283,7 +348,7 @@ export class NotebookPlatform extends Construct {
           let configOverride: string | undefined = user.notebookManagedEndpoints[index].configurationOverrides;
 
           let managedEndpoint = this.emrEks.addManagedEndpoint(
-            this.nestedStack,
+            this,
             `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.executionPolicy.managedPolicyName)}`,
             {
               managedEndpointName: Utils.stringSanitizer(`${this.studioName}-${notebookManagedEndpoint.executionPolicy.managedPolicyName}`),
@@ -303,7 +368,7 @@ export class NotebookPlatform extends Construct {
 
           //Get the Security Group of the ManagedEndpoint which is the Engine Security Group
           let engineSecurityGroup: ISecurityGroup = SecurityGroup.fromSecurityGroupId(
-            this.nestedStack,
+            this,
             `engineSecurityGroup${user.identityName}${index}`,
             managedEndpoint.getAttString('securityGroup'));
 
@@ -337,32 +402,32 @@ export class NotebookPlatform extends Construct {
 
       if (this.authMode === 'IAM' && this.federatedIdPARN === undefined) {
         //Create the role policy and gets its ARN
-        iamRolePolicy = createIAMRolePolicy(this.nestedStack, user, this.studioServiceRole.roleName,
+        iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
-        let iamUserCredentials: string = createIAMUser(this.nestedStack, iamRolePolicy!, user.identityName);
+        let iamUserCredentials: string = createIAMUser(this, iamRolePolicy!, user.identityName);
 
-        if (this.nestedStack.nestedStackParent != undefined) {
-          new CfnOutput(this.nestedStack.nestedStackParent, `${user.identityName}`, {
+        if (this.nestedStackParent != undefined) {
+          new CfnOutput(this.nestedStackParent, `${user.identityName}`, {
             value: iamUserCredentials,
           });
         }
 
       } else if (this.authMode === 'IAM' && this.federatedIdPARN != undefined) {
         //Create the role policy and gets its ARN
-        iamRolePolicy = createIAMRolePolicy(this.nestedStack, user, this.studioServiceRole.roleName,
+        iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
-        createIAMFederatedRole(this.nestedStack, iamRolePolicy!, this.federatedIdPARN!, user.identityName, this.studioId);
+        createIAMFederatedRole(this, iamRolePolicy!, this.federatedIdPARN!, user.identityName, this.studioId);
 
       } else if (this.authMode === 'SSO') {
         //Create the session policy and gets its ARN
-        let sessionPolicyArn = createUserSessionPolicy(this.nestedStack, user, this.studioServiceRole.roleName,
+        let sessionPolicyArn = createUserSessionPolicy(this, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
         if (user.identityType == 'USER' || user.identityType == 'GROUP') {
           //Map a session to user or group
-          new CfnStudioSessionMapping(this.nestedStack, 'studioUser' + user.identityName + user.identityName, {
+          new CfnStudioSessionMapping(this, 'studioUser' + user.identityName + user.identityName, {
             identityName: user.identityName,
             identityType: user.identityType,
             sessionPolicyArn: sessionPolicyArn,

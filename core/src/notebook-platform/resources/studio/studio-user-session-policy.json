@@ -110,14 +110,18 @@
       "Effect": "Allow"
     },
     {
-      "Sid": "ScopeDownWorkspacesToUsers",
+      "Sid": "ScopeDownWorkspacesToUserAndPermissionsForCollaboration",
       "Effect": "Allow",
       "Action": [
         "elasticmapreduce:DeleteEditor",
         "elasticmapreduce:StartEditor",
         "elasticmapreduce:StopEditor",
         "elasticmapreduce:OpenEditorInConsole",
-        "elasticmapreduce:DescribeEditor"
+        "elasticmapreduce:DescribeEditor",
+        "elasticmapreduce:UpdateEditor",
+        "elasticmapreduce:PutWorkspaceAccess",
+        "elasticmapreduce:DeleteWorkspaceAccess",
+        "elasticmapreduce:ListWorkspaceAccessIdentities"
       ],
       "Resource": "*",
       "Condition": {
