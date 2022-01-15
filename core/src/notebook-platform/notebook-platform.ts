@@ -97,15 +97,15 @@ export enum IdpRelayState {
  * This construct is initialized through a constructor that takes as argument an interface defined in {@link NotebookPlatformProps}
  * The construct has a method to add users {@link addUser} the method take as argument {@link NotebookUserOptions}
  *
- * Services deployed:
+ * Resources deployed:
  *
  * * An S3 Bucket used by EMR Studio to store the Jupyter notebooks
  * * A KMS encryption Key used to encrypt an S3 bucket used by EMR Studio to store jupyter notebooks
  * * An EMR Studio service Role as defined here, and allowed to access the S3 bucket and KMS key created above
  * * An EMR Studio User Role as defined here - The policy template which is leveraged is the Basic one from the Amazon EMR Studio documentation
  * * Multiple EMR on EKS Managed Endpoints, each for a user or a group of users
- * * Create an execution role to be passed to the Managed endpoint from a policy arn provided by the user
- * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are: <br />
+ * * An execution role to be passed to the Managed endpoint from a policy provided by the user
+ * * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are: <br />
  *   - EMR Virtual Cluster - created above <br />
  *   - ManagedEndpoint <br />
  *
