@@ -13,6 +13,7 @@ import { SingletonBucket } from '../singleton-bucket';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { validateSchema } from './config-override-schema-validation';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
+import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
 import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
@@ -23,7 +24,6 @@ import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as IamPolicyAutoscaler from './resources/k8s/iam-policy-autoscaler.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 
 
 /**
@@ -214,8 +214,8 @@ export class EmrEksCluster extends Construct {
     // Create the custom resource provider for tagging the EC2 Auto Scaling groups
     this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagProvider(this, 'AsgTagProvider', {
       eksClusterName: this.clusterName,
-    }).provider.serviceToken
-    
+    }).provider.serviceToken;
+
     // Create the Amazon EKS Nodegroup for tooling
     this.addNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
     // Create default Amazon EMR on EKS Nodegroups. This will create one Amazon EKS nodegroup per AZ
@@ -616,14 +616,14 @@ ${userData.join('\r\n')}
             applyToLaunchedInstances: true,
           },
         );
-        new CustomResource(this, `${nodegroupId}Label${key}`,{
+        new CustomResource(this, `${nodegroupId}Label${key}`, {
           serviceToken: this.nodegroupAsgTagsProviderServiceToken,
           properties: {
             nodegroupName: options.nodegroupName,
             tagKey: `k8s.io/cluster-autoscaler/node-template/label/${key}`,
             tagValue: value,
-          }
-        });
+          },
+        }).node.addDependency(nodegroup);
       }
     }
     // Iterate over taints and add appropriate tags
@@ -636,14 +636,14 @@ ${userData.join('\r\n')}
             applyToLaunchedInstances: true,
           },
         );
-        new CustomResource(this, `${nodegroupId}Taint${taint.key}`,{
+        new CustomResource(this, `${nodegroupId}Taint${taint.key}`, {
           serviceToken: this.nodegroupAsgTagsProviderServiceToken,
           properties: {
             nodegroupName: options.nodegroupName,
             tagKey: `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
             tagValue: `${taint.value}:${taint.effect}`,
-          }
-        });
+          },
+        }).node.addDependency(nodegroup);
       });
     }
 
@@ -661,7 +661,7 @@ ${userData.join('\r\n')}
    */
   public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, name?: string): Role {
 
-     const stack = Stack.of(this);
+    const stack = Stack.of(this);
 
     // Create an execution role assumable by EKS OIDC provider
     return new Role(scope, `${id}ExecutionRole`, {
@@ -673,7 +673,7 @@ ${userData.join('\r\n')}
           statements: [
             new PolicyStatement({
               actions: [
-                's3:getObject'
+                's3:getObject',
               ],
               resources: [
                 stack.formatArn({
@@ -684,10 +684,10 @@ ${userData.join('\r\n')}
                   resourceName: this.podTemplateLocation.objectKey,
                 }),
               ],
-            })
-          ]
+            }),
+          ],
         }),
-      }
+      },
     });
   }
 
