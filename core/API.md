@@ -721,6 +721,127 @@ public readonly flywayRunner: CustomResource;
 ---
 
 
+### NotebookPlatform <a name="aws-analytics-reference-architecture.NotebookPlatform"></a>
+
+A CDK construct to create a notebook infrastructure based on Amazon EMR Studio and assign users to it.
+
+This construct is initialized through a constructor that takes as argument an interface defined in {@link NotebookPlatformProps}
+The construct has a method to add users {@link addUser} the method take as argument {@link NotebookUserOptions}
+
+Resources deployed:
+
+* An S3 Bucket used by EMR Studio to store the Jupyter notebooks
+* A KMS encryption Key used to encrypt an S3 bucket used by EMR Studio to store jupyter notebooks
+* An EMR Studio service Role as defined here, and allowed to access the S3 bucket and KMS key created above
+* An EMR Studio User Role as defined here - The policy template which is leveraged is the Basic one from the Amazon EMR Studio documentation
+* Multiple EMR on EKS Managed Endpoints, each for a user or a group of users
+* An execution role to be passed to the Managed endpoint from a policy provided by the user
+* Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are: <br />
+   - EMR Virtual Cluster - created above <br />
+   - ManagedEndpoint <br />
+
+
+Usage example:
+
+```typescript
+const emrEks = EmrEksCluster.getOrCreate(stack, {
+   eksAdminRoleArn: 'arn:aws:iam::012345678912:role/Admin-Admin',
+   eksClusterName: 'cluster',
+});
+
+const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {
+   emrEks: emrEks,
+   eksNamespace: 'platformns',
+   studioName: 'platform',
+   studioAuthMode: StudioAuthMode.SSO,
+});
+
+
+const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
+   statements: [
+     new PolicyStatement({
+       resources: ['*'],
+       actions: ['s3:*'],
+     }),
+     new PolicyStatement({
+       resources: [
+         stack.formatArn({
+           account: Aws.ACCOUNT_ID,
+           region: Aws.REGION,
+           service: 'logs',
+           resource: '*',
+           arnFormat: ArnFormat.NO_RESOURCE_NAME,
+         }),
+       ],
+       actions: [
+         'logs:*',
+       ],
+     }),
+   ],
+});
+
+notebookPlatform.addUser([{
+   identityName: 'user1',
+   identityType: SSOIdentityType.USER,
+   notebookManagedEndpoints: [{
+     emrOnEksVersion: 'emr-6.3.0-latest',
+     executionPolicy: policy1,
+   }],
+}]);
+
+```
+
+#### Initializers <a name="aws-analytics-reference-architecture.NotebookPlatform.Initializer"></a>
+
+```typescript
+import { NotebookPlatform } from 'aws-analytics-reference-architecture'
+
+new NotebookPlatform(scope: Construct, id: string, props: NotebookPlatformProps)
+```
+
+##### `scope`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookPlatform.parameter.scope"></a>
+
+- *Type:* [`@aws-cdk/core.Construct`](#@aws-cdk/core.Construct)
+
+the Scope of the AWS CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookPlatform.parameter.id"></a>
+
+- *Type:* `string`
+
+the ID of the AWS CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookPlatform.parameter.props"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.NotebookPlatformProps`](#aws-analytics-reference-architecture.NotebookPlatformProps)
+
+the DataPlatformNotebooks [properties]{@link NotebookPlatformProps}.
+
+---
+
+#### Methods <a name="Methods"></a>
+
+##### `addUser` <a name="aws-analytics-reference-architecture.NotebookPlatform.addUser"></a>
+
+```typescript
+public addUser(userList: NotebookUserOptions[])
+```
+
+###### `userList`<sup>Required</sup> <a name="aws-analytics-reference-architecture.NotebookPlatform.parameter.userList"></a>
+
+- *Type:* [`aws-analytics-reference-architecture.NotebookUserOptions`](#aws-analytics-reference-architecture.NotebookUserOptions)[]
+
+list of users.
+
+---
+
+
+
+
 ### SingletonBucket <a name="aws-analytics-reference-architecture.SingletonBucket"></a>
 
 An Amazon S3 Bucket implementing the singleton pattern.
@@ -1857,7 +1978,7 @@ public readonly executionPolicy: ManagedPolicy;
 
 - *Type:* [`@aws-cdk/aws-iam.ManagedPolicy`](#@aws-cdk/aws-iam.ManagedPolicy)
 
-The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB.
+The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog.
 
 ---
 
@@ -1868,9 +1989,8 @@ public readonly configurationOverrides: string;
 ```
 
 - *Type:* `string`
-- *Default:* Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
 
-The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint.
+The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json).
 
 ---
 
@@ -1888,7 +2008,7 @@ The version of Amazon EMR to deploy.
 
 ### NotebookPlatformProps <a name="aws-analytics-reference-architecture.NotebookPlatformProps"></a>
 
-The properties for DataPlatformNotebook Construct.
+The properties for NotebookPlatform Construct.
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
@@ -1918,7 +2038,7 @@ public readonly studioAuthMode: StudioAuthMode;
 
 - *Type:* [`aws-analytics-reference-architecture.StudioAuthMode`](#aws-analytics-reference-architecture.StudioAuthMode)
 
-Required the authentication mode of Amazon EMR Studio Either 'SSO' or 'IAM' defined in the Enum {@linkcode studioAuthMode}.
+Required the authentication mode of Amazon EMR Studio Either 'SSO' or 'IAM' defined in the Enum {@link studioAuthMode}.
 
 ---
 
@@ -1930,7 +2050,7 @@ public readonly studioName: string;
 
 - *Type:* `string`
 
-Required the be given to the name of Amazon EMR Studio Must be unique across the AWS account.
+Required the name to be given to the Amazon EMR Studio Must be unique across the AWS account.
 
 ---
 
@@ -1941,7 +2061,7 @@ public readonly eksNamespace: string;
 ```
 
 - *Type:* `string`
-- *Default:* Use the {
+- *Default:* Use the {@link EmrVirtualClusterOptions} default namespace
 
 the namespace where to deploy the EMR Virtual Cluster.
 
@@ -1967,7 +2087,7 @@ public readonly idpAuthUrl: string;
 
 - *Type:* `string`
 
-Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio This is is the URL used to sign in the AWS console.
+Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio This is the URL used to sign in the AWS console.
 
 ---
 
@@ -1979,7 +2099,7 @@ public readonly idpRelayStateParameterName: string;
 
 - *Type:* `string`
 
-Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value can be set with {@linkcode idpRelayState} Enum or through a value provided by the user.
+Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value can be set with {@link IdpRelayState} Enum or through a value provided by the user.
 
 ---
 
@@ -1987,7 +2107,7 @@ Used when IAM Authentication is selected with IAM federation with an external id
 
 The properties for defining a user.
 
-The interface is used to create and assign a user or a group to a Amazon EMR Studio
+The interface is used to create and assign a user or a group to an Amazon EMR Studio
 
 #### Initializer <a name="[object Object].Initializer"></a>
 
@@ -2005,7 +2125,7 @@ public readonly identityName: string;
 
 - *Type:* `string`
 
-Name of the identity as it appears in AWS SSO console, or the name to be given to a user in IAM_AUTHENTICATED.
+Required Name of the identity as it appears in AWS SSO console, or the name to be given to a user in IAM_AUTHENTICATED.
 
 ---
 
@@ -2017,6 +2137,8 @@ public readonly notebookManagedEndpoints: NotebookManagedEndpointOptions[];
 
 - *Type:* [`aws-analytics-reference-architecture.NotebookManagedEndpointOptions`](#aws-analytics-reference-architecture.NotebookManagedEndpointOptions)[]
 
+Required Array of {@link NotebookManagedEndpointOptions} this defines the managed endpoint the notebook/workspace user will have access to.
+
 ---
 
 ##### `identityType`<sup>Optional</sup> <a name="aws-analytics-reference-architecture.NotebookUserOptions.property.identityType"></a>
@@ -2027,7 +2149,7 @@ public readonly identityType: string;
 
 - *Type:* `string`
 
-Type of the identity either GROUP or USER, to be used when SSO is used as an authentication mode.
+Required Type of the identity either GROUP or USER, to be used when SSO is used as an authentication mode {@see SSOIdentityType}.
 
 ---
 
@@ -2555,6 +2677,8 @@ Enum to define the RelayState of different IdPs Used in EMR Studio Prop in the I
 
 
 ### SSOIdentityType <a name="SSOIdentityType"></a>
+
+Enum to define the type of identity Type in EMR studio.
 
 #### `USER` <a name="aws-analytics-reference-architecture.SSOIdentityType.USER"></a>
 
