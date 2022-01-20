@@ -1,0 +1,412 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-codepipeline
+Version: 1.130.0
+Summary: Better interface to AWS Code Pipeline
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-codestarnotifications (==1.130.0)
+Requires-Dist: aws-cdk.aws-events (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-kms (==1.130.0)
+Requires-Dist: aws-cdk.aws-s3 (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# AWS CodePipeline Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+## Pipeline
+
+To construct an empty Pipeline:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_codepipeline as codepipeline
+
+pipeline = codepipeline.Pipeline(self, "MyFirstPipeline")
+```
+
+To give the Pipeline a nice, human-readable name:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+pipeline = codepipeline.Pipeline(self, "MyFirstPipeline",
+    pipeline_name="MyPipeline"
+)
+```
+
+Be aware that in the default configuration, the `Pipeline` construct creates
+an AWS Key Management Service (AWS KMS) Customer Master Key (CMK) for you to
+encrypt the artifacts in the artifact bucket, which incurs a cost of
+**$1/month**. This default configuration is necessary to allow cross-account
+actions.
+
+If you do not intend to perform cross-account deployments, you can disable
+the creation of the Customer Master Keys by passing `crossAccountKeys: false`
+when defining the Pipeline:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+pipeline = codepipeline.Pipeline(self, "MyFirstPipeline",
+    cross_account_keys=False
+)
+```
+
+If you want to enable key rotation for the generated KMS keys,
+you can configure it by passing `enableKeyRotation: true` when creating the pipeline.
+Note that key rotation will incur an additional cost of **$1/month**.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+pipeline = codepipeline.Pipeline(self, "MyFirstPipeline",
+    # ...
+    enable_key_rotation=True
+)
+```
+
+## Stages
+
+You can provide Stages when creating the Pipeline:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+pipeline = codepipeline.Pipeline(self, "MyFirstPipeline",
+    stages=[StageProps(
+        stage_name="Source",
+        actions=[]
+    )
+    ]
+)
+```
+
+Or append a Stage to an existing Pipeline:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+source_stage = pipeline.add_stage(
+    stage_name="Source",
+    actions=[]
+)
+```
+
+You can insert the new Stage at an arbitrary point in the Pipeline:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+some_stage = pipeline.add_stage(
+    stage_name="SomeStage",
+    placement={
+        # note: you can only specify one of the below properties
+        "right_before": another_stage,
+        "just_after": another_stage
+    }
+)
+```
+
+## Actions
+
+Actions live in a separate package, `@aws-cdk/aws-codepipeline-actions`.
+
+To add an Action to a Stage, you can provide it when creating the Stage,
+in the `actions` property,
+or you can use the `IStage.addAction()` method to mutate an existing Stage:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+source_stage.add_action(some_action)
+```
+
+## Cross-account CodePipelines
+
+> Cross-account Pipeline actions require that the Pipeline has *not* been
+> created with `crossAccountKeys: false`.
+
+Most pipeline Actions accept an AWS resource object to operate on. For example:
+
+* `S3DeployAction` accepts an `s3.IBucket`.
+* `CodeBuildAction` accepts a `codebuild.IProject`.
+* etc.
+
+These resources can be either newly defined (`new s3.Bucket(...)`) or imported
+(`s3.Bucket.fromBucketAttributes(...)`) and identify the resource that should
+be changed.
+
+These resources can be in different accounts than the pipeline itself. For
+example, the following action deploys to an imported S3 bucket from a
+different account:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+stage.add_action(codepipeline_actions.S3DeployAction(
+    bucket=s3.Bucket.from_bucket_attributes(self, "Bucket",
+        account="123456789012"
+    )
+))
+```
+
+Actions that don't accept a resource object accept an explicit `account` parameter:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+stage.add_action(codepipeline_actions.CloudFormationCreateUpdateStackAction(
+    account="123456789012"
+))
+```
+
+The `Pipeline` construct automatically defines an **IAM Role** for you in the
+target account which the pipeline will assume to perform that action. This
+Role will be defined in a **support stack** named
+`<PipelineStackName>-support-<account>`, that will automatically be deployed
+before the stack containing the pipeline.
+
+If you do not want to use the generated role, you can also explicitly pass a
+`role` when creating the action. In that case, the action will operate in the
+account the role belongs to:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+stage.add_action(codepipeline_actions.CloudFormationCreateUpdateStackAction(
+    # ...
+    role=iam.Role.from_role_arn(self, "ActionRole", "...")
+))
+```
+
+## Cross-region CodePipelines
+
+Similar to how you set up a cross-account Action, the AWS resource object you
+pass to actions can also be in different *Regions*. For example, the
+following Action deploys to an imported S3 bucket from a different Region:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+stage.add_action(codepipeline_actions.S3DeployAction(
+    bucket=s3.Bucket.from_bucket_attributes(self, "Bucket",
+        region="us-west-1"
+    )
+))
+```
+
+Actions that don't take an AWS resource will accept an explicit `region`
+parameter:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+stage.add_action(codepipeline_actions.CloudFormationCreateUpdateStackAction(
+    # ...
+    region="us-west-1"
+))
+```
+
+The `Pipeline` construct automatically defines a **replication bucket** for
+you in the target region, which the pipeline will replicate artifacts to and
+from. This Bucket will be defined in a **support stack** named
+`<PipelineStackName>-support-<region>`, that will automatically be deployed
+before the stack containing the pipeline.
+
+If you don't want to use these support stacks, and already have buckets in
+place to serve as replication buckets, you can supply these at Pipeline definition
+time using the `crossRegionReplicationBuckets` parameter. Example:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+pipeline = codepipeline.Pipeline(self, "MyFirstPipeline",
+    # ...
+
+    cross_region_replication_buckets={
+        # note that a physical name of the replication Bucket must be known at synthesis time
+        "us-west-1": s3.Bucket.from_bucket_attributes(self, "UsWest1ReplicationBucket",
+            bucket_name="my-us-west-1-replication-bucket",
+            # optional KMS key
+            encryption_key=kms.Key.from_key_arn(self, "UsWest1ReplicationKey", "arn:aws:kms:us-west-1:123456789012:key/1234-5678-9012")
+        )
+    }
+)
+```
+
+See [the AWS docs here](https://docs.aws.amazon.com/codepipeline/latest/userguide/actions-create-cross-region.html)
+for more information on cross-region CodePipelines.
+
+### Creating an encrypted replication bucket
+
+If you're passing a replication bucket created in a different stack,
+like this:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+replication_stack = Stack(app, "ReplicationStack",
+    env=Environment(
+        region="us-west-1"
+    )
+)
+key = kms.Key(replication_stack, "ReplicationKey")
+replication_bucket = s3.Bucket(replication_stack, "ReplicationBucket",
+    # like was said above - replication buckets need a set physical name
+    bucket_name=PhysicalName.GENERATE_IF_NEEDED,
+    encryption_key=key
+)
+
+# later...
+codepipeline.Pipeline(pipeline_stack, "Pipeline",
+    cross_region_replication_buckets={
+        "us-west-1": replication_bucket
+    }
+)
+```
+
+When trying to encrypt it
+(and note that if any of the cross-region actions happen to be cross-account as well,
+the bucket *has to* be encrypted - otherwise the pipeline will fail at runtime),
+you cannot use a key directly - KMS keys don't have physical names,
+and so you can't reference them across environments.
+
+In this case, you need to use an alias in place of the key when creating the bucket:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+key = kms.Key(replication_stack, "ReplicationKey")
+alias = kms.Alias(replication_stack, "ReplicationAlias",
+    # aliasName is required
+    alias_name=PhysicalName.GENERATE_IF_NEEDED,
+    target_key=key
+)
+replication_bucket = s3.Bucket(replication_stack, "ReplicationBucket",
+    bucket_name=PhysicalName.GENERATE_IF_NEEDED,
+    encryption_key=alias
+)
+```
+
+## Variables
+
+The library supports the CodePipeline Variables feature.
+Each action class that emits variables has a separate variables interface,
+accessed as a property of the action instance called `variables`.
+You instantiate the action class and assign it to a local variable;
+when you want to use a variable in the configuration of a different action,
+you access the appropriate property of the interface returned from `variables`,
+which represents a single variable.
+Example:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+# MyAction is some action type that produces variables
+my_action = MyAction()
+OtherAction(
+    # ...
+    config=my_action.variables.my_variable
+)
+```
+
+The namespace name that will be used will be automatically generated by the pipeline construct,
+based on the stage and action name;
+you can pass a custom name when creating the action instance:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+my_action = MyAction(
+    # ...
+    variables_namespace="MyNamespace"
+)
+```
+
+There are also global variables available,
+not tied to any action;
+these are accessed through static properties of the `GlobalVariables` class:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+OtherAction(
+    # ...
+    config=codepipeline.GlobalVariables.execution_id
+)
+```
+
+Check the documentation of the `@aws-cdk/aws-codepipeline-actions`
+for details on how to use the variables for each action class.
+
+See the [CodePipeline documentation](https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-variables.html)
+for more details on how to use the variables feature.
+
+## Events
+
+### Using a pipeline as an event target
+
+A pipeline can be used as a target for a CloudWatch event rule:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_events_targets as targets
+import aws_cdk.aws_events as events
+
+# kick off the pipeline every day
+rule = events.Rule(self, "Daily",
+    schedule=events.Schedule.rate(Duration.days(1))
+)
+
+rule.add_target(targets.CodePipeline(pipeline))
+```
+
+When a pipeline is used as an event target, the
+"codepipeline:StartPipelineExecution" permission is granted to the AWS
+CloudWatch Events service.
+
+### Event sources
+
+Pipelines emit CloudWatch events. To define event rules for events emitted by
+the pipeline, stages or action, use the `onXxx` methods on the respective
+construct:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+my_pipeline.on_state_change("MyPipelineStateChange", target)
+my_stage.on_state_change("MyStageStateChange", target)
+my_action.on_state_change("MyActionStateChange", target)
+```
+
+## CodeStar Notifications
+
+To define CodeStar Notification rules for Pipelines, use one of the `notifyOnXxx()` methods.
+They are very similar to `onXxx()` methods for CloudWatch events:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+target = chatbot.SlackChannelConfiguration(stack, "MySlackChannel",
+    slack_channel_configuration_name="YOUR_CHANNEL_NAME",
+    slack_workspace_id="YOUR_SLACK_WORKSPACE_ID",
+    slack_channel_id="YOUR_SLACK_CHANNEL_ID"
+)
+
+rule = pipeline.notify_on_execution_state_change("NotifyOnExecutionStateChange", target)
+```
+
+

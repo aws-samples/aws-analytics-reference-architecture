@@ -1,0 +1,265 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-dynamodb
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::DynamoDB
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-applicationautoscaling (==1.130.0)
+Requires-Dist: aws-cdk.aws-cloudwatch (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-kinesis (==1.130.0)
+Requires-Dist: aws-cdk.aws-kms (==1.130.0)
+Requires-Dist: aws-cdk.aws-lambda (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: aws-cdk.custom-resources (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# Amazon DynamoDB Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+Here is a minimal deployable DynamoDB table definition:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_dynamodb as dynamodb
+
+table = dynamodb.Table(self, "Table",
+    partition_key=Attribute(name="id", type=dynamodb.AttributeType.STRING)
+)
+```
+
+## Importing existing tables
+
+To import an existing table into your CDK application, use the `Table.fromTableName`, `Table.fromTableArn` or `Table.fromTableAttributes`
+factory method. This method accepts table name or table ARN which describes the properties of an already
+existing table:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+table = Table.from_table_arn(self, "ImportedTable", "arn:aws:dynamodb:us-east-1:111111111:table/my-table")
+# now you can just call methods on the table
+table.grant_read_write_data(user)
+```
+
+If you intend to use the `tableStreamArn` (including indirectly, for example by creating an
+`@aws-cdk/aws-lambda-event-source.DynamoEventSource` on the imported table), you *must* use the
+`Table.fromTableAttributes` method and the `tableStreamArn` property *must* be populated.
+
+## Keys
+
+When a table is defined, you must define it's schema using the `partitionKey`
+(required) and `sortKey` (optional) properties.
+
+## Billing Mode
+
+DynamoDB supports two billing modes:
+
+* PROVISIONED - the default mode where the table and global secondary indexes have configured read and write capacity.
+* PAY_PER_REQUEST - on-demand pricing and scaling. You only pay for what you use and there is no read and write capacity for the table or its global secondary indexes.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_dynamodb as dynamodb
+
+table = dynamodb.Table(self, "Table",
+    partition_key=Attribute(name="id", type=dynamodb.AttributeType.STRING),
+    billing_mode=dynamodb.BillingMode.PAY_PER_REQUEST
+)
+```
+
+Further reading:
+https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadWriteCapacityMode.
+
+## Configure AutoScaling for your table
+
+You can have DynamoDB automatically raise and lower the read and write capacities
+of your table by setting up autoscaling. You can use this to either keep your
+tables at a desired utilization level, or by scaling up and down at pre-configured
+times of the day:
+
+Auto-scaling is only relevant for tables with the billing mode, PROVISIONED.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+read_scaling = table.auto_scale_read_capacity(min_capacity=1, max_capacity=50)
+
+read_scaling.scale_on_utilization(
+    target_utilization_percent=50
+)
+
+read_scaling.scale_on_schedule("ScaleUpInTheMorning",
+    schedule=appscaling.Schedule.cron(hour="8", minute="0"),
+    min_capacity=20
+)
+
+read_scaling.scale_on_schedule("ScaleDownAtNight",
+    schedule=appscaling.Schedule.cron(hour="20", minute="0"),
+    max_capacity=20
+)
+```
+
+Further reading:
+https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/AutoScaling.html
+https://aws.amazon.com/blogs/database/how-to-use-aws-cloudformation-to-configure-auto-scaling-for-amazon-dynamodb-tables-and-indexes/
+
+## Amazon DynamoDB Global Tables
+
+You can create DynamoDB Global Tables by setting the `replicationRegions` property on a `Table`:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_dynamodb as dynamodb
+
+global_table = dynamodb.Table(self, "Table",
+    partition_key=Attribute(name="id", type=dynamodb.AttributeType.STRING),
+    replication_regions=["us-east-1", "us-east-2", "us-west-2"]
+)
+```
+
+When doing so, a CloudFormation Custom Resource will be added to the stack in order to create the replica tables in the
+selected regions.
+
+The default billing mode for Global Tables is `PAY_PER_REQUEST`.
+If you want to use `PROVISIONED`,
+you have to make sure write auto-scaling is enabled for that Table:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+global_table = dynamodb.Table(self, "Table",
+    partition_key=Attribute(name="id", type=dynamodb.AttributeType.STRING),
+    replication_regions=["us-east-1", "us-east-2", "us-west-2"],
+    billing_mode=BillingMode.PROVISIONED
+)
+
+global_table.auto_scale_write_capacity(
+    min_capacity=1,
+    max_capacity=10
+).scale_on_utilization(target_utilization_percent=75)
+```
+
+When adding a replica region for a large table, you might want to increase the
+timeout for the replication operation:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+global_table = dynamodb.Table(self, "Table",
+    partition_key=Attribute(name="id", type=dynamodb.AttributeType.STRING),
+    replication_regions=["us-east-1", "us-east-2", "us-west-2"],
+    replication_timeout=Duration.hours(2)
+)
+```
+
+## Encryption
+
+All user data stored in Amazon DynamoDB is fully encrypted at rest. When creating a new table, you can choose to encrypt using the following customer master keys (CMK) to encrypt your table:
+
+* AWS owned CMK - By default, all tables are encrypted under an AWS owned customer master key (CMK) in the DynamoDB service account (no additional charges apply).
+* AWS managed CMK - AWS KMS keys (one per region) are created in your account, managed, and used on your behalf by AWS DynamoDB (AWS KMS charges apply).
+* Customer managed CMK - You have full control over the KMS key used to encrypt the DynamoDB Table (AWS KMS charges apply).
+
+Creating a Table encrypted with a customer managed CMK:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_dynamodb as dynamodb
+
+table = dynamodb.Table(stack, "MyTable",
+    partition_key=Attribute(name="id", type=dynamodb.AttributeType.STRING),
+    encryption=TableEncryption.CUSTOMER_MANAGED
+)
+
+# You can access the CMK that was added to the stack on your behalf by the Table construct via:
+table_encryption_key = table.encryption_key
+```
+
+You can also supply your own key:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_dynamodb as dynamodb
+import aws_cdk.aws_kms as kms
+
+encryption_key = kms.Key(stack, "Key",
+    enable_key_rotation=True
+)
+table = dynamodb.Table(stack, "MyTable",
+    partition_key=Attribute(name="id", type=dynamodb.AttributeType.STRING),
+    encryption=TableEncryption.CUSTOMER_MANAGED,
+    encryption_key=encryption_key
+)
+```
+
+In order to use the AWS managed CMK instead, change the code to:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_dynamodb as dynamodb
+
+table = dynamodb.Table(stack, "MyTable",
+    partition_key=Attribute(name="id", type=dynamodb.AttributeType.STRING),
+    encryption=TableEncryption.AWS_MANAGED
+)
+```
+
+## Get schema of table or secondary indexes
+
+To get the partition key and sort key of the table or indexes you have configured:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+{ partitionKey, sortKey } = table.schema()
+
+# In case you want to get schema details for any secondary index
+
+{ partitionKey, sortKey } = table.schema(INDEX_NAME)
+```
+
+## Kinesis Stream
+
+A Kinesis Data Stream can be configured on the DynamoDB table to capture item-level changes.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_dynamodb as dynamodb
+import aws_cdk.aws_kinesis as kinesis
+
+stream = kinesis.Stream(self, "Stream")
+
+table = dynamodb.Table(self, "Table",
+    partition_key=Attribute(name="id", type=dynamodb.AttributeType.STRING),
+    kinesis_stream=stream
+)
+```
+
+

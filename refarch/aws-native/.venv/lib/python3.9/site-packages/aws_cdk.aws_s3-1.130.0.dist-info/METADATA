@@ -1,0 +1,545 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-s3
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::S3
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-events (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-kms (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: aws-cdk.cx-api (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# Amazon S3 Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+Define an unencrypted S3 bucket.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyFirstBucket")
+```
+
+`Bucket` constructs expose the following deploy-time attributes:
+
+* `bucketArn` - the ARN of the bucket (i.e. `arn:aws:s3:::bucket_name`)
+* `bucketName` - the name of the bucket (i.e. `bucket_name`)
+* `bucketWebsiteUrl` - the Website URL of the bucket (i.e.
+  `http://bucket_name.s3-website-us-west-1.amazonaws.com`)
+* `bucketDomainName` - the URL of the bucket (i.e. `bucket_name.s3.amazonaws.com`)
+* `bucketDualStackDomainName` - the dual-stack URL of the bucket (i.e.
+  `bucket_name.s3.dualstack.eu-west-1.amazonaws.com`)
+* `bucketRegionalDomainName` - the regional URL of the bucket (i.e.
+  `bucket_name.s3.eu-west-1.amazonaws.com`)
+* `arnForObjects(pattern)` - the ARN of an object or objects within the bucket (i.e.
+  `arn:aws:s3:::bucket_name/exampleobject.png` or
+  `arn:aws:s3:::bucket_name/Development/*`)
+* `urlForObject(key)` - the HTTP URL of an object within the bucket (i.e.
+  `https://s3.cn-north-1.amazonaws.com.cn/china-bucket/mykey`)
+* `virtualHostedUrlForObject(key)` - the virtual-hosted style HTTP URL of an object
+  within the bucket (i.e. `https://china-bucket-s3.cn-north-1.amazonaws.com.cn/mykey`)
+* `s3UrlForObject(key)` - the S3 URL of an object within the bucket (i.e.
+  `s3://bucket/mykey`)
+
+## Encryption
+
+Define a KMS-encrypted bucket:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyEncryptedBucket",
+    encryption=s3.BucketEncryption.KMS
+)
+
+# you can access the encryption key:
+assert(bucket.encryption_key instanceof kms.Key)
+```
+
+You can also supply your own key:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+my_kms_key = kms.Key(self, "MyKey")
+
+bucket = s3.Bucket(self, "MyEncryptedBucket",
+    encryption=s3.BucketEncryption.KMS,
+    encryption_key=my_kms_key
+)
+
+assert(bucket.encryption_key == my_kms_key)
+```
+
+Enable KMS-SSE encryption via [S3 Bucket Keys](https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-key.html):
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyEncryptedBucket",
+    encryption=s3.BucketEncryption.KMS,
+    bucket_key_enabled=True
+)
+```
+
+Use `BucketEncryption.ManagedKms` to use the S3 master KMS key:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "Buck",
+    encryption=s3.BucketEncryption.KMS_MANAGED
+)
+
+assert(bucket.encryption_key == null)
+```
+
+## Permissions
+
+A bucket policy will be automatically created for the bucket upon the first call to
+`addToResourcePolicy(statement)`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyBucket")
+result = bucket.add_to_resource_policy(iam.PolicyStatement(
+    actions=["s3:GetObject"],
+    resources=[bucket.arn_for_objects("file.txt")],
+    principals=[iam.AccountRootPrincipal()]
+))
+```
+
+If you try to add a policy statement to an existing bucket, this method will
+not do anything:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket.from_bucket_name(self, "existingBucket", "bucket-name")
+
+# No policy statement will be added to the resource
+result = bucket.add_to_resource_policy(iam.PolicyStatement(
+    actions=["s3:GetObject"],
+    resources=[bucket.arn_for_objects("file.txt")],
+    principals=[iam.AccountRootPrincipal()]
+))
+```
+
+That's because it's not possible to tell whether the bucket
+already has a policy attached, let alone to re-use that policy to add more
+statements to it. We recommend that you always check the result of the call:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyBucket")
+result = bucket.add_to_resource_policy(iam.PolicyStatement(
+    actions=["s3:GetObject"],
+    resources=[bucket.arn_for_objects("file.txt")],
+    principals=[iam.AccountRootPrincipal()]
+))
+
+if not result.statement_added:
+    pass
+```
+
+The bucket policy can be directly accessed after creation to add statements or
+adjust the removal policy.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyBucket")
+bucket.policy.apply_removal_policy(cdk.RemovalPolicy.RETAIN)
+```
+
+Most of the time, you won't have to manipulate the bucket policy directly.
+Instead, buckets have "grant" methods called to give prepackaged sets of permissions
+to other resources. For example:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# my_lambda is of type lambda.Function
+
+
+bucket = s3.Bucket(self, "MyBucket")
+bucket.grant_read_write(my_lambda)
+```
+
+Will give the Lambda's execution role permissions to read and write
+from the bucket.
+
+## AWS Foundational Security Best Practices
+
+### Enforcing SSL
+
+To require all requests use Secure Socket Layer (SSL):
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "Bucket",
+    enforce_sSL=True
+)
+```
+
+## Sharing buckets between stacks
+
+To use a bucket in a different stack in the same CDK application, pass the object to the other stack:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+#
+# Stack that defines the bucket
+#
+class Producer(cdk.Stack):
+
+    def __init__(self, scope, id, *, description=None, env=None, stackName=None, tags=None, synthesizer=None, terminationProtection=None, analyticsReporting=None):
+        super().__init__(scope, id, description=description, env=env, stackName=stackName, tags=tags, synthesizer=synthesizer, terminationProtection=terminationProtection, analyticsReporting=analyticsReporting)
+
+        bucket = s3.Bucket(self, "MyBucket",
+            removal_policy=cdk.RemovalPolicy.DESTROY
+        )
+        self.my_bucket = bucket
+
+#
+# Stack that consumes the bucket
+#
+class Consumer(cdk.Stack):
+    def __init__(self, scope, id, *, userBucket, description=None, env=None, stackName=None, tags=None, synthesizer=None, terminationProtection=None, analyticsReporting=None):
+        super().__init__(scope, id, userBucket=userBucket, description=description, env=env, stackName=stackName, tags=tags, synthesizer=synthesizer, terminationProtection=terminationProtection, analyticsReporting=analyticsReporting)
+
+        user = iam.User(self, "MyUser")
+        user_bucket.grant_read_write(user)
+
+producer = Producer(app, "ProducerStack")
+Consumer(app, "ConsumerStack", user_bucket=producer.my_bucket)
+```
+
+## Importing existing buckets
+
+To import an existing bucket into your CDK application, use the `Bucket.fromBucketAttributes`
+factory method. This method accepts `BucketAttributes` which describes the properties of an already
+existing bucket:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# my_lambda is of type lambda.Function
+
+bucket = s3.Bucket.from_bucket_attributes(self, "ImportedBucket",
+    bucket_arn="arn:aws:s3:::my-bucket"
+)
+
+# now you can just call methods on the bucket
+bucket.add_event_notification(s3.EventType.OBJECT_CREATED, s3n.LambdaDestination(my_lambda), prefix="home/myusername/*")
+```
+
+Alternatively, short-hand factories are available as `Bucket.fromBucketName` and
+`Bucket.fromBucketArn`, which will derive all bucket attributes from the bucket
+name or ARN respectively:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+by_name = s3.Bucket.from_bucket_name(self, "BucketByName", "my-bucket")
+by_arn = s3.Bucket.from_bucket_arn(self, "BucketByArn", "arn:aws:s3:::my-bucket")
+```
+
+The bucket's region defaults to the current stack's region, but can also be explicitly set in cases where one of the bucket's
+regional properties needs to contain the correct values.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+my_cross_region_bucket = s3.Bucket.from_bucket_attributes(self, "CrossRegionImport",
+    bucket_arn="arn:aws:s3:::my-bucket",
+    region="us-east-1"
+)
+```
+
+## Bucket Notifications
+
+The Amazon S3 notification feature enables you to receive notifications when
+certain events happen in your bucket as described under [S3 Bucket
+Notifications] of the S3 Developer Guide.
+
+To subscribe for bucket notifications, use the `bucket.addEventNotification` method. The
+`bucket.addObjectCreatedNotification` and `bucket.addObjectRemovedNotification` can also be used for
+these common use cases.
+
+The following example will subscribe an SNS topic to be notified of all `s3:ObjectCreated:*` events:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyBucket")
+topic = sns.Topic(self, "MyTopic")
+bucket.add_event_notification(s3.EventType.OBJECT_CREATED, s3n.SnsDestination(topic))
+```
+
+This call will also ensure that the topic policy can accept notifications for
+this specific bucket.
+
+Supported S3 notification targets are exposed by the `@aws-cdk/aws-s3-notifications` package.
+
+It is also possible to specify S3 object key filters when subscribing. The
+following example will notify `myQueue` when objects prefixed with `foo/` and
+have the `.jpg` suffix are removed from the bucket.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# my_queue is of type sqs.Queue
+
+bucket = s3.Bucket(self, "MyBucket")
+bucket.add_event_notification(s3.EventType.OBJECT_REMOVED,
+    s3n.SqsDestination(my_queue), prefix="foo/", suffix=".jpg")
+```
+
+Adding notifications on existing buckets:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# topic is of type Topic
+
+bucket = s3.Bucket.from_bucket_attributes(self, "ImportedBucket",
+    bucket_arn="arn:aws:s3:::my-bucket"
+)
+bucket.add_event_notification(s3.EventType.OBJECT_CREATED, s3n.SnsDestination(topic))
+```
+
+## Block Public Access
+
+Use `blockPublicAccess` to specify [block public access settings](https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html) on the bucket.
+
+Enable all block public access settings:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyBlockedBucket",
+    block_public_access=s3.BlockPublicAccess.BLOCK_ALL
+)
+```
+
+Block and ignore public ACLs:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyBlockedBucket",
+    block_public_access=s3.BlockPublicAccess.BLOCK_ACLS
+)
+```
+
+Alternatively, specify the settings manually:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyBlockedBucket",
+    block_public_access=s3.BlockPublicAccess(block_public_policy=True)
+)
+```
+
+When `blockPublicPolicy` is set to `true`, `grantPublicRead()` throws an error.
+
+## Logging configuration
+
+Use `serverAccessLogsBucket` to describe where server access logs are to be stored.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+access_logs_bucket = s3.Bucket(self, "AccessLogsBucket")
+
+bucket = s3.Bucket(self, "MyBucket",
+    server_access_logs_bucket=access_logs_bucket
+)
+```
+
+It's also possible to specify a prefix for Amazon S3 to assign to all log object keys.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+access_logs_bucket = s3.Bucket(self, "AccessLogsBucket")
+
+bucket = s3.Bucket(self, "MyBucket",
+    server_access_logs_bucket=access_logs_bucket,
+    server_access_logs_prefix="logs"
+)
+```
+
+## S3 Inventory
+
+An [inventory](https://docs.aws.amazon.com/AmazonS3/latest/dev/storage-inventory.html) contains a list of the objects in the source bucket and metadata for each object. The inventory lists are stored in the destination bucket as a CSV file compressed with GZIP, as an Apache optimized row columnar (ORC) file compressed with ZLIB, or as an Apache Parquet (Parquet) file compressed with Snappy.
+
+You can configure multiple inventory lists for a bucket. You can configure what object metadata to include in the inventory, whether to list all object versions or only current versions, where to store the inventory list file output, and whether to generate the inventory on a daily or weekly basis.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+inventory_bucket = s3.Bucket(self, "InventoryBucket")
+
+data_bucket = s3.Bucket(self, "DataBucket",
+    inventories=[Inventory(
+        frequency=s3.InventoryFrequency.DAILY,
+        include_object_versions=s3.InventoryObjectVersion.CURRENT,
+        destination=InventoryDestination(
+            bucket=inventory_bucket
+        )
+    ), Inventory(
+        frequency=s3.InventoryFrequency.WEEKLY,
+        include_object_versions=s3.InventoryObjectVersion.ALL,
+        destination=InventoryDestination(
+            bucket=inventory_bucket,
+            prefix="with-all-versions"
+        )
+    )
+    ]
+)
+```
+
+If the destination bucket is created as part of the same CDK application, the necessary permissions will be automatically added to the bucket policy.
+However, if you use an imported bucket (i.e `Bucket.fromXXX()`), you'll have to make sure it contains the following policy document:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "InventoryAndAnalyticsExamplePolicy",
+      "Effect": "Allow",
+      "Principal": { "Service": "s3.amazonaws.com" },
+      "Action": "s3:PutObject",
+      "Resource": ["arn:aws:s3:::destinationBucket/*"]
+    }
+  ]
+}
+```
+
+## Website redirection
+
+You can use the two following properties to specify the bucket [redirection policy](https://docs.aws.amazon.com/AmazonS3/latest/dev/how-to-page-redirect.html#advanced-conditional-redirects). Please note that these methods cannot both be applied to the same bucket.
+
+### Static redirection
+
+You can statically redirect a to a given Bucket URL or any other host name with `websiteRedirect`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyRedirectedBucket",
+    website_redirect=RedirectTarget(host_name="www.example.com")
+)
+```
+
+### Routing rules
+
+Alternatively, you can also define multiple `websiteRoutingRules`, to define complex, conditional redirections:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyRedirectedBucket",
+    website_routing_rules=[RoutingRule(
+        host_name="www.example.com",
+        http_redirect_code="302",
+        protocol=s3.RedirectProtocol.HTTPS,
+        replace_key=s3.ReplaceKey.prefix_with("test/"),
+        condition=RoutingRuleCondition(
+            http_error_code_returned_equals="200",
+            key_prefix_equals="prefix"
+        )
+    )]
+)
+```
+
+## Filling the bucket as part of deployment
+
+To put files into a bucket as part of a deployment (for example, to host a
+website), see the `@aws-cdk/aws-s3-deployment` package, which provides a
+resource that can do just that.
+
+## The URL for objects
+
+S3 provides two types of URLs for accessing objects via HTTP(S). Path-Style and
+[Virtual Hosted-Style](https://docs.aws.amazon.com/AmazonS3/latest/dev/VirtualHosting.html)
+URL. Path-Style is a classic way and will be
+[deprecated](https://aws.amazon.com/jp/blogs/aws/amazon-s3-path-deprecation-plan-the-rest-of-the-story).
+We recommend to use Virtual Hosted-Style URL for newly made bucket.
+
+You can generate both of them.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyBucket")
+bucket.url_for_object("objectname") # Path-Style URL
+bucket.virtual_hosted_url_for_object("objectname") # Virtual Hosted-Style URL
+bucket.virtual_hosted_url_for_object("objectname", regional=False)
+```
+
+## Object Ownership
+
+You can use the two following properties to specify the bucket [object Ownership](https://docs.aws.amazon.com/AmazonS3/latest/dev/about-object-ownership.html).
+
+### Object writer
+
+The Uploading account will own the object.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+s3.Bucket(self, "MyBucket",
+    object_ownership=s3.ObjectOwnership.OBJECT_WRITER
+)
+```
+
+### Bucket owner preferred
+
+The bucket owner will own the object if the object is uploaded with the bucket-owner-full-control canned ACL. Without this setting and canned ACL, the object is uploaded and remains owned by the uploading account.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+s3.Bucket(self, "MyBucket",
+    object_ownership=s3.ObjectOwnership.BUCKET_OWNER_PREFERRED
+)
+```
+
+## Bucket deletion
+
+When a bucket is removed from a stack (or the stack is deleted), the S3
+bucket will be removed according to its removal policy (which by default will
+simply orphan the bucket and leave it in your AWS account). If the removal
+policy is set to `RemovalPolicy.DESTROY`, the bucket will be deleted as long
+as it does not contain any objects.
+
+To override this and force all objects to get deleted during bucket deletion,
+enable the`autoDeleteObjects` option.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+bucket = s3.Bucket(self, "MyTempFileBucket",
+    removal_policy=cdk.RemovalPolicy.DESTROY,
+    auto_delete_objects=True
+)
+```
+
+**Warning** if you have deployed a bucket with `autoDeleteObjects: true`,
+switching this to `false` in a CDK version *before* `1.126.0` will lead to
+all objects in the bucket being deleted. Be sure to update your bucket resources
+by deploying with CDK version `1.126.0` or later **before** switching this value to `false`.
+
+

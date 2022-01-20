@@ -1,0 +1,188 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-certificatemanager
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::CertificateManager
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-cloudwatch (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-lambda (==1.130.0)
+Requires-Dist: aws-cdk.aws-route53 (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# AWS Certificate Manager Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+AWS Certificate Manager (ACM) handles the complexity of creating, storing, and renewing public and private SSL/TLS X.509 certificates and keys that
+protect your AWS websites and applications. ACM certificates can secure singular domain names, multiple specific domain names, wildcard domains, or
+combinations of these. ACM wildcard certificates can protect an unlimited number of subdomains.
+
+This package provides Constructs for provisioning and referencing ACM certificates which can be used with CloudFront and ELB.
+
+After requesting a certificate, you will need to prove that you own the
+domain in question before the certificate will be granted. The CloudFormation
+deployment will wait until this verification process has been completed.
+
+Because of this wait time, when using manual validation methods, it's better
+to provision your certificates either in a separate stack from your main
+service, or provision them manually and import them into your CDK application.
+
+**Note:** There is a limit on total number of ACM certificates that can be requested on an account and region within a year.
+The default limit is 2000, but this limit may be (much) lower on new AWS accounts.
+See https://docs.aws.amazon.com/acm/latest/userguide/acm-limits.html for more information.
+
+## DNS validation
+
+DNS validation is the preferred method to validate domain ownership, as it has a number of advantages over email validation.
+See also [Validate with DNS](https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-dns.html)
+in the AWS Certificate Manager User Guide.
+
+If Amazon Route 53 is your DNS provider for the requested domain, the DNS record can be
+created automatically:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_certificatemanager as acm
+import aws_cdk.aws_route53 as route53
+
+my_hosted_zone = route53.HostedZone(self, "HostedZone",
+    zone_name="example.com"
+)
+acm.Certificate(self, "Certificate",
+    domain_name="hello.example.com",
+    validation=acm.CertificateValidation.from_dns(my_hosted_zone)
+)
+```
+
+If Route 53 is not your DNS provider, the DNS records must be added manually and the stack will not complete
+creating until the records are added.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+acm.Certificate(self, "Certificate",
+    domain_name="hello.example.com",
+    validation=acm.CertificateValidation.from_dns()
+)
+```
+
+When working with multiple domains, use the `CertificateValidation.fromDnsMultiZone()`:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+example_com = route53.HostedZone(self, "ExampleCom",
+    zone_name="example.com"
+)
+example_net = route53.HostedZone(self, "ExampleNet",
+    zone_name="example.net"
+)
+
+cert = acm.Certificate(self, "Certificate",
+    domain_name="test.example.com",
+    subject_alternative_names=["cool.example.com", "test.example.net"],
+    validation=acm.CertificateValidation.from_dns_multi_zone(
+        test.example.com=example_com,
+        cool.example.com=example_com,
+        test.example.net=example_net
+    )
+)
+```
+
+## Email validation
+
+Email-validated certificates (the default) are validated by receiving an
+email on one of a number of predefined domains and following the instructions
+in the email.
+
+See [Validate with Email](https://docs.aws.amazon.com/acm/latest/userguide/gs-acm-validate-email.html)
+in the AWS Certificate Manager User Guide.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+acm.Certificate(self, "Certificate",
+    domain_name="hello.example.com",
+    validation=acm.CertificateValidation.from_email()
+)
+```
+
+## Cross-region Certificates
+
+ACM certificates that are used with CloudFront -- or higher-level constructs which rely on CloudFront -- must be in the `us-east-1` region.
+The `DnsValidatedCertificate` construct exists to facilitate creating these certificates cross-region. This resource can only be used with
+Route53-based DNS validation.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+acm.DnsValidatedCertificate(self, "CrossRegionCertificate",
+    domain_name="hello.example.com",
+    hosted_zone=my_hosted_zone,
+    region="us-east-1"
+)
+```
+
+## Importing
+
+If you want to import an existing certificate, you can do so from its ARN:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+arn = "arn:aws:..."
+certificate = Certificate.from_certificate_arn(self, "Certificate", arn)
+```
+
+## Sharing between Stacks
+
+To share the certificate between stacks in the same CDK application, simply
+pass the `Certificate` object between the stacks.
+
+## Metrics
+
+The `DaysToExpiry` metric is available via the `metricDaysToExpiry` method for
+all certificates. This metric is emitted by AWS Certificates Manager once per
+day until the certificate has effectively expired.
+
+An alarm can be created to determine whether a certificate is soon due for
+renewal ussing the following code:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+certificate = Certificate(self, "Certificate")
+certificate.metric_days_to_expiry().create_alarm(
+    comparison_operator=cloudwatch.ComparisonOperator.LESS_THAN_THRESHOLD,
+    evaluation_periods=1,
+    threshold=45
+)
+```
+
+

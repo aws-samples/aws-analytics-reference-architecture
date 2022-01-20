@@ -1,0 +1,178 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-sns-subscriptions
+Version: 1.130.0
+Summary: CDK Subscription Constructs for AWS SNS
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-kms (==1.130.0)
+Requires-Dist: aws-cdk.aws-lambda (==1.130.0)
+Requires-Dist: aws-cdk.aws-sns (==1.130.0)
+Requires-Dist: aws-cdk.aws-sqs (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# CDK Construct Library for Amazon Simple Notification Service Subscriptions
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+This library provides constructs for adding subscriptions to an Amazon SNS topic.
+Subscriptions can be added by calling the `.addSubscription(...)` method on the topic.
+
+## Subscriptions
+
+Subscriptions can be added to the following endpoints:
+
+* HTTPS
+* Amazon SQS
+* AWS Lambda
+* Email
+* SMS
+
+Subscriptions to Amazon SQS and AWS Lambda can be added on topics across regions.
+
+Create an Amazon SNS Topic to add subscriptions.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_sns as sns
+
+my_topic = sns.Topic(self, "MyTopic")
+```
+
+### HTTPS
+
+Add an HTTP or HTTPS Subscription to your topic:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_sns_subscriptions as subscriptions
+
+my_topic.add_subscription(subscriptions.UrlSubscription("https://foobar.com/"))
+```
+
+The URL being subscribed can also be [tokens](https://docs.aws.amazon.com/cdk/latest/guide/tokens.html), that resolve
+to a URL during deployment. A typical use case is when the URL is passed in as a [CloudFormation
+parameter](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html). The
+following code defines a CloudFormation parameter and uses it in a URL subscription.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+url = CfnParameter(self, "url-param")
+my_topic.add_subscription(subscriptions.UrlSubscription(url.value_as_string()))
+```
+
+### Amazon SQS
+
+Subscribe a queue to your topic:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_sqs as sqs
+import aws_cdk.aws_sns_subscriptions as subscriptions
+
+my_queue = sqs.Queue(self, "MyQueue")
+
+my_topic.add_subscription(subscriptions.SqsSubscription(queue))
+```
+
+KMS key permissions will automatically be granted to SNS when a subscription is made to
+an encrypted queue.
+
+Note that subscriptions of queues in different accounts need to be manually confirmed by
+reading the initial message from the queue and visiting the link found in it.
+
+### AWS Lambda
+
+Subscribe an AWS Lambda function to your topic:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_lambda as lambda_
+import aws_cdk.aws_sns_subscriptions as subscriptions
+
+my_function = lambda_.Function(self, "Echo",
+    handler="index.handler",
+    runtime=lambda_.Runtime.NODEJS_12_X,
+    code=lambda_.Code.from_inline(f"exports.handler = {handler.toString()}")
+)
+
+my_topic.add_subscription(subscriptions.LambdaSubscription(my_function))
+```
+
+### Email
+
+Subscribe an email address to your topic:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_sns_subscriptions as subscriptions
+
+my_topic.add_subscription(subscriptions.EmailSubscription("foo@bar.com"))
+```
+
+The email being subscribed can also be [tokens](https://docs.aws.amazon.com/cdk/latest/guide/tokens.html), that resolve
+to an email address during deployment. A typical use case is when the email address is passed in as a [CloudFormation
+parameter](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html). The
+following code defines a CloudFormation parameter and uses it in an email subscription.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+email_address = CfnParameter(self, "email-param")
+my_topic.add_subscription(subscriptions.EmailSubscription(email_address.value_as_string()))
+```
+
+Note that email subscriptions require confirmation by visiting the link sent to the
+email address.
+
+### SMS
+
+Subscribe an sms number to your topic:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_sns_subscriptions as subscriptions
+
+my_topic.add_subscription(subscriptions.SmsSubscription("+15551231234"))
+```
+
+The number being subscribed can also be [tokens](https://docs.aws.amazon.com/cdk/latest/guide/tokens.html), that resolve
+to a number during deployment. A typical use case is when the number is passed in as a [CloudFormation
+parameter](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/parameters-section-structure.html). The
+following code defines a CloudFormation parameter and uses it in an sms subscription.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+sms_number = CfnParameter(self, "sms-param")
+my_topic.add_subscription(subscriptions.SmsSubscription(sms_number.value_as_string()))
+```
+
+

@@ -1,0 +1,200 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-servicediscovery
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::ServiceDiscovery
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-ec2 (==1.130.0)
+Requires-Dist: aws-cdk.aws-elasticloadbalancingv2 (==1.130.0)
+Requires-Dist: aws-cdk.aws-route53 (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# Amazon ECS Service Discovery Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+This module is part of the [AWS Cloud Development Kit](https://github.com/aws/aws-cdk) project.
+
+This package contains constructs for working with **AWS Cloud Map**
+
+AWS Cloud Map is a fully managed service that you can use to create and
+maintain a map of the backend services and resources that your applications
+depend on.
+
+For further information on AWS Cloud Map,
+see the [AWS Cloud Map documentation](https://docs.aws.amazon.com/cloud-map)
+
+## HTTP Namespace Example
+
+The following example creates an AWS Cloud Map namespace that
+supports API calls, creates a service in that namespace, and
+registers an instance to it:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.core as cdk
+import ...lib as servicediscovery
+
+app = cdk.App()
+stack = cdk.Stack(app, "aws-servicediscovery-integ")
+
+namespace = servicediscovery.HttpNamespace(stack, "MyNamespace",
+    name="covfefe"
+)
+
+service1 = namespace.create_service("NonIpService",
+    description="service registering non-ip instances"
+)
+
+service1.register_non_ip_instance("NonIpInstance",
+    custom_attributes={"arn": "arn:aws:s3:::mybucket"}
+)
+
+service2 = namespace.create_service("IpService",
+    description="service registering ip instances",
+    health_check=HealthCheckConfig(
+        type=servicediscovery.HealthCheckType.HTTP,
+        resource_path="/check"
+    )
+)
+
+service2.register_ip_instance("IpInstance",
+    ipv4="54.239.25.192"
+)
+
+app.synth()
+```
+
+## Private DNS Namespace Example
+
+The following example creates an AWS Cloud Map namespace that
+supports both API calls and DNS queries within a vpc, creates a
+service in that namespace, and registers a loadbalancer as an
+instance:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_ec2 as ec2
+import aws_cdk.aws_elasticloadbalancingv2 as elbv2
+import aws_cdk.core as cdk
+import ...lib as servicediscovery
+
+app = cdk.App()
+stack = cdk.Stack(app, "aws-servicediscovery-integ")
+
+vpc = ec2.Vpc(stack, "Vpc", max_azs=2)
+
+namespace = servicediscovery.PrivateDnsNamespace(stack, "Namespace",
+    name="boobar.com",
+    vpc=vpc
+)
+
+service = namespace.create_service("Service",
+    dns_record_type=servicediscovery.DnsRecordType.A_AAAA,
+    dns_ttl=cdk.Duration.seconds(30),
+    load_balancer=True
+)
+
+loadbalancer = elbv2.ApplicationLoadBalancer(stack, "LB", vpc=vpc, internet_facing=True)
+
+service.register_load_balancer("Loadbalancer", loadbalancer)
+
+app.synth()
+```
+
+## Public DNS Namespace Example
+
+The following example creates an AWS Cloud Map namespace that
+supports both API calls and public DNS queries, creates a service in
+that namespace, and registers an IP instance:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.core as cdk
+import ...lib as servicediscovery
+
+app = cdk.App()
+stack = cdk.Stack(app, "aws-servicediscovery-integ")
+
+namespace = servicediscovery.PublicDnsNamespace(stack, "Namespace",
+    name="foobar.com"
+)
+
+service = namespace.create_service("Service",
+    name="foo",
+    dns_record_type=servicediscovery.DnsRecordType.A,
+    dns_ttl=cdk.Duration.seconds(30),
+    health_check=HealthCheckConfig(
+        type=servicediscovery.HealthCheckType.HTTPS,
+        resource_path="/healthcheck",
+        failure_threshold=2
+    )
+)
+
+service.register_ip_instance("IpInstance",
+    ipv4="54.239.25.192",
+    port=443
+)
+
+app.synth()
+```
+
+For DNS namespaces, you can also register instances to services with CNAME records:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.core as cdk
+import ...lib as servicediscovery
+
+app = cdk.App()
+stack = cdk.Stack(app, "aws-servicediscovery-integ")
+
+namespace = servicediscovery.PublicDnsNamespace(stack, "Namespace",
+    name="foobar.com"
+)
+
+service = namespace.create_service("Service",
+    name="foo",
+    dns_record_type=servicediscovery.DnsRecordType.CNAME,
+    dns_ttl=cdk.Duration.seconds(30)
+)
+
+service.register_cname_instance("CnameInstance",
+    instance_cname="service.pizza"
+)
+
+app.synth()
+```
+
+

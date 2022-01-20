@@ -1,0 +1,1509 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-codepipeline-actions
+Version: 1.130.0
+Summary: Concrete Actions for AWS Code Pipeline
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-cloudformation (==1.130.0)
+Requires-Dist: aws-cdk.aws-codebuild (==1.130.0)
+Requires-Dist: aws-cdk.aws-codecommit (==1.130.0)
+Requires-Dist: aws-cdk.aws-codedeploy (==1.130.0)
+Requires-Dist: aws-cdk.aws-codepipeline (==1.130.0)
+Requires-Dist: aws-cdk.aws-ec2 (==1.130.0)
+Requires-Dist: aws-cdk.aws-ecr (==1.130.0)
+Requires-Dist: aws-cdk.aws-ecs (==1.130.0)
+Requires-Dist: aws-cdk.aws-events-targets (==1.130.0)
+Requires-Dist: aws-cdk.aws-events (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-kms (==1.130.0)
+Requires-Dist: aws-cdk.aws-lambda (==1.130.0)
+Requires-Dist: aws-cdk.aws-s3 (==1.130.0)
+Requires-Dist: aws-cdk.aws-sns-subscriptions (==1.130.0)
+Requires-Dist: aws-cdk.aws-sns (==1.130.0)
+Requires-Dist: aws-cdk.aws-stepfunctions (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# AWS CodePipeline Actions
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+This package contains Actions that can be used in a CodePipeline.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_codepipeline as codepipeline
+import aws_cdk.aws_codepipeline_actions as codepipeline_actions
+```
+
+## Sources
+
+### AWS CodeCommit
+
+To use a CodeCommit Repository in a CodePipeline:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+repo = codecommit.Repository(self, "Repo",
+    repository_name="MyRepo"
+)
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline",
+    pipeline_name="MyPipeline"
+)
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.CodeCommitSourceAction(
+    action_name="CodeCommit",
+    repository=repo,
+    output=source_output
+)
+pipeline.add_stage(
+    stage_name="Source",
+    actions=[source_action]
+)
+```
+
+If you want to use existing role which can be used by on commit event rule.
+You can specify the role object in eventRole property.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# repo is of type Repository
+event_role = iam.Role.from_role_arn(self, "Event-role", "roleArn")
+source_action = codepipeline_actions.CodeCommitSourceAction(
+    action_name="CodeCommit",
+    repository=repo,
+    output=codepipeline.Artifact(),
+    event_role=event_role
+)
+```
+
+If you want to clone the entire CodeCommit repository (only available for CodeBuild actions),
+you can set the `codeBuildCloneOutput` property to `true`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# project is of type PipelineProject
+# repo is of type Repository
+
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.CodeCommitSourceAction(
+    action_name="CodeCommit",
+    repository=repo,
+    output=source_output,
+    code_build_clone_output=True
+)
+
+build_action = codepipeline_actions.CodeBuildAction(
+    action_name="CodeBuild",
+    project=project,
+    input=source_output,  # The build action must use the CodeCommitSourceAction output as input.
+    outputs=[codepipeline.Artifact()]
+)
+```
+
+The CodeCommit source action emits variables:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# project is of type PipelineProject
+# repo is of type Repository
+
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.CodeCommitSourceAction(
+    action_name="CodeCommit",
+    repository=repo,
+    output=source_output,
+    variables_namespace="MyNamespace"
+)
+
+# later:
+
+codepipeline_actions.CodeBuildAction(
+    action_name="CodeBuild",
+    project=project,
+    input=source_output,
+    environment_variables={
+        "COMMIT_ID": {
+            "value": source_action.variables.commit_id
+        }
+    }
+)
+```
+
+### GitHub
+
+If you want to use a GitHub repository as the source, you must create:
+
+* A [GitHub Access Token](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line),
+  with scopes **repo** and **admin:repo_hook**.
+* A [Secrets Manager Secret](https://docs.aws.amazon.com/secretsmanager/latest/userguide/manage_create-basic-secret.html)
+  with the value of the **GitHub Access Token**. Pick whatever name you want (for example `my-github-token`).
+  This token can be stored either as Plaintext or as a Secret key/value.
+  If you stored the token as Plaintext,
+  set `SecretValue.secretsManager('my-github-token')` as the value of `oauthToken`.
+  If you stored it as a Secret key/value,
+  you must set `SecretValue.secretsManager('my-github-token', { jsonField : 'my-github-token' })` as the value of `oauthToken`.
+
+To use GitHub as the source of a CodePipeline:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Read the secret from Secrets Manager
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.GitHubSourceAction(
+    action_name="GitHub_Source",
+    owner="awslabs",
+    repo="aws-cdk",
+    oauth_token=SecretValue.secrets_manager("my-github-token"),
+    output=source_output,
+    branch="develop"
+)
+pipeline.add_stage(
+    stage_name="Source",
+    actions=[source_action]
+)
+```
+
+The GitHub source action emits variables:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# source_output is of type Artifact
+# project is of type PipelineProject
+
+
+source_action = codepipeline_actions.GitHubSourceAction(
+    action_name="Github_Source",
+    output=source_output,
+    owner="my-owner",
+    repo="my-repo",
+    oauth_token=SecretValue.secrets_manager("my-github-token"),
+    variables_namespace="MyNamespace"
+)
+
+# later:
+
+codepipeline_actions.CodeBuildAction(
+    action_name="CodeBuild",
+    project=project,
+    input=source_output,
+    environment_variables={
+        "COMMIT_URL": {
+            "value": source_action.variables.commit_url
+        }
+    }
+)
+```
+
+### BitBucket
+
+CodePipeline can use a BitBucket Git repository as a source:
+
+**Note**: you have to manually connect CodePipeline through the AWS Console with your BitBucket account.
+This is a one-time operation for a given AWS account in a given region.
+The simplest way to do that is to either start creating a new CodePipeline,
+or edit an existing one, while being logged in to BitBucket.
+Choose BitBucket as the source,
+and grant CodePipeline permissions to your BitBucket account.
+Copy & paste the Connection ARN that you get in the console,
+or use the [`codestar-connections list-connections` AWS CLI operation](https://docs.aws.amazon.com/cli/latest/reference/codestar-connections/list-connections.html)
+to find it.
+After that, you can safely abort creating or editing the pipeline -
+the connection has already been created.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.CodeStarConnectionsSourceAction(
+    action_name="BitBucket_Source",
+    owner="aws",
+    repo="aws-cdk",
+    output=source_output,
+    connection_arn="arn:aws:codestar-connections:us-east-1:123456789012:connection/12345678-abcd-12ab-34cdef5678gh"
+)
+```
+
+You can also use the `CodeStarConnectionsSourceAction` to connect to GitHub, in the same way
+(you just have to select GitHub as the source when creating the connection in the console).
+
+### AWS S3 Source
+
+To use an S3 Bucket as a source in CodePipeline:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+source_bucket = s3.Bucket(self, "MyBucket",
+    versioned=True
+)
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.S3SourceAction(
+    action_name="S3Source",
+    bucket=source_bucket,
+    bucket_key="path/to/file.zip",
+    output=source_output
+)
+pipeline.add_stage(
+    stage_name="Source",
+    actions=[source_action]
+)
+```
+
+The region of the action will be determined by the region the bucket itself is in.
+When using a newly created bucket,
+that region will be taken from the stack the bucket belongs to;
+for an imported bucket,
+you can specify the region explicitly:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+source_bucket = s3.Bucket.from_bucket_attributes(self, "SourceBucket",
+    bucket_name="my-bucket",
+    region="ap-southeast-1"
+)
+```
+
+By default, the Pipeline will poll the Bucket to detect changes.
+You can change that behavior to use CloudWatch Events by setting the `trigger`
+property to `S3Trigger.EVENTS` (it's `S3Trigger.POLL` by default).
+If you do that, make sure the source Bucket is part of an AWS CloudTrail Trail -
+otherwise, the CloudWatch Events will not be emitted,
+and your Pipeline will not react to changes in the Bucket.
+You can do it through the CDK:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_cloudtrail as cloudtrail
+
+# source_bucket is of type Bucket
+
+source_output = codepipeline.Artifact()
+key = "some/key.zip"
+trail = cloudtrail.Trail(self, "CloudTrail")
+trail.add_s3_event_selector([S3EventSelector(
+    bucket=source_bucket,
+    object_prefix=key
+)],
+    read_write_type=cloudtrail.ReadWriteType.WRITE_ONLY
+)
+source_action = codepipeline_actions.S3SourceAction(
+    action_name="S3Source",
+    bucket_key=key,
+    bucket=source_bucket,
+    output=source_output,
+    trigger=codepipeline_actions.S3Trigger.EVENTS
+)
+```
+
+The S3 source action emits variables:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# source_bucket is of type Bucket
+
+# later:
+# project is of type PipelineProject
+key = "some/key.zip"
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.S3SourceAction(
+    action_name="S3Source",
+    bucket_key=key,
+    bucket=source_bucket,
+    output=source_output,
+    variables_namespace="MyNamespace"
+)
+codepipeline_actions.CodeBuildAction(
+    action_name="CodeBuild",
+    project=project,
+    input=source_output,
+    environment_variables={
+        "VERSION_ID": {
+            "value": source_action.variables.version_id
+        }
+    }
+)
+```
+
+### AWS ECR
+
+To use an ECR Repository as a source in a Pipeline:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_ecr as ecr
+
+# ecr_repository is of type Repository
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.EcrSourceAction(
+    action_name="ECR",
+    repository=ecr_repository,
+    image_tag="some-tag",  # optional, default: 'latest'
+    output=source_output
+)
+pipeline.add_stage(
+    stage_name="Source",
+    actions=[source_action]
+)
+```
+
+The ECR source action emits variables:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_ecr as ecr
+# ecr_repository is of type Repository
+
+# later:
+# project is of type PipelineProject
+
+
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.EcrSourceAction(
+    action_name="Source",
+    output=source_output,
+    repository=ecr_repository,
+    variables_namespace="MyNamespace"
+)
+codepipeline_actions.CodeBuildAction(
+    action_name="CodeBuild",
+    project=project,
+    input=source_output,
+    environment_variables={
+        "IMAGE_URI": BuildEnvironmentVariable(
+            value=source_action.variables.image_uri
+        )
+    }
+)
+```
+
+## Build & test
+
+### AWS CodeBuild
+
+Example of a CodeBuild Project used in a Pipeline, alongside CodeCommit:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# project is of type PipelineProject
+
+repository = codecommit.Repository(self, "MyRepository",
+    repository_name="MyRepository"
+)
+project = codebuild.PipelineProject(self, "MyProject")
+
+source_output = codepipeline.Artifact()
+source_action = codepipeline_actions.CodeCommitSourceAction(
+    action_name="CodeCommit",
+    repository=repository,
+    output=source_output
+)
+build_action = codepipeline_actions.CodeBuildAction(
+    action_name="CodeBuild",
+    project=project,
+    input=source_output,
+    outputs=[codepipeline.Artifact()],  # optional
+    execute_batch_build=True,  # optional, defaults to false
+    combine_batch_build_artifacts=True
+)
+
+codepipeline.Pipeline(self, "MyPipeline",
+    stages=[StageProps(
+        stage_name="Source",
+        actions=[source_action]
+    ), StageProps(
+        stage_name="Build",
+        actions=[build_action]
+    )
+    ]
+)
+```
+
+The default category of the CodeBuild Action is `Build`;
+if you want a `Test` Action instead,
+override the `type` property:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# project is of type PipelineProject
+
+source_output = codepipeline.Artifact()
+test_action = codepipeline_actions.CodeBuildAction(
+    action_name="IntegrationTest",
+    project=project,
+    input=source_output,
+    type=codepipeline_actions.CodeBuildActionType.TEST
+)
+```
+
+#### Multiple inputs and outputs
+
+When you want to have multiple inputs and/or outputs for a Project used in a
+Pipeline, instead of using the `secondarySources` and `secondaryArtifacts`
+properties of the `Project` class, you need to use the `extraInputs` and
+`outputs` properties of the CodeBuild CodePipeline
+Actions. Example:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# repository1 is of type Repository
+# repository2 is of type Repository
+
+# project is of type PipelineProject
+
+source_output1 = codepipeline.Artifact()
+source_action1 = codepipeline_actions.CodeCommitSourceAction(
+    action_name="Source1",
+    repository=repository1,
+    output=source_output1
+)
+source_output2 = codepipeline.Artifact("source2")
+source_action2 = codepipeline_actions.CodeCommitSourceAction(
+    action_name="Source2",
+    repository=repository2,
+    output=source_output2
+)
+build_action = codepipeline_actions.CodeBuildAction(
+    action_name="Build",
+    project=project,
+    input=source_output1,
+    extra_inputs=[source_output2
+    ],
+    outputs=[
+        codepipeline.Artifact("artifact1"),  # for better buildspec readability - see below
+        codepipeline.Artifact("artifact2")
+    ]
+)
+```
+
+**Note**: when a CodeBuild Action in a Pipeline has more than one output, it
+only uses the `secondary-artifacts` field of the buildspec, never the
+primary output specification directly under `artifacts`. Because of that, it
+pays to explicitly name all output artifacts of that Action, like we did
+above, so that you know what name to use in the buildspec.
+
+Example buildspec for the above project:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+project = codebuild.PipelineProject(self, "MyProject",
+    build_spec=codebuild.BuildSpec.from_object({
+        "version": "0.2",
+        "phases": {
+            "build": {
+                "commands": []
+            }
+        },
+        "artifacts": {
+            "secondary-artifacts": {
+                "artifact1": {},
+                "artifact2": {}
+            }
+        }
+    })
+)
+```
+
+#### Variables
+
+The CodeBuild action emits variables.
+Unlike many other actions, the variables are not static,
+but dynamic, defined in the buildspec,
+in the 'exported-variables' subsection of the 'env' section.
+Example:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# later:
+# project is of type PipelineProject
+source_output = codepipeline.Artifact()
+build_action = codepipeline_actions.CodeBuildAction(
+    action_name="Build1",
+    input=source_output,
+    project=codebuild.PipelineProject(self, "Project",
+        build_spec=codebuild.BuildSpec.from_object({
+            "version": "0.2",
+            "env": {
+                "exported-variables": ["MY_VAR"
+                ]
+            },
+            "phases": {
+                "build": {
+                    "commands": "export MY_VAR=\"some value\""
+                }
+            }
+        })
+    ),
+    variables_namespace="MyNamespace"
+)
+codepipeline_actions.CodeBuildAction(
+    action_name="CodeBuild",
+    project=project,
+    input=source_output,
+    environment_variables={
+        "MyVar": {
+            "value": build_action.variable("MY_VAR")
+        }
+    }
+)
+```
+
+### Jenkins
+
+In order to use Jenkins Actions in the Pipeline,
+you first need to create a `JenkinsProvider`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+jenkins_provider = codepipeline_actions.JenkinsProvider(self, "JenkinsProvider",
+    provider_name="MyJenkinsProvider",
+    server_url="http://my-jenkins.com:8080",
+    version="2"
+)
+```
+
+If you've registered a Jenkins provider in a different CDK app,
+or outside the CDK (in the CodePipeline AWS Console, for example),
+you can import it:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+jenkins_provider = codepipeline_actions.JenkinsProvider.from_jenkins_provider_attributes(self, "JenkinsProvider",
+    provider_name="MyJenkinsProvider",
+    server_url="http://my-jenkins.com:8080",
+    version="2"
+)
+```
+
+Note that a Jenkins provider
+(identified by the provider name-category(build/test)-version tuple)
+must always be registered in the given account, in the given AWS region,
+before it can be used in CodePipeline.
+
+With a `JenkinsProvider`,
+we can create a Jenkins Action:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# jenkins_provider is of type codepipeline_actions.JenkinsProvider
+
+build_action = codepipeline_actions.JenkinsAction(
+    action_name="JenkinsBuild",
+    jenkins_provider=jenkins_provider,
+    project_name="MyProject",
+    type=codepipeline_actions.JenkinsActionType.BUILD
+)
+```
+
+## Deploy
+
+### AWS CloudFormation
+
+This module contains Actions that allows you to deploy to CloudFormation from AWS CodePipeline.
+
+For example, the following code fragment defines a pipeline that automatically deploys a CloudFormation template
+directly from a CodeCommit repository, with a manual approval step in between to confirm the changes:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Source stage: read from repository
+repo = codecommit.Repository(stack, "TemplateRepo",
+    repository_name="template-repo"
+)
+source_output = codepipeline.Artifact("SourceArtifact")
+source = cpactions.CodeCommitSourceAction(
+    action_name="Source",
+    repository=repo,
+    output=source_output,
+    trigger=cpactions.CodeCommitTrigger.POLL
+)
+source_stage = {
+    "stage_name": "Source",
+    "actions": [source]
+}
+
+# Deployment stage: create and deploy changeset with manual approval
+stack_name = "OurStack"
+change_set_name = "StagedChangeSet"
+
+prod_stage = {
+    "stage_name": "Deploy",
+    "actions": [
+        cpactions.CloudFormationCreateReplaceChangeSetAction(
+            action_name="PrepareChanges",
+            stack_name=stack_name,
+            change_set_name=change_set_name,
+            admin_permissions=True,
+            template_path=source_output.at_path("template.yaml"),
+            run_order=1
+        ),
+        cpactions.ManualApprovalAction(
+            action_name="ApproveChanges",
+            run_order=2
+        ),
+        cpactions.CloudFormationExecuteChangeSetAction(
+            action_name="ExecuteChanges",
+            stack_name=stack_name,
+            change_set_name=change_set_name,
+            run_order=3
+        )
+    ]
+}
+
+codepipeline.Pipeline(stack, "Pipeline",
+    stages=[source_stage, prod_stage
+    ]
+)
+```
+
+See [the AWS documentation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/continuous-delivery-codepipeline.html)
+for more details about using CloudFormation in CodePipeline.
+
+#### Actions defined by this package
+
+This package contains the following CloudFormation actions:
+
+* **CloudFormationCreateUpdateStackAction** - Deploy a CloudFormation template directly from the pipeline. The indicated stack is created,
+  or updated if it already exists. If the stack is in a failure state, deployment will fail (unless `replaceOnFailure`
+  is set to `true`, in which case it will be destroyed and recreated).
+* **CloudFormationDeleteStackAction** - Delete the stack with the given name.
+* **CloudFormationCreateReplaceChangeSetAction** - Prepare a change set to be applied later. You will typically use change sets if you want
+  to manually verify the changes that are being staged, or if you want to separate the people (or system) preparing the
+  changes from the people (or system) applying the changes.
+* **CloudFormationExecuteChangeSetAction** - Execute a change set prepared previously.
+
+#### Lambda deployed through CodePipeline
+
+If you want to deploy your Lambda through CodePipeline,
+and you don't use assets (for example, because your CDK code and Lambda code are separate),
+you can use a special Lambda `Code` class, `CfnParametersCode`.
+Note that your Lambda must be in a different Stack than your Pipeline.
+The Lambda itself will be deployed, alongside the entire Stack it belongs to,
+using a CloudFormation CodePipeline Action. Example:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+lambda_stack = cdk.Stack(app, "LambdaStack")
+lambda_code = lambda_.Code.from_cfn_parameters()
+lambda_.Function(lambda_stack, "Lambda",
+    code=lambda_code,
+    handler="index.handler",
+    runtime=lambda_.Runtime.NODEJS_10_X
+)
+# other resources that your Lambda needs, added to the lambdaStack...
+
+pipeline_stack = cdk.Stack(app, "PipelineStack")
+pipeline = codepipeline.Pipeline(pipeline_stack, "Pipeline")
+
+# add the source code repository containing this code to your Pipeline,
+# and the source code of the Lambda Function, if they're separate
+cdk_source_output = codepipeline.Artifact()
+cdk_source_action = codepipeline_actions.CodeCommitSourceAction(
+    repository=codecommit.Repository(pipeline_stack, "CdkCodeRepo",
+        repository_name="CdkCodeRepo"
+    ),
+    action_name="CdkCode_Source",
+    output=cdk_source_output
+)
+lambda_source_output = codepipeline.Artifact()
+lambda_source_action = codepipeline_actions.CodeCommitSourceAction(
+    repository=codecommit.Repository(pipeline_stack, "LambdaCodeRepo",
+        repository_name="LambdaCodeRepo"
+    ),
+    action_name="LambdaCode_Source",
+    output=lambda_source_output
+)
+pipeline.add_stage(
+    stage_name="Source",
+    actions=[cdk_source_action, lambda_source_action]
+)
+
+# synthesize the Lambda CDK template, using CodeBuild
+# the below values are just examples, assuming your CDK code is in TypeScript/JavaScript -
+# adjust the build environment and/or commands accordingly
+cdk_build_project = codebuild.Project(pipeline_stack, "CdkBuildProject",
+    environment=BuildEnvironment(
+        build_image=codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0
+    ),
+    build_spec=codebuild.BuildSpec.from_object({
+        "version": "0.2",
+        "phases": {
+            "install": {
+                "commands": "npm install"
+            },
+            "build": {
+                "commands": ["npm run build", "npm run cdk synth LambdaStack -- -o ."
+                ]
+            }
+        },
+        "artifacts": {
+            "files": "LambdaStack.template.yaml"
+        }
+    })
+)
+cdk_build_output = codepipeline.Artifact()
+cdk_build_action = codepipeline_actions.CodeBuildAction(
+    action_name="CDK_Build",
+    project=cdk_build_project,
+    input=cdk_source_output,
+    outputs=[cdk_build_output]
+)
+
+# build your Lambda code, using CodeBuild
+# again, this example assumes your Lambda is written in TypeScript/JavaScript -
+# make sure to adjust the build environment and/or commands if they don't match your specific situation
+lambda_build_project = codebuild.Project(pipeline_stack, "LambdaBuildProject",
+    environment=BuildEnvironment(
+        build_image=codebuild.LinuxBuildImage.UBUNTU_14_04_NODEJS_10_1_0
+    ),
+    build_spec=codebuild.BuildSpec.from_object({
+        "version": "0.2",
+        "phases": {
+            "install": {
+                "commands": "npm install"
+            },
+            "build": {
+                "commands": "npm run build"
+            }
+        },
+        "artifacts": {
+            "files": ["index.js", "node_modules/**/*"
+            ]
+        }
+    })
+)
+lambda_build_output = codepipeline.Artifact()
+lambda_build_action = codepipeline_actions.CodeBuildAction(
+    action_name="Lambda_Build",
+    project=lambda_build_project,
+    input=lambda_source_output,
+    outputs=[lambda_build_output]
+)
+
+pipeline.add_stage(
+    stage_name="Build",
+    actions=[cdk_build_action, lambda_build_action]
+)
+
+# finally, deploy your Lambda Stack
+pipeline.add_stage(
+    stage_name="Deploy",
+    actions=[
+        codepipeline_actions.CloudFormationCreateUpdateStackAction(
+            action_name="Lambda_CFN_Deploy",
+            template_path=cdk_build_output.at_path("LambdaStack.template.yaml"),
+            stack_name="LambdaStackDeployedName",
+            admin_permissions=True,
+            parameter_overrides=lambda_code.assign(lambda_build_output.s3_location),
+            extra_inputs=[lambda_build_output
+            ]
+        )
+    ]
+)
+```
+
+#### Cross-account actions
+
+If you want to update stacks in a different account,
+pass the `account` property when creating the action:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+source_output = codepipeline.Artifact()
+codepipeline_actions.CloudFormationCreateUpdateStackAction(
+    action_name="CloudFormationCreateUpdate",
+    stack_name="MyStackName",
+    admin_permissions=True,
+    template_path=source_output.at_path("template.yaml"),
+    account="123456789012"
+)
+```
+
+This will create a new stack, called `<PipelineStackName>-support-123456789012`, in your `App`,
+that will contain the role that the pipeline will assume in account 123456789012 before executing this action.
+This support stack will automatically be deployed before the stack containing the pipeline.
+
+You can also pass a role explicitly when creating the action -
+in that case, the `account` property is ignored,
+and the action will operate in the same account the role belongs to:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+from aws_cdk.core import PhysicalName
+
+# in stack for account 123456789012...
+# other_account_stack is of type Stack
+
+action_role = iam.Role(other_account_stack, "ActionRole",
+    assumed_by=iam.AccountPrincipal("123456789012"),
+    # the role has to have a physical name set
+    role_name=PhysicalName.GENERATE_IF_NEEDED
+)
+
+# in the pipeline stack...
+source_output = codepipeline.Artifact()
+codepipeline_actions.CloudFormationCreateUpdateStackAction(
+    action_name="CloudFormationCreateUpdate",
+    stack_name="MyStackName",
+    admin_permissions=True,
+    template_path=source_output.at_path("template.yaml"),
+    role=action_role
+)
+```
+
+### AWS CodeDeploy
+
+#### Server deployments
+
+To use CodeDeploy for EC2/on-premise deployments in a Pipeline:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# deployment_group is of type codedeploy.ServerDeploymentGroup
+pipeline = codepipeline.Pipeline(self, "MyPipeline",
+    pipeline_name="MyPipeline"
+)
+
+# add the source and build Stages to the Pipeline...
+build_output = codepipeline.Artifact()
+deploy_action = codepipeline_actions.CodeDeployServerDeployAction(
+    action_name="CodeDeploy",
+    input=build_output,
+    deployment_group=deployment_group
+)
+pipeline.add_stage(
+    stage_name="Deploy",
+    actions=[deploy_action]
+)
+```
+
+##### Lambda deployments
+
+To use CodeDeploy for blue-green Lambda deployments in a Pipeline:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+lambda_code = lambda_.Code.from_cfn_parameters()
+func = lambda_.Function(self, "Lambda",
+    code=lambda_code,
+    handler="index.handler",
+    runtime=lambda_.Runtime.NODEJS_12_X
+)
+# used to make sure each CDK synthesis produces a different Version
+version = func.add_version("NewVersion")
+alias = lambda_.Alias(self, "LambdaAlias",
+    alias_name="Prod",
+    version=version
+)
+
+codedeploy.LambdaDeploymentGroup(self, "DeploymentGroup",
+    alias=alias,
+    deployment_config=codedeploy.LambdaDeploymentConfig.LINEAR_10PERCENT_EVERY_1MINUTE
+)
+```
+
+Then, you need to create your Pipeline Stack,
+where you will define your Pipeline,
+and deploy the `lambdaStack` using a CloudFormation CodePipeline Action
+(see above for a complete example).
+
+### ECS
+
+CodePipeline can deploy an ECS service.
+The deploy Action receives one input Artifact which contains the [image definition file](https://docs.aws.amazon.com/codepipeline/latest/userguide/pipelines-create.html#pipelines-create-image-definitions):
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_ecs as ecs
+
+# service is of type FargateService
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+build_output = codepipeline.Artifact()
+deploy_stage = pipeline.add_stage(
+    stage_name="Deploy",
+    actions=[
+        codepipeline_actions.EcsDeployAction(
+            action_name="DeployAction",
+            service=service,
+            # if your file is called imagedefinitions.json,
+            # use the `input` property,
+            # and leave out the `imageFile` property
+            input=build_output,
+            # if your file name is _not_ imagedefinitions.json,
+            # use the `imageFile` property,
+            # and leave out the `input` property
+            image_file=build_output.at_path("imageDef.json"),
+            deployment_timeout=Duration.minutes(60)
+        )
+    ]
+)
+```
+
+#### Deploying ECS applications stored in a separate source code repository
+
+The idiomatic CDK way of deploying an ECS application is to have your Dockerfiles and your CDK code in the same source code repository,
+leveraging [Docker Assets](https://docs.aws.amazon.com/cdk/latest/guide/assets.html#assets_types_docker),
+and use the [CDK Pipelines module](https://docs.aws.amazon.com/cdk/api/latest/docs/pipelines-readme.html).
+
+However, if you want to deploy a Docker application whose source code is kept in a separate version control repository than the CDK code,
+you can use the `TagParameterContainerImage` class from the ECS module.
+Here's an example:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+#
+# This is the Stack containing a simple ECS Service that uses the provided ContainerImage.
+#
+class EcsAppStack(cdk.Stack):
+    def __init__(self, scope, id, *, image, description=None, env=None, stackName=None, tags=None, synthesizer=None, terminationProtection=None, analyticsReporting=None):
+        super().__init__(scope, id, image=image, description=description, env=env, stackName=stackName, tags=tags, synthesizer=synthesizer, terminationProtection=terminationProtection, analyticsReporting=analyticsReporting)
+
+        task_definition = ecs.TaskDefinition(self, "TaskDefinition",
+            compatibility=ecs.Compatibility.FARGATE,
+            cpu="1024",
+            memory_mi_b="2048"
+        )
+        task_definition.add_container("AppContainer",
+            image=image
+        )
+        ecs.FargateService(self, "EcsService",
+            task_definition=task_definition,
+            cluster=ecs.Cluster(self, "Cluster",
+                vpc=ec2.Vpc(self, "Vpc",
+                    max_azs=1
+                )
+            )
+        )
+
+#
+# This is the Stack containing the CodePipeline definition that deploys an ECS Service.
+#
+class PipelineStack(cdk.Stack):
+
+    def __init__(self, scope, id, *, description=None, env=None, stackName=None, tags=None, synthesizer=None, terminationProtection=None, analyticsReporting=None):
+        super().__init__(scope, id, description=description, env=env, stackName=stackName, tags=tags, synthesizer=synthesizer, terminationProtection=terminationProtection, analyticsReporting=analyticsReporting)
+
+        # ********* ECS part ****************
+
+        # this is the ECR repository where the built Docker image will be pushed
+        app_ecr_repo = ecr.Repository(self, "EcsDeployRepository")
+        # the build that creates the Docker image, and pushes it to the ECR repo
+        app_code_docker_build = codebuild.PipelineProject(self, "AppCodeDockerImageBuildAndPushProject",
+            environment=BuildEnvironment(
+                # we need to run Docker
+                privileged=True
+            ),
+            build_spec=codebuild.BuildSpec.from_object({
+                "version": "0.2",
+                "phases": {
+                    "build": {
+                        "commands": ["$(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)", "docker build -t $REPOSITORY_URI:$CODEBUILD_RESOLVED_SOURCE_VERSION ."
+                        ]
+                    },
+                    "post_build": {
+                        "commands": ["docker push $REPOSITORY_URI:$CODEBUILD_RESOLVED_SOURCE_VERSION", "export imageTag=$CODEBUILD_RESOLVED_SOURCE_VERSION"
+                        ]
+                    }
+                },
+                "env": {
+                    # save the imageTag environment variable as a CodePipeline Variable
+                    "exported-variables": ["imageTag"
+                    ]
+                }
+            }),
+            environment_variables={
+                "REPOSITORY_URI": BuildEnvironmentVariable(
+                    value=app_ecr_repo.repository_uri
+                )
+            }
+        )
+        # needed for `docker push`
+        app_ecr_repo.grant_pull_push(app_code_docker_build)
+        # create the ContainerImage used for the ECS application Stack
+        self.tag_parameter_container_image = ecs.TagParameterContainerImage(app_ecr_repo)
+
+        cdk_code_build = codebuild.PipelineProject(self, "CdkCodeBuildProject",
+            build_spec=codebuild.BuildSpec.from_object({
+                "version": "0.2",
+                "phases": {
+                    "install": {
+                        "commands": ["npm install"
+                        ]
+                    },
+                    "build": {
+                        "commands": ["npx cdk synth --verbose"
+                        ]
+                    }
+                },
+                "artifacts": {
+                    # store the entire Cloud Assembly as the output artifact
+                    "base-directory": "cdk.out",
+                    "files": "**/*"
+                }
+            })
+        )
+
+        # ********* Pipeline part ****************
+
+        app_code_source_output = codepipeline.Artifact()
+        cdk_code_source_output = codepipeline.Artifact()
+        cdk_code_build_output = codepipeline.Artifact()
+        app_code_build_action = codepipeline_actions.CodeBuildAction(
+            action_name="AppCodeDockerImageBuildAndPush",
+            project=app_code_docker_build,
+            input=app_code_source_output
+        )
+        codepipeline.Pipeline(self, "CodePipelineDeployingEcsApplication",
+            artifact_bucket=s3.Bucket(self, "ArtifactBucket",
+                removal_policy=cdk.RemovalPolicy.DESTROY
+            ),
+            stages=[StageProps(
+                stage_name="Source",
+                actions=[
+                    # this is the Action that takes the source of your application code
+                    codepipeline_actions.CodeCommitSourceAction(
+                        action_name="AppCodeSource",
+                        repository=codecommit.Repository(self, "AppCodeSourceRepository", repository_name="AppCodeSourceRepository"),
+                        output=app_code_source_output
+                    ),
+                    # this is the Action that takes the source of your CDK code
+                    # (which would probably include this Pipeline code as well)
+                    codepipeline_actions.CodeCommitSourceAction(
+                        action_name="CdkCodeSource",
+                        repository=codecommit.Repository(self, "CdkCodeSourceRepository", repository_name="CdkCodeSourceRepository"),
+                        output=cdk_code_source_output
+                    )
+                ]
+            ), StageProps(
+                stage_name="Build",
+                actions=[app_code_build_action,
+                    codepipeline_actions.CodeBuildAction(
+                        action_name="CdkCodeBuildAndSynth",
+                        project=cdk_code_build,
+                        input=cdk_code_source_output,
+                        outputs=[cdk_code_build_output]
+                    )
+                ]
+            ), StageProps(
+                stage_name="Deploy",
+                actions=[
+                    codepipeline_actions.CloudFormationCreateUpdateStackAction(
+                        action_name="CFN_Deploy",
+                        stack_name="SampleEcsStackDeployedFromCodePipeline",
+                        # this name has to be the same name as used below in the CDK code for the application Stack
+                        template_path=cdk_code_build_output.at_path("EcsStackDeployedInPipeline.template.json"),
+                        admin_permissions=True,
+                        parameter_overrides={
+                            # read the tag pushed to the ECR repository from the CodePipeline Variable saved by the application build step,
+                            # and pass it as the CloudFormation Parameter for the tag
+                            self.tag_parameter_container_image.tag_parameter_name: app_code_build_action.variable("imageTag")
+                        }
+                    )
+                ]
+            )
+            ]
+        )
+
+app = cdk.App()
+
+# the CodePipeline Stack needs to be created first
+pipeline_stack = PipelineStack(app, "aws-cdk-pipeline-ecs-separate-sources")
+# we supply the image to the ECS application Stack from the CodePipeline Stack
+EcsAppStack(app, "EcsStackDeployedInPipeline",
+    image=pipeline_stack.tag_parameter_container_image
+)
+```
+
+### AWS S3 Deployment
+
+To use an S3 Bucket as a deployment target in CodePipeline:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+source_output = codepipeline.Artifact()
+target_bucket = s3.Bucket(self, "MyBucket")
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+deploy_action = codepipeline_actions.S3DeployAction(
+    action_name="S3Deploy",
+    bucket=target_bucket,
+    input=source_output
+)
+deploy_stage = pipeline.add_stage(
+    stage_name="Deploy",
+    actions=[deploy_action]
+)
+```
+
+#### Invalidating the CloudFront cache when deploying to S3
+
+There is currently no native support in CodePipeline for invalidating a CloudFront cache after deployment.
+One workaround is to add another build step after the deploy step,
+and use the AWS CLI to invalidate the cache:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Create a Cloudfront Web Distribution
+import aws_cdk.aws_cloudfront as cloudfront
+# distribution is of type Distribution
+
+
+# Create the build project that will invalidate the cache
+invalidate_build_project = codebuild.PipelineProject(self, "InvalidateProject",
+    build_spec=codebuild.BuildSpec.from_object({
+        "version": "0.2",
+        "phases": {
+            "build": {
+                "commands": ["aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_ID} --paths \"/*\""
+                ]
+            }
+        }
+    }),
+    environment_variables={
+        "CLOUDFRONT_ID": BuildEnvironmentVariable(value=distribution.distribution_id)
+    }
+)
+
+# Add Cloudfront invalidation permissions to the project
+distribution_arn = f"arn:aws:cloudfront::{this.account}:distribution/{distribution.distributionId}"
+invalidate_build_project.add_to_role_policy(iam.PolicyStatement(
+    resources=[distribution_arn],
+    actions=["cloudfront:CreateInvalidation"
+    ]
+))
+
+# Create the pipeline (here only the S3 deploy and Invalidate cache build)
+deploy_bucket = s3.Bucket(self, "DeployBucket")
+deploy_input = codepipeline.Artifact()
+codepipeline.Pipeline(self, "Pipeline",
+    stages=[StageProps(
+        stage_name="Deploy",
+        actions=[
+            codepipeline_actions.S3DeployAction(
+                action_name="S3Deploy",
+                bucket=deploy_bucket,
+                input=deploy_input,
+                run_order=1
+            ),
+            codepipeline_actions.CodeBuildAction(
+                action_name="InvalidateCache",
+                project=invalidate_build_project,
+                input=deploy_input,
+                run_order=2
+            )
+        ]
+    )
+    ]
+)
+```
+
+### Alexa Skill
+
+You can deploy to Alexa using CodePipeline with the following Action:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Read the secrets from ParameterStore
+client_id = SecretValue.secrets_manager("AlexaClientId")
+client_secret = SecretValue.secrets_manager("AlexaClientSecret")
+refresh_token = SecretValue.secrets_manager("AlexaRefreshToken")
+
+# Add deploy action
+source_output = codepipeline.Artifact()
+codepipeline_actions.AlexaSkillDeployAction(
+    action_name="DeploySkill",
+    run_order=1,
+    input=source_output,
+    client_id=client_id.to_string(),
+    client_secret=client_secret,
+    refresh_token=refresh_token,
+    skill_id="amzn1.ask.skill.12345678-1234-1234-1234-123456789012"
+)
+```
+
+If you need manifest overrides you can specify them as `parameterOverridesArtifact` in the action:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Deploy some CFN change set and store output
+execute_output = codepipeline.Artifact("CloudFormation")
+execute_change_set_action = codepipeline_actions.CloudFormationExecuteChangeSetAction(
+    action_name="ExecuteChangesTest",
+    run_order=2,
+    stack_name="MyStack",
+    change_set_name="MyChangeSet",
+    output_file_name="overrides.json",
+    output=execute_output
+)
+
+# Provide CFN output as manifest overrides
+client_id = SecretValue.secrets_manager("AlexaClientId")
+client_secret = SecretValue.secrets_manager("AlexaClientSecret")
+refresh_token = SecretValue.secrets_manager("AlexaRefreshToken")
+source_output = codepipeline.Artifact()
+codepipeline_actions.AlexaSkillDeployAction(
+    action_name="DeploySkill",
+    run_order=1,
+    input=source_output,
+    parameter_overrides_artifact=execute_output,
+    client_id=client_id.to_string(),
+    client_secret=client_secret,
+    refresh_token=refresh_token,
+    skill_id="amzn1.ask.skill.12345678-1234-1234-1234-123456789012"
+)
+```
+
+### AWS Service Catalog
+
+You can deploy a CloudFormation template to an existing Service Catalog product with the following Action:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+cdk_build_output = codepipeline.Artifact()
+service_catalog_deploy_action = codepipeline_actions.ServiceCatalogDeployActionBeta1(
+    action_name="ServiceCatalogDeploy",
+    template_path=cdk_build_output.at_path("Sample.template.json"),
+    product_version_name="Version - " + Date.now.to_string,
+    product_version_description="This is a version from the pipeline with a new description.",
+    product_id="prod-XXXXXXXX"
+)
+```
+
+## Approve & invoke
+
+### Manual approval Action
+
+This package contains an Action that stops the Pipeline until someone manually clicks the approve button:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_sns as sns
+
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+approve_stage = pipeline.add_stage(stage_name="Approve")
+manual_approval_action = codepipeline_actions.ManualApprovalAction(
+    action_name="Approve",
+    notification_topic=sns.Topic(self, "Topic"),  # optional
+    notify_emails=["some_email@example.com"
+    ],  # optional
+    additional_information="additional info"
+)
+approve_stage.add_action(manual_approval_action)
+```
+
+If the `notificationTopic` has not been provided,
+but `notifyEmails` were,
+a new SNS Topic will be created
+(and accessible through the `notificationTopic` property of the Action).
+
+If you want to grant a principal permissions to approve the changes,
+you can invoke the method `grantManualApproval` passing it a `IGrantable`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+approve_stage = pipeline.add_stage(stage_name="Approve")
+manual_approval_action = codepipeline_actions.ManualApprovalAction(
+    action_name="Approve"
+)
+approve_stage.add_action(manual_approval_action)
+
+role = iam.Role.from_role_arn(self, "Admin", Arn.format({"service": "iam", "resource": "role", "resource_name": "Admin"}, self))
+manual_approval_action.grant_manual_approval(role)
+```
+
+### AWS Lambda
+
+This module contains an Action that allows you to invoke a Lambda function in a Pipeline:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# fn is of type lambda.Function
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+lambda_action = codepipeline_actions.LambdaInvokeAction(
+    action_name="Lambda",
+    lambda_=fn
+)
+pipeline.add_stage(
+    stage_name="Lambda",
+    actions=[lambda_action]
+)
+```
+
+The Lambda Action can have up to 5 inputs,
+and up to 5 outputs:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# fn is of type lambda.Function
+
+source_output = codepipeline.Artifact()
+build_output = codepipeline.Artifact()
+lambda_action = codepipeline_actions.LambdaInvokeAction(
+    action_name="Lambda",
+    inputs=[source_output, build_output
+    ],
+    outputs=[
+        codepipeline.Artifact("Out1"),
+        codepipeline.Artifact("Out2")
+    ],
+    lambda_=fn
+)
+```
+
+The Lambda Action supports custom user parameters that pipeline
+will pass to the Lambda function:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_lambda as lambda_
+
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+lambda_action = codepipeline_actions.LambdaInvokeAction(
+    action_name="Lambda",
+    lambda_=fn,
+    user_parameters={
+        "foo": "bar",
+        "baz": "qux"
+    },
+    # OR
+    user_parameters_string="my-parameter-string"
+)
+```
+
+The Lambda invoke action emits variables.
+Unlike many other actions, the variables are not static,
+but dynamic, defined by the function calling the `PutJobSuccessResult`
+API with the `outputVariables` property filled with the map of variables
+Example:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# later:
+# project is of type PipelineProject
+lambda_invoke_action = codepipeline_actions.LambdaInvokeAction(
+    action_name="Lambda",
+    lambda_=lambda_.Function(self, "Func",
+        runtime=lambda_.Runtime.NODEJS_12_X,
+        handler="index.handler",
+        code=lambda_.Code.from_inline("""
+                    const AWS = require('aws-sdk');
+
+                    exports.handler = async function(event, context) {
+                        const codepipeline = new AWS.CodePipeline();
+                        await codepipeline.putJobSuccessResult({
+                            jobId: event['CodePipeline.job'].id,
+                            outputVariables: {
+                                MY_VAR: "some value",
+                            },
+                        }).promise();
+                    }
+                """)
+    ),
+    variables_namespace="MyNamespace"
+)
+source_output = codepipeline.Artifact()
+codepipeline_actions.CodeBuildAction(
+    action_name="CodeBuild",
+    project=project,
+    input=source_output,
+    environment_variables={
+        "MyVar": {
+            "value": lambda_invoke_action.variable("MY_VAR")
+        }
+    }
+)
+```
+
+See [the AWS documentation](https://docs.aws.amazon.com/codepipeline/latest/userguide/actions-invoke-lambda-function.html)
+on how to write a Lambda function invoked from CodePipeline.
+
+### AWS Step Functions
+
+This module contains an Action that allows you to invoke a Step Function in a Pipeline:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_stepfunctions as stepfunctions
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+start_state = stepfunctions.Pass(self, "StartState")
+simple_state_machine = stepfunctions.StateMachine(self, "SimpleStateMachine",
+    definition=start_state
+)
+step_function_action = codepipeline_actions.StepFunctionInvokeAction(
+    action_name="Invoke",
+    state_machine=simple_state_machine,
+    state_machine_input=codepipeline_actions.StateMachineInput.literal({"IsHelloWorldExample": True})
+)
+pipeline.add_stage(
+    stage_name="StepFunctions",
+    actions=[step_function_action]
+)
+```
+
+The `StateMachineInput` can be created with one of 2 static factory methods:
+`literal`, which takes an arbitrary map as its only argument, or `filePath`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_stepfunctions as stepfunctions
+
+
+pipeline = codepipeline.Pipeline(self, "MyPipeline")
+input_artifact = codepipeline.Artifact()
+start_state = stepfunctions.Pass(self, "StartState")
+simple_state_machine = stepfunctions.StateMachine(self, "SimpleStateMachine",
+    definition=start_state
+)
+step_function_action = codepipeline_actions.StepFunctionInvokeAction(
+    action_name="Invoke",
+    state_machine=simple_state_machine,
+    state_machine_input=codepipeline_actions.StateMachineInput.file_path(input_artifact.at_path("assets/input.json"))
+)
+pipeline.add_stage(
+    stage_name="StepFunctions",
+    actions=[step_function_action]
+)
+```
+
+See [the AWS documentation](https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-StepFunctions.html)
+for information on Action structure reference.
+
+

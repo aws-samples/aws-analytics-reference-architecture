@@ -1,0 +1,465 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-elasticsearch
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::Elasticsearch
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-certificatemanager (==1.130.0)
+Requires-Dist: aws-cdk.aws-cloudwatch (==1.130.0)
+Requires-Dist: aws-cdk.aws-ec2 (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-kms (==1.130.0)
+Requires-Dist: aws-cdk.aws-logs (==1.130.0)
+Requires-Dist: aws-cdk.aws-route53 (==1.130.0)
+Requires-Dist: aws-cdk.aws-secretsmanager (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: aws-cdk.custom-resources (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# Amazon Elasticsearch Service Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+Features                           | Stability
+-----------------------------------|----------------------------------------------------------------
+CFN Resources                      | ![Stable](https://img.shields.io/badge/stable-success.svg?style=for-the-badge)
+Higher level constructs for Domain | ![Stable](https://img.shields.io/badge/stable-success.svg?style=for-the-badge)
+
+> **CFN Resources:** All classes with the `Cfn` prefix in this module ([CFN Resources](https://docs.aws.amazon.com/cdk/latest/guide/constructs.html#constructs_lib)) are always
+> stable and safe to use.
+
+<!-- -->
+
+> **Stable:** Higher level constructs in this module that are marked stable will not undergo any
+> breaking changes. They will strictly follow the [Semantic Versioning](https://semver.org/) model.
+
+---
+<!--END STABILITY BANNER-->
+
+> Amazon Elasticsearch Service has been renamed to Amazon OpenSearch Service; consequently, the [@aws-cdk/aws-opensearchservice](https://docs.aws.amazon.com/cdk/api/latest/docs/aws-opensearchservice-readme.html) module should be used instead. See [Amazon OpenSearch Service FAQs](https://aws.amazon.com/opensearch-service/faqs/#Name_change) for details. See [Migrating to OpenSearch](#migrating-to-opensearch) for migration instructions.
+
+## Quick start
+
+Create a development cluster by simply specifying the version:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_elasticsearch as es
+
+dev_domain = es.Domain(self, "Domain",
+    version=es.ElasticsearchVersion.V7_1
+)
+```
+
+To perform version upgrades without replacing the entire domain, specify the `enableVersionUpgrade` property.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_elasticsearch as es
+
+dev_domain = es.Domain(self, "Domain",
+    version=es.ElasticsearchVersion.V7_10,
+    enable_version_upgrade=True
+)
+```
+
+Create a production grade cluster by also specifying things like capacity and az distribution
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+prod_domain = es.Domain(self, "Domain",
+    version=es.ElasticsearchVersion.V7_1,
+    capacity={
+        "master_nodes": 5,
+        "data_nodes": 20
+    },
+    ebs={
+        "volume_size": 20
+    },
+    zone_awareness={
+        "availability_zone_count": 3
+    },
+    logging={
+        "slow_search_log_enabled": True,
+        "app_log_enabled": True,
+        "slow_index_log_enabled": True
+    }
+)
+```
+
+This creates an Elasticsearch cluster and automatically sets up log groups for
+logging the domain logs and slow search logs.
+
+## A note about SLR
+
+Some cluster configurations (e.g VPC access) require the existence of the [`AWSServiceRoleForAmazonElasticsearchService`](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/slr-es.html) Service-Linked Role.
+
+When performing such operations via the AWS Console, this SLR is created automatically when needed. However, this is not the behavior when using CloudFormation. If an SLR is needed, but doesn't exist, you will encounter a failure message simlar to:
+
+```console
+Before you can proceed, you must enable a service-linked role to give Amazon ES...
+```
+
+To resolve this, you need to [create](https://docs.aws.amazon.com/IAM/latest/UserGuide/using-service-linked-roles.html#create-service-linked-role) the SLR. We recommend using the AWS CLI:
+
+```console
+aws iam create-service-linked-role --aws-service-name es.amazonaws.com
+```
+
+You can also create it using the CDK, **but note that only the first application deploying this will succeed**:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+slr = iam.CfnServiceLinkedRole(self, "ElasticSLR",
+    aws_service_name="es.amazonaws.com"
+)
+```
+
+## Importing existing domains
+
+To import an existing domain into your CDK application, use the `Domain.fromDomainEndpoint` factory method.
+This method accepts a domain endpoint of an already existing domain:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+domain_endpoint = "https://my-domain-jcjotrt6f7otem4sqcwbch3c4u.us-east-1.es.amazonaws.com"
+domain = Domain.from_domain_endpoint(self, "ImportedDomain", domain_endpoint)
+```
+
+## Permissions
+
+### IAM
+
+Helper methods also exist for managing access to the domain.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+lambda_ = lambda_.Function(self, "Lambda")
+
+# Grant write access to the app-search index
+domain.grant_index_write("app-search", lambda_)
+
+# Grant read access to the 'app-search/_search' path
+domain.grant_path_read("app-search/_search", lambda_)
+```
+
+## Encryption
+
+The domain can also be created with encryption enabled:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+domain = es.Domain(self, "Domain",
+    version=es.ElasticsearchVersion.V7_4,
+    ebs={
+        "volume_size": 100,
+        "volume_type": EbsDeviceVolumeType.GENERAL_PURPOSE_SSD
+    },
+    node_to_node_encryption=True,
+    encryption_at_rest={
+        "enabled": True
+    }
+)
+```
+
+This sets up the domain with node to node encryption and encryption at
+rest. You can also choose to supply your own KMS key to use for encryption at
+rest.
+
+## VPC Support
+
+Elasticsearch domains can be placed inside a VPC, providing a secure communication between Amazon ES and other services within the VPC without the need for an internet gateway, NAT device, or VPN connection.
+
+> Visit [VPC Support for Amazon Elasticsearch Service Domains](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-vpc.html) for more details.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc(self, "Vpc")
+domain_props = {
+    "version": es.ElasticsearchVersion.V7_1,
+    "removal_policy": RemovalPolicy.DESTROY,
+    "vpc": vpc,
+    # must be enabled since our VPC contains multiple private subnets.
+    "zone_awareness": {
+        "enabled": True
+    },
+    "capacity": {
+        # must be an even number since the default az count is 2.
+        "data_nodes": 2
+    }
+}
+es.Domain(self, "Domain", domain_props)
+```
+
+In addition, you can use the `vpcSubnets` property to control which specific subnets will be used, and the `securityGroups` property to control
+which security groups will be attached to the domain. By default, CDK will select all *private* subnets in the VPC, and create one dedicated security group.
+
+## Metrics
+
+Helper methods exist to access common domain metrics for example:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+free_storage_space = domain.metric_free_storage_space()
+master_sys_memory_utilization = domain.metric("MasterSysMemoryUtilization")
+```
+
+This module is part of the [AWS Cloud Development Kit](https://github.com/aws/aws-cdk) project.
+
+## Fine grained access control
+
+The domain can also be created with a master user configured. The password can
+be supplied or dynamically created if not supplied.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+domain = es.Domain(self, "Domain",
+    version=es.ElasticsearchVersion.V7_1,
+    enforce_https=True,
+    node_to_node_encryption=True,
+    encryption_at_rest={
+        "enabled": True
+    },
+    fine_grained_access_control={
+        "master_user_name": "master-user"
+    }
+)
+
+master_user_password = domain.master_user_password
+```
+
+## Using unsigned basic auth
+
+For convenience, the domain can be configured to allow unsigned HTTP requests
+that use basic auth. Unless the domain is configured to be part of a VPC this
+means anyone can access the domain using the configured master username and
+password.
+
+To enable unsigned basic auth access the domain is configured with an access
+policy that allows anyonmous requests, HTTPS required, node to node encryption,
+encryption at rest and fine grained access control.
+
+If the above settings are not set they will be configured as part of enabling
+unsigned basic auth. If they are set with conflicting values, an error will be
+thrown.
+
+If no master user is configured a default master user is created with the
+username `admin`.
+
+If no password is configured a default master user password is created and
+stored in the AWS Secrets Manager as secret. The secret has the prefix
+`<domain id>MasterUser`.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+domain = es.Domain(self, "Domain",
+    version=es.ElasticsearchVersion.V7_1,
+    use_unsigned_basic_auth=True
+)
+
+master_user_password = domain.master_user_password
+```
+
+## Audit logs
+
+Audit logs can be enabled for a domain, but only when fine grained access control is enabled.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+domain = es.Domain(self, "Domain",
+    version=es.ElasticsearchVersion.V7_1,
+    enforce_https=True,
+    node_to_node_encryption=True,
+    encryption_at_rest={
+        "enabled": True
+    },
+    fine_grained_access_control={
+        "master_user_name": "master-user"
+    },
+    logging={
+        "audit_log_enabled": True,
+        "slow_search_log_enabled": True,
+        "app_log_enabled": True,
+        "slow_index_log_enabled": True
+    }
+)
+```
+
+## UltraWarm
+
+UltraWarm nodes can be enabled to provide a cost-effective way to store large amounts of read-only data.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+domain = es.Domain(self, "Domain",
+    version=es.ElasticsearchVersion.V7_10,
+    capacity={
+        "master_nodes": 2,
+        "warm_nodes": 2,
+        "warm_instance_type": "ultrawarm1.medium.elasticsearch"
+    }
+)
+```
+
+## Custom endpoint
+
+Custom endpoints can be configured to reach the ES domain under a custom domain name.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+Domain(stack, "Domain",
+    version=ElasticsearchVersion.V7_7,
+    custom_endpoint={
+        "domain_name": "search.example.com"
+    }
+)
+```
+
+It is also possible to specify a custom certificate instead of the auto-generated one.
+
+Additionally, an automatic CNAME-Record is created if a hosted zone is provided for the custom endpoint
+
+## Advanced options
+
+[Advanced options](https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-advanced-options) can used to configure additional options.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+Domain(stack, "Domain",
+    version=ElasticsearchVersion.V7_7,
+    advanced_options={
+        "rest.action.multi.allow_explicit_index": "false",
+        "indices.fielddata.cache.size": "25",
+        "indices.query.bool.max_clause_count": "2048"
+    }
+)
+```
+
+## Migrating to OpenSearch
+
+To migrate from this module (`@aws-cdk/aws-elasticsearch`) to the new `@aws-cdk/aws-opensearchservice` module, you must modify your CDK application to refer to the new module (including some associated changes) and then perform a CloudFormation resource deletion/import.
+
+### Necessary CDK Modifications
+
+Make the following modifications to your CDK application to migrate to the `@aws-cdk/aws-opensearchservice` module.
+
+* Rewrite module imports to use `'@aws-cdk/aws-opensearchservice` to `'@aws-cdk/aws-elasticsearch`.
+  For example:
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  import aws_cdk.aws_elasticsearch as es
+  from aws_cdk.aws_elasticsearch import Domain
+  ```
+
+  ...becomes...
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  import aws_cdk.aws_opensearchservice as opensearch
+  from aws_cdk.aws_opensearchservice import Domain
+  ```
+* Replace instances of `es.ElasticsearchVersion` with `opensearch.EngineVersion`.
+  For example:
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  version = es.ElasticsearchVersion.V7_1
+  ```
+
+  ...becomes...
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  version = opensearch.EngineVersion.ELASTICSEARCH_7_1
+  ```
+* Replace the `cognitoKibanaAuth` property of `DomainProps` with `cognitoDashboardsAuth`.
+  For example:
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  es.Domain(self, "Domain",
+      cognito_kibana_auth=CognitoOptions(
+          identity_pool_id="test-identity-pool-id",
+          user_pool_id="test-user-pool-id",
+          role=role
+      ),
+      version=elasticsearch_version
+  )
+  ```
+
+  ...becomes...
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  opensearch.Domain(self, "Domain",
+      cognito_dashboards_auth=CognitoOptions(
+          identity_pool_id="test-identity-pool-id",
+          user_pool_id="test-user-pool-id",
+          role=role
+      ),
+      version=open_search_version
+  )
+  ```
+* Rewrite instance type suffixes from `.elasticsearch` to `.search`.
+  For example:
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  es.Domain(self, "Domain",
+      capacity=CapacityConfig(
+          master_node_instance_type="r5.large.elasticsearch"
+      ),
+      version=elasticsearch_version
+  )
+  ```
+
+  ...becomes...
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  opensearch.Domain(self, "Domain",
+      capacity=CapacityConfig(
+          master_node_instance_type="r5.large.search"
+      ),
+      version=open_search_version
+  )
+  ```
+* Any `CfnInclude`'d domains will need to be re-written in their original template in
+  order to be successfully included as a `opensearch.CfnDomain`
+
+### CloudFormation Migration
+
+Follow these steps to migrate your application without data loss:
+
+* Ensure that the [removal policy](https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_core.RemovalPolicy.html) on your domains are set to `RemovalPolicy.RETAIN`. This is the default for the domain construct, so nothing is required unless you have specifically set the removal policy to some other value.
+* Remove the domain resource from your CloudFormation stacks by manually modifying the synthesized templates used to create the CloudFormation stacks. This may also involve modifying or deleting dependent resources, such as the custom resources that CDK creates to manage the domain's access policy or any other resource you have connected to the domain. You will need to search for references to each domain's logical ID to determine which other resources refer to it and replace or delete those references. Do not remove resources that are dependencies of the domain or you will have to recreate or import them before importing the domain. After modification, deploy the stacks through the AWS Management Console or using the AWS CLI.
+* Migrate your CDK application to use the new `@aws-cdk/aws-opensearchservice` module by applying the necessary modifications listed above. Synthesize your application and obtain the resulting stack templates.
+* Copy just the definition of the domain from the "migrated" templates to the corresponding "stripped" templates that you deployed above. [Import](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resource-import-existing-stack.html) the orphaned domains into your CloudFormation stacks using these templates.
+* Synthesize and deploy your CDK application to reconfigure/recreate the modified dependent resources. The CloudFormation stacks should now contain the same resources as existed prior to migration.
+* Proceed with development as normal!
+
+

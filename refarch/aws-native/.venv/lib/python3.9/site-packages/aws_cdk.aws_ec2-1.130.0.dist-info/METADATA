@@ -1,0 +1,1505 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-ec2
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::EC2
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-cloudwatch (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-kms (==1.130.0)
+Requires-Dist: aws-cdk.aws-logs (==1.130.0)
+Requires-Dist: aws-cdk.aws-s3-assets (==1.130.0)
+Requires-Dist: aws-cdk.aws-s3 (==1.130.0)
+Requires-Dist: aws-cdk.aws-ssm (==1.130.0)
+Requires-Dist: aws-cdk.cloud-assembly-schema (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: aws-cdk.cx-api (==1.130.0)
+Requires-Dist: aws-cdk.region-info (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# Amazon EC2 Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+The `@aws-cdk/aws-ec2` package contains primitives for setting up networking and
+instances.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_ec2 as ec2
+```
+
+## VPC
+
+Most projects need a Virtual Private Cloud to provide security by means of
+network partitioning. This is achieved by creating an instance of
+`Vpc`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc(self, "VPC")
+```
+
+All default constructs require EC2 instances to be launched inside a VPC, so
+you should generally start by defining a VPC whenever you need to launch
+instances for your project.
+
+### Subnet Types
+
+A VPC consists of one or more subnets that instances can be placed into. CDK
+distinguishes three different subnet types:
+
+* **Public (`SubnetType.PUBLIC`)** - public subnets connect directly to the Internet using an
+  Internet Gateway. If you want your instances to have a public IP address
+  and be directly reachable from the Internet, you must place them in a
+  public subnet.
+* **Private with Internet Access (`SubnetType.PRIVATE_WITH_NAT`)** - instances in private subnets are not directly routable from the
+  Internet, and connect out to the Internet via a NAT gateway. By default, a
+  NAT gateway is created in every public subnet for maximum availability. Be
+  aware that you will be charged for NAT gateways.
+* **Isolated (`SubnetType.PRIVATE_ISOLATED`)** - isolated subnets do not route from or to the Internet, and
+  as such do not require NAT gateways. They can only connect to or be
+  connected to from other instances in the same VPC. A default VPC configuration
+  will not include isolated subnets,
+
+A default VPC configuration will create public and **private** subnets. However, if
+`natGateways:0` **and** `subnetConfiguration` is undefined, default VPC configuration
+will create public and **isolated** subnets. See [*Advanced Subnet Configuration*](#advanced-subnet-configuration)
+below for information on how to change the default subnet configuration.
+
+Constructs using the VPC will "launch instances" (or more accurately, create
+Elastic Network Interfaces) into one or more of the subnets. They all accept
+a property called `subnetSelection` (sometimes called `vpcSubnets`) to allow
+you to select in what subnet to place the ENIs, usually defaulting to
+*private* subnets if the property is omitted.
+
+If you would like to save on the cost of NAT gateways, you can use
+*isolated* subnets instead of *private* subnets (as described in Advanced
+*Subnet Configuration*). If you need private instances to have
+internet connectivity, another option is to reduce the number of NAT gateways
+created by setting the `natGateways` property to a lower value (the default
+is one NAT gateway per availability zone). Be aware that this may have
+availability implications for your application.
+
+[Read more about
+subnets](https://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Subnets.html).
+
+### Control over availability zones
+
+By default, a VPC will spread over at most 3 Availability Zones available to
+it. To change the number of Availability Zones that the VPC will spread over,
+specify the `maxAzs` property when defining it.
+
+The number of Availability Zones that are available depends on the *region*
+and *account* of the Stack containing the VPC. If the [region and account are
+specified](https://docs.aws.amazon.com/cdk/latest/guide/environments.html) on
+the Stack, the CLI will [look up the existing Availability
+Zones](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#using-regions-availability-zones-describe)
+and get an accurate count. If region and account are not specified, the stack
+could be deployed anywhere and it will have to make a safe choice, limiting
+itself to 2 Availability Zones.
+
+Therefore, to get the VPC to spread over 3 or more availability zones, you
+must specify the environment where the stack will be deployed.
+
+You can gain full control over the availability zones selection strategy by overriding the Stack's [`get availabilityZones()`](https://github.com/aws/aws-cdk/blob/master/packages/@aws-cdk/core/lib/stack.ts) method:
+
+```text
+// This example is only available in TypeScript
+
+class MyStack extends Stack {
+
+  constructor(scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props);
+
+    // ...
+  }
+
+  get availabilityZones(): string[] {
+    return ['us-west-2a', 'us-west-2b'];
+  }
+
+}
+```
+
+Note that overriding the `get availabilityZones()` method will override the default behavior for all constructs defined within the Stack.
+
+### Choosing subnets for resources
+
+When creating resources that create Elastic Network Interfaces (such as
+databases or instances), there is an option to choose which subnets to place
+them in. For example, a VPC endpoint by default is placed into a subnet in
+every availability zone, but you can override which subnets to use. The property
+is typically called one of `subnets`, `vpcSubnets` or `subnetSelection`.
+
+The example below will place the endpoint into two AZs (`us-east-1a` and `us-east-1c`),
+in Isolated subnets:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+
+
+ec2.InterfaceVpcEndpoint(self, "VPC Endpoint",
+    vpc=vpc,
+    service=ec2.InterfaceVpcEndpointService("com.amazonaws.vpce.us-east-1.vpce-svc-uuddlrlrbastrtsvc", 443),
+    subnets=SubnetSelection(
+        subnet_type=ec2.SubnetType.ISOLATED,
+        availability_zones=["us-east-1a", "us-east-1c"]
+    )
+)
+```
+
+You can also specify specific subnet objects for granular control:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+# subnet1 is of type Subnet
+# subnet2 is of type Subnet
+
+
+ec2.InterfaceVpcEndpoint(self, "VPC Endpoint",
+    vpc=vpc,
+    service=ec2.InterfaceVpcEndpointService("com.amazonaws.vpce.us-east-1.vpce-svc-uuddlrlrbastrtsvc", 443),
+    subnets=SubnetSelection(
+        subnets=[subnet1, subnet2]
+    )
+)
+```
+
+Which subnets are selected is evaluated as follows:
+
+* `subnets`: if specific subnet objects are supplied, these are selected, and no other
+  logic is used.
+* `subnetType`/`subnetGroupName`: otherwise, a set of subnets is selected by
+  supplying either type or name:
+
+  * `subnetType` will select all subnets of the given type.
+  * `subnetGroupName` should be used to distinguish between multiple groups of subnets of
+    the same type (for example, you may want to separate your application instances and your
+    RDS instances into two distinct groups of Isolated subnets).
+  * If neither are given, the first available subnet group of a given type that
+    exists in the VPC will be used, in this order: Private, then Isolated, then Public.
+    In short: by default ENIs will preferentially be placed in subnets not connected to
+    the Internet.
+* `availabilityZones`/`onePerAz`: finally, some availability-zone based filtering may be done.
+  This filtering by availability zones will only be possible if the VPC has been created or
+  looked up in a non-environment agnostic stack (so account and region have been set and
+  availability zones have been looked up).
+
+  * `availabilityZones`: only the specific subnets from the selected subnet groups that are
+    in the given availability zones will be returned.
+  * `onePerAz`: per availability zone, a maximum of one subnet will be returned (Useful for resource
+    types that do not allow creating two ENIs in the same availability zone).
+* `subnetFilters`: additional filtering on subnets using any number of user-provided filters which
+  extend `SubnetFilter`.  The following methods on the `SubnetFilter` class can be used to create
+  a filter:
+
+  * `byIds`: chooses subnets from a list of ids
+  * `availabilityZones`: chooses subnets in the provided list of availability zones
+  * `onePerAz`: chooses at most one subnet per availability zone
+  * `containsIpAddresses`: chooses a subnet which contains *any* of the listed ip addresses
+  * `byCidrMask`: chooses subnets that have the provided CIDR netmask
+
+### Using NAT instances
+
+By default, the `Vpc` construct will create NAT *gateways* for you, which
+are managed by AWS. If you would prefer to use your own managed NAT
+*instances* instead, specify a different value for the `natGatewayProvider`
+property, as follows:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Configure the `natGatewayProvider` when defining a Vpc
+nat_gateway_provider = ec2.NatProvider.instance(
+    instance_type=ec2.InstanceType("t3.small")
+)
+
+vpc = ec2.Vpc(self, "MyVpc",
+    nat_gateway_provider=nat_gateway_provider,
+
+    # The 'natGateways' parameter now controls the number of NAT instances
+    nat_gateways=2
+)
+```
+
+The construct will automatically search for the most recent NAT gateway AMI.
+If you prefer to use a custom AMI, use `machineImage: MachineImage.genericLinux({ ... })` and configure the right AMI ID for the
+regions you want to deploy to.
+
+By default, the NAT instances will route all traffic. To control what traffic
+gets routed, pass `allowAllTraffic: false` and access the
+`NatInstanceProvider.connections` member after having passed it to the VPC:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# instance_type is of type InstanceType
+
+
+provider = ec2.NatProvider.instance(
+    instance_type=instance_type,
+    allow_all_traffic=False
+)
+ec2.Vpc(self, "TheVPC",
+    nat_gateway_provider=provider
+)
+provider.connections.allow_from(ec2.Peer.ipv4("1.2.3.4/8"), ec2.Port.tcp(80))
+```
+
+### Advanced Subnet Configuration
+
+If the default VPC configuration (public and private subnets spanning the
+size of the VPC) don't suffice for you, you can configure what subnets to
+create by specifying the `subnetConfiguration` property. It allows you
+to configure the number and size of all subnets. Specifying an advanced
+subnet configuration could look like this:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc(self, "TheVPC",
+    # 'cidr' configures the IP range and size of the entire VPC.
+    # The IP space will be divided over the configured subnets.
+    cidr="10.0.0.0/21",
+
+    # 'maxAzs' configures the maximum number of availability zones to use
+    max_azs=3,
+
+    # 'subnetConfiguration' specifies the "subnet groups" to create.
+    # Every subnet group will have a subnet for each AZ, so this
+    # configuration will create `3 groups × 3 AZs = 9` subnets.
+    subnet_configuration=[SubnetConfiguration(
+        # 'subnetType' controls Internet access, as described above.
+        subnet_type=ec2.SubnetType.PUBLIC,
+
+        # 'name' is used to name this particular subnet group. You will have to
+        # use the name for subnet selection if you have more than one subnet
+        # group of the same type.
+        name="Ingress",
+
+        # 'cidrMask' specifies the IP addresses in the range of of individual
+        # subnets in the group. Each of the subnets in this group will contain
+        # `2^(32 address bits - 24 subnet bits) - 2 reserved addresses = 254`
+        # usable IP addresses.
+        #
+        # If 'cidrMask' is left out the available address space is evenly
+        # divided across the remaining subnet groups.
+        cidr_mask=24
+    ), SubnetConfiguration(
+        cidr_mask=24,
+        name="Application",
+        subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT
+    ), SubnetConfiguration(
+        cidr_mask=28,
+        name="Database",
+        subnet_type=ec2.SubnetType.PRIVATE_ISOLATED,
+
+        # 'reserved' can be used to reserve IP address space. No resources will
+        # be created for this subnet, but the IP range will be kept available for
+        # future creation of this subnet, or even for future subdivision.
+        reserved=True
+    )
+    ]
+)
+```
+
+The example above is one possible configuration, but the user can use the
+constructs above to implement many other network configurations.
+
+The `Vpc` from the above configuration in a Region with three
+availability zones will be the following:
+
+Subnet Name       |Type      |IP Block      |AZ|Features
+------------------|----------|--------------|--|--------
+IngressSubnet1    |`PUBLIC`  |`10.0.0.0/24` |#1|NAT Gateway
+IngressSubnet2    |`PUBLIC`  |`10.0.1.0/24` |#2|NAT Gateway
+IngressSubnet3    |`PUBLIC`  |`10.0.2.0/24` |#3|NAT Gateway
+ApplicationSubnet1|`PRIVATE` |`10.0.3.0/24` |#1|Route to NAT in IngressSubnet1
+ApplicationSubnet2|`PRIVATE` |`10.0.4.0/24` |#2|Route to NAT in IngressSubnet2
+ApplicationSubnet3|`PRIVATE` |`10.0.5.0/24` |#3|Route to NAT in IngressSubnet3
+DatabaseSubnet1   |`ISOLATED`|`10.0.6.0/28` |#1|Only routes within the VPC
+DatabaseSubnet2   |`ISOLATED`|`10.0.6.16/28`|#2|Only routes within the VPC
+DatabaseSubnet3   |`ISOLATED`|`10.0.6.32/28`|#3|Only routes within the VPC
+
+### Accessing the Internet Gateway
+
+If you need access to the internet gateway, you can get its ID like so:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+
+
+igw_id = vpc.internet_gateway_id
+```
+
+For a VPC with only `ISOLATED` subnets, this value will be undefined.
+
+This is only supported for VPCs created in the stack - currently you're
+unable to get the ID for imported VPCs. To do that you'd have to specifically
+look up the Internet Gateway by name, which would require knowing the name
+beforehand.
+
+This can be useful for configuring routing using a combination of gateways:
+for more information see [Routing](#routing) below.
+
+#### Routing
+
+It's possible to add routes to any subnets using the `addRoute()` method. If for
+example you want an isolated subnet to have a static route via the default
+Internet Gateway created for the public subnet - perhaps for routing a VPN
+connection - you can do so like this:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc(self, "VPC",
+    subnet_configuration=[SubnetConfiguration(
+        subnet_type=ec2.SubnetType.PUBLIC,
+        name="Public"
+    ), SubnetConfiguration(
+        subnet_type=ec2.SubnetType.ISOLATED,
+        name="Isolated"
+    )]
+)
+
+(vpc.isolatedSubnets[0]).add_route("StaticRoute",
+    router_id=vpc.internet_gateway_id,
+    router_type=ec2.RouterType.GATEWAY,
+    destination_cidr_block="8.8.8.8/32"
+)
+```
+
+*Note that we cast to `Subnet` here because the list of subnets only returns an
+`ISubnet`.*
+
+### Reserving subnet IP space
+
+There are situations where the IP space for a subnet or number of subnets
+will need to be reserved. This is useful in situations where subnets would
+need to be added after the vpc is originally deployed, without causing IP
+renumbering for existing subnets. The IP space for a subnet may be reserved
+by setting the `reserved` subnetConfiguration property to true, as shown
+below:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc(self, "TheVPC",
+    nat_gateways=1,
+    subnet_configuration=[SubnetConfiguration(
+        cidr_mask=26,
+        name="Public",
+        subnet_type=ec2.SubnetType.PUBLIC
+    ), SubnetConfiguration(
+        cidr_mask=26,
+        name="Application1",
+        subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT
+    ), SubnetConfiguration(
+        cidr_mask=26,
+        name="Application2",
+        subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT,
+        reserved=True
+    ), SubnetConfiguration(
+        cidr_mask=27,
+        name="Database",
+        subnet_type=ec2.SubnetType.ISOLATED
+    )
+    ]
+)
+```
+
+In the example above, the subnet for Application2 is not actually provisioned
+but its IP space is still reserved. If in the future this subnet needs to be
+provisioned, then the `reserved: true` property should be removed. Reserving
+parts of the IP space prevents the other subnets from getting renumbered.
+
+### Sharing VPCs between stacks
+
+If you are creating multiple `Stack`s inside the same CDK application, you
+can reuse a VPC defined in one Stack in another by simply passing the VPC
+instance around:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+#
+# Stack1 creates the VPC
+#
+class Stack1(cdk.Stack):
+
+    def __init__(self, scope, id, *, description=None, env=None, stackName=None, tags=None, synthesizer=None, terminationProtection=None, analyticsReporting=None):
+        super().__init__(scope, id, description=description, env=env, stackName=stackName, tags=tags, synthesizer=synthesizer, terminationProtection=terminationProtection, analyticsReporting=analyticsReporting)
+
+        self.vpc = ec2.Vpc(self, "VPC")
+
+#
+# Stack2 consumes the VPC
+#
+class Stack2(cdk.Stack):
+    def __init__(self, scope, id, *, vpc, description=None, env=None, stackName=None, tags=None, synthesizer=None, terminationProtection=None, analyticsReporting=None):
+        super().__init__(scope, id, vpc=vpc, description=description, env=env, stackName=stackName, tags=tags, synthesizer=synthesizer, terminationProtection=terminationProtection, analyticsReporting=analyticsReporting)
+
+        # Pass the VPC to a construct that needs it
+        ConstructThatTakesAVpc(self, "Construct",
+            vpc=vpc
+        )
+
+stack1 = Stack1(app, "Stack1")
+stack2 = Stack2(app, "Stack2",
+    vpc=stack1.vpc
+)
+```
+
+### Importing an existing VPC
+
+If your VPC is created outside your CDK app, you can use `Vpc.fromLookup()`.
+The CDK CLI will search for the specified VPC in the the stack's region and
+account, and import the subnet configuration. Looking up can be done by VPC
+ID, but more flexibly by searching for a specific tag on the VPC.
+
+Subnet types will be determined from the `aws-cdk:subnet-type` tag on the
+subnet if it exists, or the presence of a route to an Internet Gateway
+otherwise. Subnet names will be determined from the `aws-cdk:subnet-name` tag
+on the subnet if it exists, or will mirror the subnet type otherwise (i.e.
+a public subnet will have the name `"Public"`).
+
+The result of the `Vpc.fromLookup()` operation will be written to a file
+called `cdk.context.json`. You must commit this file to source control so
+that the lookup values are available in non-privileged environments such
+as CI build steps, and to ensure your template builds are repeatable.
+
+Here's how `Vpc.fromLookup()` can be used:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc.from_lookup(stack, "VPC",
+    # This imports the default VPC but you can also
+    # specify a 'vpcName' or 'tags'.
+    is_default=True
+)
+```
+
+`Vpc.fromLookup` is the recommended way to import VPCs. If for whatever
+reason you do not want to use the context mechanism to look up a VPC at
+synthesis time, you can also use `Vpc.fromVpcAttributes`. This has the
+following limitations:
+
+* Every subnet group in the VPC must have a subnet in each availability zone
+  (for example, each AZ must have both a public and private subnet). Asymmetric
+  VPCs are not supported.
+* All VpcId, SubnetId, RouteTableId, ... parameters must either be known at
+  synthesis time, or they must come from deploy-time list parameters whose
+  deploy-time lengths are known at synthesis time.
+
+Using `Vpc.fromVpcAttributes()` looks like this:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc.from_vpc_attributes(self, "VPC",
+    vpc_id="vpc-1234",
+    availability_zones=["us-east-1a", "us-east-1b"],
+
+    # Either pass literals for all IDs
+    public_subnet_ids=["s-12345", "s-67890"],
+
+    # OR: import a list of known length
+    private_subnet_ids=Fn.import_list_value("PrivateSubnetIds", 2),
+
+    # OR: split an imported string to a list of known length
+    isolated_subnet_ids=Fn.split(",", ssm.StringParameter.value_for_string_parameter(self, "MyParameter"), 2)
+)
+```
+
+## Allowing Connections
+
+In AWS, all network traffic in and out of **Elastic Network Interfaces** (ENIs)
+is controlled by **Security Groups**. You can think of Security Groups as a
+firewall with a set of rules. By default, Security Groups allow no incoming
+(ingress) traffic and all outgoing (egress) traffic. You can add ingress rules
+to them to allow incoming traffic streams. To exert fine-grained control over
+egress traffic, set `allowAllOutbound: false` on the `SecurityGroup`, after
+which you can add egress traffic rules.
+
+You can manipulate Security Groups directly:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+my_security_group = ec2.SecurityGroup(self, "SecurityGroup",
+    vpc=vpc,
+    description="Allow ssh access to ec2 instances",
+    allow_all_outbound=True
+)
+my_security_group.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22), "allow ssh access from the world")
+```
+
+All constructs that create ENIs on your behalf (typically constructs that create
+EC2 instances or other VPC-connected resources) will all have security groups
+automatically assigned. Those constructs have an attribute called
+**connections**, which is an object that makes it convenient to update the
+security groups. If you want to allow connections between two constructs that
+have security groups, you have to add an **Egress** rule to one Security Group,
+and an **Ingress** rule to the other. The connections object will automatically
+take care of this for you:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# load_balancer is of type elbv2.ApplicationLoadBalancer
+# app_fleet is of type autoscaling.AutoScalingGroup
+# db_fleet is of type autoscaling.AutoScalingGroup
+
+
+# Allow connections from anywhere
+load_balancer.connections.allow_from_any_ipv4(ec2.Port.tcp(443), "Allow inbound HTTPS")
+
+# The same, but an explicit IP address
+load_balancer.connections.allow_from(ec2.Peer.ipv4("1.2.3.4/32"), ec2.Port.tcp(443), "Allow inbound HTTPS")
+
+# Allow connection between AutoScalingGroups
+app_fleet.connections.allow_to(db_fleet, ec2.Port.tcp(443), "App can call database")
+```
+
+### Connection Peers
+
+There are various classes that implement the connection peer part:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# app_fleet is of type autoscaling.AutoScalingGroup
+# db_fleet is of type autoscaling.AutoScalingGroup
+
+
+# Simple connection peers
+peer = ec2.Peer.ipv4("10.0.0.0/16")
+peer = ec2.Peer.any_ipv4()
+peer = ec2.Peer.ipv6("::0/0")
+peer = ec2.Peer.any_ipv6()
+peer = ec2.Peer.prefix_list("pl-12345")
+app_fleet.connections.allow_to(peer, ec2.Port.tcp(443), "Allow outbound HTTPS")
+```
+
+Any object that has a security group can itself be used as a connection peer:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# fleet1 is of type autoscaling.AutoScalingGroup
+# fleet2 is of type autoscaling.AutoScalingGroup
+# app_fleet is of type autoscaling.AutoScalingGroup
+
+
+# These automatically create appropriate ingress and egress rules in both security groups
+fleet1.connections.allow_to(fleet2, ec2.Port.tcp(80), "Allow between fleets")
+
+app_fleet.connections.allow_from_any_ipv4(ec2.Port.tcp(80), "Allow from load balancer")
+```
+
+### Port Ranges
+
+The connections that are allowed are specified by port ranges. A number of classes provide
+the connection specifier:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+ec2.Port.tcp(80)
+ec2.Port.tcp_range(60000, 65535)
+ec2.Port.all_tcp()
+ec2.Port.all_traffic()
+```
+
+> NOTE: This set is not complete yet; for example, there is no library support for ICMP at the moment.
+> However, you can write your own classes to implement those.
+
+### Default Ports
+
+Some Constructs have default ports associated with them. For example, the
+listener of a load balancer does (it's the public port), or instances of an
+RDS database (it's the port the database is accepting connections on).
+
+If the object you're calling the peering method on has a default port associated with it, you can call
+`allowDefaultPortFrom()` and omit the port specifier. If the argument has an associated default port, call
+`allowDefaultPortTo()`.
+
+For example:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# listener is of type elbv2.ApplicationListener
+# app_fleet is of type autoscaling.AutoScalingGroup
+# rds_database is of type rds.DatabaseCluster
+
+
+# Port implicit in listener
+listener.connections.allow_default_port_from_any_ipv4("Allow public")
+
+# Port implicit in peer
+app_fleet.connections.allow_default_port_to(rds_database, "Fleet can access database")
+```
+
+### Security group rules
+
+By default, security group wills be added inline to the security group in the output cloud formation
+template, if applicable.  This includes any static rules by ip address and port range.  This
+optimization helps to minimize the size of the template.
+
+In some environments this is not desirable, for example if your security group access is controlled
+via tags. You can disable inline rules per security group or globally via the context key
+`@aws-cdk/aws-ec2.securityGroupDisableInlineRules`.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+my_security_group_without_inline_rules = ec2.SecurityGroup(self, "SecurityGroup",
+    vpc=vpc,
+    description="Allow ssh access to ec2 instances",
+    allow_all_outbound=True,
+    disable_inline_rules=True
+)
+# This will add the rule as an external cloud formation construct
+my_security_group_without_inline_rules.add_ingress_rule(ec2.Peer.any_ipv4(), ec2.Port.tcp(22), "allow ssh access from the world")
+```
+
+## Machine Images (AMIs)
+
+AMIs control the OS that gets launched when you start your EC2 instance. The EC2
+library contains constructs to select the AMI you want to use.
+
+Depending on the type of AMI, you select it a different way. Here are some
+examples of things you might want to use:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Pick the right Amazon Linux edition. All arguments shown are optional
+# and will default to these values when omitted.
+amzn_linux = ec2.MachineImage.latest_amazon_linux(
+    generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX,
+    edition=ec2.AmazonLinuxEdition.STANDARD,
+    virtualization=ec2.AmazonLinuxVirt.HVM,
+    storage=ec2.AmazonLinuxStorage.GENERAL_PURPOSE,
+    cpu_type=ec2.AmazonLinuxCpuType.X86_64
+)
+
+# Pick a Windows edition to use
+windows = ec2.MachineImage.latest_windows(ec2.WindowsVersion.WINDOWS_SERVER_2019_ENGLISH_FULL_BASE)
+
+# Read AMI id from SSM parameter store
+ssm = ec2.MachineImage.from_sSMParameter("/my/ami", ec2.OperatingSystemType.LINUX)
+
+# Look up the most recent image matching a set of AMI filters.
+# In this case, look up the NAT instance AMI, by using a wildcard
+# in the 'name' field:
+nat_ami = ec2.MachineImage.lookup(
+    name="amzn-ami-vpc-nat-*",
+    owners=["amazon"]
+)
+
+# For other custom (Linux) images, instantiate a `GenericLinuxImage` with
+# a map giving the AMI to in for each region:
+linux = ec2.MachineImage.generic_linux({
+    "us-east-1": "ami-97785bed",
+    "eu-west-1": "ami-12345678"
+})
+
+# For other custom (Windows) images, instantiate a `GenericWindowsImage` with
+# a map giving the AMI to in for each region:
+generic_windows = ec2.MachineImage.generic_windows({
+    "us-east-1": "ami-97785bed",
+    "eu-west-1": "ami-12345678"
+})
+```
+
+> NOTE: The AMIs selected by `MachineImage.lookup()` will be cached in
+> `cdk.context.json`, so that your AutoScalingGroup instances aren't replaced while
+> you are making unrelated changes to your CDK app.
+>
+> To query for the latest AMI again, remove the relevant cache entry from
+> `cdk.context.json`, or use the `cdk context` command. For more information, see
+> [Runtime Context](https://docs.aws.amazon.com/cdk/latest/guide/context.html) in the CDK
+> developer guide.
+>
+> `MachineImage.genericLinux()`, `MachineImage.genericWindows()` will use `CfnMapping` in
+> an agnostic stack.
+
+## Special VPC configurations
+
+### VPN connections to a VPC
+
+Create your VPC with VPN connections by specifying the `vpnConnections` props (keys are construct `id`s):
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc(self, "MyVpc",
+    vpn_connections={
+        "dynamic": VpnConnectionOptions( # Dynamic routing (BGP)
+            ip="1.2.3.4"),
+        "static": VpnConnectionOptions( # Static routing
+            ip="4.5.6.7",
+            static_routes=["192.168.10.0/24", "192.168.20.0/24"
+            ])
+    }
+)
+```
+
+To create a VPC that can accept VPN connections, set `vpnGateway` to `true`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc(self, "MyVpc",
+    vpn_gateway=True
+)
+```
+
+VPN connections can then be added:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc.add_vpn_connection("Dynamic",
+    ip="1.2.3.4"
+)
+```
+
+By default, routes will be propagated on the route tables associated with the private subnets. If no
+private subnets exists, isolated subnets are used. If no isolated subnets exists, public subnets are
+used. Use the `Vpc` property `vpnRoutePropagation` to customize this behavior.
+
+VPN connections expose [metrics (cloudwatch.Metric)](https://github.com/aws/aws-cdk/blob/master/packages/%40aws-cdk/aws-cloudwatch/README.md) across all tunnels in the account/region and per connection:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Across all tunnels in the account/region
+all_data_out = ec2.VpnConnection.metric_all_tunnel_data_out()
+
+# For a specific vpn connection
+vpn_connection = vpc.add_vpn_connection("Dynamic",
+    ip="1.2.3.4"
+)
+state = vpn_connection.metric_tunnel_state()
+```
+
+### VPC endpoints
+
+A VPC endpoint enables you to privately connect your VPC to supported AWS services and VPC endpoint services powered by PrivateLink without requiring an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection. Instances in your VPC do not require public IP addresses to communicate with resources in the service. Traffic between your VPC and the other service does not leave the Amazon network.
+
+Endpoints are virtual devices. They are horizontally scaled, redundant, and highly available VPC components that allow communication between instances in your VPC and services without imposing availability risks or bandwidth constraints on your network traffic.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Add gateway endpoints when creating the VPC
+vpc = ec2.Vpc(self, "MyVpc",
+    gateway_endpoints={
+        "S3": GatewayVpcEndpointOptions(
+            service=ec2.GatewayVpcEndpointAwsService.S3
+        )
+    }
+)
+
+# Alternatively gateway endpoints can be added on the VPC
+dynamo_db_endpoint = vpc.add_gateway_endpoint("DynamoDbEndpoint",
+    service=ec2.GatewayVpcEndpointAwsService.DYNAMODB
+)
+
+# This allows to customize the endpoint policy
+dynamo_db_endpoint.add_to_policy(
+    iam.PolicyStatement( # Restrict to listing and describing tables
+        principals=[iam.AnyPrincipal()],
+        actions=["dynamodb:DescribeTable", "dynamodb:ListTables"],
+        resources=["*"]))
+
+# Add an interface endpoint
+vpc.add_interface_endpoint("EcrDockerEndpoint",
+    service=ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER
+)
+```
+
+By default, CDK will place a VPC endpoint in one subnet per AZ. If you wish to override the AZs CDK places the VPC endpoint in,
+use the `subnets` parameter as follows:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+
+
+ec2.InterfaceVpcEndpoint(self, "VPC Endpoint",
+    vpc=vpc,
+    service=ec2.InterfaceVpcEndpointService("com.amazonaws.vpce.us-east-1.vpce-svc-uuddlrlrbastrtsvc", 443),
+    # Choose which availability zones to place the VPC endpoint in, based on
+    # available AZs
+    subnets=SubnetSelection(
+        availability_zones=["us-east-1a", "us-east-1c"]
+    )
+)
+```
+
+Per the [AWS documentation](https://aws.amazon.com/premiumsupport/knowledge-center/interface-endpoint-availability-zone/), not all
+VPC endpoint services are available in all AZs. If you specify the parameter `lookupSupportedAzs`, CDK attempts to discover which
+AZs an endpoint service is available in, and will ensure the VPC endpoint is not placed in a subnet that doesn't match those AZs.
+These AZs will be stored in cdk.context.json.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+
+
+ec2.InterfaceVpcEndpoint(self, "VPC Endpoint",
+    vpc=vpc,
+    service=ec2.InterfaceVpcEndpointService("com.amazonaws.vpce.us-east-1.vpce-svc-uuddlrlrbastrtsvc", 443),
+    # Choose which availability zones to place the VPC endpoint in, based on
+    # available AZs
+    lookup_supported_azs=True
+)
+```
+
+Pre-defined AWS services are defined in the [InterfaceVpcEndpointAwsService](lib/vpc-endpoint.ts) class, and can be used to
+create VPC endpoints without having to configure name, ports, etc. For example, a Keyspaces endpoint can be created for
+use in your VPC:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+
+
+ec2.InterfaceVpcEndpoint(self, "VPC Endpoint",
+    vpc=vpc,
+    service=ec2.InterfaceVpcEndpointAwsService.KEYSPACES
+)
+```
+
+#### Security groups for interface VPC endpoints
+
+By default, interface VPC endpoints create a new security group and traffic is **not**
+automatically allowed from the VPC CIDR.
+
+Use the `connections` object to allow traffic to flow to the endpoint:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# my_endpoint is of type InterfaceVpcEndpoint
+
+
+my_endpoint.connections.allow_default_port_from_any_ipv4()
+```
+
+Alternatively, existing security groups can be used by specifying the `securityGroups` prop.
+
+### VPC endpoint services
+
+A VPC endpoint service enables you to expose a Network Load Balancer(s) as a provider service to consumers, who connect to your service over a VPC endpoint. You can restrict access to your service via allowed principals (anything that extends ArnPrincipal), and require that new connections be manually accepted.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# network_load_balancer1 is of type elbv2.NetworkLoadBalancer
+# network_load_balancer2 is of type elbv2.NetworkLoadBalancer
+
+
+ec2.VpcEndpointService(self, "EndpointService",
+    vpc_endpoint_service_load_balancers=[network_load_balancer1, network_load_balancer2],
+    acceptance_required=True,
+    allowed_principals=[iam.ArnPrincipal("arn:aws:iam::123456789012:root")]
+)
+```
+
+Endpoint services support private DNS, which makes it easier for clients to connect to your service by automatically setting up DNS in their VPC.
+You can enable private DNS on an endpoint service like so:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+from aws_cdk.aws_route53 import HostedZone, VpcEndpointServiceDomainName
+# zone is of type HostedZone
+# vpces is of type VpcEndpointService
+
+
+VpcEndpointServiceDomainName(self, "EndpointDomain",
+    endpoint_service=vpces,
+    domain_name="my-stuff.aws-cdk.dev",
+    public_hosted_zone=zone
+)
+```
+
+Note: The domain name must be owned (registered through Route53) by the account the endpoint service is in, or delegated to the account.
+The VpcEndpointServiceDomainName will handle the AWS side of domain verification, the process for which can be found
+[here](https://docs.aws.amazon.com/vpc/latest/userguide/endpoint-services-dns-validation.html)
+
+### Client VPN endpoint
+
+AWS Client VPN is a managed client-based VPN service that enables you to securely access your AWS
+resources and resources in your on-premises network. With Client VPN, you can access your resources
+from any location using an OpenVPN-based VPN client.
+
+Use the `addClientVpnEndpoint()` method to add a client VPN endpoint to a VPC:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc.add_client_vpn_endpoint("Endpoint",
+    cidr="10.100.0.0/16",
+    server_certificate_arn="arn:aws:acm:us-east-1:123456789012:certificate/server-certificate-id",
+    # Mutual authentication
+    client_certificate_arn="arn:aws:acm:us-east-1:123456789012:certificate/client-certificate-id",
+    # User-based authentication
+    user_based_authentication=ec2.ClientVpnUserBasedAuthentication.federated(saml_provider)
+)
+```
+
+The endpoint must use at least one [authentication method](https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/client-authentication.html):
+
+* Mutual authentication with a client certificate
+* User-based authentication (directory or federated)
+
+If user-based authentication is used, the [self-service portal URL](https://docs.aws.amazon.com/vpn/latest/clientvpn-user/self-service-portal.html)
+is made available via a CloudFormation output.
+
+By default, a new security group is created and logging is enabled. Moreover, a rule to
+authorize all users to the VPC CIDR is created.
+
+To customize authorization rules, set the `authorizeAllUsersToVpcCidr` prop to `false`
+and use `addAuthorizationRule()`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+endpoint = vpc.add_client_vpn_endpoint("Endpoint",
+    cidr="10.100.0.0/16",
+    server_certificate_arn="arn:aws:acm:us-east-1:123456789012:certificate/server-certificate-id",
+    user_based_authentication=ec2.ClientVpnUserBasedAuthentication.federated(saml_provider),
+    authorize_all_users_to_vpc_cidr=False
+)
+
+endpoint.add_authorization_rule("Rule",
+    cidr="10.0.10.0/32",
+    group_id="group-id"
+)
+```
+
+Use `addRoute()` to configure network routes:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+endpoint = vpc.add_client_vpn_endpoint("Endpoint",
+    cidr="10.100.0.0/16",
+    server_certificate_arn="arn:aws:acm:us-east-1:123456789012:certificate/server-certificate-id",
+    user_based_authentication=ec2.ClientVpnUserBasedAuthentication.federated(saml_provider)
+)
+
+# Client-to-client access
+endpoint.add_route("Route",
+    cidr="10.100.0.0/16",
+    target=ec2.ClientVpnRouteTarget.local()
+)
+```
+
+Use the `connections` object of the endpoint to allow traffic to other security groups.
+
+## Instances
+
+You can use the `Instance` class to start up a single EC2 instance. For production setups, we recommend
+you use an `AutoScalingGroup` from the `aws-autoscaling` module instead, as AutoScalingGroups will take
+care of restarting your instance if it ever fails.
+
+### Configuring Instances using CloudFormation Init (cfn-init)
+
+CloudFormation Init allows you to configure your instances by writing files to them, installing software
+packages, starting services and running arbitrary commands. By default, if any of the instance setup
+commands throw an error, the deployment will fail and roll back to the previously known good state.
+The following documentation also applies to `AutoScalingGroup`s.
+
+For the full set of capabilities of this system, see the documentation for
+[`AWS::CloudFormation::Init`](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-init.html).
+Here is an example of applying some configuration to an instance:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+# instance_type is of type InstanceType
+# machine_image is of type IMachineImage
+
+
+ec2.Instance(self, "Instance",
+    vpc=vpc,
+    instance_type=instance_type,
+    machine_image=machine_image,
+
+    # Showing the most complex setup, if you have simpler requirements
+    # you can use `CloudFormationInit.fromElements()`.
+    init=ec2.CloudFormationInit.from_config_sets(
+        config_sets={
+            # Applies the configs below in this order
+            "default": ["yumPreinstall", "config"]
+        },
+        configs={
+            "yum_preinstall": ec2.InitConfig([
+                # Install an Amazon Linux package using yum
+                ec2.InitPackage.yum("git")
+            ]),
+            "config": ec2.InitConfig([
+                # Create a JSON file from tokens (can also create other files)
+                ec2.InitFile.from_object("/etc/stack.json", {
+                    "stack_id": Stack.of(self).stack_id,
+                    "stack_name": Stack.of(self).stack_name,
+                    "region": Stack.of(self).region
+                }),
+
+                # Create a group and user
+                ec2.InitGroup.from_name("my-group"),
+                ec2.InitUser.from_name("my-user"),
+
+                # Install an RPM from the internet
+                ec2.InitPackage.rpm("http://mirrors.ukfast.co.uk/sites/dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/r/rubygem-git-1.5.0-2.el8.noarch.rpm")
+            ])
+        }
+    ),
+    init_options=ApplyCloudFormationInitOptions(
+        # Optional, which configsets to activate (['default'] by default)
+        config_sets=["default"],
+
+        # Optional, how long the installation is expected to take (5 minutes by default)
+        timeout=Duration.minutes(30),
+
+        # Optional, whether to include the --url argument when running cfn-init and cfn-signal commands (false by default)
+        include_url=True,
+
+        # Optional, whether to include the --role argument when running cfn-init and cfn-signal commands (false by default)
+        include_role=True
+    )
+)
+```
+
+You can have services restarted after the init process has made changes to the system.
+To do that, instantiate an `InitServiceRestartHandle` and pass it to the config elements
+that need to trigger the restart and the service itself. For example, the following
+config writes a config file for nginx, extracts an archive to the root directory, and then
+restarts nginx so that it picks up the new config and files:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# my_bucket is of type Bucket
+
+
+handle = ec2.InitServiceRestartHandle()
+
+ec2.CloudFormationInit.from_elements(
+    ec2.InitFile.from_string("/etc/nginx/nginx.conf", "...", service_restart_handles=[handle]),
+    ec2.InitSource.from_s3_object("/var/www/html", my_bucket, "html.zip", service_restart_handles=[handle]),
+    ec2.InitService.enable("nginx",
+        service_restart_handle=handle
+    ))
+```
+
+### Bastion Hosts
+
+A bastion host functions as an instance used to access servers and resources in a VPC without open up the complete VPC on a network level.
+You can use bastion hosts using a standard SSH connection targeting port 22 on the host. As an alternative, you can connect the SSH connection
+feature of AWS Systems Manager Session Manager, which does not need an opened security group. (https://aws.amazon.com/about-aws/whats-new/2019/07/session-manager-launches-tunneling-support-for-ssh-and-scp/)
+
+A default bastion host for use via SSM can be configured like:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+host = ec2.BastionHostLinux(self, "BastionHost", vpc=vpc)
+```
+
+If you want to connect from the internet using SSH, you need to place the host into a public subnet. You can then configure allowed source hosts.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+host = ec2.BastionHostLinux(self, "BastionHost",
+    vpc=vpc,
+    subnet_selection=SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC)
+)
+host.allow_ssh_access_from(ec2.Peer.ipv4("1.2.3.4/32"))
+```
+
+As there are no SSH public keys deployed on this machine, you need to use [EC2 Instance Connect](https://aws.amazon.com/de/blogs/compute/new-using-amazon-ec2-instance-connect-for-ssh-access-to-your-ec2-instances/)
+with the command `aws ec2-instance-connect send-ssh-public-key` to provide your SSH public key.
+
+EBS volume for the bastion host can be encrypted like:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+host = ec2.BastionHostLinux(self, "BastionHost",
+    vpc=vpc,
+    block_devices=[BlockDevice(
+        device_name="EBSBastionHost",
+        volume=ec2.BlockDeviceVolume.ebs(10,
+            encrypted=True
+        )
+    )]
+)
+```
+
+### Block Devices
+
+To add EBS block device mappings, specify the `blockDevices` property. The following example sets the EBS-backed
+root device (`/dev/sda1`) size to 50 GiB, and adds another EBS-backed device mapped to `/dev/sdm` that is 100 GiB in
+size:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+# instance_type is of type InstanceType
+# machine_image is of type IMachineImage
+
+
+ec2.Instance(self, "Instance",
+    vpc=vpc,
+    instance_type=instance_type,
+    machine_image=machine_image,
+
+    # ...
+
+    block_devices=[BlockDevice(
+        device_name="/dev/sda1",
+        volume=ec2.BlockDeviceVolume.ebs(50)
+    ), BlockDevice(
+        device_name="/dev/sdm",
+        volume=ec2.BlockDeviceVolume.ebs(100)
+    )
+    ]
+)
+```
+
+### Volumes
+
+Whereas a `BlockDeviceVolume` is an EBS volume that is created and destroyed as part of the creation and destruction of a specific instance. A `Volume` is for when you want an EBS volume separate from any particular instance. A `Volume` is an EBS block device that can be attached to, or detached from, any instance at any time. Some types of `Volume`s can also be attached to multiple instances at the same time to allow you to have shared storage between those instances.
+
+A notable restriction is that a Volume can only be attached to instances in the same availability zone as the Volume itself.
+
+The following demonstrates how to create a 500 GiB encrypted Volume in the `us-west-2a` availability zone, and give a role the ability to attach that Volume to a specific instance:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# instance is of type Instance
+# role is of type Role
+
+
+volume = ec2.Volume(self, "Volume",
+    availability_zone="us-west-2a",
+    size=Size.gibibytes(500),
+    encrypted=True
+)
+
+volume.grant_attach_volume(role, [instance])
+```
+
+#### Instances Attaching Volumes to Themselves
+
+If you need to grant an instance the ability to attach/detach an EBS volume to/from itself, then using `grantAttachVolume` and `grantDetachVolume` as outlined above
+will lead to an unresolvable circular reference between the instance role and the instance. In this case, use `grantAttachVolumeByResourceTag` and `grantDetachVolumeByResourceTag` as follows:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# instance is of type Instance
+# volume is of type Volume
+
+
+attach_grant = volume.grant_attach_volume_by_resource_tag(instance.grant_principal, [instance])
+detach_grant = volume.grant_detach_volume_by_resource_tag(instance.grant_principal, [instance])
+```
+
+#### Attaching Volumes
+
+The Amazon EC2 documentation for
+[Linux Instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AmazonEBS.html) and
+[Windows Instances](https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ebs-volumes.html) contains information on how
+to attach and detach your Volumes to/from instances, and how to format them for use.
+
+The following is a sample skeleton of EC2 UserData that can be used to attach a Volume to the Linux instance that it is running on:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# instance is of type Instance
+# volume is of type Volume
+
+
+volume.grant_attach_volume_by_resource_tag(instance.grant_principal, [instance])
+target_device = "/dev/xvdz"
+instance.user_data.add_commands("TOKEN=$(curl -SsfX PUT \"http://169.254.169.254/latest/api/token\" -H \"X-aws-ec2-metadata-token-ttl-seconds: 21600\")", "INSTANCE_ID=$(curl -SsfH \"X-aws-ec2-metadata-token: $TOKEN\" http://169.254.169.254/latest/meta-data/instance-id)", f"aws --region {Stack.of(this).region} ec2 attach-volume --volume-id {volume.volumeId} --instance-id $INSTANCE_ID --device {targetDevice}", f"while ! test -e {targetDevice}; do sleep 1; done")
+```
+
+### Configuring Instance Metadata Service (IMDS)
+
+#### Toggling IMDSv1
+
+You can configure [EC2 Instance Metadata Service](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html) options to either
+allow both IMDSv1 and IMDSv2 or enforce IMDSv2 when interacting with the IMDS.
+
+To do this for a single `Instance`, you can use the `requireImdsv2` property.
+The example below demonstrates IMDSv2 being required on a single `Instance`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+# instance_type is of type InstanceType
+# machine_image is of type IMachineImage
+
+
+ec2.Instance(self, "Instance",
+    vpc=vpc,
+    instance_type=instance_type,
+    machine_image=machine_image,
+
+    # ...
+
+    require_imdsv2=True
+)
+```
+
+You can also use the either the `InstanceRequireImdsv2Aspect` for EC2 instances or the `LaunchTemplateRequireImdsv2Aspect` for EC2 launch templates
+to apply the operation to multiple instances or launch templates, respectively.
+
+The following example demonstrates how to use the `InstanceRequireImdsv2Aspect` to require IMDSv2 for all EC2 instances in a stack:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+aspect = ec2.InstanceRequireImdsv2Aspect()
+Aspects.of(self).add(aspect)
+```
+
+## VPC Flow Logs
+
+VPC Flow Logs is a feature that enables you to capture information about the IP traffic going to and from network interfaces in your VPC. Flow log data can be published to Amazon CloudWatch Logs and Amazon S3. After you've created a flow log, you can retrieve and view its data in the chosen destination. ([https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html)).
+
+By default a flow log will be created with CloudWatch Logs as the destination.
+
+You can create a flow log like this:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+
+
+ec2.FlowLog(self, "FlowLog",
+    resource_type=ec2.FlowLogResourceType.from_vpc(vpc)
+)
+```
+
+Or you can add a Flow Log to a VPC by using the addFlowLog method like this:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc(self, "Vpc")
+
+vpc.add_flow_log("FlowLog")
+```
+
+You can also add multiple flow logs with different destinations.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+vpc = ec2.Vpc(self, "Vpc")
+
+vpc.add_flow_log("FlowLogS3",
+    destination=ec2.FlowLogDestination.to_s3()
+)
+
+vpc.add_flow_log("FlowLogCloudWatch",
+    traffic_type=ec2.FlowLogTrafficType.REJECT
+)
+```
+
+By default the CDK will create the necessary resources for the destination. For the CloudWatch Logs destination
+it will create a CloudWatch Logs Log Group as well as the IAM role with the necessary permissions to publish to
+the log group. In the case of an S3 destination, it will create the S3 bucket.
+
+If you want to customize any of the destination resources you can provide your own as part of the `destination`.
+
+*CloudWatch Logs*
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+
+
+log_group = logs.LogGroup(self, "MyCustomLogGroup")
+
+role = iam.Role(self, "MyCustomRole",
+    assumed_by=iam.ServicePrincipal("vpc-flow-logs.amazonaws.com")
+)
+
+ec2.FlowLog(self, "FlowLog",
+    resource_type=ec2.FlowLogResourceType.from_vpc(vpc),
+    destination=ec2.FlowLogDestination.to_cloud_watch_logs(log_group, role)
+)
+```
+
+*S3*
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+
+
+bucket = s3.Bucket(self, "MyCustomBucket")
+
+ec2.FlowLog(self, "FlowLog",
+    resource_type=ec2.FlowLogResourceType.from_vpc(vpc),
+    destination=ec2.FlowLogDestination.to_s3(bucket)
+)
+
+ec2.FlowLog(self, "FlowLogWithKeyPrefix",
+    resource_type=ec2.FlowLogResourceType.from_vpc(vpc),
+    destination=ec2.FlowLogDestination.to_s3(bucket, "prefix/")
+)
+```
+
+## User Data
+
+User data enables you to run a script when your instances start up.  In order to configure these scripts you can add commands directly to the script
+or you can use the UserData's convenience functions to aid in the creation of your script.
+
+A user data could be configured to run a script found in an asset through the following:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+from aws_cdk.aws_s3_assets import Asset
+
+# instance is of type Instance
+
+
+asset = Asset(self, "Asset",
+    path="./configure.sh"
+)
+
+local_path = instance.user_data.add_s3_download_command(
+    bucket=asset.bucket,
+    bucket_key=asset.s3_object_key,
+    region="us-east-1"
+)
+instance.user_data.add_execute_file_command(
+    file_path=local_path,
+    arguments="--verbose -y"
+)
+asset.grant_read(instance.role)
+```
+
+### Multipart user data
+
+In addition, to above the `MultipartUserData` can be used to change instance startup behavior. Multipart user data are composed
+from separate parts forming archive. The most common parts are scripts executed during instance set-up. However, there are other
+kinds, too.
+
+The advantage of multipart archive is in flexibility when it's needed to add additional parts or to use specialized parts to
+fine tune instance startup. Some services (like AWS Batch) supports only `MultipartUserData`.
+
+The parts can be executed at different moment of instance start-up and can serve a different purposes. This is controlled by `contentType` property.
+For common scripts, `text/x-shellscript; charset="utf-8"` can be used as content type.
+
+In order to create archive the `MultipartUserData` has to be instantiated. Than, user can add parts to multipart archive using `addPart`. The `MultipartBody` contains methods supporting creation of body parts.
+
+If the very custom part is required, it can be created using `MultipartUserData.fromRawBody`, in this case full control over content type,
+transfer encoding, and body properties is given to the user.
+
+Below is an example for creating multipart user data with single body part responsible for installing `awscli` and configuring maximum size
+of storage used by Docker containers:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+boot_hook_conf = ec2.UserData.for_linux()
+boot_hook_conf.add_commands("cloud-init-per once docker_options echo 'OPTIONS=\"${OPTIONS} --storage-opt dm.basesize=40G\"' >> /etc/sysconfig/docker")
+
+setup_commands = ec2.UserData.for_linux()
+setup_commands.add_commands("sudo yum install awscli && echo Packages installed らと > /var/tmp/setup")
+
+multipart_user_data = ec2.MultipartUserData()
+# The docker has to be configured at early stage, so content type is overridden to boothook
+multipart_user_data.add_part(ec2.MultipartBody.from_user_data(boot_hook_conf, "text/cloud-boothook; charset=\"us-ascii\""))
+# Execute the rest of setup
+multipart_user_data.add_part(ec2.MultipartBody.from_user_data(setup_commands))
+
+ec2.LaunchTemplate(self, "",
+    user_data=multipart_user_data,
+    block_devices=[]
+)
+```
+
+For more information see
+[Specifying Multiple User Data Blocks Using a MIME Multi Part Archive](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/bootstrap_container_instance.html#multi-part_user_data)
+
+#### Using add*Command on MultipartUserData
+
+To use the `add*Command` methods, that are inherited from the `UserData` interface, on `MultipartUserData` you must add a part
+to the `MultipartUserData` and designate it as the reciever for these methods. This is accomplished by using the `addUserDataPart()`
+method on `MultipartUserData` with the `makeDefault` argument set to `true`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+multipart_user_data = ec2.MultipartUserData()
+commands_user_data = ec2.UserData.for_linux()
+multipart_user_data.add_user_data_part(commands_user_data, ec2.MultipartBody.SHELL_SCRIPT, True)
+
+# Adding commands to the multipartUserData adds them to commandsUserData, and vice-versa.
+multipart_user_data.add_commands("touch /root/multi.txt")
+commands_user_data.add_commands("touch /root/userdata.txt")
+```
+
+When used on an EC2 instance, the above `multipartUserData` will create both `multi.txt` and `userdata.txt` in `/root`.
+
+## Importing existing subnet
+
+To import an existing Subnet, call `Subnet.fromSubnetAttributes()` or
+`Subnet.fromSubnetId()`. Only if you supply the subnet's Availability Zone
+and Route Table Ids when calling `Subnet.fromSubnetAttributes()` will you be
+able to use the CDK features that use these values (such as selecting one
+subnet per AZ).
+
+Importing an existing subnet looks like this:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Supply all properties
+subnet1 = ec2.Subnet.from_subnet_attributes(self, "SubnetFromAttributes",
+    subnet_id="s-1234",
+    availability_zone="pub-az-4465",
+    route_table_id="rt-145"
+)
+
+# Supply only subnet id
+subnet2 = ec2.Subnet.from_subnet_id(self, "SubnetFromId", "s-1234")
+```
+
+## Launch Templates
+
+A Launch Template is a standardized template that contains the configuration information to launch an instance.
+They can be used when launching instances on their own, through Amazon EC2 Auto Scaling, EC2 Fleet, and Spot Fleet.
+Launch templates enable you to store launch parameters so that you do not have to specify them every time you launch
+an instance. For information on Launch Templates please see the
+[official documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-launch-templates.html).
+
+The following demonstrates how to create a launch template with an Amazon Machine Image, and security group.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# vpc is of type Vpc
+
+
+template = ec2.LaunchTemplate(self, "LaunchTemplate",
+    machine_image=ec2.MachineImage.latest_amazon_linux(),
+    security_group=ec2.SecurityGroup(self, "LaunchTemplateSG",
+        vpc=vpc
+    )
+)
+```
+
+

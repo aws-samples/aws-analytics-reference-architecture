@@ -1,0 +1,809 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-stepfunctions
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::StepFunctions
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-cloudwatch (==1.130.0)
+Requires-Dist: aws-cdk.aws-events (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-logs (==1.130.0)
+Requires-Dist: aws-cdk.aws-s3 (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# AWS Step Functions Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+The `@aws-cdk/aws-stepfunctions` package contains constructs for building
+serverless workflows using objects. Use this in conjunction with the
+`@aws-cdk/aws-stepfunctions-tasks` package, which contains classes used
+to call other AWS services.
+
+Defining a workflow looks like this (for the [Step Functions Job Poller
+example](https://docs.aws.amazon.com/step-functions/latest/dg/job-status-poller-sample.html)):
+
+## Example
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_lambda as lambda_
+
+# submit_lambda is of type Function
+# get_status_lambda is of type Function
+
+
+submit_job = tasks.LambdaInvoke(self, "Submit Job",
+    lambda_function=submit_lambda,
+    # Lambda's result is in the attribute `Payload`
+    output_path="$.Payload"
+)
+
+wait_x = sfn.Wait(self, "Wait X Seconds",
+    time=sfn.WaitTime.seconds_path("$.waitSeconds")
+)
+
+get_status = tasks.LambdaInvoke(self, "Get Job Status",
+    lambda_function=get_status_lambda,
+    # Pass just the field named "guid" into the Lambda, put the
+    # Lambda's result in a field called "status" in the response
+    input_path="$.guid",
+    output_path="$.Payload"
+)
+
+job_failed = sfn.Fail(self, "Job Failed",
+    cause="AWS Batch Job Failed",
+    error="DescribeJob returned FAILED"
+)
+
+final_status = tasks.LambdaInvoke(self, "Get Final Job Status",
+    lambda_function=get_status_lambda,
+    # Use "guid" field as input
+    input_path="$.guid",
+    output_path="$.Payload"
+)
+
+definition = submit_job.next(wait_x).next(get_status).next(sfn.Choice(self, "Job Complete?").when(sfn.Condition.string_equals("$.status", "FAILED"), job_failed).when(sfn.Condition.string_equals("$.status", "SUCCEEDED"), final_status).otherwise(wait_x))
+
+sfn.StateMachine(self, "StateMachine",
+    definition=definition,
+    timeout=Duration.minutes(5)
+)
+```
+
+You can find more sample snippets and learn more about the service integrations
+in the `@aws-cdk/aws-stepfunctions-tasks` package.
+
+## State Machine
+
+A `stepfunctions.StateMachine` is a resource that takes a state machine
+definition. The definition is specified by its start state, and encompasses
+all states reachable from the start state:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+start_state = sfn.Pass(self, "StartState")
+
+sfn.StateMachine(self, "StateMachine",
+    definition=start_state
+)
+```
+
+State machines execute using an IAM Role, which will automatically have all
+permissions added that are required to make all state machine tasks execute
+properly (for example, permissions to invoke any Lambda functions you add to
+your workflow). A role will be created by default, but you can supply an
+existing one as well.
+
+## Amazon States Language
+
+This library comes with a set of classes that model the [Amazon States
+Language](https://states-language.net/spec.html). The following State classes
+are supported:
+
+* [`Task`](#task)
+* [`Pass`](#pass)
+* [`Wait`](#wait)
+* [`Choice`](#choice)
+* [`Parallel`](#parallel)
+* [`Succeed`](#succeed)
+* [`Fail`](#fail)
+* [`Map`](#map)
+* [`Custom State`](#custom-state)
+
+An arbitrary JSON object (specified at execution start) is passed from state to
+state and transformed during the execution of the workflow. For more
+information, see the States Language spec.
+
+### Task
+
+A `Task` represents some work that needs to be done. The exact work to be
+done is determine by a class that implements `IStepFunctionsTask`, a collection
+of which can be found in the `@aws-cdk/aws-stepfunctions-tasks` module.
+
+The tasks in the `@aws-cdk/aws-stepfunctions-tasks` module support the
+[service integration pattern](https://docs.aws.amazon.com/step-functions/latest/dg/connect-to-resource.html) that integrates Step Functions with services
+directly in the Amazon States language.
+
+### Pass
+
+A `Pass` state passes its input to its output, without performing work.
+Pass states are useful when constructing and debugging state machines.
+
+The following example injects some fixed data into the state machine through
+the `result` field. The `result` field will be added to the input and the result
+will be passed as the state's output.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Makes the current JSON state { ..., "subObject": { "hello": "world" } }
+pass = sfn.Pass(self, "Add Hello World",
+    result=sfn.Result.from_object(hello="world"),
+    result_path="$.subObject"
+)
+
+# Set the next state
+next_state = sfn.Pass(self, "NextState")
+pass.next(next_state)
+```
+
+The `Pass` state also supports passing key-value pairs as input. Values can
+be static, or selected from the input with a path.
+
+The following example filters the `greeting` field from the state input
+and also injects a field called `otherData`.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+pass = sfn.Pass(self, "Filter input and inject data",
+    parameters={ # input to the pass state
+        "input": sfn.JsonPath.string_at("$.input.greeting"),
+        "other_data": "some-extra-stuff"}
+)
+```
+
+The object specified in `parameters` will be the input of the `Pass` state.
+Since neither `Result` nor `ResultPath` are supplied, the `Pass` state copies
+its input through to its output.
+
+Learn more about the [Pass state](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-pass-state.html)
+
+### Wait
+
+A `Wait` state waits for a given number of seconds, or until the current time
+hits a particular time. The time to wait may be taken from the execution's JSON
+state.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# Wait until it's the time mentioned in the the state object's "triggerTime"
+# field.
+wait = sfn.Wait(self, "Wait For Trigger Time",
+    time=sfn.WaitTime.timestamp_path("$.triggerTime")
+)
+
+# Set the next state
+start_the_work = sfn.Pass(self, "StartTheWork")
+wait.next(start_the_work)
+```
+
+### Choice
+
+A `Choice` state can take a different path through the workflow based on the
+values in the execution's JSON state:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+choice = sfn.Choice(self, "Did it work?")
+
+# Add conditions with .when()
+success_state = sfn.Pass(self, "SuccessState")
+failure_state = sfn.Pass(self, "FailureState")
+choice.when(sfn.Condition.string_equals("$.status", "SUCCESS"), success_state)
+choice.when(sfn.Condition.number_greater_than("$.attempts", 5), failure_state)
+
+# Use .otherwise() to indicate what should be done if none of the conditions match
+try_again_state = sfn.Pass(self, "TryAgainState")
+choice.otherwise(try_again_state)
+```
+
+If you want to temporarily branch your workflow based on a condition, but have
+all branches come together and continuing as one (similar to how an `if ... then ... else` works in a programming language), use the `.afterwards()` method:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+choice = sfn.Choice(self, "What color is it?")
+handle_blue_item = sfn.Pass(self, "HandleBlueItem")
+handle_red_item = sfn.Pass(self, "HandleRedItem")
+handle_other_item_color = sfn.Pass(self, "HanldeOtherItemColor")
+choice.when(sfn.Condition.string_equals("$.color", "BLUE"), handle_blue_item)
+choice.when(sfn.Condition.string_equals("$.color", "RED"), handle_red_item)
+choice.otherwise(handle_other_item_color)
+
+# Use .afterwards() to join all possible paths back together and continue
+ship_the_item = sfn.Pass(self, "ShipTheItem")
+choice.afterwards().next(ship_the_item)
+```
+
+If your `Choice` doesn't have an `otherwise()` and none of the conditions match
+the JSON state, a `NoChoiceMatched` error will be thrown. Wrap the state machine
+in a `Parallel` state if you want to catch and recover from this.
+
+#### Available Conditions
+
+see [step function comparison operators](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-choice-state.html#amazon-states-language-choice-state-rules)
+
+* `Condition.isPresent` - matches if a json path is present
+* `Condition.isNotPresent` - matches if a json path is not present
+* `Condition.isString` - matches if a json path contains a string
+* `Condition.isNotString` - matches if a json path is not a string
+* `Condition.isNumeric` - matches if a json path is numeric
+* `Condition.isNotNumeric` - matches if a json path is not numeric
+* `Condition.isBoolean` - matches if a json path is boolean
+* `Condition.isNotBoolean` - matches if a json path is not boolean
+* `Condition.isTimestamp` - matches if a json path is a timestamp
+* `Condition.isNotTimestamp` - matches if a json path is not a timestamp
+* `Condition.isNotNull` - matches if a json path is not null
+* `Condition.isNull` - matches if a json path is null
+* `Condition.booleanEquals` - matches if a boolean field has a given value
+* `Condition.booleanEqualsJsonPath` - matches if a boolean field equals a value in a given mapping path
+* `Condition.stringEqualsJsonPath` - matches if a string field equals a given mapping path
+* `Condition.stringEquals` - matches if a field equals a string value
+* `Condition.stringLessThan` - matches if a string field sorts before a given value
+* `Condition.stringLessThanJsonPath` - matches if a string field sorts before a value at given mapping path
+* `Condition.stringLessThanEquals` - matches if a string field sorts equal to or before a given value
+* `Condition.stringLessThanEqualsJsonPath` - matches if a string field sorts equal to or before a given mapping
+* `Condition.stringGreaterThan` - matches if a string field sorts after a given value
+* `Condition.stringGreaterThanJsonPath` - matches if a string field sorts after a value at a given mapping path
+* `Condition.stringGreaterThanEqualsJsonPath` - matches if a string field sorts after or equal to value at a given mapping path
+* `Condition.stringGreaterThanEquals` - matches if a string field sorts after or equal to a given value
+* `Condition.numberEquals` - matches if a numeric field has the given value
+* `Condition.numberEqualsJsonPath` - matches if a numeric field has the value in a given mapping path
+* `Condition.numberLessThan` - matches if a numeric field is less than the given value
+* `Condition.numberLessThanJsonPath` - matches if a numeric field is less than the value at the given mapping path
+* `Condition.numberLessThanEquals` - matches if a numeric field is less than or equal to the given value
+* `Condition.numberLessThanEqualsJsonPath` - matches if a numeric field is less than or equal to the numeric value at given mapping path
+* `Condition.numberGreaterThan` - matches if a numeric field is greater than the given value
+* `Condition.numberGreaterThanJsonPath` - matches if a numeric field is greater than the value at a given mapping path
+* `Condition.numberGreaterThanEquals` - matches if a numeric field is greater than or equal to the given value
+* `Condition.numberGreaterThanEqualsJsonPath` - matches if a numeric field is greater than or equal to the value at a given mapping path
+* `Condition.timestampEquals` - matches if a timestamp field is the same time as the given timestamp
+* `Condition.timestampEqualsJsonPath` - matches if a timestamp field is the same time as the timestamp at a given mapping path
+* `Condition.timestampLessThan` - matches if a timestamp field is before the given timestamp
+* `Condition.timestampLessThanJsonPath` - matches if a timestamp field is before the timestamp at a given mapping path
+* `Condition.timestampLessThanEquals` - matches if a timestamp field is before or equal to the given timestamp
+* `Condition.timestampLessThanEqualsJsonPath` - matches if a timestamp field is before or equal to the timestamp at a given mapping path
+* `Condition.timestampGreaterThan` - matches if a timestamp field is after the timestamp at a given mapping path
+* `Condition.timestampGreaterThanJsonPath` - matches if a timestamp field is after the timestamp at a given mapping path
+* `Condition.timestampGreaterThanEquals` - matches if a timestamp field is after or equal to the given timestamp
+* `Condition.timestampGreaterThanEqualsJsonPath` - matches if a timestamp field is after or equal to the timestamp at a given mapping path
+* `Condition.stringMatches` - matches if a field matches a string pattern that can contain a wild card (*) e.g: log-*.txt or *LATEST*. No other characters other than "*" have any special meaning - * can be escaped: \\*
+
+### Parallel
+
+A `Parallel` state executes one or more subworkflows in parallel. It can also
+be used to catch and recover from errors in subworkflows.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+parallel = sfn.Parallel(self, "Do the work in parallel")
+
+# Add branches to be executed in parallel
+ship_item = sfn.Pass(self, "ShipItem")
+send_invoice = sfn.Pass(self, "SendInvoice")
+restock = sfn.Pass(self, "Restock")
+parallel.branch(ship_item)
+parallel.branch(send_invoice)
+parallel.branch(restock)
+
+# Retry the whole workflow if something goes wrong
+parallel.add_retry(max_attempts=1)
+
+# How to recover from errors
+send_failure_notification = sfn.Pass(self, "SendFailureNotification")
+parallel.add_catch(send_failure_notification)
+
+# What to do in case everything succeeded
+close_order = sfn.Pass(self, "CloseOrder")
+parallel.next(close_order)
+```
+
+### Succeed
+
+Reaching a `Succeed` state terminates the state machine execution with a
+successful status.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+success = sfn.Succeed(self, "We did it!")
+```
+
+### Fail
+
+Reaching a `Fail` state terminates the state machine execution with a
+failure status. The fail state should report the reason for the failure.
+Failures can be caught by encompassing `Parallel` states.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+success = sfn.Fail(self, "Fail",
+    error="WorkflowFailure",
+    cause="Something went wrong"
+)
+```
+
+### Map
+
+A `Map` state can be used to run a set of steps for each element of an input array.
+A `Map` state will execute the same steps for multiple entries of an array in the state input.
+
+While the `Parallel` state executes multiple branches of steps using the same input, a `Map` state will
+execute the same steps for multiple entries of an array in the state input.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+map = sfn.Map(self, "Map State",
+    max_concurrency=1,
+    items_path=sfn.JsonPath.string_at("$.inputForMap")
+)
+map.iterator(sfn.Pass(self, "Pass State"))
+```
+
+### Custom State
+
+It's possible that the high-level constructs for the states or `stepfunctions-tasks` do not have
+the states or service integrations you are looking for. The primary reasons for this lack of
+functionality are:
+
+* A [service integration](https://docs.aws.amazon.com/step-functions/latest/dg/concepts-service-integrations.html) is available through Amazon States Langauge, but not available as construct
+  classes in the CDK.
+* The state or state properties are available through Step Functions, but are not configurable
+  through constructs
+
+If a feature is not available, a `CustomState` can be used to supply any Amazon States Language
+JSON-based object as the state definition.
+
+[Code Snippets](https://docs.aws.amazon.com/step-functions/latest/dg/tutorial-code-snippet.html#tutorial-code-snippet-1) are available and can be plugged in as the state definition.
+
+Custom states can be chained together with any of the other states to create your state machine
+definition. You will also need to provide any permissions that are required to the `role` that
+the State Machine uses.
+
+The following example uses the `DynamoDB` service integration to insert data into a DynamoDB table.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_dynamodb as dynamodb
+
+
+# create a table
+table = dynamodb.Table(self, "montable",
+    partition_key=Attribute(
+        name="id",
+        type=dynamodb.AttributeType.STRING
+    )
+)
+
+final_status = sfn.Pass(self, "final step")
+
+# States language JSON to put an item into DynamoDB
+# snippet generated from https://docs.aws.amazon.com/step-functions/latest/dg/tutorial-code-snippet.html#tutorial-code-snippet-1
+state_json = {
+    "Type": "Task",
+    "Resource": "arn:aws:states:::dynamodb:putItem",
+    "Parameters": {
+        "TableName": table.table_name,
+        "Item": {
+            "id": {
+                "S": "MyEntry"
+            }
+        }
+    },
+    "ResultPath": null
+}
+
+# custom state which represents a task to insert data into DynamoDB
+custom = sfn.CustomState(self, "my custom task",
+    state_json=state_json
+)
+
+chain = sfn.Chain.start(custom).next(final_status)
+
+sm = sfn.StateMachine(self, "StateMachine",
+    definition=chain,
+    timeout=Duration.seconds(30)
+)
+
+# don't forget permissions. You need to assign them
+table.grant_write_data(sm)
+```
+
+## Task Chaining
+
+To make defining work flows as convenient (and readable in a top-to-bottom way)
+as writing regular programs, it is possible to chain most methods invocations.
+In particular, the `.next()` method can be repeated. The result of a series of
+`.next()` calls is called a **Chain**, and can be used when defining the jump
+targets of `Choice.on` or `Parallel.branch`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+step1 = sfn.Pass(self, "Step1")
+step2 = sfn.Pass(self, "Step2")
+step3 = sfn.Pass(self, "Step3")
+step4 = sfn.Pass(self, "Step4")
+step5 = sfn.Pass(self, "Step5")
+step6 = sfn.Pass(self, "Step6")
+step7 = sfn.Pass(self, "Step7")
+step8 = sfn.Pass(self, "Step8")
+step9 = sfn.Pass(self, "Step9")
+step10 = sfn.Pass(self, "Step10")
+choice = sfn.Choice(self, "Choice")
+condition1 = sfn.Condition.string_equals("$.status", "SUCCESS")
+parallel = sfn.Parallel(self, "Parallel")
+finish = sfn.Pass(self, "Finish")
+
+definition = step1.next(step2).next(choice.when(condition1, step3.next(step4).next(step5)).otherwise(step6).afterwards()).next(parallel.branch(step7.next(step8)).branch(step9.next(step10))).next(finish)
+
+sfn.StateMachine(self, "StateMachine",
+    definition=definition
+)
+```
+
+If you don't like the visual look of starting a chain directly off the first
+step, you can use `Chain.start`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+step1 = sfn.Pass(self, "Step1")
+step2 = sfn.Pass(self, "Step2")
+step3 = sfn.Pass(self, "Step3")
+
+definition = sfn.Chain.start(step1).next(step2).next(step3)
+```
+
+## State Machine Fragments
+
+It is possible to define reusable (or abstracted) mini-state machines by
+defining a construct that implements `IChainable`, which requires you to define
+two fields:
+
+* `startState: State`, representing the entry point into this state machine.
+* `endStates: INextable[]`, representing the (one or more) states that outgoing
+  transitions will be added to if you chain onto the fragment.
+
+Since states will be named after their construct IDs, you may need to prefix the
+IDs of states if you plan to instantiate the same state machine fragment
+multiples times (otherwise all states in every instantiation would have the same
+name).
+
+The class `StateMachineFragment` contains some helper functions (like
+`prefixStates()`) to make it easier for you to do this. If you define your state
+machine as a subclass of this, it will be convenient to use:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+from aws_cdk.core import Construct, Stack
+import aws_cdk.aws_stepfunctions as sfn
+import aws_cdk.aws_stepfunctions_tasks as tasks
+
+class MyJob(sfn.StateMachineFragment):
+
+    def __init__(self, parent, id, *, jobFlavor):
+        super().__init__(parent, id)
+
+        choice = sfn.Choice(self, "Choice").when(sfn.Condition.string_equals("$.branch", "left"), sfn.Pass(self, "Left Branch")).when(sfn.Condition.string_equals("$.branch", "right"), sfn.Pass(self, "Right Branch"))
+
+        # ...
+
+        self.start_state = choice
+        self.end_states = choice.afterwards().end_states
+
+class MyStack(Stack):
+    def __init__(self, scope, id):
+        super().__init__(scope, id)
+        # Do 3 different variants of MyJob in parallel
+        sfn.Parallel(self, "All jobs").branch(MyJob(self, "Quick", job_flavor="quick").prefix_states()).branch(MyJob(self, "Medium", job_flavor="medium").prefix_states()).branch(MyJob(self, "Slow", job_flavor="slow").prefix_states())
+```
+
+A few utility functions are available to parse state machine fragments.
+
+* `State.findReachableStates`: Retrieve the list of states reachable from a given state.
+* `State.findReachableEndStates`: Retrieve the list of end or terminal states reachable from a given state.
+
+## Activity
+
+**Activities** represent work that is done on some non-Lambda worker pool. The
+Step Functions workflow will submit work to this Activity, and a worker pool
+that you run yourself, probably on EC2, will pull jobs from the Activity and
+submit the results of individual jobs back.
+
+You need the ARN to do so, so if you use Activities be sure to pass the Activity
+ARN into your worker pool:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+activity = sfn.Activity(self, "Activity")
+
+# Read this CloudFormation Output from your application and use it to poll for work on
+# the activity.
+CfnOutput(self, "ActivityArn", value=activity.activity_arn)
+```
+
+### Activity-Level Permissions
+
+Granting IAM permissions to an activity can be achieved by calling the `grant(principal, actions)` API:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+activity = sfn.Activity(self, "Activity")
+
+role = iam.Role(self, "Role",
+    assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+)
+
+activity.grant(role, "states:SendTaskSuccess")
+```
+
+This will grant the IAM principal the specified actions onto the activity.
+
+## Metrics
+
+`Task` object expose various metrics on the execution of that particular task. For example,
+to create an alarm on a particular task failing:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# task is of type sfn.Task
+
+cloudwatch.Alarm(self, "TaskAlarm",
+    metric=task.metric_failed(),
+    threshold=1,
+    evaluation_periods=1
+)
+```
+
+There are also metrics on the complete state machine:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# state_machine is of type sfn.StateMachine
+
+cloudwatch.Alarm(self, "StateMachineAlarm",
+    metric=state_machine.metric_failed(),
+    threshold=1,
+    evaluation_periods=1
+)
+```
+
+And there are metrics on the capacity of all state machines in your account:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+cloudwatch.Alarm(self, "ThrottledAlarm",
+    metric=sfn.StateTransitionMetric.metric_throttled_events(),
+    threshold=10,
+    evaluation_periods=2
+)
+```
+
+## Error names
+
+Step Functions identifies errors in the Amazon States Language using case-sensitive strings, known as error names.
+The Amazon States Language defines a set of built-in strings that name well-known errors, all beginning with the `States.` prefix.
+
+* `States.ALL` - A wildcard that matches any known error name.
+* `States.Runtime` - An execution failed due to some exception that could not be processed. Often these are caused by errors at runtime, such as attempting to apply InputPath or OutputPath on a null JSON payload. A `States.Runtime` error is not retriable, and will always cause the execution to fail. A retry or catch on `States.ALL` will NOT catch States.Runtime errors.
+* `States.DataLimitExceeded` - A States.DataLimitExceeded exception will be thrown for the following:
+
+  * When the output of a connector is larger than payload size quota.
+  * When the output of a state is larger than payload size quota.
+  * When, after Parameters processing, the input of a state is larger than the payload size quota.
+  * See [the AWS documentation](https://docs.aws.amazon.com/step-functions/latest/dg/limits-overview.html) to learn more about AWS Step Functions Quotas.
+* `States.HeartbeatTimeout` - A Task state failed to send a heartbeat for a period longer than the HeartbeatSeconds value.
+* `States.Timeout` - A Task state either ran longer than the TimeoutSeconds value, or failed to send a heartbeat for a period longer than the HeartbeatSeconds value.
+* `States.TaskFailed`- A Task state failed during the execution. When used in a retry or catch, `States.TaskFailed` acts as a wildcard that matches any known error name except for `States.Timeout`.
+
+## Logging
+
+Enable logging to CloudWatch by passing a logging configuration with a
+destination LogGroup:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_logs as logs
+
+
+log_group = logs.LogGroup(self, "MyLogGroup")
+
+sfn.StateMachine(self, "MyStateMachine",
+    definition=sfn.Chain.start(sfn.Pass(self, "Pass")),
+    logs=LogOptions(
+        destination=log_group,
+        level=sfn.LogLevel.ALL
+    )
+)
+```
+
+## X-Ray tracing
+
+Enable X-Ray tracing for StateMachine:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+sfn.StateMachine(self, "MyStateMachine",
+    definition=sfn.Chain.start(sfn.Pass(self, "Pass")),
+    tracing_enabled=True
+)
+```
+
+See [the AWS documentation](https://docs.aws.amazon.com/step-functions/latest/dg/concepts-xray-tracing.html)
+to learn more about AWS Step Functions's X-Ray support.
+
+## State Machine Permission Grants
+
+IAM roles, users, or groups which need to be able to work with a State Machine should be granted IAM permissions.
+
+Any object that implements the `IGrantable` interface (has an associated principal) can be granted permissions by calling:
+
+* `stateMachine.grantStartExecution(principal)` - grants the principal the ability to execute the state machine
+* `stateMachine.grantRead(principal)` - grants the principal read access
+* `stateMachine.grantTaskResponse(principal)` - grants the principal the ability to send task tokens to the state machine
+* `stateMachine.grantExecution(principal, actions)` - grants the principal execution-level permissions for the IAM actions specified
+* `stateMachine.grant(principal, actions)` - grants the principal state-machine-level permissions for the IAM actions specified
+
+### Start Execution Permission
+
+Grant permission to start an execution of a state machine by calling the `grantStartExecution()` API.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# definition is of type sfn.IChainable
+role = iam.Role(self, "Role",
+    assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+)
+state_machine = sfn.StateMachine(self, "StateMachine",
+    definition=definition
+)
+
+# Give role permission to start execution of state machine
+state_machine.grant_start_execution(role)
+```
+
+The following permission is provided to a service principal by the `grantStartExecution()` API:
+
+* `states:StartExecution` - to state machine
+
+### Read Permissions
+
+Grant `read` access to a state machine by calling the `grantRead()` API.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# definition is of type sfn.IChainable
+role = iam.Role(self, "Role",
+    assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+)
+state_machine = sfn.StateMachine(self, "StateMachine",
+    definition=definition
+)
+
+# Give role read access to state machine
+state_machine.grant_read(role)
+```
+
+The following read permissions are provided to a service principal by the `grantRead()` API:
+
+* `states:ListExecutions` - to state machine
+* `states:ListStateMachines` - to state machine
+* `states:DescribeExecution` - to executions
+* `states:DescribeStateMachineForExecution` - to executions
+* `states:GetExecutionHistory` - to executions
+* `states:ListActivities` - to `*`
+* `states:DescribeStateMachine` - to `*`
+* `states:DescribeActivity` - to `*`
+
+### Task Response Permissions
+
+Grant permission to allow task responses to a state machine by calling the `grantTaskResponse()` API:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# definition is of type sfn.IChainable
+role = iam.Role(self, "Role",
+    assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+)
+state_machine = sfn.StateMachine(self, "StateMachine",
+    definition=definition
+)
+
+# Give role task response permissions to the state machine
+state_machine.grant_task_response(role)
+```
+
+The following read permissions are provided to a service principal by the `grantRead()` API:
+
+* `states:SendTaskSuccess` - to state machine
+* `states:SendTaskFailure` - to state machine
+* `states:SendTaskHeartbeat` - to state machine
+
+### Execution-level Permissions
+
+Grant execution-level permissions to a state machine by calling the `grantExecution()` API:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# definition is of type sfn.IChainable
+role = iam.Role(self, "Role",
+    assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+)
+state_machine = sfn.StateMachine(self, "StateMachine",
+    definition=definition
+)
+
+# Give role permission to get execution history of ALL executions for the state machine
+state_machine.grant_execution(role, "states:GetExecutionHistory")
+```
+
+### Custom Permissions
+
+You can add any set of permissions to a state machine by calling the `grant()` API.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+# definition is of type sfn.IChainable
+user = iam.User(self, "MyUser")
+state_machine = sfn.StateMachine(self, "StateMachine",
+    definition=definition
+)
+
+# give user permission to send task success to the state machine
+state_machine.grant(user, "states:SendTaskSuccess")
+```
+
+## Import
+
+Any Step Functions state machine that has been created outside the stack can be imported
+into your CDK stack.
+
+State machines can be imported by their ARN via the `StateMachine.fromStateMachineArn()` API
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+app = App()
+stack = Stack(app, "MyStack")
+sfn.StateMachine.from_state_machine_arn(stack, "ImportedStateMachine", "arn:aws:states:us-east-1:123456789012:stateMachine:StateMachine2E01A3A5-N5TJppzoevKQ")
+```
+
+

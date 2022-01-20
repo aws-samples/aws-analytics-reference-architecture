@@ -1,0 +1,284 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-kms
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::KMS
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.cloud-assembly-schema (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: aws-cdk.cx-api (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# AWS Key Management Service Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+Define a KMS key:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+kms.Key(self, "MyKey",
+    enable_key_rotation=True
+)
+```
+
+Define a KMS key with waiting period:
+
+Specifies the number of days in the waiting period before AWS KMS deletes a CMK that has been removed from a CloudFormation stack.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+key = kms.Key(self, "MyKey",
+    pending_window=Duration.days(10)
+)
+```
+
+Add a couple of aliases:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+key = kms.Key(self, "MyKey")
+key.add_alias("alias/foo")
+key.add_alias("alias/bar")
+```
+
+Define a key with specific key spec and key usage:
+
+Valid `keySpec` values depends on `keyUsage` value.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+key = kms.Key(self, "MyKey",
+    key_spec=kms.KeySpec.ECC_SECG_P256K1,  # Default to SYMMETRIC_DEFAULT
+    key_usage=kms.KeyUsage.SIGN_VERIFY
+)
+```
+
+## Sharing keys between stacks
+
+To use a KMS key in a different stack in the same CDK application,
+pass the construct to the other stack:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+#
+# Stack that defines the key
+#
+class KeyStack(cdk.Stack):
+
+    def __init__(self, scope, id, *, description=None, env=None, stackName=None, tags=None, synthesizer=None, terminationProtection=None, analyticsReporting=None):
+        super().__init__(scope, id, description=description, env=env, stackName=stackName, tags=tags, synthesizer=synthesizer, terminationProtection=terminationProtection, analyticsReporting=analyticsReporting)
+        self.key = kms.Key(self, "MyKey", removal_policy=cdk.RemovalPolicy.DESTROY)
+
+#
+# Stack that uses the key
+#
+class UseStack(cdk.Stack):
+    def __init__(self, scope, id, *, key, description=None, env=None, stackName=None, tags=None, synthesizer=None, terminationProtection=None, analyticsReporting=None):
+        super().__init__(scope, id, key=key, description=description, env=env, stackName=stackName, tags=tags, synthesizer=synthesizer, terminationProtection=terminationProtection, analyticsReporting=analyticsReporting)
+
+        # Use the IKey object here.
+        kms.Alias(self, "Alias",
+            alias_name="alias/foo",
+            target_key=key
+        )
+
+key_stack = KeyStack(app, "KeyStack")
+UseStack(app, "UseStack", key=key_stack.key)
+```
+
+## Importing existing keys
+
+### Import key by ARN
+
+To use a KMS key that is not defined in this CDK app, but is created through other means, use
+`Key.fromKeyArn(parent, name, ref)`:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+my_key_imported = kms.Key.from_key_arn(self, "MyImportedKey", "arn:aws:...")
+
+# you can do stuff with this imported key.
+my_key_imported.add_alias("alias/foo")
+```
+
+Note that a call to `.addToResourcePolicy(statement)` on `myKeyImported` will not have
+an affect on the key's policy because it is not owned by your stack. The call
+will be a no-op.
+
+### Import key by alias
+
+If a Key has an associated Alias, the Alias can be imported by name and used in place
+of the Key as a reference. A common scenario for this is in referencing AWS managed keys.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_cloudtrail as cloudtrail
+
+
+my_key_alias = kms.Alias.from_alias_name(self, "myKey", "alias/aws/s3")
+trail = cloudtrail.Trail(self, "myCloudTrail",
+    send_to_cloud_watch_logs=True,
+    kms_key=my_key_alias
+)
+```
+
+Note that calls to `addToResourcePolicy` and `grant*` methods on `myKeyAlias` will be
+no-ops, and `addAlias` and `aliasTargetKey` will fail, as the imported alias does not
+have a reference to the underlying KMS Key.
+
+### Lookup key by alias
+
+If you can't use a KMS key imported by alias (e.g. because you need access to the key id), you can lookup the key with `Key.fromLookup()`.
+
+In general, the preferred method would be to use `Alias.fromAliasName()` which returns an `IAlias` object which extends `IKey`. However, some services need to have access to the underlying key id. In this case, `Key.fromLookup()` allows to lookup the key id.
+
+The result of the `Key.fromLookup()` operation will be written to a file
+called `cdk.context.json`. You must commit this file to source control so
+that the lookup values are available in non-privileged environments such
+as CI build steps, and to ensure your template builds are repeatable.
+
+Here's how `Key.fromLookup()` can be used:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+my_key_lookup = kms.Key.from_lookup(self, "MyKeyLookup",
+    alias_name="alias/KeyAlias"
+)
+
+role = iam.Role(self, "MyRole",
+    assumed_by=iam.ServicePrincipal("lambda.amazonaws.com")
+)
+my_key_lookup.grant_encrypt_decrypt(role)
+```
+
+Note that a call to `.addToResourcePolicy(statement)` on `myKeyLookup` will not have
+an affect on the key's policy because it is not owned by your stack. The call
+will be a no-op.
+
+## Key Policies
+
+Controlling access and usage of KMS Keys requires the use of key policies (resource-based policies attached to the key);
+this is in contrast to most other AWS resources where access can be entirely controlled with IAM policies,
+and optionally complemented with resource policies. For more in-depth understanding of KMS key access and policies, see
+
+* https://docs.aws.amazon.com/kms/latest/developerguide/control-access-overview.html
+* https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html
+
+KMS keys can be created to trust IAM policies. This is the default behavior for both the KMS APIs and in
+the console. This behavior is enabled by the '@aws-cdk/aws-kms:defaultKeyPolicies' feature flag,
+which is set for all new projects; for existing projects, this same behavior can be enabled by
+passing the `trustAccountIdentities` property as `true` when creating the key:
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+kms.Key(self, "MyKey", trust_account_identities=True)
+```
+
+With either the `@aws-cdk/aws-kms:defaultKeyPolicies` feature flag set,
+or the `trustAccountIdentities` prop set, the Key will be given the following default key policy:
+
+```json
+{
+  "Effect": "Allow",
+  "Principal": {"AWS": "arn:aws:iam::111122223333:root"},
+  "Action": "kms:*",
+  "Resource": "*"
+}
+```
+
+This policy grants full access to the key to the root account user.
+This enables the root account user -- via IAM policies -- to grant access to other IAM principals.
+With the above default policy, future permissions can be added to either the key policy or IAM principal policy.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+key = kms.Key(self, "MyKey")
+user = iam.User(self, "MyUser")
+key.grant_encrypt(user)
+```
+
+Adopting the default KMS key policy (and so trusting account identities)
+solves many issues around cyclic dependencies between stacks.
+Without this default key policy, future permissions must be added to both the key policy and IAM principal policy,
+which can cause cyclic dependencies if the permissions cross stack boundaries.
+(For example, an encrypted bucket in one stack, and Lambda function that accesses it in another.)
+
+### Appending to or replacing the default key policy
+
+The default key policy can be amended or replaced entirely, depending on your use case and requirements.
+A common addition to the key policy would be to add other key admins that are allowed to administer the key
+(e.g., change permissions, revoke, delete). Additional key admins can be specified at key creation or after
+via the `grantAdmin` method.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+my_trusted_admin_role = iam.Role.from_role_arn(self, "TrustedRole", "arn:aws:iam:....")
+key = kms.Key(self, "MyKey",
+    admins=[my_trusted_admin_role]
+)
+
+second_key = kms.Key(self, "MyKey2")
+second_key.grant_admin(my_trusted_admin_role)
+```
+
+Alternatively, a custom key policy can be specified, which will replace the default key policy.
+
+> **Note**: In applications without the '@aws-cdk/aws-kms:defaultKeyPolicies' feature flag set
+> and with `trustedAccountIdentities` set to false (the default), specifying a policy at key creation *appends* the
+> provided policy to the default key policy, rather than *replacing* the default policy.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+my_trusted_admin_role = iam.Role.from_role_arn(self, "TrustedRole", "arn:aws:iam:....")
+# Creates a limited admin policy and assigns to the account root.
+my_custom_policy = iam.PolicyDocument(
+    statements=[iam.PolicyStatement(
+        actions=["kms:Create*", "kms:Describe*", "kms:Enable*", "kms:List*", "kms:Put*"
+        ],
+        principals=[iam.AccountRootPrincipal()],
+        resources=["*"]
+    )]
+)
+key = kms.Key(self, "MyKey",
+    policy=my_custom_policy
+)
+```
+
+> **Warning:** Replacing the default key policy with one that only grants access to a specific user or role
+> runs the risk of the key becoming unmanageable if that user or role is deleted.
+> It is highly recommended that the key policy grants access to the account root, rather than specific principals.
+> See https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html for more information.
+
+

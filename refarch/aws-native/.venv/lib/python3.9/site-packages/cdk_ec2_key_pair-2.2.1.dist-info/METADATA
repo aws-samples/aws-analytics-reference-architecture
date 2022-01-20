@@ -1,0 +1,159 @@
+Metadata-Version: 2.1
+Name: cdk-ec2-key-pair
+Version: 2.2.1
+Summary: CDK Construct for managing EC2 key pairs
+Home-page: https://github.com/udondan/cdk-ec2-key-pair
+Author: Daniel Schroeder
+License: Apache-2.0
+Project-URL: Source, https://github.com/udondan/cdk-ec2-key-pair.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+Requires-Dist: aws-cdk.aws-iam (<2.0.0,>=1.75.0)
+Requires-Dist: aws-cdk.aws-kms (<2.0.0,>=1.75.0)
+Requires-Dist: aws-cdk.aws-lambda (<2.0.0,>=1.75.0)
+Requires-Dist: aws-cdk.core (<2.0.0,>=1.75.0)
+Requires-Dist: cdk-iam-floyd (<0.113.0,>=0.112.1)
+Requires-Dist: constructs (<4.0.0,>=3.2.80)
+Requires-Dist: jsii (<2.0.0,>=1.30.0)
+Requires-Dist: publication (>=0.0.3)
+
+# CDK EC2 Key Pair
+
+[![Source](https://img.shields.io/badge/Source-GitHub-blue?logo=github)](https://github.com/udondan/cdk-ec2-key-pair)
+[![Test](https://github.com/udondan/cdk-ec2-key-pair/workflows/Test/badge.svg)](https://github.com/udondan/cdk-ec2-key-pair/actions?query=workflow%3ATest)
+[![GitHub](https://img.shields.io/github/license/udondan/cdk-ec2-key-pair)](https://github.com/udondan/cdk-ec2-key-pair/blob/master/LICENSE)
+[![Docs](https://img.shields.io/badge/awscdk.io-cdk--ec2--key--pair-orange)](https://awscdk.io/packages/cdk-ec2-key-pair@2.2.1)
+
+[![npm package](https://img.shields.io/npm/v/cdk-ec2-key-pair?color=brightgreen)](https://www.npmjs.com/package/cdk-ec2-key-pair)
+[![PyPI package](https://img.shields.io/pypi/v/cdk-ec2-key-pair?color=brightgreen)](https://pypi.org/project/cdk-ec2-key-pair/)
+[![NuGet package](https://img.shields.io/nuget/v/CDK.EC2.KeyPair?color=brightgreen)](https://www.nuget.org/packages/CDK.EC2.KeyPair/)
+
+![Downloads](https://img.shields.io/badge/-DOWNLOADS:-brightgreen?color=gray)
+[![npm](https://img.shields.io/npm/dt/cdk-ec2-key-pair?label=npm&color=blueviolet)](https://www.npmjs.com/package/cdk-ec2-key-pair)
+[![PyPI](https://img.shields.io/pypi/dm/cdk-ec2-key-pair?label=pypi&color=blueviolet)](https://pypi.org/project/cdk-ec2-key-pair/)
+[![NuGet](https://img.shields.io/nuget/dt/CDK.EC2.KeyPair?label=nuget&color=blueviolet)](https://www.nuget.org/packages/CDK.EC2.KeyPair/)
+
+[AWS CDK](https://aws.amazon.com/cdk/) L3 construct for managing [EC2 Key Pairs](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html).
+
+CloudFormation doesn't directly support creation of EC2 Key Pairs. This construct provides an easy interface for creating Key Pairs through a [custom CloudFormation resource](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html). The private key is stored in [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/).
+
+## Installation
+
+This package has peer dependencies, which need to be installed along in the expected version.
+
+For TypeScript/NodeJS, add these to your `dependencies` in `package.json`:
+
+* cdk-ec2-key-pair
+* @aws-cdk/aws-ec2
+* @aws-cdk/aws-iam
+* @aws-cdk/aws-kms
+* @aws-cdk/aws-lambda
+
+For Python, add these to your `requirements.txt`:
+
+* cdk-ec2-key-pair
+* aws-cdk.aws-ec2
+* aws-cdk.aws-iam
+* aws-cdk.aws-kms
+* aws-cdk.aws-lambda
+
+## Usage
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.core as cdk
+import aws_cdk.aws_ec2 as ec2
+from cdk_ec2_key_pair import KeyPair
+
+# Create the Key Pair
+key = KeyPair(self, "A-Key-Pair",
+    name="a-key-pair",
+    description="This is a Key Pair",
+    store_public_key=True
+)
+
+# Grant read access to the private key to a role or user
+key.grant_read_on_private_key(some_role)
+
+# Grant read access to the public key to another role or user
+key.grant_read_on_public_key(another_role)
+
+# Use Key Pair on an EC2 instance
+ec2.Instance(self, "An-Instance", {
+    "key_name": key.name
+})
+```
+
+The private (and optionally the public) key will be stored in AWS Secrets Manager. The secret names by default are prefixed with `ec2-ssh-key/`. The private key is suffixed with `/private`, the public key is suffixed with `/public`. So in this example they will be stored as `ec2-ssh-key/a-key-pair/private` and `ec2-ssh-key/a-key-pair/public`.
+
+To download the private key via AWS cli you can run:
+
+```bash
+aws secretsmanager get-secret-value \
+  --secret-id ec2-ssh-key/a-key-pair/private \
+  --query SecretString \
+  --output text
+```
+
+### Tag support
+
+The construct supports tagging:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+cdk.Tags.of(key).add("someTag", "some value")
+```
+
+We also use tags to restrict update/delete actions to those, the construct created itself. The Lambda function, which backs the custom CFN resource, is not able to manipulate other keys/secrets. The tag we use for identifying these resources is `CreatedByCfnCustomResource` with value `CFN::Resource::Custom::EC2-Key-Pair`.
+
+### Updates
+
+Since an EC2 KeyPair cannot be updated, you cannot change any property related to the KeyPair. The code has checks in place which will prevent any attempt to do so. If you try, the stack will end in a failed state. In that case you can safely continue the rollback in the AWS console and ignore the key resource.
+
+You can, however, change properties that only relate to the secrets. These are the KMS keys used for encryption, the `secretPrefix`, `description` and `removeKeySecretsAfterDays`.
+
+### Encryption
+
+Secrets in the AWS Secrets Manager by default are encrypted with the key `alias/aws/secretsmanager`.
+
+To use a custom KMS key you can pass it to the Key Pair:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+kms_key = kms.Key(self, "KMS-key")
+
+key_pair = KeyPair(self, "A-Key-Pair",
+    name="a-key-pair",
+    kms=kms_key
+)
+```
+
+This KMS key needs to be created in the same stack. You cannot use a key imported via ARN, because the keys access policy will need to be modified.
+
+To use different KMS keys for the private and public key, use the `kmsPrivateKey` and `kmsPublicKey` instead:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+kms_key_private = kms.Key(self, "KMS-key-private")
+kms_key_public = kms.Key(self, "KMS-key-public")
+
+key_pair = KeyPair(self, "A-Key-Pair",
+    name="a-key-pair",
+    kms_private_key=kms_key_private,
+    kms_public_key=kms_key_public
+)
+```
+
+

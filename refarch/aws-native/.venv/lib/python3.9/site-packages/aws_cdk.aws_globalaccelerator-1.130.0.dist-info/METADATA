@@ -1,0 +1,229 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-globalaccelerator
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::GlobalAccelerator
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-ec2 (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: aws-cdk.custom-resources (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# AWS::GlobalAccelerator Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+## Introduction
+
+AWS Global Accelerator (AGA) is a service that improves the availability and
+performance of your applications with local or global users.
+
+It intercepts your user's network connection at an edge location close to
+them, and routes it to one of potentially multiple, redundant backends across
+the more reliable and less congested AWS global network.
+
+AGA can be used to route traffic to Application Load Balancers, Network Load
+Balancers, EC2 Instances and Elastic IP Addresses.
+
+For more information, see the [AWS Global
+Accelerator Developer Guide](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_GlobalAccelerator.html).
+
+## Example
+
+Here's an example that sets up a Global Accelerator for two Application Load
+Balancers in two different AWS Regions:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_globalaccelerator as globalaccelerator
+import aws_cdk.aws_globalaccelerator_endpoints as ga_endpoints
+import aws_cdk.aws_elasticloadbalancingv2 as elbv2
+
+# Create an Accelerator
+accelerator = globalaccelerator.Accelerator(stack, "Accelerator")
+
+# Create a Listener
+listener = accelerator.add_listener("Listener",
+    port_ranges=[PortRange(from_port=80), PortRange(from_port=443)
+    ]
+)
+
+# Import the Load Balancers
+nlb1 = elbv2.NetworkLoadBalancer.from_network_load_balancer_attributes(stack, "NLB1",
+    load_balancer_arn="arn:aws:elasticloadbalancing:us-west-2:111111111111:loadbalancer/app/my-load-balancer1/e16bef66805b"
+)
+nlb2 = elbv2.NetworkLoadBalancer.from_network_load_balancer_attributes(stack, "NLB2",
+    load_balancer_arn="arn:aws:elasticloadbalancing:ap-south-1:111111111111:loadbalancer/app/my-load-balancer2/5513dc2ea8a1"
+)
+
+# Add one EndpointGroup for each Region we are targeting
+listener.add_endpoint_group("Group1",
+    endpoints=[ga_endpoints.NetworkLoadBalancerEndpoint(nlb1)]
+)
+listener.add_endpoint_group("Group2",
+    # Imported load balancers automatically calculate their Region from the ARN.
+    # If you are load balancing to other resources, you must also pass a `region`
+    # parameter here.
+    endpoints=[ga_endpoints.NetworkLoadBalancerEndpoint(nlb2)]
+)
+```
+
+## Concepts
+
+The **Accelerator** construct defines a Global Accelerator resource.
+
+An Accelerator includes one or more **Listeners** that accepts inbound
+connections on one or more ports.
+
+Each Listener has one or more **Endpoint Groups**, representing multiple
+geographically distributed copies of your application. There is one Endpoint
+Group per Region, and user traffic is routed to the closest Region by default.
+
+An Endpoint Group consists of one or more **Endpoints**, which is where the
+user traffic coming in on the Listener is ultimately sent. The Endpoint port
+used is the same as the traffic came in on at the Listener, unless overridden.
+
+## Types of Endpoints
+
+There are 4 types of Endpoints, and they can be found in the
+`@aws-cdk/aws-globalaccelerator-endpoints` package:
+
+* Application Load Balancers
+* Network Load Balancers
+* EC2 Instances
+* Elastic IP Addresses
+
+### Application Load Balancers
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+alb = elbv2.ApplicationLoadBalancer(...)
+
+listener.add_endpoint_group("Group",
+    endpoints=[
+        ga_endpoints.ApplicationLoadBalancerEndpoint(alb,
+            weight=128,
+            preserve_client_ip=True
+        )
+    ]
+)
+```
+
+### Network Load Balancers
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+nlb = elbv2.NetworkLoadBalancer(...)
+
+listener.add_endpoint_group("Group",
+    endpoints=[
+        ga_endpoints.NetworkLoadBalancerEndpoint(nlb,
+            weight=128
+        )
+    ]
+)
+```
+
+### EC2 Instances
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+instance = ec2.instance(...)
+
+listener.add_endpoint_group("Group",
+    endpoints=[
+        ga_endpoints.InstanceEndpoint(instance,
+            weight=128,
+            preserve_client_ip=True
+        )
+    ]
+)
+```
+
+### Elastic IP Addresses
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+eip = ec2.CfnEIP(...)
+
+listener.add_endpoint_group("Group",
+    endpoints=[
+        ga_endpoints.CfnEipEndpoint(eip,
+            weight=128
+        )
+    ]
+)
+```
+
+## Client IP Address Preservation and Security Groups
+
+When using the `preserveClientIp` feature, AGA creates
+**Elastic Network Interfaces** (ENIs) in your AWS account, that are
+associated with a Security Group AGA creates for you. You can use the
+security group created by AGA as a source group in other security groups
+(such as those for EC2 instances or Elastic Load Balancers), if you want to
+restrict incoming traffic to the AGA security group rules.
+
+AGA creates a specific security group called `GlobalAccelerator` for each VPC
+it has an ENI in (this behavior can not be changed). CloudFormation doesn't
+support referencing the security group created by AGA, but this construct
+library comes with a custom resource that enables you to reference the AGA
+security group.
+
+Call `endpointGroup.connectionsPeer()` to obtain a reference to the Security Group
+which you can use in connection rules. You must pass a reference to the VPC in whose
+context the security group will be looked up. Example:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+# ...
+
+# Non-open ALB
+alb = elbv2.ApplicationLoadBalancer(stack, "ALB")
+
+endpoint_group = listener.add_endpoint_group("Group",
+    endpoints=[
+        ga_endpoints.ApplicationLoadBalancerEndpoint(alb,
+            preserve_client_ips=True
+        )
+    ]
+)
+
+# Remember that there is only one AGA security group per VPC.
+aga_sg = endpoint_group.connections_peer("GlobalAcceleratorSG", vpc)
+
+# Allow connections from the AGA to the ALB
+alb.connections.allow_from(aga_sg, Port.tcp(443))
+```
+
+

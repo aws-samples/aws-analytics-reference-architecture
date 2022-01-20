@@ -1,0 +1,65 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-autoscaling-hooktargets
+Version: 1.130.0
+Summary: Lifecycle hook for AWS AutoScaling
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-autoscaling (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-kms (==1.130.0)
+Requires-Dist: aws-cdk.aws-lambda (==1.130.0)
+Requires-Dist: aws-cdk.aws-sns-subscriptions (==1.130.0)
+Requires-Dist: aws-cdk.aws-sns (==1.130.0)
+Requires-Dist: aws-cdk.aws-sqs (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# Lifecycle Hook for the CDK AWS AutoScaling Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+This library contains integration classes for AutoScaling lifecycle hooks.
+Instances of these classes should be passed to the
+`autoScalingGroup.addLifecycleHook()` method.
+
+Lifecycle hooks can be activated in one of the following ways:
+
+* Invoke a Lambda function
+* Publish to an SNS topic
+* Send to an SQS queue
+
+For more information on using this library, see the README of the
+`@aws-cdk/aws-autoscaling` library.
+
+For more information about lifecycle hooks, see
+[Amazon EC2 AutoScaling Lifecycle hooks](https://docs.aws.amazon.com/autoscaling/ec2/userguide/lifecycle-hooks.html) in the Amazon EC2 User Guide.
+
+

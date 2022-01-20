@@ -1,0 +1,240 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-route53-targets
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS Route53 Alias Targets
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.aws-apigateway (==1.130.0)
+Requires-Dist: aws-cdk.aws-cloudfront (==1.130.0)
+Requires-Dist: aws-cdk.aws-cognito (==1.130.0)
+Requires-Dist: aws-cdk.aws-ec2 (==1.130.0)
+Requires-Dist: aws-cdk.aws-elasticloadbalancing (==1.130.0)
+Requires-Dist: aws-cdk.aws-elasticloadbalancingv2 (==1.130.0)
+Requires-Dist: aws-cdk.aws-globalaccelerator (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-route53 (==1.130.0)
+Requires-Dist: aws-cdk.aws-s3 (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: aws-cdk.region-info (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# Route53 Alias Record Targets for the CDK Route53 Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cdk-constructs: Stable](https://img.shields.io/badge/cdk--constructs-stable-success.svg?style=for-the-badge)
+
+---
+<!--END STABILITY BANNER-->
+
+This library contains Route53 Alias Record targets for:
+
+* API Gateway custom domains
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  import aws_cdk.aws_apigateway as apigw
+
+  # zone is of type HostedZone
+  # rest_api is of type LambdaRestApi
+
+
+  route53.ARecord(self, "AliasRecord",
+      zone=zone,
+      target=route53.RecordTarget.from_alias(targets.ApiGateway(rest_api))
+  )
+  ```
+* API Gateway V2 custom domains
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  import aws_cdk.aws_apigatewayv2 as apigwv2
+
+  # zone is of type HostedZone
+  # domain_name is of type DomainName
+
+
+  route53.ARecord(self, "AliasRecord",
+      zone=zone,
+      target=route53.RecordTarget.from_alias(targets.ApiGatewayv2DomainProperties(domain_name.regional_domain_name, domain_name.regional_hosted_zone_id))
+  )
+  ```
+* CloudFront distributions
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  import aws_cdk.aws_cloudfront as cloudfront
+
+  # zone is of type HostedZone
+  # distribution is of type CloudFrontWebDistribution
+
+
+  route53.ARecord(self, "AliasRecord",
+      zone=zone,
+      target=route53.RecordTarget.from_alias(targets.CloudFrontTarget(distribution))
+  )
+  ```
+* ELBv2 load balancers
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  import aws_cdk.aws_elasticloadbalancingv2 as elbv2
+
+  # zone is of type HostedZone
+  # lb is of type ApplicationLoadBalancer
+
+
+  route53.ARecord(self, "AliasRecord",
+      zone=zone,
+      target=route53.RecordTarget.from_alias(targets.LoadBalancerTarget(lb))
+  )
+  ```
+* Classic load balancers
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  import aws_cdk.aws_elasticloadbalancing as elb
+
+  # zone is of type HostedZone
+  # lb is of type LoadBalancer
+
+
+  route53.ARecord(self, "AliasRecord",
+      zone=zone,
+      target=route53.RecordTarget.from_alias(targets.ClassicLoadBalancerTarget(lb))
+  )
+  ```
+
+**Important:** Based on [AWS documentation](https://aws.amazon.com/de/premiumsupport/knowledge-center/alias-resource-record-set-route53-cli/), all alias record in Route 53 that points to a Elastic Load Balancer will always include *dualstack* for the DNSName to resolve IPv4/IPv6 addresses (without *dualstack* IPv6 will not resolve).
+
+For example, if the Amazon-provided DNS for the load balancer is `ALB-xxxxxxx.us-west-2.elb.amazonaws.com`, CDK will create alias target in Route 53 will be `dualstack.ALB-xxxxxxx.us-west-2.elb.amazonaws.com`.
+
+* GlobalAccelerator
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  import aws_cdk.aws_globalaccelerator as globalaccelerator
+
+  # zone is of type HostedZone
+  # accelerator is of type Accelerator
+
+
+  route53.ARecord(self, "AliasRecord",
+      zone=zone,
+      target=route53.RecordTarget.from_alias(targets.GlobalAcceleratorTarget(accelerator))
+  )
+  ```
+
+**Important:** If you use GlobalAcceleratorDomainTarget, passing a string rather than an instance of IAccelerator, ensure that the string is a valid domain name of an existing Global Accelerator instance.
+See [the documentation on DNS addressing](https://docs.aws.amazon.com/global-accelerator/latest/dg/dns-addressing-custom-domains.dns-addressing.html) with Global Accelerator for more info.
+
+* InterfaceVpcEndpoints
+
+**Important:** Based on the CFN docs for VPCEndpoints - [see here](attrDnsEntries) - the attributes returned for DnsEntries in CloudFormation is a combination of the hosted zone ID and the DNS name. The entries are ordered as follows: regional public DNS, zonal public DNS, private DNS, and wildcard DNS. This order is not enforced for AWS Marketplace services, and therefore this CDK construct is ONLY guaranteed to work with non-marketplace services.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_ec2 as ec2
+
+# zone is of type HostedZone
+# interface_vpc_endpoint is of type InterfaceVpcEndpoint
+
+
+route53.ARecord(self, "AliasRecord",
+    zone=zone,
+    target=route53.RecordTarget.from_alias(targets.InterfaceVpcEndpointTarget(interface_vpc_endpoint))
+)
+```
+
+* S3 Bucket Website:
+
+**Important:** The Bucket name must strictly match the full DNS name.
+See [the Developer Guide](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/getting-started.html) for more info.
+
+```python
+# Example automatically generated. See https://github.com/aws/jsii/issues/826
+import aws_cdk.aws_s3 as s3
+
+
+record_name = "www"
+domain_name = "example.com"
+
+bucket_website = s3.Bucket(self, "BucketWebsite",
+    bucket_name=[record_name, domain_name].join("."),  # www.example.com
+    public_read_access=True,
+    website_index_document="index.html"
+)
+
+zone = route53.HostedZone.from_lookup(self, "Zone", domain_name=domain_name) # example.com
+
+route53.ARecord(self, "AliasRecord",
+    zone=zone,
+    record_name=record_name,  # www
+    target=route53.RecordTarget.from_alias(targets.BucketWebsiteTarget(bucket_website))
+)
+```
+
+* User pool domain
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  import aws_cdk.aws_cognito as cognito
+
+  # zone is of type HostedZone
+  # domain is of type UserPoolDomain
+
+  route53.ARecord(self, "AliasRecord",
+      zone=zone,
+      target=route53.RecordTarget.from_alias(targets.UserPoolDomainTarget(domain))
+  )
+  ```
+* Route 53 record
+
+  ```python
+  # Example automatically generated. See https://github.com/aws/jsii/issues/826
+  # zone is of type route53.HostedZone
+  # record is of type route53.ARecord
+
+  route53.ARecord(self, "AliasRecord",
+      zone=zone,
+      target=route53.RecordTarget.from_alias(targets.Route53RecordTarget(record))
+  )
+  ```
+* Elastic Beanstalk environment:
+
+**Important:** Only supports Elastic Beanstalk environments created after 2016 that have a regional endpoint.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+route53.ARecord(self, "AliasRecord",
+    zone=zone,
+    target=route53.RecordTarget.from_alias(alias.ElasticBeanstalkEnvironmentEndpointTarget(ebs_environment_url))
+)
+```
+
+See the documentation of `@aws-cdk/aws-route53` for more information.
+
+

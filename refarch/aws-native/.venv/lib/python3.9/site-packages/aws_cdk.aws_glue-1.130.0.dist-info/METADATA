@@ -1,0 +1,381 @@
+Metadata-Version: 2.1
+Name: aws-cdk.aws-glue
+Version: 1.130.0
+Summary: The CDK Construct Library for AWS::Glue
+Home-page: https://github.com/aws/aws-cdk
+Author: Amazon Web Services
+License: Apache-2.0
+Project-URL: Source, https://github.com/aws/aws-cdk.git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Typing :: Typed
+Classifier: Development Status :: 4 - Beta
+Classifier: License :: OSI Approved
+Classifier: Framework :: AWS CDK
+Classifier: Framework :: AWS CDK :: 1
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+License-File: NOTICE
+Requires-Dist: aws-cdk.assets (==1.130.0)
+Requires-Dist: aws-cdk.aws-cloudwatch (==1.130.0)
+Requires-Dist: aws-cdk.aws-ec2 (==1.130.0)
+Requires-Dist: aws-cdk.aws-events (==1.130.0)
+Requires-Dist: aws-cdk.aws-iam (==1.130.0)
+Requires-Dist: aws-cdk.aws-kms (==1.130.0)
+Requires-Dist: aws-cdk.aws-logs (==1.130.0)
+Requires-Dist: aws-cdk.aws-s3-assets (==1.130.0)
+Requires-Dist: aws-cdk.aws-s3 (==1.130.0)
+Requires-Dist: aws-cdk.core (==1.130.0)
+Requires-Dist: constructs (<4.0.0,>=3.3.69)
+Requires-Dist: jsii (<2.0.0,>=1.41.0)
+Requires-Dist: publication (>=0.0.3)
+
+# AWS Glue Construct Library
+
+<!--BEGIN STABILITY BANNER-->---
+
+
+![cfn-resources: Stable](https://img.shields.io/badge/cfn--resources-stable-success.svg?style=for-the-badge)
+
+> All classes with the `Cfn` prefix in this module ([CFN Resources](https://docs.aws.amazon.com/cdk/latest/guide/constructs.html#constructs_lib)) are always stable and safe to use.
+
+![cdk-constructs: Experimental](https://img.shields.io/badge/cdk--constructs-experimental-important.svg?style=for-the-badge)
+
+> The APIs of higher level constructs in this module are experimental and under active development.
+> They are subject to non-backward compatible changes or removal in any future version. These are
+> not subject to the [Semantic Versioning](https://semver.org/) model and breaking changes will be
+> announced in the release notes. This means that while you may use them, you may need to update
+> your source code when upgrading to a newer version of this package.
+
+---
+<!--END STABILITY BANNER-->
+
+This module is part of the [AWS Cloud Development Kit](https://github.com/aws/aws-cdk) project.
+
+## Job
+
+A `Job` encapsulates a script that connects to data sources, processes them, and then writes output to a data target.
+
+There are 3 types of jobs supported by AWS Glue: Spark ETL, Spark Streaming, and Python Shell jobs.
+
+The `glue.JobExecutable` allows you to specify the type of job, the language to use and the code assets required by the job.
+
+`glue.Code` allows you to refer to the different code assets required by the job, either from an existing S3 location or from a local file path.
+
+### Spark Jobs
+
+These jobs run in an Apache Spark environment managed by AWS Glue.
+
+#### ETL Jobs
+
+An ETL job processes data in batches using Apache Spark.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Job(stack, "ScalaSparkEtlJob",
+    executable=glue.JobExecutable.scala_etl(
+        glue_version=glue.GlueVersion.V2_0,
+        script=glue.Code.from_bucket(bucket, "src/com/example/HelloWorld.scala"),
+        class_name="com.example.HelloWorld",
+        extra_jars=[glue.Code.from_bucket(bucket, "jars/HelloWorld.jar")]
+    ),
+    description="an example Scala ETL job"
+)
+```
+
+#### Streaming Jobs
+
+A Streaming job is similar to an ETL job, except that it performs ETL on data streams. It uses the Apache Spark Structured Streaming framework. Some Spark job features are not available to streaming ETL jobs.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Job(stack, "PythonSparkStreamingJob",
+    executable=glue.JobExecutable.python_streaming(
+        glue_version=glue.GlueVersion.V2_0,
+        python_version=glue.PythonVersion.THREE,
+        script=glue.Code.from_asset(path.join(__dirname, "job-script/hello_world.py"))
+    ),
+    description="an example Python Streaming job"
+)
+```
+
+### Python Shell Jobs
+
+A Python shell job runs Python scripts as a shell and supports a Python version that depends on the AWS Glue version you are using.
+This can be used to schedule and run tasks that don't require an Apache Spark environment.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Job(stack, "PythonShellJob",
+    executable=glue.JobExecutable.python_shell(
+        glue_version=glue.GlueVersion.V1_0,
+        python_version=PythonVersion.THREE,
+        script=glue.Code.from_bucket(bucket, "script.py")
+    ),
+    description="an example Python Shell job"
+)
+```
+
+See [documentation](https://docs.aws.amazon.com/glue/latest/dg/add-job.html) for more information on adding jobs in Glue.
+
+## Connection
+
+A `Connection` allows Glue jobs, crawlers and development endpoints to access certain types of data stores. For example, to create a network connection to connect to a data source within a VPC:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Connection(stack, "MyConnection",
+    connection_type=glue.ConnectionTypes.NETWORK,
+    # The security groups granting AWS Glue inbound access to the data source within the VPC
+    security_groups=[security_group],
+    # The VPC subnet which contains the data source
+    subnet=subnet
+)
+```
+
+If you need to use a connection type that doesn't exist as a static member on `ConnectionType`, you can instantiate a `ConnectionType` object, e.g: `new glue.ConnectionType('NEW_TYPE')`.
+
+See [Adding a Connection to Your Data Store](https://docs.aws.amazon.com/glue/latest/dg/populate-add-connection.html) and [Connection Structure](https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-catalog-connections.html#aws-glue-api-catalog-connections-Connection) documentation for more information on the supported data stores and their configurations.
+
+## SecurityConfiguration
+
+A `SecurityConfiguration` is a set of security properties that can be used by AWS Glue to encrypt data at rest.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.SecurityConfiguration(stack, "MySecurityConfiguration",
+    security_configuration_name="name",
+    cloud_watch_encryption={
+        "mode": glue.CloudWatchEncryptionMode.KMS
+    },
+    job_bookmarks_encryption={
+        "mode": glue.JobBookmarksEncryptionMode.CLIENT_SIDE_KMS
+    },
+    s3_encryption={
+        "mode": glue.S3EncryptionMode.KMS
+    }
+)
+```
+
+By default, a shared KMS key is created for use with the encryption configurations that require one. You can also supply your own key for each encryption config, for example, for CloudWatch encryption:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.SecurityConfiguration(stack, "MySecurityConfiguration",
+    security_configuration_name="name",
+    cloud_watch_encryption={
+        "mode": glue.CloudWatchEncryptionMode.KMS,
+        "kms_key": key
+    }
+)
+```
+
+See [documentation](https://docs.aws.amazon.com/glue/latest/dg/encryption-security-configuration.html) for more info for Glue encrypting data written by Crawlers, Jobs, and Development Endpoints.
+
+## Database
+
+A `Database` is a logical grouping of `Tables` in the Glue Catalog.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Database(stack, "MyDatabase",
+    database_name="my_database"
+)
+```
+
+## Table
+
+A Glue table describes a table of data in S3: its structure (column names and types), location of data (S3 objects with a common prefix in a S3 bucket), and format for the files (Json, Avro, Parquet, etc.):
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Table(stack, "MyTable",
+    database=my_database,
+    table_name="my_table",
+    columns=[{
+        "name": "col1",
+        "type": glue.Schema.STRING
+    }, {
+        "name": "col2",
+        "type": glue.Schema.array(Schema.STRING),
+        "comment": "col2 is an array of strings"
+    }],
+    data_format=glue.DataFormat.JSON
+)
+```
+
+By default, a S3 bucket will be created to store the table's data but you can manually pass the `bucket` and `s3Prefix`:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Table(stack, "MyTable",
+    bucket=my_bucket,
+    s3_prefix="my-table/", ...
+)
+```
+
+By default, an S3 bucket will be created to store the table's data and stored in the bucket root. You can also manually pass the `bucket` and `s3Prefix`:
+
+### Partitions
+
+To improve query performance, a table can specify `partitionKeys` on which data is stored and queried separately. For example, you might partition a table by `year` and `month` to optimize queries based on a time window:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Table(stack, "MyTable",
+    database=my_database,
+    table_name="my_table",
+    columns=[{
+        "name": "col1",
+        "type": glue.Schema.STRING
+    }],
+    partition_keys=[{
+        "name": "year",
+        "type": glue.Schema.SMALL_INT
+    }, {
+        "name": "month",
+        "type": glue.Schema.SMALL_INT
+    }],
+    data_format=glue.DataFormat.JSON
+)
+```
+
+## [Encryption](https://docs.aws.amazon.com/athena/latest/ug/encryption.html)
+
+You can enable encryption on a Table's data:
+
+* `Unencrypted` - files are not encrypted. The default encryption setting.
+* [S3Managed](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingServerSideEncryption.html) - Server side encryption (`SSE-S3`) with an Amazon S3-managed key.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Table(stack, "MyTable",
+    encryption=glue.TableEncryption.S3_MANAGED, ...
+)
+```
+
+* [Kms](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingKMSEncryption.html) - Server-side encryption (`SSE-KMS`) with an AWS KMS Key managed by the account owner.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+# KMS key is created automatically
+glue.Table(stack, "MyTable",
+    encryption=glue.TableEncryption.KMS, ...
+)
+
+# with an explicit KMS key
+glue.Table(stack, "MyTable",
+    encryption=glue.TableEncryption.KMS,
+    encryption_key=kms.Key(stack, "MyKey"), ...
+)
+```
+
+* [KmsManaged](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingKMSEncryption.html) - Server-side encryption (`SSE-KMS`), like `Kms`, except with an AWS KMS Key managed by the AWS Key Management Service.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Table(stack, "MyTable",
+    encryption=glue.TableEncryption.KMS_MANAGED, ...
+)
+```
+
+* [ClientSideKms](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingClientSideEncryption.html#client-side-encryption-kms-managed-master-key-intro) - Client-side encryption (`CSE-KMS`) with an AWS KMS Key managed by the account owner.
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+# KMS key is created automatically
+glue.Table(stack, "MyTable",
+    encryption=glue.TableEncryption.CLIENT_SIDE_KMS, ...
+)
+
+# with an explicit KMS key
+glue.Table(stack, "MyTable",
+    encryption=glue.TableEncryption.CLIENT_SIDE_KMS,
+    encryption_key=kms.Key(stack, "MyKey"), ...
+)
+```
+
+*Note: you cannot provide a `Bucket` when creating the `Table` if you wish to use server-side encryption (`KMS`, `KMS_MANAGED` or `S3_MANAGED`)*.
+
+## Types
+
+A table's schema is a collection of columns, each of which have a `name` and a `type`. Types are recursive structures, consisting of primitive and complex types:
+
+```python
+# Example automatically generated without compilation. See https://github.com/aws/jsii/issues/826
+glue.Table(stack, "MyTable",
+    columns=[{
+        "name": "primitive_column",
+        "type": glue.Schema.STRING
+    }, {
+        "name": "array_column",
+        "type": glue.Schema.array(glue.Schema.INTEGER),
+        "comment": "array<integer>"
+    }, {
+        "name": "map_column",
+        "type": glue.Schema.map(glue.Schema.STRING, glue.Schema.TIMESTAMP),
+        "comment": "map<string,string>"
+    }, {
+        "name": "struct_column",
+        "type": glue.Schema.struct([
+            name="nested_column",
+            type=glue.Schema.DATE,
+            comment="nested comment"
+        ]),
+        "comment": "struct<nested_column:date COMMENT 'nested comment'>"
+    }], ...
+```
+
+### Primitives
+
+#### Numeric
+
+| Name      	| Type     	| Comments                                                                                                          |
+|-----------	|----------	|------------------------------------------------------------------------------------------------------------------	|
+| FLOAT     	| Constant 	| A 32-bit single-precision floating point number                                                                   |
+| INTEGER   	| Constant 	| A 32-bit signed value in two's complement format, with a minimum value of -2^31 and a maximum value of 2^31-1 	|
+| DOUBLE    	| Constant 	| A 64-bit double-precision floating point number                                                                   |
+| BIG_INT   	| Constant 	| A 64-bit signed INTEGER in two’s complement format, with a minimum value of -2^63 and a maximum value of 2^63 -1  |
+| SMALL_INT 	| Constant 	| A 16-bit signed INTEGER in two’s complement format, with a minimum value of -2^15 and a maximum value of 2^15-1   |
+| TINY_INT  	| Constant 	| A 8-bit signed INTEGER in two’s complement format, with a minimum value of -2^7 and a maximum value of 2^7-1      |
+
+#### Date and time
+
+| Name      	| Type     	| Comments                                                                                                                                                                	|
+|-----------	|----------	|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| DATE      	| Constant 	| A date in UNIX format, such as YYYY-MM-DD.                                                                                                                              	|
+| TIMESTAMP 	| Constant 	| Date and time instant in the UNiX format, such as yyyy-mm-dd hh:mm:ss[.f...]. For example, TIMESTAMP '2008-09-15 03:04:05.324'. This format uses the session time zone. 	|
+
+#### String
+
+| Name                                       	| Type     	| Comments                                                                                                                                                                                          	|
+|--------------------------------------------	|----------	|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| STRING                                     	| Constant 	| A string literal enclosed in single or double quotes                                                                                                                                              	|
+| decimal(precision: number, scale?: number) 	| Function 	| `precision` is the total number of digits. `scale` (optional) is the number of digits in fractional part with a default of 0. For example, use these type definitions: decimal(11,5), decimal(15) 	|
+| char(length: number)                       	| Function 	| Fixed length character data, with a specified length between 1 and 255, such as char(10)                                                                                                          	|
+| varchar(length: number)                    	| Function 	| Variable length character data, with a specified length between 1 and 65535, such as varchar(10)                                                                                                  	|
+
+#### Miscellaneous
+
+| Name    	| Type     	| Comments                      	|
+|---------	|----------	|-------------------------------	|
+| BOOLEAN 	| Constant 	| Values are `true` and `false` 	|
+| BINARY  	| Constant 	| Value is in binary            	|
+
+### Complex
+
+| Name                                	| Type     	| Comments                                                          	|
+|-------------------------------------	|----------	|-------------------------------------------------------------------	|
+| array(itemType: Type)               	| Function 	| An array of some other type                                       	|
+| map(keyType: Type, valueType: Type) 	| Function 	| A map of some primitive key type to any value type                	|
+| struct(collumns: Column[])          	| Function 	| Nested structure containing individually named and typed collumns 	|
+
+
