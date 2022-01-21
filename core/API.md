@@ -1769,9 +1769,11 @@ public readonly amiType: NodegroupAmiType;
 ```
 
 - *Type:* @aws-cdk/aws-eks.NodegroupAmiType
-- *Default:* auto-determined from the instanceTypes property.
+- *Default:* auto-determined from the instanceTypes property when launchTemplateSpec property is not specified
 
 The AMI type for your node group.
+
+If you explicitly specify the launchTemplate with custom AMI, do not specify this property, or the node group deployment will fail. In other cases, you will need to specify correct amiType for the nodegroup.
 
 ---
 

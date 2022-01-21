@@ -6,7 +6,7 @@ import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from '@aws-cdk/aws
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { IManagedPolicy, IRole, ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Key } from '@aws-cdk/aws-kms';
-import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
+import { BlockPublicAccess, Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
 import { EmrEksCluster } from '../emr-eks-platform';
 import { Utils } from '../utils';
@@ -205,7 +205,9 @@ export class NotebookPlatform extends NestedStack {
     //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
     this.notebookPlatformEncryptionKey = new Key(
       this,
-      'KMS-key-'+ Utils.stringSanitizer(props.studioName),
+      'KMS-key-'+ Utils.stringSanitizer(props.studioName), {
+        enableKeyRotation: true,
+      },
     );
 
     this.emrVirtualClusterName = 'emr-vc-' + Utils.stringSanitizer(props.studioName);
@@ -253,6 +255,7 @@ export class NotebookPlatform extends NestedStack {
       enforceSSL: true,
       encryptionKey: this.notebookPlatformEncryptionKey,
       encryption: BucketEncryption.KMS,
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
     //Create a Managed policy for Studio service role
