@@ -365,6 +365,23 @@ class BatchDataGenerator(core.Construct):
                 resources=['*']
             )
         )
+        datagen_stepfunctions.add_to_role_policy(
+            _iam.PolicyStatement(
+                actions= [
+                    "iam:CreateServiceLinkedRole",
+                    "iam:PutRolePolicy"
+                ],
+                resources=["arn:aws:iam::*:role/aws-service-role/elasticmapreduce.amazonaws.com*/AWSServiceRoleForEMRCleanup*"],
+                conditions= {
+                    "StringLike": {
+                        "iam:AWSServiceName": [
+                            "elasticmapreduce.amazonaws.com",
+                            "elasticmapreduce.amazonaws.com.cn"
+                        ]
+                    }
+                }
+            )
+        )
 
         step_trigger = _events.Rule(
             self, 'BatchSteptrigger',

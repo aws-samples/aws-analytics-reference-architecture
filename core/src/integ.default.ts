@@ -32,7 +32,7 @@ const policy = new ManagedPolicy(stack, 'MyPolicy', {
 });
 
 const emrEks = EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav',
+  eksAdminRoleArn: 'arn:aws:iam::xxxxxxxxxxxx:role/xxxxxxxxxx',
 });
 
 emrEks.addEmrVirtualCluster(stack,{
