@@ -31,20 +31,25 @@ const cluster = new redshift.Cluster(stack, 'Redshift', {
   defaultDatabaseName: dbName,
 });
 
+const tokenizedValue = new cdk.CfnOutput(stack, "tokenizedValue", {
+  value: "second_table"
+})
+
 const runner = new FlywayRunner(stack, 'testMigration', {
   migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),
   cluster: cluster,
   vpc: vpc,
   databaseName: dbName,
+  replaceDictionary: {TABLE_NAME: tokenizedValue.value},
 });
 
 new cdk.CfnOutput(stack, 'schemaVersion', {
-  value: runner.flywayRunner.getAtt('version').toString(),
+  value: runner.runner.getAtt('version').toString(),
   exportName: 'schemaVersion',
 });
 
 describe('deploy succeed', () => {
-  it('can be deploy succcessfully', async () => {
+  it.skip('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
 
@@ -59,7 +64,7 @@ describe('deploy succeed', () => {
     });
 
     // THEN
-    expect(deployResult.outputs.schemaVersion).toEqual('2');
+    expect(deployResult.outputs.schemaVersion).toEqual('3');
   }, 9000000);
 });
 

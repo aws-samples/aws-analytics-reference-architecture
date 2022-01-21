@@ -2,6 +2,7 @@
 !/.gitattributes
 !/.projen/tasks.json
 !/.projen/deps.json
+!/.projen/files.json
 !/package.json
 !/LICENSE
 !/.npmignore
@@ -34,7 +35,7 @@ junit.xml
 /coverage/
 /dist/changelog.md
 /dist/version.txt
-!/.mergify.yml
+!/.github/workflows/release.yml
 !/test/
 !/tsconfig.dev.json
 !/src/
@@ -44,4 +45,3 @@ junit.xml
 .jsii
 tsconfig.json
 !/API.md
-!/.github/workflows/release.yml

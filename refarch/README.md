@@ -39,7 +39,7 @@ Before starting the deployment, ensure that the following steps are completed.
     2. Git
     3. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
 
-#### Deployment
+#### Deployment option 1: provision stacks directly (without CI/CD pipeline)
  
 1. Clone this repository onto the machine from which you want to execute the deployment.
 
@@ -60,7 +60,7 @@ Before starting the deployment, ensure that the following steps are completed.
 If you install all modules, the Amazon QuickSight username (which can also be an IAM role) to which access should be granted to, as well as your QuickSight home region (the one selected during the QuickSight sign-up process) have to be specified. 
 
    ```
-   cdk deploy --parameters QuickSightUsername=<ROLE/USERNAME> --parameters QuickSightIdentityRegion=<REGION>
+   cdk deploy -c QuickSightUsername=<ROLE/USERNAME> -c QuickSightIdentityRegion=<REGION>
    ```
 
    Alternatively or additionally, you can disable modules.
@@ -102,6 +102,66 @@ To disable, for example, the data visualization module, the following argument h
    cd dataviz/dataviz_redshift_cdk
    cdk deploy --parameters VpcConnectionArn=<VPC_CONNECTION_ARN>
    ```
+
+#### Deployment option 2: use CI/CD pipeline to maintain the stacks
+
+You can use CI/CD pipeline to deploy this reference architecture. In this option, you will deploy only a pipeline stack. Then the pipeline will deploy the reference architecture. Each time you push a new version of code to your Git repository, the pipeline will redeploy with the updated code.
+
+The pipeline and the reference architecture can live in different accounts or in the same account. If they live in different accounts, we refer to them as "CI/CD account" and "target account".
+
+1. Bootstrap your CI/CD account with the modern stack style.
+
+   ```
+   export CDK_NEW_BOOTSTRAP=1
+   cdk bootstrap --profile <CICD_ACCOUNT_PROFILE_NAME> aws://<CICD_ACCOUNT>/<CICD_ACCOUNT_REGION>
+   ```
+
+   Setting `CDK_NEW_BOOTSTRAP` makes CDK bootstrap the account with the new stack style. This is required for using CI/CD pipeline. 
+
+1. Bootstrap your target accounts (Optional: only if your pipeline will deploy to another account)
+   ```
+   export CDK_NEW_BOOTSTRAP=1
+   cdk bootstrap --profile <TARGET_ACCOUNT> \
+   --trust <CICD_ACCOUNT> \
+   --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess aws://<TARGET_ACCOUNT>/<TARGET_ACCOUNT_REGION>
+   ```
+   
+   `--trust` option creates a trust relationship between your target account and your CI/CD account. Basically, it allows the CI/CD account to deploy resources into your target account. By specifying the `AdministratorAccess` policy you are giving the CI/CD account full admin privilege. In the case of any security concerns, this policy can be changed to a more restrictive one.
+
+
+1. Fork this repository to your own. 
+
+1. Clone the repository and create a Python virtual environments. 
+
+   ```
+   git clone https://github.com/<YOUR_GITHUB_ID>/aws-analytics-reference-architecture.git
+
+   cd aws-analytics-reference-architecture/refarch/aws-native
+   python3 -m venv .env
+   source .env/bin/activate
+   pip install -r requirements.txt
+   ```
+
+1. Create a 3rd-party connection to allow CodePipeline to pull changes from your repository.
+      * Follow the steps [here](https://docs.aws.amazon.com/dtconsole/latest/userguide/connections-create.html) in the account that will host your CI/CD pipeline.
+      * Copy the ARN of the for the next step
+      
+
+1. Set context variables  `refarch/aws-native/cdk.json`.
+   * **Enable<MODULE_NAME>** with `true` or `false`, based on which modules you want to deploy
+   * **EnableCICD** with `true`
+   * **RepositoryName**:  with `<YOUR_GITHUB_ID>/aws-analytics-reference-architecture`
+   * **RepositoryBranch**: with `main`. The CI/CD pipeline will be triggerred when you push to this branch
+   * **ConnectionArn**: with the connection ARN you created in the previous step
+
+1. Set the accounts and regions in `refarch/aws-native/cdk.context.json`
+   * **<CICD_REGION>** and **<CICD_ACCOUNT>**: with the account that will host the pipeline
+   * **<DEV_ACCOUNT>** and **<PROD_ACCOUNT>**: with the account that will be deployed.
+   * Note that you can have only a single account to be both CI/CD and DEV. If you don't want PROD account, you can comment out the line `deploy_envs.append(prod_env)` in the file `refarch/aws-native/app.py`
+
+1. Run `cdk deploy --profile <CICD_ACCOUNT_PROFILE_NAME> araPipelineStack` using the credentials for your CICD account.
+      * This will deploy the stack containing the pipeline to your CICD account
+      * After the pipeline has been successfully deploy, it will fetch code from the specified repo and deploy to the target account.
 
 #### Adding users to Kibana
 

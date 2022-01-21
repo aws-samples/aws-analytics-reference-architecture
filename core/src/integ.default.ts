@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
-import { App, Stack, Aws, ArnFormat } from '@aws-cdk/core';
+import { App, Stack, Aws, ArnFormat, CfnOutput } from '@aws-cdk/core';
 import { EmrEksCluster, NotebookPlatform, StudioAuthMode } from '.';
 
 const mockApp = new App();
@@ -35,6 +35,14 @@ const emrEks = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav',
 });
 
+emrEks.addEmrVirtualCluster(stack,{
+  name: 'critical',
+  eksNamespace: 'critical',
+  createNamespace: true,
+})
+
+const role = emrEks.createExecutionRole(stack, 'critical', policy, 'critical-role');
+
 const  notebookPlatform = new NotebookPlatform(stack, 'platform1', {
   emrEks: emrEks,
   eksNamespace: 'test2',
@@ -50,4 +58,6 @@ notebookPlatform.addUser([{
     executionPolicy: policy,
   }],
 }]);
+
+new CfnOutput(stack, 'execRole', {value: role.roleArn})
 

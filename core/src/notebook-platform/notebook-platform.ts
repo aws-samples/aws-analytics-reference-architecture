@@ -351,7 +351,7 @@ export class NotebookPlatform extends NestedStack {
             this,
             `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.executionPolicy.managedPolicyName)}`,
             {
-              managedEndpointName: Utils.stringSanitizer(`${this.studioName}-${notebookManagedEndpoint.executionPolicy.managedPolicyName}`),
+              managedEndpointName: `${this.studioName}-${notebookManagedEndpoint.executionPolicy.managedPolicyName}`,
               virtualClusterId: this.emrVirtCluster.attrId,
               executionRole: this.emrEks.createExecutionRole(
                 this,
