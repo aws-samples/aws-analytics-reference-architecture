@@ -1466,14 +1466,14 @@
     chalk "^4.1.2"
     semver "^7.3.5"
 
-"@jsii/spec@1.51.0", "@jsii/spec@^1.50.0", "@jsii/spec@^1.51.0":
+"@jsii/spec@1.51.0":
   version "1.51.0"
   resolved "https://registry.npmjs.org/@jsii/spec/-/spec-1.51.0.tgz"
   integrity sha512-MIzDSTzjKbEIW6mvu+u/Ed2gRAVv87BopWbYVIXWc2pJlkHXilHhQdbY7BdDx8h77nu76+0YumthO6mEX/fROA==
   dependencies:
     jsonschema "^1.4.0"
 
-"@jsii/spec@1.52.1", "@jsii/spec@^1.52.1":
+"@jsii/spec@1.52.1", "@jsii/spec@^1.50.0", "@jsii/spec@^1.51.0", "@jsii/spec@^1.52.1":
   version "1.52.1"
   resolved "https://registry.yarnpkg.com/@jsii/spec/-/spec-1.52.1.tgz#2e44a019e3b5722a96883c42d726b748956c223e"
   integrity sha512-Mt5yzqR/DYZhxjOBTuQsstYh0gdlwSWvjTAfUGf5Rp76j8gddkADlrMRFeVrXBy/Y+ccJLUYWMSsEf1Ti6ERcQ==
@@ -4657,14 +4657,14 @@ jsesc@^2.5.1:
   integrity sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==
 
 jsii-diff@^1.46.0:
-  version "1.51.0"
-  resolved "https://registry.npmjs.org/jsii-diff/-/jsii-diff-1.51.0.tgz"
-  integrity sha512-rJU8p6WCWGuZ4Zp7SUtxapv7OqfdNSzDIyQz3lqSEvJx/8cv8tPgYO1j8pdi7pWNunaiu5wXE0RJ3pL7UPGjsw==
+  version "1.52.1"
+  resolved "https://registry.yarnpkg.com/jsii-diff/-/jsii-diff-1.52.1.tgz#cfc9b287e8a5c3c7a137cf2a50e29a7e6f405e76"
+  integrity sha512-bfzIJPzckF5PAncQp/aF2GDITGZarhXIIHKD9Uk7/jWuXx02Gt7Bysd7YIWIwMgIrKD0O0okzeLP/LbnQcBJ2w==
   dependencies:
-    "@jsii/check-node" "1.51.0"
-    "@jsii/spec" "^1.51.0"
+    "@jsii/check-node" "1.52.1"
+    "@jsii/spec" "^1.52.1"
     fs-extra "^9.1.0"
-    jsii-reflect "^1.51.0"
+    jsii-reflect "^1.52.1"
     log4js "^6.3.0"
     typescript "~3.9.10"
     yargs "^16.2.0"
@@ -4703,19 +4703,7 @@ jsii-pacmak@^1.52.1:
     xmlbuilder "^15.1.1"
     yargs "^16.2.0"
 
-jsii-reflect@^1.50.0, jsii-reflect@^1.51.0:
-  version "1.51.0"
-  resolved "https://registry.npmjs.org/jsii-reflect/-/jsii-reflect-1.51.0.tgz"
-  integrity sha512-oHWQXUSbuMtx5hLxesxOovM276T9KAjMt1QnLCFKttDF4SaWRSIibPNGz7ud6jg2ujHvgW+WS2XykudACfzknQ==
-  dependencies:
-    "@jsii/check-node" "1.51.0"
-    "@jsii/spec" "^1.51.0"
-    colors "^1.4.0"
-    fs-extra "^9.1.0"
-    oo-ascii-tree "^1.51.0"
-    yargs "^16.2.0"
-
-jsii-reflect@^1.52.1:
+jsii-reflect@^1.50.0, jsii-reflect@^1.52.1:
   version "1.52.1"
   resolved "https://registry.yarnpkg.com/jsii-reflect/-/jsii-reflect-1.52.1.tgz#b634f374961e72259dd79f198aa7e6ec45a3bbb2"
   integrity sha512-OsTquiUJkgUu5jlK2VeshLFP9mBd1NU7vhHvcJZ+0xc/u2byfzPT0Irj2o6XLp30Vx/+uGGK6Nf6KyKtmUe82w==
@@ -5312,11 +5300,6 @@ onetime@^5.1.2:
   integrity sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==
   dependencies:
     mimic-fn "^2.1.0"
-
-oo-ascii-tree@^1.51.0:
-  version "1.51.0"
-  resolved "https://registry.npmjs.org/oo-ascii-tree/-/oo-ascii-tree-1.51.0.tgz"
-  integrity sha512-7QisvbqQDNWawFSjGVV9s+oB5QC2xTBWWP5ZK4e6FxPKdobQlwI6eVoYQLCgP+DqO5qt1PmvHDgXxjgVkg/p3A==
 
 oo-ascii-tree@^1.52.1:
   version "1.52.1"
