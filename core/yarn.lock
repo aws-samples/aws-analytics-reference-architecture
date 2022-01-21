@@ -1466,14 +1466,14 @@
     chalk "^4.1.2"
     semver "^7.3.5"
 
-"@jsii/spec@1.51.0", "@jsii/spec@^1.50.0", "@jsii/spec@^1.51.0":
+"@jsii/spec@1.51.0":
   version "1.51.0"
   resolved "https://registry.npmjs.org/@jsii/spec/-/spec-1.51.0.tgz"
   integrity sha512-MIzDSTzjKbEIW6mvu+u/Ed2gRAVv87BopWbYVIXWc2pJlkHXilHhQdbY7BdDx8h77nu76+0YumthO6mEX/fROA==
   dependencies:
     jsonschema "^1.4.0"
 
-"@jsii/spec@1.52.1", "@jsii/spec@^1.52.1":
+"@jsii/spec@1.52.1", "@jsii/spec@^1.50.0", "@jsii/spec@^1.51.0", "@jsii/spec@^1.52.1":
   version "1.52.1"
   resolved "https://registry.yarnpkg.com/@jsii/spec/-/spec-1.52.1.tgz#2e44a019e3b5722a96883c42d726b748956c223e"
   integrity sha512-Mt5yzqR/DYZhxjOBTuQsstYh0gdlwSWvjTAfUGf5Rp76j8gddkADlrMRFeVrXBy/Y+ccJLUYWMSsEf1Ti6ERcQ==
@@ -4759,7 +4759,7 @@ jsii-rosetta@^1.52.1:
     workerpool "^6.1.5"
     yargs "^16.2.0"
 
-jsii@1.51.0, jsii@^1.46.0:
+jsii@1.51.0:
   version "1.51.0"
   resolved "https://registry.npmjs.org/jsii/-/jsii-1.51.0.tgz"
   integrity sha512-8oKAcPH+NW2eIZoW7oiEixFjz0X45dzxZKnxOw5W7JTs/5WwfNEdldU1NkaqEGIB1JKT+WZQjNXAa1IBVO9Crw==
@@ -4778,7 +4778,7 @@ jsii@1.51.0, jsii@^1.46.0:
     typescript "~3.9.10"
     yargs "^16.2.0"
 
-jsii@1.52.1:
+jsii@1.52.1, jsii@^1.46.0:
   version "1.52.1"
   resolved "https://registry.yarnpkg.com/jsii/-/jsii-1.52.1.tgz#cfee7359ce9a6d877eadd2b5a0dff14f618f7a55"
   integrity sha512-kILHStPX3xeADtB/2Wda56Mzz/6KUw8xNr/k+dp84qn9YlZA81cW85tKK5biYCy/XAh5IPsWIZVFRqR8CSPMMw==
