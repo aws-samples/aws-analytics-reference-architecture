@@ -5,9 +5,9 @@ const { basename, join, dirname, relative } = require('path');
 const glob = require('glob');
 
 
-const { AwsCdkConstructLibrary, DependenciesUpgradeMechanism, Semver } = require('projen');
+const { awscdk } = require('projen');
 
-const project = new AwsCdkConstructLibrary({
+const project = new awscdk.AwsCdkConstructLibrary({
 
   authorName: 'Amazon Web Services',
   authorUrl: 'https://aws.amazon.com',
@@ -22,7 +22,7 @@ const project = new AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.134',
+  cdkVersion: '1.139.0',
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
@@ -66,14 +66,21 @@ const project = new AwsCdkConstructLibrary({
     '@aws-cdk/core',
     '@aws-cdk/custom-resources',
     '@aws-cdk/lambda-layer-awscli',
+    '@aws-cdk/aws-emr',
+    '@aws-cdk/aws-kms',
+  ],
+
+  deps: [
+    '@exodus/schemasafe',
   ],
 
   devDeps: [
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
-    'aws-cdk@1.130.0',
+    'aws-cdk@1.139.0',
     'jest-runner-groups',
+    'cdk-nag@^1.0.0',
   ],
 
   jestOptions: {
@@ -86,6 +93,7 @@ const project = new AwsCdkConstructLibrary({
     'js-yaml',
     'uuid',
     'aws-sdk',
+    '@exodus/schemasafe',
   ],
 
   python: {
@@ -98,7 +106,7 @@ const project = new AwsCdkConstructLibrary({
       resolveJsonModule: true,
       esModuleInterop: true,
     },
-    include: ['src/**/*.json', 'src/**/*.ts'],
+    include: ['src/**/*.json'],
   },
 
   stability: 'experimental',
@@ -117,7 +125,7 @@ project.addTask('test:integ', {
 });
 
 const testDeploy = project.addTask('test:deploy', {
-  exec: 'cdk deploy --app=./lib/integ.default.js',
+  exec: 'cdk --version && cdk deploy --app=./lib/integ.default.js',
 });
 
 testDeploy.prependExec('npx projen build');

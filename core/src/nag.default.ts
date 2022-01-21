@@ -2,11 +2,15 @@
 // SPDX-License-Identifier: MIT-0
 
 import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
-import { App, Stack, Aws, ArnFormat, CfnOutput } from '@aws-cdk/core';
+import { App, Stack, Aws, ArnFormat, Aspects } from '@aws-cdk/core';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { AwsSolutionsChecks } from 'cdk-nag';
 import { EmrEksCluster, NotebookPlatform, StudioAuthMode } from '.';
 
 const mockApp = new App();
 const stack = new Stack(mockApp, 'stack');
+
+Aspects.of(mockApp).add(new AwsSolutionsChecks({ verbose: true }));
 
 const policy = new ManagedPolicy(stack, 'MyPolicy', {
   statements: [
@@ -32,21 +36,13 @@ const policy = new ManagedPolicy(stack, 'MyPolicy', {
 });
 
 const emrEks = EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::xxxxxxxxxxxx:role/xxxxxxxxxx',
+  eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
 });
 
-emrEks.addEmrVirtualCluster(stack,{
-  name: 'critical',
-  eksNamespace: 'critical',
-  createNamespace: true,
-})
-
-const role = emrEks.createExecutionRole(stack, 'critical', policy, 'critical-role');
-
-const  notebookPlatform = new NotebookPlatform(stack, 'platform1', {
+let notebookPlatform = new NotebookPlatform(stack, 'platform1', {
   emrEks: emrEks,
-  eksNamespace: 'test2',
-  studioName: 'notebook2',
+  eksNamespace: 'test',
+  studioName: 'notebook1',
   studioAuthMode: StudioAuthMode.IAM,
 });
 
@@ -58,6 +54,3 @@ notebookPlatform.addUser([{
     executionPolicy: policy,
   }],
 }]);
-
-new CfnOutput(stack, 'execRole', {value: role.roleArn})
-

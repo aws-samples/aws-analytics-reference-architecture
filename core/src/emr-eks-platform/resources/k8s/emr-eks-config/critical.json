@@ -1,0 +1,34 @@
+{ 
+    "applicationConfiguration": 
+    [
+        {
+            "classification": "spark-defaults",
+            "properties": {
+                "spark.hadoop.hive.metastore.client.factory.class": "com.amazonaws.glue.catalog.metastore.AWSGlueDataCatalogHiveClientFactory",
+                "spark.sql.catalogImplementation": "hive",
+                "spark.dynamicAllocation.enabled":"true",
+                "spark.dynamicAllocation.minExecutors": "8",
+                "spark.dynamicAllocation.maxExecutors": "40",
+                "spark.kubernetes.allocation.batch.size": "8",
+                "spark.executor.cores": "8",
+                "spark.kubernetes.executor.request.cores": "7",
+                "spark.executor.memory": "28G",
+                "spark.driver.cores": "2",
+                "spark.kubernetes.driver.request.cores": "2",
+                "spark.driver.memory": "6G",
+                "spark.dynamicAllocation.executorAllocationRatio": "1",
+                "spark.dynamicAllocation.shuffleTracking.enabled": "true",
+                "spark.dynamicAllocation.shuffleTracking.timeout": "300s",
+                "spark.kubernetes.driver.podTemplateFile": "{{POD_TEMPLATE_LOCATION}}/critical-driver.yaml",
+                "spark.kubernetes.executor.podTemplateFile": "{{POD_TEMPLATE_LOCATION}}/critical-executor.yaml"
+            }
+        }
+    ],
+    "monitoringConfiguration": {
+        "persistentAppUI": "ENABLED",
+        "cloudWatchMonitoringConfiguration": {
+            "logGroupName": "/emr-containers/critical",
+            "logStreamNamePrefix": "default"
+        }
+    }
+}

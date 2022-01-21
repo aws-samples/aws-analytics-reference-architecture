@@ -59,8 +59,8 @@ export class DataLakeExporter extends Construct {
   constructor(scope: Construct, id: string, props: DataLakeExporterProps) {
     super(scope, id);
 
-    if ( props.deliverySize || 128 > 128 ) { throw 'deliverySize cannot be more than 128MB';};
-    if ( props.deliveryInterval || 900 > 900 ) { throw 'deliveryInterval cannot be more than 900s';};
+    if ( props.deliverySize || 128 > 128 ) { throw 'deliverySize cannot be more than 128MB';}
+    if ( props.deliveryInterval || 900 > 900 ) { throw 'deliveryInterval cannot be more than 900s';}
 
     const stack = Stack.of(this);
 

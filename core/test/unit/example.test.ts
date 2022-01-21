@@ -8,7 +8,7 @@
  */
 
 import { Stack } from '@aws-cdk/core';
-import { Example } from '../../src/example';
+import { Example } from '../../src';
 import '@aws-cdk/assert/jest';
 
 test('example construct', () => {
