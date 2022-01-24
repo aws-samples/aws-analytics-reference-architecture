@@ -129,6 +129,8 @@ const testDeploy = project.addTask('test:deploy', {
 
 testDeploy.prependExec('npx projen build');
 
+project.packageTask.spawn(project.tasks.tryFind("package-all"));
+
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',
 });
