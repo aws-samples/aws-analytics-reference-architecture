@@ -4,7 +4,7 @@
 import { ISecurityGroup, Peer, Port, SecurityGroup, SubnetType } from '@aws-cdk/aws-ec2';
 import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from '@aws-cdk/aws-emr';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { IManagedPolicy, IRole, ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
+import { IManagedPolicy, IRole, ManagedPolicy, PolicyDocument, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Key } from '@aws-cdk/aws-kms';
 import { BlockPublicAccess, Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
@@ -60,6 +60,11 @@ export interface NotebookPlatformProps {
    * Value taken from the IAM console in the Identity providers console
    * */
   readonly idpArn?: string;
+  /**
+   * EMR Studio users IAM policy, used only when Amazon EMR Studio authentication mode is SSO
+   * if no policy is provided a default policy is applied
+   * */
+  readonly userIamPolicy?: PolicyDocument;
 }
 
 /**
@@ -276,7 +281,7 @@ export class NotebookPlatform extends NestedStack {
       //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
       this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
         'StudioUserManagedPolicy',
-        createStudioUserRolePolicy(this, props.studioName, this.studioServiceRole.roleName),
+        createStudioUserRolePolicy(this, props.studioName, this.studioServiceRole, props.userIamPolicy),
       ));
 
       //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
@@ -405,7 +410,7 @@ export class NotebookPlatform extends NestedStack {
 
       if (this.authMode === 'IAM' && this.federatedIdPARN === undefined) {
         //Create the role policy and gets its ARN
-        iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
+        iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole,
           managedEndpointArns, this.studioId);
 
         let iamUserCredentials: string = createIAMUser(this, iamRolePolicy!, user.identityName);
@@ -418,14 +423,14 @@ export class NotebookPlatform extends NestedStack {
 
       } else if (this.authMode === 'IAM' && this.federatedIdPARN != undefined) {
         //Create the role policy and gets its ARN
-        iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
+        iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole,
           managedEndpointArns, this.studioId);
 
         createIAMFederatedRole(this, iamRolePolicy!, this.federatedIdPARN!, user.identityName, this.studioId);
 
       } else if (this.authMode === 'SSO') {
         //Create the session policy and gets its ARN
-        let sessionPolicyArn = createUserSessionPolicy(this, user, this.studioServiceRole.roleName,
+        let sessionPolicyArn = createUserSessionPolicy(this, user, this.studioServiceRole,
           managedEndpointArns, this.studioId);
 
         if (user.identityType == 'USER' || user.identityType == 'GROUP') {

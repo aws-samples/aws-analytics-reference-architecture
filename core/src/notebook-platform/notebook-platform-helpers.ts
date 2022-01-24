@@ -6,17 +6,16 @@ import {
   FederatedPrincipal,
   IRole,
   ManagedPolicy,
-  Policy,
   PolicyDocument,
   PolicyStatement,
   Role,
   User,
 } from '@aws-cdk/aws-iam';
-import { Aws, Construct, SecretValue } from '@aws-cdk/core';
+import { Aws, Construct, SecretValue, Stack } from '@aws-cdk/core';
 import { Utils } from '../utils';
+import { iamPolicyActionEvaluator } from './iamEmrStudioPolicyEvaluator';
 import { NotebookUserOptions } from './notebook-user';
 
-import * as studioS3Policy from './resources/studio/emr-studio-s3-policy.json';
 import * as studioServiceRolePolicy from './resources/studio/studio-service-role-policy.json';
 import * as studioUserRolePolicy from './resources/studio/studio-user-iam-role-policy.json';
 import * as studioSessionPolicy from './resources/studio/studio-user-session-policy.json';
@@ -29,31 +28,56 @@ import * as studioUserPolicy from './resources/studio/studio-user-sso-role-polic
  * @returns Return the ARN of the policy created
  */
 export function createUserSessionPolicy(scope: Construct, user: NotebookUserOptions,
-  studioServiceRoleName: string,
+  studioServiceRole: IRole,
   managedEndpointArns: string [], studioId: string): string {
 
-  let policy = JSON.parse(JSON.stringify(studioSessionPolicy));
+  let stack = Stack.of(scope);
 
-  //replace the <your-emr-studio-service-role> with the service role created above
-  policy.Statement[5].Resource[0] = policy.Statement[5].Resource[0].replace(/<your-emr-studio-service-role>/gi, studioServiceRoleName);
+  const iamActionsToValidate: string [] = [
+    'iam:PassRole',
+    's3:GetObject',
+  ];
 
-  //replace the region and account for log bucket
-  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
-  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<region>/gi, Aws.REGION);
+  let policy = user.userIamPolicy? user.userIamPolicy : PolicyDocument.fromJson(JSON.parse(JSON.stringify(studioSessionPolicy)));
 
-  //replace the region and account for list virtual cluster
-  policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
-  policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<region>/gi, Aws.REGION);
+  let statementPosition: Map<string, number> | undefined = iamPolicyActionEvaluator(
+    policy, iamActionsToValidate);
 
-  //add restrictions on the managedEndpoint that user of group is allowed to attach to
-  for (let managedEndpointArn of managedEndpointArns) {
-    policy.Statement[9].Resource[managedEndpointArns.indexOf(managedEndpointArn)] = managedEndpointArn;
-    policy.Statement[10].Resource[managedEndpointArns.indexOf(managedEndpointArn)] = managedEndpointArn;
+  let jsonPolicy = policy.toJSON();
+
+
+  if (statementPosition === undefined) {
+    throw new Error ('The IAM policy does not have sufficient  to pass role, connect to a managedendpoint or read from the Amazon EMR logs');
+  } else {
+    //replace the <your-emr-studio-service-role> with the service role created above
+    jsonPolicy.Statement[statementPosition.get('iam:PassRole')!].Resource = studioServiceRole.roleArn;
+
+    //replace the region and account for log bucket
+    jsonPolicy.Statement[statementPosition.get('s3:GetObject')!].Resource = stack.formatArn({
+      region: '',
+      account: '',
+      service: 's3',
+      resource: `aws-logs-${Aws.ACCOUNT_ID}-${Aws.REGION}`,
+      resourceName: 'elasticmapreduce/*',
+    });
+
+    //replace the region and account for list virtual cluster
+    jsonPolicy.Statement[statementPosition.get('emr-containers:DescribeVirtualCluster')!].Resource = stack.formatArn({
+      region: Aws.REGION,
+      account: Aws.ACCOUNT_ID,
+      service: 'emr-containers',
+      resource: 'virtualclusters',
+      resourceName: '*',
+    });
+
+    //add restrictions on the managedEndpoint that user of group is allowed to attach to
+    jsonPolicy.Statement[statementPosition.get('emr-containers:CreateAccessTokenForManagedEndpoint')!].Resource = managedEndpointArns;
+    jsonPolicy.Statement[statementPosition.get('emr-containers:DescribeManagedEndpoint')!].Resource = managedEndpointArns;
   }
 
   //create the policy
   let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName), {
-    document: PolicyDocument.fromJson(policy),
+    document: PolicyDocument.fromJson(jsonPolicy),
     managedPolicyName: 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName) + studioId,
   });
 
@@ -66,47 +90,49 @@ export function createUserSessionPolicy(scope: Construct, user: NotebookUserOpti
  * Create a policy for the EMR USER Role
  * @returns Return the ARN of the policy created
  */
-export function createStudioUserRolePolicy(scope: Construct, studioName: string, studioServiceRoleName: string): string {
+export function createStudioUserRolePolicy(scope: Construct,
+  studioName: string,
+  studioServiceRole: IRole,
+  policyDocument?: PolicyDocument): string {
 
-  let policyTemplate: string = JSON.stringify(studioUserPolicy);
-  let policy = JSON.parse(policyTemplate);
+  let stack = Stack.of(scope);
 
-  //replace the <your-emr-studio-service-role> with the service role created above
-  policy.Statement[5].Resource[0] = policy.Statement[5].Resource[0].replace(/<your-emr-studio-service-role>/gi, studioServiceRoleName);
+  const iamActionsToValidate: string [] = [
+    'iam:PassRole',
+    's3:GetObject',
+  ];
 
-  //replace the log bucket
-  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
-  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<region>/gi, Aws.REGION);
+  let policy = policyDocument? policyDocument : PolicyDocument.fromJson(JSON.parse(JSON.stringify(studioUserPolicy)));
+
+  let statementPosition: Map<string, number> | undefined = iamPolicyActionEvaluator(
+    policy, iamActionsToValidate);
+
+  let jsonPolicy = policy.toJSON();
+
+  if (statementPosition === undefined) {
+    throw new Error ('The IAM policy does not have sufficient  to pass role or read from the Amazon EMR logs');
+  } else {
+    //replace the <your-emr-studio-service-role> with the service role created above
+    jsonPolicy.Statement[statementPosition.get('iam:PassRole')!].Resource = studioServiceRole.roleArn;
+
+    //replace the region and account for log bucket
+    jsonPolicy.Statement[statementPosition.get('s3:GetObject')!].Resource = stack.formatArn({
+      region: '',
+      account: '',
+      service: 's3',
+      resource: `aws-logs-${Aws.ACCOUNT_ID}-${Aws.REGION}`,
+      resourceName: 'elasticmapreduce/*',
+    });
+  }
+
+  console.log(jsonPolicy);
 
   let userRolePolicy = new ManagedPolicy(scope, 'studioUserPolicy' + studioName, {
-    document: PolicyDocument.fromJson(policy),
+    document: PolicyDocument.fromJson(jsonPolicy),
     managedPolicyName: 'studioUserPolicy' + studioName,
   });
 
   return userRolePolicy.managedPolicyArn;
-}
-
-/**
- * @internal
- * Add an inline policy to the role passed by the user
- */
-export function addServiceRoleInlinePolicy (scope: Construct, studioServiceRoleArn: string, bucketName: string ): IRole {
-
-  //Get policy from a JSON template
-  let policy = JSON.parse(JSON.stringify(studioS3Policy));
-
-  //Update the service role provided by the user with an inline policy
-  //to access the S3 bucket and store notebooks
-  policy.Statement[0].Resource[0] = policy.Statement[0].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
-  policy.Statement[0].Resource[1] = policy.Statement[0].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
-
-  let studioServiceRole = Role.fromRoleArn(scope, 'studioServiceRoleInlinePolicy', studioServiceRoleArn);
-
-  studioServiceRole.attachInlinePolicy(new Policy(scope, 'studioServiceInlinePolicy', {
-    document: PolicyDocument.fromJson(policy),
-  }));
-
-  return studioServiceRole;
 }
 
 /**
@@ -144,33 +170,64 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
  */
 export function createIAMRolePolicy(scope: Construct,
   user: NotebookUserOptions,
-  studioServiceRoleName: string,
+  studioServiceRole: IRole,
   managedEndpointArns: string [],
   studioId: string): ManagedPolicy {
 
-  let policy = JSON.parse(JSON.stringify(studioUserRolePolicy));
+  let stack = Stack.of(scope);
 
-  //replace the <your-emr-studio-service-role> with the service role created above
-  policy.Statement[5].Resource[0] = policy.Statement[5].Resource[0].replace(/<your-emr-studio-service-role>/gi, studioServiceRoleName);
+  const iamActionsToValidate: string [] = [
+    'iam:PassRole',
+    's3:GetObject',
+  ];
 
-  //replace the region and account for log bucket
-  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
-  policy.Statement[7].Resource[0] = policy.Statement[7].Resource[0].replace(/<region>/gi, Aws.REGION);
+  let policy = user.userIamPolicy? user.userIamPolicy : PolicyDocument.fromJson(JSON.parse(JSON.stringify(studioUserRolePolicy)));
 
-  //replace the region and account for list virtual cluster
-  policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
-  policy.Statement[8].Resource[0] = policy.Statement[8].Resource[0].replace(/<region>/gi, Aws.REGION);
+  let statementPosition: Map<string, number> | undefined = iamPolicyActionEvaluator(
+    policy, iamActionsToValidate);
 
-  //add restrictions on the managedEndpoint that user of group is allowed to attach to
-  for (let managedEndpointArn of managedEndpointArns) {
-    policy.Statement[9].Resource[managedEndpointArns.indexOf(managedEndpointArn)] = managedEndpointArn;
-    policy.Statement[10].Resource[managedEndpointArns.indexOf(managedEndpointArn)] = managedEndpointArn;
+  let jsonPolicy = policy.toJSON();
+
+
+  if (statementPosition === undefined) {
+    throw new Error ('The IAM policy does not have sufficient  to pass role, connect to a managedendpoint or read from the Amazon EMR logs');
+  } else {
+    //replace the <your-emr-studio-service-role> with the service role created above
+    jsonPolicy.Statement[statementPosition.get('iam:PassRole')!].Resource = studioServiceRole.roleArn;
+
+    //replace the region and account for log bucket
+    jsonPolicy.Statement[statementPosition.get('s3:GetObject')!].Resource = stack.formatArn({
+      region: '',
+      account: '',
+      service: 's3',
+      resource: `aws-logs-${Aws.ACCOUNT_ID}-${Aws.REGION}`,
+      resourceName: 'elasticmapreduce/*',
+    });
+
+
+    //CreateStudioPresignedUrl
+    jsonPolicy.Statement[statementPosition.get('elasticmapreduce:CreateStudioPresignedUrl')!].Resource = stack.formatArn({
+      region: Aws.REGION,
+      account: Aws.ACCOUNT_ID,
+      service: 'elasticmapreduce',
+      resource: 'CreateStudioPresignedUrl',
+      resourceName: studioId,
+    });
+
+    //add restrictions on the managedEndpoint that user of group is allowed to attach to
+    jsonPolicy.Statement[statementPosition.get('emr-containers:CreateAccessTokenForManagedEndpoint')!].Resource = managedEndpointArns;
+    jsonPolicy.Statement[statementPosition.get('emr-containers:DescribeManagedEndpoint')!].Resource = managedEndpointArns;
+
+
+    //replace the region and account for list virtual cluster
+    jsonPolicy.Statement[statementPosition.get('emr-containers:DescribeVirtualCluster')!].Resource = stack.formatArn({
+      region: Aws.REGION,
+      account: Aws.ACCOUNT_ID,
+      service: 'emr-containers',
+      resource: 'virtualclusters',
+      resourceName: '*',
+    });
   }
-
-  //Restrict the studio to which a federated user or iam user can access
-  policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<aws-account-id>/gi, Aws.ACCOUNT_ID);
-  policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<region>/gi, Aws.REGION);
-  policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-studio-id>/gi, studioId);
 
   //create the policy
   return new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName), {
