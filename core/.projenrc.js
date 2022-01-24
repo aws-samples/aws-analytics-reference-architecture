@@ -80,7 +80,6 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'esbuild',
     'aws-cdk@1.139.0',
     'jest-runner-groups',
-    'cdk-nag@^1.0.0',
   ],
 
   jestOptions: {
