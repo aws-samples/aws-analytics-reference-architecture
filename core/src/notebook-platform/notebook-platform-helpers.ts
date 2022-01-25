@@ -36,6 +36,9 @@ export function createUserSessionPolicy(scope: Construct, user: NotebookUserOpti
   const iamActionsToValidate: string [] = [
     'iam:PassRole',
     's3:GetObject',
+    'emr-containers:DescribeVirtualCluster',
+    'emr-containers:CreateAccessTokenForManagedEndpoint',
+    'emr-containers:DescribeManagedEndpoint',
   ];
 
   let policy = user.userIamPolicy? user.userIamPolicy : PolicyDocument.fromJson(JSON.parse(JSON.stringify(studioSessionPolicy)));
@@ -153,7 +156,7 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
   //Update with KMS key ARN encrypting the bucket
   policy.Statement[12].Resource[0] = keyArn;
 
-  //Create a the policy of service role
+  //Create the policy of service role
   let serviceRolePolicy = new ManagedPolicy(scope, 'studioServicePolicy' + studioName, {
     document: PolicyDocument.fromJson(policy),
     managedPolicyName: 'studioServicePolicy' + studioName,
@@ -179,6 +182,10 @@ export function createIAMRolePolicy(scope: Construct,
   const iamActionsToValidate: string [] = [
     'iam:PassRole',
     's3:GetObject',
+    'emr-containers:DescribeVirtualCluster',
+    'emr-containers:CreateAccessTokenForManagedEndpoint',
+    'emr-containers:DescribeManagedEndpoint',
+    'elasticmapreduce:CreateStudioPresignedUrl',
   ];
 
   let policy = user.userIamPolicy? user.userIamPolicy : PolicyDocument.fromJson(JSON.parse(JSON.stringify(studioUserRolePolicy)));
