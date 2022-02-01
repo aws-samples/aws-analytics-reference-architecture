@@ -66,7 +66,7 @@ export class LakeformationS3Location extends Construct {
              
 
       //// The code below shows an example of how to instantiate the cfnreousrce
-        const cfnResource = new lakeformation.CfnResource(this, 'MyCfnResource', {
+        new lakeformation.CfnResource(this, 'MyCfnResource', {
             resourceArn: s3.Bucket.fromBucketName(
             this,
             "BucketByName",

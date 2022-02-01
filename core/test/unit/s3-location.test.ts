@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Stack } from '@aws-cdk/core';
-import {LakeformationS3Location } from '../src/lf-s3-location';
-import '@aws-cdk/assert/jest';
+import {LakeformationS3Location } from '../../src/lf-s3-location'
 
 test('example construct', () => {
 

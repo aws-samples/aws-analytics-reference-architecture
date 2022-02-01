@@ -45,6 +45,7 @@
     "@aws-cdk/assertions": "1.139.0",
     "@types/jest": "^27.4.0",
     "@types/js-yaml": "*",
+    "@types/mocha": "^9.1.0",
     "@types/node": "^12",
     "@typescript-eslint/eslint-plugin": "^5",
     "@typescript-eslint/parser": "^5",
