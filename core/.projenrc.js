@@ -68,6 +68,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@aws-cdk/lambda-layer-awscli',
     '@aws-cdk/aws-emr',
     '@aws-cdk/aws-kms',
+    '@aws-cdk/aws-lakeformation'
   ],
 
   deps: [
