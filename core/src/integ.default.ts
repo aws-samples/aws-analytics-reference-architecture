@@ -1,21 +1,63 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Role } from '@aws-cdk/aws-iam';
-import { App, Stack } from '@aws-cdk/core';
-import { EmrEksCluster } from '.';
+import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
+import { App, Stack, Aws, ArnFormat, CfnOutput } from '@aws-cdk/core';
+import { EmrEksCluster, NotebookPlatform, StudioAuthMode } from '.';
 
 const mockApp = new App();
 const stack = new Stack(mockApp, 'stack');
-const cluster = new EmrEksCluster(stack, 'testCluster', { eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav' });
 
-
-const virtualCluster = cluster.addEmrVirtualCluster({
-  name: 'sometest',
-  eksNamespace: 'sometest',
-  createNamespace: true,
+const policy = new ManagedPolicy(stack, 'MyPolicy', {
+  statements: [
+    new PolicyStatement({
+      resources: ['*'],
+      actions: ['s3:*'],
+    }),
+    new PolicyStatement({
+      resources: [
+        stack.formatArn({
+          account: Aws.ACCOUNT_ID,
+          region: Aws.REGION,
+          service: 'logs',
+          resource: '*',
+          arnFormat: ArnFormat.NO_RESOURCE_NAME,
+        }),
+      ],
+      actions: [
+        'logs:*',
+      ],
+    }),
+  ],
 });
 
-const execRole = Role.fromRoleArn(stack, 'execRole', 'arn:aws:iam::668876353122:role/gromav');
+const emrEks = EmrEksCluster.getOrCreate(stack, {
+  eksAdminRoleArn: 'arn:aws:iam::xxxxxxxxxxxx:role/xxxxxxxxxx',
+});
 
-cluster.addManagedEndpoint(stack, 'ME', virtualCluster.attrId, execRole, 'arn:aws:acm:us-east-1:668876353122:certificate/aba0c2c8-c470-43a5-a3c0-07189ee96af0');
+emrEks.addEmrVirtualCluster(stack,{
+  name: 'critical',
+  eksNamespace: 'critical',
+  createNamespace: true,
+})
+
+const role = emrEks.createExecutionRole(stack, 'critical', policy, 'critical-role');
+
+const  notebookPlatform = new NotebookPlatform(stack, 'platform1', {
+  emrEks: emrEks,
+  eksNamespace: 'test2',
+  studioName: 'notebook2',
+  studioAuthMode: StudioAuthMode.IAM,
+});
+
+notebookPlatform.addUser([{
+  identityName: 'vincent',
+  identityType: 'USER',
+  notebookManagedEndpoints: [{
+    emrOnEksVersion: 'emr-6.4.0-latest',
+    executionPolicy: policy,
+  }],
+}]);
+
+new CfnOutput(stack, 'execRole', {value: role.roleArn})
+

@@ -13,5 +13,6 @@ export { DataLakeCatalog } from './data-lake-catalog';
 export { DataLakeExporter, DataLakeExporterProps } from './data-lake-exporter';
 export { AthenaDefaultSetup } from './athena-default-setup';
 export { SingletonGlueDefaultRole } from './singleton-glue-default-role';
-export { EmrEksClusterProps, EmrEksCluster, EmrEksNodegroupOptions, EmrEksNodegroup, EmrVirtualClusterProps } from './emr-eks-data-platform';
+export { EmrEksClusterProps, EmrEksCluster, EmrEksNodegroupOptions, EmrEksNodegroup, EmrVirtualClusterOptions, EmrManagedEndpointOptions } from './emr-eks-platform';
 export { FlywayRunner, FlywayRunnerProps } from './db-schema-manager';
+export { NotebookPlatform, NotebookPlatformProps, StudioAuthMode, IdpRelayState, NotebookUserOptions, NotebookManagedEndpointOptions, SSOIdentityType } from './notebook-platform';

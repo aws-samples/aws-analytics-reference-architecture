@@ -19,11 +19,8 @@
                 "spark.dynamicAllocation.executorAllocationRatio": "1",
                 "spark.dynamicAllocation.shuffleTracking.enabled": "true",
                 "spark.dynamicAllocation.shuffleTracking.timeout": "300s",
-                "spark.kubernetes.driver.label.spark-role": "driver",
-                "spark.kubernetes.executor.label.spark-role": "executor",
-                "spark.kubernetes.node.selector.role": "notebook",
-                "spark.kubernetes.node.selector.node-lifecycle": "spot"
-            }
+                "spark.kubernetes.driver.podTemplateFile": "{{POD_TEMPLATE_LOCATION}}/notebook-driver.yaml",
+                "spark.kubernetes.executor.podTemplateFile": "{{POD_TEMPLATE_LOCATION}}/notebook-executor.yaml"            }
         }
     ],
     "monitoringConfiguration": {
