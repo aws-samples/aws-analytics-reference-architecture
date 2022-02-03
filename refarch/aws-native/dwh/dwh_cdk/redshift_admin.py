@@ -63,15 +63,18 @@ class RedshiftAdminCdkStack(core.Construct):
         self.data_engineer = _redshift.User(self, "dataEngineer",
             cluster=redshift_cluster,
             database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
-            username='data_engineer')
+            username='data_engineer',
+            removal_policy=core.RemovalPolicy.RETAIN)
         self.dataviz = _redshift.User(self, "dataviz",
             cluster=redshift_cluster,
             database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
-            username='dataviz')
+            username='dataviz',
+            removal_policy=core.RemovalPolicy.RETAIN)
         self.etl = _redshift.User(self, "etl",
             cluster=redshift_cluster,
             database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
-            username='etl')
+            username='etl',
+            removal_policy=core.RemovalPolicy.RETAIN)
             
 
         redshift_migration = aws_analytics_reference_architecture.FlywayRunner(scope=self,
@@ -88,7 +91,7 @@ class RedshiftAdminCdkStack(core.Construct):
 
         redshift_migration.node.add_dependency(self.data_engineer)
         redshift_migration.node.add_dependency(self.dataviz)
-        redshift_migration.node.add_dependency(self.etl)
+        redshift_migration.node.add_dependency(self.etl)            
         
         
         self.__secrets_manager_vpc_endpoint_sg = _ec2.SecurityGroup(self, id="secrets_manager_vpc_endpoint-sg",
