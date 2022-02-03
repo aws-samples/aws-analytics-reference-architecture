@@ -186,6 +186,19 @@
       ],"Resource": [
         ""
       ]
+    },
+    {
+      "Sid": "AllowWorkspaceCollaboration",
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetUser",
+        "iam:GetRole",
+        "iam:ListUsers",
+        "iam:ListRoles",
+        "sso:GetManagedApplicationInstance",
+        "sso-directory:SearchUsers"
+      ],
+      "Resource": "*"
     }
   ]
 }

@@ -4,7 +4,7 @@
 import { ISecurityGroup, Peer, Port, SecurityGroup, SubnetType } from '@aws-cdk/aws-ec2';
 import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from '@aws-cdk/aws-emr';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { IManagedPolicy, IRole, ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
+import { Effect, IManagedPolicy, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Key } from '@aws-cdk/aws-kms';
 import { BlockPublicAccess, Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
@@ -257,6 +257,27 @@ export class NotebookPlatform extends NestedStack {
       encryption: BucketEncryption.KMS,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
+
+    this.notebookPlatformEncryptionKey.addToResourcePolicy(
+      new PolicyStatement( {
+        principals: [new ServicePrincipal('elasticmapreduce.amazonaws.com')],
+        effect: Effect.ALLOW,
+        actions: [
+          'kms:Encrypt*',
+          'kms:Decrypt*',
+          'kms:ReEncrypt*',
+          'kms:GenerateDataKey*',
+          'kms:Describe*',
+        ],
+        conditions: {
+          ArnEquals: {
+            'aws:s3:arn': `arn:aws:s3:::${'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + Utils.stringSanitizer(props.studioName)}/*`,
+          },
+        },
+        resources: ['*'],
+      }),
+      false,
+    );
 
     //Create a Managed policy for Studio service role
     this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
