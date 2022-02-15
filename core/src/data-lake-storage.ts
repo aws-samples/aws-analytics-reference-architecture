@@ -67,7 +67,7 @@ export interface DataLakeStorageProps {
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'DataLakeStorageStack');
  * 
- * new DataLakeStorage(stack, 'myDataLakeStorage', {
+ * new DataLakeStorage(stack, 'MyDataLakeStorage', {
  *  rawInfrequentAccessDelay: 90,
  *  rawArchiveDelay: 180,
  *  cleanInfrequentAccessDelay: 180,
