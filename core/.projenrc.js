@@ -22,7 +22,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.139.0',
+  cdkVersion: '1.144.0',
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
@@ -79,8 +79,9 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
-    'aws-cdk@1.139.0',
+    'aws-cdk@1.144.0',
     'jest-runner-groups',
+    'glob',
   ],
 
   jestOptions: {
@@ -122,6 +123,14 @@ project.addTask('test:unit', {
 
 project.addTask('test:integ', {
   exec: 'jest --group=integ',
+});
+
+project.addTask('test:integ/data-lake', {
+  exec: 'jest --group=integ/data-lake',
+});
+
+project.addTask('test:integ/redshift', {
+  exec: 'jest --group=integ/redshift',
 });
 
 const testDeploy = project.addTask('test:deploy', {
