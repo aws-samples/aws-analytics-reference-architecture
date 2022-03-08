@@ -28,7 +28,7 @@ This documentation explains how to get started with the core components of the A
 2. The core components can be deployed in any AWS region
 3. Install the following components with the specified version on the machine from which the deployment will be executed:
     1. Python [3.8-3.9.2] or Typescript
-    2. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
+    2. AWS CDK v1: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
 
 
 ### Initialization (in Python)
@@ -47,8 +47,8 @@ source .venv/bin/activate
 
 ```bash
     install_requires=[
-        "aws-cdk.core==1.130.0",
-        "aws-analytics-reference-architecture==1.8.4",
+        "aws-cdk.core==1.144.0",
+        "aws-analytics-reference-architecture==1.15.0",
     ],
 ```
 3. Install The Packages via **pip**
@@ -147,7 +147,7 @@ cdk destroy
 
 ## API Reference
 
-More contructs, helpers and datasets are available in the AWS Analytics Reference Architecture. See the full API specification [here](https://constructs.dev/packages/aws-analytics-reference-architecture/v/1.8.4?lang=python)
+More contructs, helpers and datasets are available in the AWS Analytics Reference Architecture. See the full API specification [here](https://constructs.dev/packages/aws-analytics-reference-architecture/v/1.15.0?lang=python)
 
 ## Contributing
 
