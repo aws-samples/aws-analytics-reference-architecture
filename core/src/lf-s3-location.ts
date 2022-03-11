@@ -15,7 +15,33 @@ export interface LakeFormationS3LocationProps {
 }
 
   /**
-   * The LakeformationS3Location aims to register an S3 Location for Lakeformation with Read and Write access
+   * This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
+   * 
+   * This construct is based on an IAM role with 2 policies folowing the least privilege AWS best practices:
+   * * Policy 1 is for GetObject, PutObject, DeleteObject from S3 bucket
+   * * Policy 2 is to list S3 Buckets
+   * 
+   * Policy 1 takes as an input S3 object arn
+   * Policy 2 takes as an input S3 bucket arn
+   * 
+   * 
+   * The CDK construct instantiate the cfnresource in order to register the S3 location with Lakeformation using the IAM role defined above.
+   * 
+   * Usage example:
+   * ```typescript
+   * import * as cdk from '@aws-cdk/core';
+   * import { LakeformationS3Location } from 'aws-analytics-reference-architecture';
+   * 
+   * const exampleApp = new cdk.App();
+   * const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
+   * 
+   * new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
+   * s3bucket:{
+      bucketName: 'test',
+      objectKey: 'test',
+    }
+   * });
+   * ```
    */
 export class LakeformationS3Location extends Construct {
    
@@ -53,7 +79,7 @@ export class LakeformationS3Location extends Construct {
                 resources: [
                 s3.Bucket.fromBucketName(
                     this,
-                    "BucketByName",
+                    "BucketName",
                     props.s3bucket.bucketName
                     ).bucketArn
                 ],
@@ -65,11 +91,11 @@ export class LakeformationS3Location extends Construct {
 
              
 
-      //// The code below shows an example of how to instantiate the cfnreousrce
+      //// The code below shows an example of how to instantiate the cfnresource
         new lakeformation.CfnResource(this, 'MyCfnResource', {
             resourceArn: s3.Bucket.fromBucketName(
             this,
-            "BucketByName",
+            "BucketByNameCfn",
             props.s3bucket.bucketName
             ).arnForObjects(props.s3bucket.objectKey),
 
