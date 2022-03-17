@@ -1,12 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Role, ServicePrincipal, PolicyStatement, ManagedPolicy } from '@aws-cdk/aws-iam';
+import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
-import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
+import {ScopedIamProvider} from "../common/scoped-iam-customer-resource";
 
 /**
  * The properties for SynchronousCrawler Construct.
@@ -42,12 +42,8 @@ export class SynchronousCrawler extends Construct {
 
     const stack = Stack.of(this);
 
-    // Create an Amazon IAM Role for the AWS CDK Custom Resource starting the AWS Glue Crawler
-    const crawlerStartWaitFnRole = new Role(this, 'synchronousCrawler', {
-      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-    });
-
-    crawlerStartWaitFnRole.addToPolicy(new PolicyStatement({
+    //Lambda policy to allow starting a crawler
+    const lambdaCRPolicy : PolicyStatement []= [new PolicyStatement({
       resources: [
         stack.formatArn({
           region: Aws.REGION,
@@ -61,15 +57,15 @@ export class SynchronousCrawler extends Construct {
         'glue:StartCrawler',
         'glue:GetCrawler',
       ],
-    }));
-    crawlerStartWaitFnRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'));
+    })];
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start crawler
     const crawlerStartFn = new PreBundledFunction(this, 'crawlerStartFn', {
       runtime: Runtime.PYTHON_3_8,
       codePath: 'synchronous-crawler/resources/lambdas',
+      name: 'SynchronousCrawlerStartFn',
+      lambdaPolicyStatements: lambdaCRPolicy,
       handler: 'lambda.on_event',
-      role: crawlerStartWaitFnRole,
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),
     });
@@ -78,14 +74,17 @@ export class SynchronousCrawler extends Construct {
     const crawlerWaitFn = new PreBundledFunction(this, 'crawlerWaitFn', {
       runtime: Runtime.PYTHON_3_8,
       codePath: 'synchronous-crawler/resources/lambdas',
+      name: 'SynchronousCrawlerWaitFn',
+      lambdaPolicyStatements: lambdaCRPolicy,
       handler: 'lambda.is_complete',
-      role: crawlerStartWaitFnRole,
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),
     });
 
     // Create an AWS CDK Custom Resource Provider for starting the source crawler and waiting for completion
-    const crawlerStartWaitCRP = new Provider(this, 'synchronousCrawlerCRP', {
+    const crawlerStartWaitCRP = new ScopedIamProvider(this, 'synchronousCrawlerCRP', {
+      onEventFnName: 'SynchronousCrawlerStartFn',
+      isCompleteFnName: 'SynchronousCrawlerWaitFn',
       onEventHandler: crawlerStartFn,
       isCompleteHandler: crawlerWaitFn,
       queryInterval: Duration.seconds(60),

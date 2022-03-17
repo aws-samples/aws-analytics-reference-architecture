@@ -7,6 +7,7 @@ import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Construct, Duration } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
+import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 
 /**
@@ -67,15 +68,17 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
       runtime: Runtime.PYTHON_3_8,
       codePath: 'emr-eks-platform/resources/lambdas/nodegroup-asg-tag',
       handler: 'lambda.on_event',
+      name: 'EmrEksNodegroupAsgTagOnEventFn',
+      lambdaPolicyStatements: lambdaPolicy,
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(45),
-      initialPolicy: lambdaPolicy,
       environment: {
         EKS_CLUSTER_NAME: props.eksClusterName,
       },
     });
 
-    this.provider = new Provider(this, 'CustomResourceProvider', {
+    this.provider = new ScopedIamProvider(this, 'CustomResourceProvider', {
+      onEventFnName: 'EmrEksNodegroupAsgTagOnEventFn',
       onEventHandler: onEvent,
     });
   }

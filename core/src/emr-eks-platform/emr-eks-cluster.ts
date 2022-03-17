@@ -2,14 +2,35 @@
 // SPDX-License-Identifier: MIT-0
 
 import { join } from 'path';
-import { SubnetType, VpcAttributes, Vpc, IVpc } from '@aws-cdk/aws-ec2';
-import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
+import { FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes } from '@aws-cdk/aws-ec2';
+import {
+  CapacityType,
+  Cluster,
+  ClusterLoggingTypes, KubernetesManifest,
+  KubernetesVersion,
+  Nodegroup,
+  //ServiceAccount
+} from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { PolicyStatement, PolicyDocument, IManagedPolicy, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
+import {
+  CfnServiceLinkedRole,
+  Effect,
+  FederatedPrincipal,
+  IManagedPolicy,
+  //IRole,
+  ManagedPolicy,
+  Policy,
+  PolicyDocument,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from '@aws-cdk/aws-iam';
+import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
-import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
+import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
+import { CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags } from '@aws-cdk/core';
 import { SingletonBucket } from '../singleton-bucket';
+import { SingletonKey } from '../singleton-kms-key';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { validateSchema } from './config-override-schema-validation';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
@@ -21,7 +42,7 @@ import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
-import * as IamPolicyAutoscaler from './resources/k8s/iam-policy-autoscaler.json';
+//import * as IamPolicyAutoscaler from './resources/k8s/iam-policy-autoscaler.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
 
@@ -87,7 +108,7 @@ export class EmrEksCluster extends Construct {
   private static readonly DEFAULT_EMR_VERSION = 'emr-6.4.0-latest';
   private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
   private static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
-  private static readonly AUTOSCALING_POLICY = PolicyStatement.fromJson(IamPolicyAutoscaler);
+  //private static readonly AUTOSCALING_POLICY = PolicyStatement.fromJson(IamPolicyAutoscaler);
   public readonly eksCluster: Cluster;
   public readonly notebookDefaultConfig: string;
   public readonly criticalDefaultConfig: string;
@@ -100,6 +121,10 @@ export class EmrEksCluster extends Construct {
   private readonly assetBucket: Bucket;
   private readonly clusterName: string;
   private readonly eksVpc: IVpc | undefined;
+  //private readonly assetBucketRole: Role;
+  //private readonly awsNodeIrsaRole: IRole;
+  private readonly ec2InstanceNodeGroupRole: Role;
+  private readonly awsNodeRole: Role;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -124,6 +149,11 @@ export class EmrEksCluster extends Construct {
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
         vpc: this.eksVpc,
+        clusterLogging: [
+          ClusterLoggingTypes.API,
+          ClusterLoggingTypes.AUTHENTICATOR,
+          ClusterLoggingTypes.SCHEDULER,
+        ],
       });
 
     } else {
@@ -132,7 +162,44 @@ export class EmrEksCluster extends Construct {
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
       });
+
+      let eksVpcFlowLogLogGroup = new LogGroup(this, 'eksVpcFlowLogLogGroup', {
+        logGroupName: `/ara/eksVpcFlowLog/${this.clusterName}`,
+        encryptionKey: SingletonKey.getOrCreate(this, 'stackEncryptionKey'),
+        retention: RetentionDays.ONE_MONTH,
+      });
+
+      SingletonKey.getOrCreate(this, 'stackEncryptionKey').addToResourcePolicy(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          principals: [new ServicePrincipal(`logs.${Stack.of(this).region}.amazonaws.com`)],
+          actions: [
+            'kms:Encrypt*',
+            'kms:Decrypt*',
+            'kms:ReEncrypt*',
+            'kms:GenerateDataKey*',
+            'kms:Describe*',
+          ],
+          conditions: {
+            ArnLike: {
+              'kms:EncryptionContext:aws:logs:arn': `arn:aws:logs:${Stack.of(this).region}:${Stack.of(this).account}:*`,
+            },
+          },
+          resources: ['*'],
+        }),
+      );
+
+
+      const iamRoleforFlowLog = new Role(this, 'iamRoleforFlowLog', {
+        assumedBy: new ServicePrincipal('vpc-flow-logs.amazonaws.com'),
+      });
+
+      this.eksCluster.vpc.addFlowLog('eksVpcFlowLog', {
+        destination: FlowLogDestination.toCloudWatchLogs(eksVpcFlowLogLogGroup, iamRoleforFlowLog),
+      });
     }
+
+    SingletonBucket.getOrCreate(this, 'ara-s3accesslogs');
 
     // Add the provided Amazon IAM Role as Amazon EKS Admin
     this.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( this, 'AdminRole', props.eksAdminRoleArn ), 'AdminRole');
@@ -142,9 +209,42 @@ export class EmrEksCluster extends Construct {
       name: 'cluster-autoscaler',
       namespace: 'kube-system',
     });
+
+    let autoscallingPolicyDescribe =
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            'autoscaling:DescribeAutoScalingGroups',
+            'autoscaling:DescribeAutoScalingInstances',
+            'autoscaling:DescribeLaunchConfigurations',
+            'autoscaling:DescribeTags',
+            'ec2:DescribeLaunchTemplateVersions',
+          ],
+          resources: ['*'],
+        });
+
+
+    let autoscallingPolicyMutateGroup =
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: [
+            'autoscaling:SetDesiredCapacity',
+            'autoscaling:TerminateInstanceInAutoScalingGroup',
+          ],
+          resources: ['*'],
+          conditions: {
+            'ForAnyValue:StringEquals': {
+              'aws:ResourceTag/eks:cluster-name': props.eksClusterName,
+            },
+          },
+        });
+
     // Add the proper Amazon IAM Policy to the Amazon IAM Role for the Cluster Autoscaler
     AutoscalerServiceAccount.addToPrincipalPolicy(
-      EmrEksCluster.AUTOSCALING_POLICY,
+      autoscallingPolicyDescribe,
+    );
+    AutoscalerServiceAccount.addToPrincipalPolicy(
+      autoscallingPolicyMutateGroup,
     );
 
     // @todo: check if we can create the service account from the Helm Chart
@@ -216,24 +316,38 @@ export class EmrEksCluster extends Construct {
       eksClusterName: this.clusterName,
     }).provider.serviceToken;
 
+    this.ec2InstanceNodeGroupRole = new Role(this, 'ec2InstanceNodeGroupRole', {
+      assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
+      roleName: 'ara-ec2-instance-role',
+    });
+
+    this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
+    this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
+    this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
+
     // Create the Amazon EKS Nodegroup for tooling
     this.addNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
     // Create default Amazon EMR on EKS Nodegroups. This will create one Amazon EKS nodegroup per AZ
     // Also create default configurations and pod templates for these nodegroups
-    this.addEmrEksNodegroup('criticalAll', EmrEksNodegroup.CRITICAL_ALL);
-    this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
-    this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
+    //this.addEmrEksNodegroup('criticalAll', EmrEksNodegroup.CRITICAL_ALL);
+    //this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
+    //this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
     // Add a nodegroup for notebooks
-    this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
-    this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
-    this.addEmrEksNodegroup('notebook', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
+    //this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
+    //this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+    //this.addEmrEksNodegroup('notebook', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
     // Create an Amazon S3 Bucket for default podTemplate assets
     this.assetBucket = SingletonBucket.getOrCreate(this, `${this.clusterName.toLowerCase()}-emr-eks-assets`);
+
+    //this.assetBucketRole = new Role();
+
     // Configure the podTemplate location
     this.podTemplateLocation = {
       bucketName: this.assetBucket.bucketName,
       objectKey: `${this.clusterName}/pod-template`,
     };
+
+    Tags.of(this.assetBucket).add('for-use-with', 'cdk-analytics-reference-architecture');
 
     // Upload the default podTemplate to the Amazon S3 asset bucket
     this.uploadPodTemplate('defaultPodTemplates', join(__dirname, 'resources/k8s/pod-template'));
@@ -288,7 +402,6 @@ export class EmrEksCluster extends Construct {
         clusterName: this.clusterName,
         serviceAccount: {
           name: 'aws-load-balancer-controller',
-
           create: false,
         },
       },
@@ -312,6 +425,30 @@ export class EmrEksCluster extends Construct {
           },
         },
       },
+    });
+
+    //IAM role created for the aws-node pod following AWS best practice not to use the EC2 instance role
+    this.awsNodeRole = new Role(scope, 'awsNodeRole', {
+      assumedBy: this.eksOidcProvider,
+      roleName: `awsNodeRole-${this.clusterName}`,
+      managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy')],
+    });
+
+    // update the aws-node service account with IAM role created for it
+    new KubernetesManifest(this, 'awsNodeServiceAccountUpdateManifest', {
+      cluster: this.eksCluster,
+      manifest: [{
+        apiVersion: 'v1',
+        kind: 'ServiceAccount',
+        metadata: {
+          name: 'aws-node',
+          namespace: 'kube-system',
+          annotations: {
+            'eks.amazonaws.com/role-arn': this.awsNodeRole.roleArn,
+          },
+        },
+      }],
+      overwrite: true,
     });
 
     // Add the kubernetes dashboard service account
@@ -345,7 +482,9 @@ export class EmrEksCluster extends Construct {
     });
 
     // Set the custom resource provider service token here to avoid circular dependencies
-    this.managedEndpointProviderServiceToken = new EmrManagedEndpointProvider(this, 'ManagedEndpointProvider').provider.serviceToken;
+    this.managedEndpointProviderServiceToken = new EmrManagedEndpointProvider(this, 'ManagedEndpointProvider', {
+      assetBucketArn: this.assetBucket.bucketArn,
+    }).provider.serviceToken;
 
     // Provide the Kubernetes Dashboard URL in AWS CloudFormation output
     new CfnOutput(this, 'kubernetesDashboardURL', {
@@ -453,6 +592,7 @@ ${userData.join('\r\n')}
             subnets: [subnet],
           },
           nodegroupName: nodegroupName,
+          nodeRole: this.ec2InstanceNodeGroupRole,
         },
       };
 
@@ -505,10 +645,17 @@ ${userData.join('\r\n')}
         type: 'EKS',
         info: { eksInfo: { namespace: options.eksNamespace || 'default' } },
       },
+      tags: [{
+        key: 'for-use-with',
+        value: 'cdk-analytics-reference-architecture',
+      }],
     });
 
     virtCluster.node.addDependency(roleBinding);
     virtCluster.node.addDependency(this.emrServiceRole);
+
+    Tags.of(virtCluster).add('for-use-with', 'cdk-analytics-reference-architecture');
+
     return virtCluster;
   }
 

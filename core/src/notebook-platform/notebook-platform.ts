@@ -19,6 +19,7 @@ import {
   createUserSessionPolicy,
 } from './notebook-platform-helpers';
 import { NotebookUserOptions } from './notebook-user';
+import {SingletonBucket} from "../singleton-bucket";
 
 
 /**
@@ -256,6 +257,8 @@ export class NotebookPlatform extends NestedStack {
       encryptionKey: this.notebookPlatformEncryptionKey,
       encryption: BucketEncryption.KMS,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      serverAccessLogsBucket: SingletonBucket.getOrCreate(this, 'ara-s3accesslogs'),
+      serverAccessLogsPrefix: `${props.studioName}`,
     });
 
     this.notebookPlatformEncryptionKey.addToResourcePolicy(

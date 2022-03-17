@@ -1,17 +1,17 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Construct, Duration } from "@aws-cdk/core";
-import { RetentionDays } from "@aws-cdk/aws-logs";
-import { LambdaInvoke } from "@aws-cdk/aws-stepfunctions-tasks";
-import { JsonPath, Map, StateMachine, TaskInput } from "@aws-cdk/aws-stepfunctions";
-import * as lambda from "@aws-cdk/aws-lambda";
-import { SfnStateMachine } from "@aws-cdk/aws-events-targets";
-import { Rule, Schedule } from "@aws-cdk/aws-events";
-import { Policy, PolicyStatement } from "@aws-cdk/aws-iam";
-import path = require("path");
-import { Bucket } from "@aws-cdk/aws-s3";
-import { PartitionedDataset } from "../datasets/partitioned-dataset";
+import path = require('path');
+import { Rule, Schedule } from '@aws-cdk/aws-events';
+import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
+import { Policy, PolicyStatement } from '@aws-cdk/aws-iam';
+import * as lambda from '@aws-cdk/aws-lambda';
+import { RetentionDays } from '@aws-cdk/aws-logs';
+import { Bucket } from '@aws-cdk/aws-s3';
+import { JsonPath, Map, StateMachine, TaskInput } from '@aws-cdk/aws-stepfunctions';
+import { LambdaInvoke } from '@aws-cdk/aws-stepfunctions-tasks';
+import { Construct, Duration } from '@aws-cdk/core';
+import { PartitionedDataset } from '../datasets/partitioned-dataset';
 
 export interface BatchReplayerProps {
   readonly dataset: PartitionedDataset;
@@ -22,13 +22,13 @@ export interface BatchReplayerProps {
 
 /**
  * Replay the data in the given PartitionedDataset.
- * 
+ *
  * It will dump files into the `sinkBucket` based on the given `frequency`.
  * The computation is in a Step Function with two Lambda steps.
- * 
+ *
  * 1. resources/lambdas/find-file-paths
  * Read the manifest file and output a list of S3 file paths within that batch time range
- * 
+ *
  * 2. resources/lambdas/write-in-batch
  * Take a file path, filter only records within given time range, adjust the the time with offset to
  * make it looks like just being generated. Then write the output to the `sinkBucket`
@@ -54,7 +54,7 @@ export class BatchReplayer extends Construct {
   /**
    * Maximum file size for each output file. If the output batch file is,
    * larger than that, it will be splitted into multiple files that fit this size.
-   * 
+   *
    * Default to 100MB (max value)
    */
   public readonly outputFileMaxSizeInBytes?: number;
@@ -66,12 +66,12 @@ export class BatchReplayer extends Construct {
     this.frequency = props.frequency || 60;
     this.sinkBucket = props.sinkBucket;
     this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
-    
+
 
     /**
      * Find all paths within the time range from the manifest file
      */
-    const findFilePathsFn = new lambda.DockerImageFunction(this, "findFilePathFn", {
+    const findFilePathsFn = new lambda.DockerImageFunction(this, 'findFilePathFn', {
       memorySize: 1024,
       code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lib/data-generator/resources/lambdas/find-file-paths')),
       logRetention: RetentionDays.ONE_DAY,
@@ -86,14 +86,14 @@ export class BatchReplayer extends Construct {
           new PolicyStatement({
             actions: ['s3:GetObject'],
             resources: [
-              `arn:aws:s3:::${bucketName}/${objectKey}`
+              `arn:aws:s3:::${bucketName}/${objectKey}`,
             ],
           }),
         ],
       }),
     );
 
-    const findFilePathsFnTask = new LambdaInvoke(this, "findFilePathFnTask", {
+    const findFilePathsFnTask = new LambdaInvoke(this, 'findFilePathFnTask', {
       lambdaFunction: findFilePathsFn,
       payload: TaskInput.fromObject({
         frequency: props.frequency,
@@ -104,14 +104,14 @@ export class BatchReplayer extends Construct {
       }),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
       retryOnServiceExceptions: true,
-      outputPath: "$.Payload",
+      outputPath: '$.Payload',
     });
 
 
     /**
      * Write data in batch step
      */
-    const writeInBatchFn = new lambda.DockerImageFunction(this, "writeInBatchFn", {
+    const writeInBatchFn = new lambda.DockerImageFunction(this, 'writeInBatchFn', {
       memorySize: 1024 * 5,
       code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lib/data-generator/resources/lambdas/write-in-batch')),
       logRetention: RetentionDays.ONE_DAY,
@@ -125,7 +125,7 @@ export class BatchReplayer extends Construct {
           new PolicyStatement({
             actions: ['s3:GetObject'],
             resources: [
-              `arn:aws:s3:::${this.dataset.location.bucketName}*`
+              `arn:aws:s3:::${this.dataset.location.bucketName}*`,
             ],
           }),
         ],
@@ -133,18 +133,18 @@ export class BatchReplayer extends Construct {
     );
     this.sinkBucket.grantPut(writeInBatchFn);
 
-    const writeInBatchFnTask = new LambdaInvoke(this, "writeInBatchFnTask", {
+    const writeInBatchFnTask = new LambdaInvoke(this, 'writeInBatchFnTask', {
       lambdaFunction: writeInBatchFn,
       payload: TaskInput.fromObject({
         // Array from the last step to be mapped
         outputFileIndex: JsonPath.stringAt('$.index'),
         filePath: JsonPath.stringAt('$.filePath'),
-        
+
         // For calculating the start/end time
         frequency: props.frequency,
         triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
         offset: '' + this.dataset.offset,
-        
+
         // For file processing
         dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
         dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
@@ -153,25 +153,25 @@ export class BatchReplayer extends Construct {
       }),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
       retryOnServiceExceptions: true,
-      outputPath: "$.Payload",
+      outputPath: '$.Payload',
     });
 
     /**
      * Use "Map" step to write each filePath parallelly
      */
-    const writeInBatchMapTask = new Map(this, "writeInBatchMapTask", {
+    const writeInBatchMapTask = new Map(this, 'writeInBatchMapTask', {
       itemsPath: JsonPath.stringAt('$.filePaths'),
       parameters: {
         index: JsonPath.stringAt('$$.Map.Item.Index'),
         filePath: JsonPath.stringAt('$$.Map.Item.Value'),
-      }
+      },
     });
     writeInBatchMapTask.iterator(writeInBatchFnTask);
 
     /**
      * Overarching Step Function StateMachine
      */
-    const batchReplayStepFn = new StateMachine(this, "batchReplayStepFn", {
+    const batchReplayStepFn = new StateMachine(this, 'batchReplayStepFn', {
       definition: findFilePathsFnTask.next(writeInBatchMapTask),
       timeout: Duration.minutes(20),
     });

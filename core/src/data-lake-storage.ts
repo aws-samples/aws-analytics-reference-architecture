@@ -1,8 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Bucket, StorageClass, BucketEncryption } from '@aws-cdk/aws-s3';
+import {Bucket, StorageClass, BucketEncryption, BlockPublicAccess} from '@aws-cdk/aws-s3';
 import { Construct, Aws, RemovalPolicy, Duration } from '@aws-cdk/core';
+import {SingletonBucket} from "./singleton-bucket";
+import {SingletonKey} from "./singleton-kms-key";
 
 /**
  * Properties for the DataLakeStorage Construct
@@ -86,7 +88,8 @@ export class DataLakeStorage extends Construct {
     // Create the raw data bucket with the raw transitions
     this.rawBucket = new Bucket(this, 'RawBucket', {
       bucketName: 'ara-raw-' + Aws.ACCOUNT_ID,
-      encryption: BucketEncryption.KMS_MANAGED,
+      encryption: BucketEncryption.KMS,
+      encryptionKey: SingletonKey.getOrCreate(this, 'stackEncryptionKey'),
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -95,6 +98,9 @@ export class DataLakeStorage extends Construct {
           transitions: rawTransitions,
         },
       ],
+      serverAccessLogsBucket: SingletonBucket.getOrCreate(this, 'ara-s3accesslogs'),
+      serverAccessLogsPrefix: 'raw-bucket',
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
     // Prepare Amazon S3 Lifecycle Rules for clean data
@@ -116,7 +122,8 @@ export class DataLakeStorage extends Construct {
     // Create the clean data bucket
     this.cleanBucket = new Bucket(this, 'CleanBucket', {
       bucketName: 'ara-clean-' + Aws.ACCOUNT_ID,
-      encryption: BucketEncryption.KMS_MANAGED,
+      encryption: BucketEncryption.KMS,
+      encryptionKey: SingletonKey.getOrCreate(this, 'stackEncryptionKey'),
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -125,6 +132,9 @@ export class DataLakeStorage extends Construct {
           transitions: cleanTransitions,
         },
       ],
+      serverAccessLogsBucket: SingletonBucket.getOrCreate(this, 'ara-s3accesslogs'),
+      serverAccessLogsPrefix: 'clean-bucket',
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
     // Prepare Amazon S3 Lifecycle Rules for clean data
@@ -146,7 +156,8 @@ export class DataLakeStorage extends Construct {
     // Create the transform data bucket
     this.transformBucket = new Bucket(this, 'TransformBucket', {
       bucketName: 'ara-transform-' + Aws.ACCOUNT_ID,
-      encryption: BucketEncryption.KMS_MANAGED,
+      encryption: BucketEncryption.KMS,
+      encryptionKey: SingletonKey.getOrCreate(this, 'stackEncryptionKey'),
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -155,6 +166,9 @@ export class DataLakeStorage extends Construct {
           transitions: transformTransitions,
         },
       ],
+      serverAccessLogsBucket: SingletonBucket.getOrCreate(this, 'ara-s3accesslogs'),
+      serverAccessLogsPrefix: 'transform-bucket',
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
   }
 }

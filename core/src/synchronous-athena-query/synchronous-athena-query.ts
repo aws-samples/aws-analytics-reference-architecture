@@ -6,8 +6,8 @@ import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
-import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
+import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
  * The properties for SynchronousAthenaQuery Construct.
@@ -52,22 +52,15 @@ export class SynchronousAthenaQuery extends Construct {
 
     const stack = Stack.of(this);
 
-    // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
-    const athenaQueryStartFn = new PreBundledFunction(this, 'athenaQueryStartFn', {
-      runtime: Runtime.PYTHON_3_8,
-      codePath: 'synchronous-athena-query/resources/lambdas',
-      handler: 'lambda.on_event',
-      logRetention: RetentionDays.ONE_DAY,
-      timeout: Duration.seconds(20),
-    });
+    let athenaQueryStartFnPolicy: PolicyStatement [] = [];
 
     // Add permissions from the Amazon IAM Policy Statements
     props.executionRoleStatements?.forEach( (element) => {
-      athenaQueryStartFn.addToRolePolicy(element);
+      athenaQueryStartFnPolicy.push(element);
     });
 
-    // Add permissions to the Function fro starting the query
-    athenaQueryStartFn.addToRolePolicy(new PolicyStatement({
+    // Add permissions to the Function for starting the query
+    athenaQueryStartFnPolicy.push(new PolicyStatement({
       resources: [
         stack.formatArn({
           region: Aws.REGION,
@@ -83,7 +76,7 @@ export class SynchronousAthenaQuery extends Construct {
     }));
 
     // add permissions to the Function to store result in the result path
-    athenaQueryStartFn.addToRolePolicy(new PolicyStatement({
+    athenaQueryStartFnPolicy.push(new PolicyStatement({
       resources: [
         stack.formatArn({
           region: '',
@@ -118,17 +111,33 @@ export class SynchronousAthenaQuery extends Construct {
       ],
     }));
 
+
+    // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
+    const athenaQueryStartFn = new PreBundledFunction(this, 'athenaQueryStartFn', {
+      runtime: Runtime.PYTHON_3_8,
+      codePath: 'synchronous-athena-query/resources/lambdas',
+      name: 'synchronousAthenaCrStart',
+      lambdaPolicyStatements: athenaQueryStartFnPolicy,
+      handler: 'lambda.on_event',
+      logRetention: RetentionDays.ONE_DAY,
+      timeout: Duration.seconds(20),
+    });
+
+    let athenaQueryWaitFnPolicy: PolicyStatement [] = [];
+
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
     const athenaQueryWaitFn = new PreBundledFunction(this, 'athenaQueryStartWaitFn', {
       runtime: Runtime.PYTHON_3_8,
       codePath: 'synchronous-athena-query/resources/lambdas',
+      name: 'synchronousAthenaCrWait',
+      lambdaPolicyStatements: athenaQueryWaitFnPolicy,
       handler: 'lambda.is_complete',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(20),
     });
 
     // Add permissions to the Function
-    athenaQueryWaitFn.addToRolePolicy(new PolicyStatement({
+    athenaQueryWaitFnPolicy.push(new PolicyStatement({
       resources: [
         stack.formatArn({
           region: Aws.REGION,
@@ -145,9 +154,11 @@ export class SynchronousAthenaQuery extends Construct {
     }));
 
     // Create an AWS CDK Custom Resource Provider for starting the source crawler and waiting for completion
-    const synchronousAthenaQueryCRP = new Provider(this, 'synchronousAthenaQueryCRP', {
+    const synchronousAthenaQueryCRP = new ScopedIamProvider(this, 'synchronousAthenaQueryCRP', {
       onEventHandler: athenaQueryStartFn,
       isCompleteHandler: athenaQueryWaitFn,
+      onEventFnName: 'synchronousAthenaCrStart',
+      isCompleteFnName: 'synchronousAthenaCrWait',
       queryInterval: Duration.seconds(10),
       totalTimeout: Duration.minutes(props.timeout || 1),
       logRetention: RetentionDays.ONE_DAY,

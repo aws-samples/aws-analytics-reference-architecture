@@ -38,7 +38,8 @@ def on_create(event):
         executionRoleArn=event['ResourceProperties']['executionRoleArn'],
         configurationOverrides=json.loads(event['ResourceProperties']['configurationOverrides']) if
         event['ResourceProperties']['configurationOverrides'] else None,
-        clientToken=str(uuid.uuid4())
+        clientToken=str(uuid.uuid4()),
+        tags={'for-use-with':'cdk-analytics-reference-architecture'}
     )
 
     ##log.info(json.load(event['ResourceProperties']['configurationOverrides']))

@@ -3,18 +3,19 @@
 
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
-import { PolicyStatement } from '@aws-cdk/aws-iam';
+import { PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
-import { RetentionDays } from '@aws-cdk/aws-logs';
+import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket } from '@aws-cdk/aws-s3';
-import { StateMachine, IntegrationPattern, TaskInput, JsonPath } from '@aws-cdk/aws-stepfunctions';
+import { StateMachine, IntegrationPattern, TaskInput, JsonPath, LogLevel } from '@aws-cdk/aws-stepfunctions';
 import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfunctions-tasks';
-import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
+import { Construct, Arn, Aws, Stack, Duration, ArnFormat, RemovalPolicy } from '@aws-cdk/core';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Dataset } from '../datasets/dataset';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonGlueDatabase } from '../singleton-glue-database';
+import { SingletonKey } from '../singleton-kms-key';
 import { SynchronousAthenaQuery } from '../synchronous-athena-query';
 
 
@@ -178,6 +179,13 @@ export class DataGenerator extends Construct {
     });
     createTargetTable.node.addDependency(datageneratorDB);
 
+    let offsetCreateCRRole: Role = new Role(this,
+      'offsetCreateCRRole', {
+        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+        description: 'Role used by lambda in createManagedEndpoint CR',
+        roleName: 'ara-data-generator-offsetCreateCRRole',
+      });
+
     // AWS Custom Resource to store the datetime offset only on creation
     const offsetCreate = new AwsCustomResource(this, 'offsetCreate', {
       onCreate: {
@@ -217,7 +225,16 @@ export class DataGenerator extends Construct {
         }),
       ]),
       logRetention: RetentionDays.ONE_DAY,
+      role: offsetCreateCRRole,
     });
+
+
+    let offsetGetCRRole: Role = new Role(this,
+      'offsetGetCRRole', {
+        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+        description: 'Role used by lambda in createManagedEndpoint CR',
+        roleName: 'ara-data-generator-offsetGetCRRole',
+      });
 
     // AWS Custom Resource to get the datetime offset from AWS SSM
     const offsetGet = new AwsCustomResource(this, 'offsetGet', {
@@ -254,6 +271,7 @@ export class DataGenerator extends Construct {
         }),
       ]),
       logRetention: RetentionDays.ONE_DAY,
+      role: offsetGetCRRole,
     });
     offsetGet.node.addDependency(offsetCreate);
 
@@ -261,6 +279,7 @@ export class DataGenerator extends Construct {
     const querySetupFn = new PreBundledFunction(this, 'querySetupFn', {
       runtime: Runtime.PYTHON_3_8,
       codePath: 'data-generator/resources/lambdas/setup',
+      name: 'DataGeneratorFn',
       handler: 'lambda.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(30),
@@ -303,6 +322,16 @@ export class DataGenerator extends Construct {
     const generatorStepFunctions = new StateMachine(this, 'dataGenerator', {
       definition: querySetupTask.next(athenaQueryTask),
       timeout: Duration.minutes(7),
+      logs: {
+        destination: new LogGroup(this, 'generatorStepFunctionsLog', {
+          removalPolicy: RemovalPolicy.DESTROY,
+          retention: RetentionDays.FIVE_MONTHS,
+          encryptionKey: SingletonKey.getOrCreate(this, 'stackEncryptionKey'),
+        }),
+        includeExecutionData: false,
+        level: LogLevel.ALL,
+      },
+      tracingEnabled: true,
     });
 
     // Add permissions for executing the INSERT INTO SELECT query

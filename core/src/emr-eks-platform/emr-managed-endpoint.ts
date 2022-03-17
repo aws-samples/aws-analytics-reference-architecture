@@ -4,10 +4,10 @@
 import { IRole } from '@aws-cdk/aws-iam';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
-import { Construct, Duration } from '@aws-cdk/core';
+import { RetentionDays } from '@aws-cdk/aws-logs';
+import { Construct, Duration, Aws } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { RetentionDays } from '@aws-cdk/aws-logs';
 
 
 /**
@@ -38,6 +38,17 @@ export interface EmrManagedEndpointOptions {
   readonly configurationOverrides?: string;
 }
 
+
+/**
+ * The properties for the EMR Managed Endpoint to create.
+ */
+export interface EmrManagedEndpointProviderProps {
+  /**
+   * The ARN of the bucket holding the k8 assets, in this case the pod templates
+   */
+  readonly assetBucketArn: string;
+}
+
 /**
  * ManagedEndpointProvider Construct implementing a custom resource provider for managing Amazon EMR on Amazon EKS Managed Endpoints.
  */
@@ -53,23 +64,29 @@ export class EmrManagedEndpointProvider extends Construct {
    * @param id the ID of the CDK Construct
    */
 
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, props: EmrManagedEndpointProviderProps) {
     super(scope, id);
-       
+
     const lambdaPolicy = [
       new PolicyStatement({
-        resources: ['*'],
+        resources: [props.assetBucketArn],
         actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
       }),
       new PolicyStatement({
         resources: ['*'],
-        actions: ['acm:ImportCertificate', 'acm:DescribeCertificate'],
+        actions: ['emr-containers:DescribeManagedEndpoint',
+          'emr-containers:DeleteManagedEndpoint'],
+        conditions: { StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } },
       }),
       new PolicyStatement({
-        resources: ['*'],
-        actions: ['emr-containers:DescribeManagedEndpoint',
-          'emr-containers:CreateManagedEndpoint',
-          'emr-containers:DeleteManagedEndpoint'],
+        resources: [`arn:${Aws.PARTITION}:emr-containers:${Aws.REGION}:${Aws.ACCOUNT_ID}:/virtualclusters/*`],
+        actions: ['emr-containers:CreateManagedEndpoint'],
+        conditions: { StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } },
+      }),
+      new PolicyStatement({
+        resources: [`arn:${Aws.PARTITION}:emr-containers:${Aws.REGION}:${Aws.ACCOUNT_ID}:/virtualclusters/*`],
+        actions: ['emr-containers:TagResource'],
+        conditions: { StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } },
       }),
       new PolicyStatement({
         resources: ['*'],
@@ -82,10 +99,6 @@ export class EmrManagedEndpointProvider extends Construct {
           'ec2:RevokeSecurityGroupIngress',
         ],
       }),
-      new PolicyStatement({
-        resources: ['*'],
-        actions: ['kms:Decrypt'],
-      }),
     ];
 
     // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
@@ -93,26 +106,32 @@ export class EmrManagedEndpointProvider extends Construct {
       codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',
       runtime: Runtime.PYTHON_3_8,
       handler: 'lambda.on_event',
+      name: 'EmrManagedEndpointProviderOnEvent',
+      lambdaPolicyStatements: lambdaPolicy,
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(120),
-      initialPolicy: lambdaPolicy,
     });
 
     // AWS Lambda supporting the status check on asynchronous create, update and delete operations
     const isComplete = new PreBundledFunction(this, 'IsComplete', {
       codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',
       handler: 'lambda.is_complete',
+      name: 'EmrManagedEndpointProviderIsComplete',
+      lambdaPolicyStatements: lambdaPolicy,
       runtime: Runtime.PYTHON_3_8,
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.seconds(120),
-      initialPolicy: lambdaPolicy,
     });
-    
+
     this.provider = new Provider(this, 'CustomResourceProvider', {
+      //isCompleteFnName: 'EmrManagedEndpointProviderIsComplete',
+      //onEventFnName: 'EmrManagedEndpointProviderOnEvent',
       onEventHandler: onEvent,
       isCompleteHandler: isComplete,
       totalTimeout: Duration.minutes(30),
       queryInterval: Duration.seconds(20),
+      providerFunctionName: 'managedEndpointProviderFn',
     });
+
   }
 }
