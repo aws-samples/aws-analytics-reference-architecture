@@ -1955,6 +1955,15 @@ Duplicate values are removed when stack is synthesized.
 
 > [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html)
 
+###### Example <a name="Example" id="aws-analytics-reference-architecture.NotebookPlatform.addTransform.example"></a>
+
+```typescript
+declare const stack: Stack;
+
+stack.addTransform('AWS::Serverless-2016-10-31')
+```
+
+
 ###### `transform`<sup>Required</sup> <a name="transform" id="aws-analytics-reference-architecture.NotebookPlatform.addTransform.parameter.transform"></a>
 
 - *Type:* string
@@ -2712,6 +2721,15 @@ public addEventNotification(event: EventType, dest: IBucketNotificationDestinati
 Adds a bucket notification event destination.
 
 > [https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html](https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
+
+###### Example <a name="Example" id="aws-analytics-reference-architecture.SingletonBucket.addEventNotification.example"></a>
+
+```typescript
+   declare const myLambda: lambda.Function;
+   const bucket = new s3.Bucket(this, 'MyBucket');
+   bucket.addEventNotification(s3.EventType.OBJECT_CREATED, new s3n.LambdaDestination(myLambda), {prefix: 'home/myusername/*'});
+```
+
 
 ###### `event`<sup>Required</sup> <a name="event" id="aws-analytics-reference-architecture.SingletonBucket.addEventNotification.parameter.event"></a>
 
@@ -6195,6 +6213,10 @@ The web sale dataset part of 1GB retail datasets.
 
 ### IdpRelayState <a name="IdpRelayState" id="aws-analytics-reference-architecture.IdpRelayState"></a>
 
+Enum to define the RelayState of different IdPs Used in EMR Studio Prop in the IAM_FEDERATED scenario.
+
+#### Members <a name="Members" id="Members"></a>
+
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.IdpRelayState.MICROSOFT_AZURE">MICROSOFT_AZURE</a></code> | *No description.* |
@@ -6203,24 +6225,26 @@ The web sale dataset part of 1GB retail datasets.
 
 ---
 
-Enum to define the RelayState of different IdPs Used in EMR Studio Prop in the IAM_FEDERATED scenario.
-
-#### `MICROSOFT_AZURE` <a name="MICROSOFT_AZURE" id="aws-analytics-reference-architecture.IdpRelayState.MICROSOFT_AZURE"></a>
+##### `MICROSOFT_AZURE` <a name="MICROSOFT_AZURE" id="aws-analytics-reference-architecture.IdpRelayState.MICROSOFT_AZURE"></a>
 
 ---
 
 
-#### `PING_FEDERATE` <a name="PING_FEDERATE" id="aws-analytics-reference-architecture.IdpRelayState.PING_FEDERATE"></a>
+##### `PING_FEDERATE` <a name="PING_FEDERATE" id="aws-analytics-reference-architecture.IdpRelayState.PING_FEDERATE"></a>
 
 ---
 
 
-#### `PING_ONE` <a name="PING_ONE" id="aws-analytics-reference-architecture.IdpRelayState.PING_ONE"></a>
+##### `PING_ONE` <a name="PING_ONE" id="aws-analytics-reference-architecture.IdpRelayState.PING_ONE"></a>
 
 ---
 
 
 ### SSOIdentityType <a name="SSOIdentityType" id="aws-analytics-reference-architecture.SSOIdentityType"></a>
+
+Enum to define the type of identity Type in EMR studio.
+
+#### Members <a name="Members" id="Members"></a>
 
 | **Name** | **Description** |
 | --- | --- |
@@ -6229,19 +6253,21 @@ Enum to define the RelayState of different IdPs Used in EMR Studio Prop in the I
 
 ---
 
-Enum to define the type of identity Type in EMR studio.
-
-#### `USER` <a name="USER" id="aws-analytics-reference-architecture.SSOIdentityType.USER"></a>
+##### `USER` <a name="USER" id="aws-analytics-reference-architecture.SSOIdentityType.USER"></a>
 
 ---
 
 
-#### `GROUP` <a name="GROUP" id="aws-analytics-reference-architecture.SSOIdentityType.GROUP"></a>
+##### `GROUP` <a name="GROUP" id="aws-analytics-reference-architecture.SSOIdentityType.GROUP"></a>
 
 ---
 
 
 ### StudioAuthMode <a name="StudioAuthMode" id="aws-analytics-reference-architecture.StudioAuthMode"></a>
+
+Enum to define authentication mode for Amazon EMR Studio.
+
+#### Members <a name="Members" id="Members"></a>
 
 | **Name** | **Description** |
 | --- | --- |
@@ -6250,14 +6276,12 @@ Enum to define the type of identity Type in EMR studio.
 
 ---
 
-Enum to define authentication mode for Amazon EMR Studio.
-
-#### `IAM` <a name="IAM" id="aws-analytics-reference-architecture.StudioAuthMode.IAM"></a>
+##### `IAM` <a name="IAM" id="aws-analytics-reference-architecture.StudioAuthMode.IAM"></a>
 
 ---
 
 
-#### `SSO` <a name="SSO" id="aws-analytics-reference-architecture.StudioAuthMode.SSO"></a>
+##### `SSO` <a name="SSO" id="aws-analytics-reference-architecture.StudioAuthMode.SSO"></a>
 
 ---
 

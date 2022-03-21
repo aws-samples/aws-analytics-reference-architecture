@@ -28,7 +28,7 @@ This documentation explains how to get started with the core components of the A
 2. The core components can be deployed in any AWS region
 3. Install the following components with the specified version on the machine from which the deployment will be executed:
     1. Python [3.8-3.9.2] or Typescript
-    2. AWS CDK v1: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
+    2. AWS CDK v1: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) guide.
 
 
 ### Initialization (in Python)
