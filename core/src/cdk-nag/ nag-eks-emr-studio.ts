@@ -45,7 +45,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
   'eks-emr-studio/data-platformCluster/Autoscaler/Role/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-EKS1', reason: 'eks-emr-studio/data-platformCluster/Resource/Resource/Default' }],
+  [{ id: 'AwsSolutions-EKS1', reason: 'EKS cluster is meant to be public' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
