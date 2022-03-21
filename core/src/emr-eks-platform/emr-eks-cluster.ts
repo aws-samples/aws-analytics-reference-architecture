@@ -9,7 +9,6 @@ import {
   ClusterLoggingTypes, KubernetesManifest,
   KubernetesVersion,
   Nodegroup,
-  //ServiceAccount
 } from '@aws-cdk/aws-eks';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import {
@@ -28,7 +27,7 @@ import {
 import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import { CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags } from '@aws-cdk/core';
+import { CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags} from '@aws-cdk/core';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonKey } from '../singleton-kms-key';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
@@ -45,6 +44,7 @@ import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 //import * as IamPolicyAutoscaler from './resources/k8s/iam-policy-autoscaler.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
+//import {AwsCustomResource, AwsCustomResourcePolicy} from "@aws-cdk/custom-resources";
 
 
 /**
@@ -123,8 +123,8 @@ export class EmrEksCluster extends Construct {
   private readonly eksVpc: IVpc | undefined;
   //private readonly assetBucketRole: Role;
   //private readonly awsNodeIrsaRole: IRole;
-  private readonly ec2InstanceNodeGroupRole: Role;
   private readonly awsNodeRole: Role;
+  private readonly ec2InstanceNodeGroupRole: Role;
 
   /**
    * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -223,7 +223,6 @@ export class EmrEksCluster extends Construct {
           resources: ['*'],
         });
 
-
     let autoscallingPolicyMutateGroup =
         new PolicyStatement({
           effect: Effect.ALLOW,
@@ -233,7 +232,7 @@ export class EmrEksCluster extends Construct {
           ],
           resources: ['*'],
           conditions: {
-            'ForAnyValue:StringEquals': {
+            StringEquals: {
               'aws:ResourceTag/eks:cluster-name': props.eksClusterName,
             },
           },
@@ -316,20 +315,28 @@ export class EmrEksCluster extends Construct {
       eksClusterName: this.clusterName,
     }).provider.serviceToken;
 
+    // Create a role to be used as instance profile for nodegroups
     this.ec2InstanceNodeGroupRole = new Role(this, 'ec2InstanceNodeGroupRole', {
       assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
       roleName: 'ara-ec2-instance-role',
     });
 
+    //attach policies to the role to be used by the nodegroups
     this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
     this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
     this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
+    this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
+
+    let EmrEksNodeGroupTooling: any = { ...EmrEksNodegroup.TOOLING_ALL };
+    EmrEksNodeGroupTooling.nodeRole = this.ec2InstanceNodeGroupRole;
 
     // Create the Amazon EKS Nodegroup for tooling
-    this.addNodegroupCapacity('tooling', EmrEksNodegroup.TOOLING_ALL);
+    this.addNodegroupCapacity('tooling', EmrEksNodeGroupTooling as EmrEksNodegroupOptions);
     // Create default Amazon EMR on EKS Nodegroups. This will create one Amazon EKS nodegroup per AZ
     // Also create default configurations and pod templates for these nodegroups
-    //this.addEmrEksNodegroup('criticalAll', EmrEksNodegroup.CRITICAL_ALL);
+    //let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
+    //EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
+    //this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
     //this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
     //this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
     // Add a nodegroup for notebooks
@@ -497,6 +504,42 @@ export class EmrEksCluster extends Construct {
       description: 'Use podTemplates in Amazon EMR jobs from this Amazon S3 Location',
       value: this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}`),
     });
+
+    /*const detachPolicyCR : Role = new Role(this,
+        'offsetGetCRRole', {
+          assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+          description: 'Role used by lambda in createManagedEndpoint CR',
+          roleName: 'ara-data-generator-offsetGetCRRole',
+        });*/
+
+    /*new AwsCustomResource(this, 'aws-custom', {
+      policy: AwsCustomResourcePolicy.fromStatements(new PolicyStatement({
+        resources: [
+          stack.formatArn({
+            account: Aws.ACCOUNT_ID,
+            region: Aws.REGION,
+            service: 'iam',
+            resource: 'DetachRolePolicy',
+            resourceName: '',
+          }),
+        ],
+        actions: [
+          'iam:DetachRolePolicy',
+        ],
+      }),
+      ),
+      onCreate: {
+        service: 'IAM',
+        action: 'detach-role-policy',
+        parameters: {
+          role-name: '...',
+          policy-arn: '',
+        },
+      },
+      role: detachPolicyCR,
+    });
+*/
+
   }
 
   /**
@@ -592,7 +635,6 @@ ${userData.join('\r\n')}
             subnets: [subnet],
           },
           nodegroupName: nodegroupName,
-          nodeRole: this.ec2InstanceNodeGroupRole,
         },
       };
 

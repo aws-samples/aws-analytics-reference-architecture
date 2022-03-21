@@ -18,16 +18,7 @@ export interface ScopedIamProviderProps extends Partial<ProviderProps>{
 }
 
 /**
- * A Lambda function with prebundled dependencies
- *
- * It changes of the code path by based on the environment that `cdk synth` is running on.
- *
- * This class is used together with a Projen custom task "copy-resources", and "pip-install".
- * The tasks will ensure that all Python and libraries files are available in "lib" folder,
- * with the same relative path
- *
- * When this construct is being run in JSII, this file will be in `node_modules` folder
- * (as it's installed as a 3rd party library.) So we need to change reference based on __dirname.
+ * Provide a custom resource provider with a custom IAM role scoped down for cloudwatch
  */
 export class ScopedIamProvider extends Provider {
   constructor(scope: cdk.Construct, id: string, props: ScopedIamProviderProps) {
