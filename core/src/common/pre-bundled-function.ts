@@ -66,7 +66,7 @@ export class PreBundledFunction extends Function {
     //Policy to allow lambda access to cloudwatch logs
     const lambdaExecutionRolePolicy = new ManagedPolicy(scope, 'lambdaExecutionRolePolicy' + functionProps.functionName, {
       statements: lambdaPolicyStatement,
-      description: 'Policy used to allow CR Provider to access log and not use managed policy',
+      description: 'Policy similar to lambda execution role but scoped down',
     });
 
     //Create an execution role for the lambda and attach to it a policy formed from user input

@@ -32,6 +32,15 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
+  'eks-emr-studio/data-platform-emr-eks-assetsBucket/Resource',
+  [{
+    id: 'AwsSolutions-S1',
+    reason: 'access log not activated because the bucket only stores pod templates no data',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
   'eks-emr-studio/ara-s3accesslogsBucket/Resource',
   [{ id: 'AwsSolutions-S1', reason: 'Bucket does not require access log, contains only EKS pod templates' }],
 );
@@ -44,7 +53,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platformCluster/Autoscaler/Role/DefaultPolicy/Resource',
+  'eks-emr-studio/data-platformCluster/Resource/Resource/Default',
   [{ id: 'AwsSolutions-EKS1', reason: 'EKS cluster is meant to be public' }],
 );
 
@@ -52,4 +61,204 @@ NagSuppressions.addResourceSuppressionsByPath(
   stack,
   'eks-emr-studio/data-platform/ManagedEndpointProvider/lambdaExecutionRolePolicyara-EmrManagedEndpointProviderOnEvent/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Violation mitigated with tag based access control' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/AsgTagProvider/lambdaExecutionRolePolicyara-EmrEksNodegroupAsgTagOnEventFn/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard needed and violation mitigated with tag based access control' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/lambdaExecutionRolePolicyara-EmrManagedEndpointProviderIsComplete/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard needed and violation mitigated with tag based access control' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/AsgTagProvider/logRetentionLambdaExecutionRolePolicyara-EmrEksNodegroupAsgTagOnEventFn/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard needed for puteventlog IAM action' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/AWSLoadBalancerControllerIAMPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'IAM policy as provided by the open source community for AWS Load Balancer Controller ' +
+          'in https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.3.1/docs/install/iam_policy.json',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ec2InstanceNodeGroupRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'The use of the AWS managed policy is mandatory by the EKS service for nodegroups',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/Resource/CreationRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Role needed by eks cdk construct to deploy a cluster',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/s3BucketDeploymentRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'wild card used put and get S3 actions, and encrypt decrypt actions for KMS key resource',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/s3BucketDeploymentPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'wild card used put and get S3 actions, and encrypt decrypt actions for KMS key resource',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-onEvent/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'the use of AWS managed policy is for cloudwatch log creation, unable to change it as the logs are created at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-isComplete/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'the use of AWS managed policy is for cloudwatch log creation, unable to change it as the logs are created at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-onTimeout/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'the use of AWS managed policy is for cloudwatch log creation, unable to change it as the logs are created at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/Role/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'Service Role used and Required by EKS https://docs.aws.amazon.com/eks/latest/userguide/service_IAM_role.html',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/AsgTagProvider/logRetentionLambdaExcutionRoleara-EmrEksNodegroupAsgTagOnEventFn/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'policy to change log retention cannot be scoped down further',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/AsgTagProvider/lambdaExecutionRolePolicyCustomResourceProvider/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Policy cannot be scoped down further, log group is created at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/logRetentionLambdaExecutionRolePolicyara-EmrManagedEndpointProviderOnEvent/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Policy cannot be scoped down further, log is created at runtime',
+  }],
+);
+
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/logRetentionLambdaExecutionRolePolicyara-EmrManagedEndpointProviderIsComplete/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Policy cannot be scoped down further, log is created at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/OnEventHandler/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'AWS Managed policy basic lambda execution role used by Clusterprovider',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/IsCompleteHandler/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'AWS Managed policy basic lambda execution role used by Clusterprovider',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-onEvent/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'AWS Managed policy basic lambda execution role used by Clusterprovider',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-isComplete/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'AWS Managed policy basic lambda execution role used by Clusterprovider',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-onTimeout/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'AWS Managed policy basic lambda execution role used by Clusterprovider',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.KubectlProvider/Handler/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'AWS Managed policy basic lambda execution role, read access to ECR and access to VPC to send kubectl command to control plan',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.KubectlProvider/Provider/framework-onEvent/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'Provide the CR with AWS Managed policy basic lambda execution role, read access to ECR and access to VPC to send kubectl command to control plan',
+  }],
 );

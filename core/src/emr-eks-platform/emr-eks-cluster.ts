@@ -1,22 +1,22 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { join } from 'path';
-import { FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes } from '@aws-cdk/aws-ec2';
+import {join} from 'path';
+import {FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes} from '@aws-cdk/aws-ec2';
 import {
   CapacityType,
   Cluster,
-  ClusterLoggingTypes, KubernetesManifest,
+  ClusterLoggingTypes,
+  KubernetesManifest,
   KubernetesVersion,
   Nodegroup,
 } from '@aws-cdk/aws-eks';
-import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
+import {CfnVirtualCluster} from '@aws-cdk/aws-emrcontainers';
 import {
   CfnServiceLinkedRole,
   Effect,
   FederatedPrincipal,
   IManagedPolicy,
-  //IRole,
   ManagedPolicy,
   Policy,
   PolicyDocument,
@@ -24,18 +24,18 @@ import {
   Role,
   ServicePrincipal,
 } from '@aws-cdk/aws-iam';
-import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
-import { Bucket, Location } from '@aws-cdk/aws-s3';
-import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import { CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags} from '@aws-cdk/core';
-import { SingletonBucket } from '../singleton-bucket';
-import { SingletonKey } from '../singleton-kms-key';
-import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
-import { validateSchema } from './config-override-schema-validation';
-import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
-import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
-import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
-import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
+import {LogGroup, RetentionDays} from '@aws-cdk/aws-logs';
+import {Bucket, Location} from '@aws-cdk/aws-s3';
+import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
+import {Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags} from '@aws-cdk/core';
+import {SingletonBucket} from '../singleton-bucket';
+import {SingletonKey} from '../singleton-kms-key';
+import {SingletonCfnLaunchTemplate} from '../singleton-launch-template';
+import {validateSchema} from './config-override-schema-validation';
+import {EmrEksNodegroup, EmrEksNodegroupOptions} from './emr-eks-nodegroup';
+import {EmrEksNodegroupAsgTagProvider} from './emr-eks-nodegroup-asg-tag';
+import {EmrManagedEndpointOptions, EmrManagedEndpointProvider} from './emr-managed-endpoint';
+import {EmrVirtualClusterOptions} from './emr-virtual-cluster';
 import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
@@ -44,6 +44,7 @@ import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 //import * as IamPolicyAutoscaler from './resources/k8s/iam-policy-autoscaler.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
+
 //import {AwsCustomResource, AwsCustomResourcePolicy} from "@aws-cdk/custom-resources";
 
 
@@ -121,13 +122,12 @@ export class EmrEksCluster extends Construct {
   private readonly assetBucket: Bucket;
   private readonly clusterName: string;
   private readonly eksVpc: IVpc | undefined;
-  //private readonly assetBucketRole: Role;
-  //private readonly awsNodeIrsaRole: IRole;
+  private readonly assetUploadBucketRole: Role;
   private readonly awsNodeRole: Role;
   private readonly ec2InstanceNodeGroupRole: Role;
 
   /**
-   * Constructs a new instance of the EmrEksCluster class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
+   * Constructs a new instance of the EmrEksClus  ter class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
    * Amazon EKS Nodegroups and Amazon EKS Admin role can be customized.
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
@@ -153,6 +153,8 @@ export class EmrEksCluster extends Construct {
           ClusterLoggingTypes.API,
           ClusterLoggingTypes.AUTHENTICATOR,
           ClusterLoggingTypes.SCHEDULER,
+          ClusterLoggingTypes.CONTROLLER_MANAGER,
+          ClusterLoggingTypes.AUDIT,
         ],
       });
 
@@ -161,6 +163,13 @@ export class EmrEksCluster extends Construct {
         defaultCapacity: 0,
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
+        clusterLogging: [
+          ClusterLoggingTypes.API,
+          ClusterLoggingTypes.AUTHENTICATOR,
+          ClusterLoggingTypes.SCHEDULER,
+          ClusterLoggingTypes.CONTROLLER_MANAGER,
+          ClusterLoggingTypes.AUDIT,
+        ],
       });
 
       let eksVpcFlowLogLogGroup = new LogGroup(this, 'eksVpcFlowLogLogGroup', {
@@ -355,6 +364,30 @@ export class EmrEksCluster extends Construct {
     };
 
     Tags.of(this.assetBucket).add('for-use-with', 'cdk-analytics-reference-architecture');
+
+    let s3DeploymentLambdaPolicyStatement: PolicyStatement [] = [];
+
+    s3DeploymentLambdaPolicyStatement.push(new PolicyStatement({
+      actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+      resources: [`arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:*`],
+      effect: Effect.ALLOW,
+    }));
+
+    //Policy to allow lambda access to cloudwatch logs
+    const lambdaExecutionRolePolicy = new ManagedPolicy(scope, 's3BucketDeploymentPolicy', {
+      statements: s3DeploymentLambdaPolicyStatement,
+      description: 'Policy used by S3 deployment cdk construct',
+    });
+
+    //Create an execution role for the lambda and attach to it a policy formed from user input
+    this.assetUploadBucketRole = new Role (scope,
+      's3BucketDeploymentRole', {
+        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+        description: 'Role used by S3 deployment cdk construct',
+        managedPolicies: [lambdaExecutionRolePolicy],
+        roleName: 'araS3BucketDeploymentRole',
+      });
+
 
     // Upload the default podTemplate to the Amazon S3 asset bucket
     this.uploadPodTemplate('defaultPodTemplates', join(__dirname, 'resources/k8s/pod-template'));
@@ -890,6 +923,7 @@ ${userData.join('\r\n')}
       destinationBucket: this.assetBucket,
       destinationKeyPrefix: this.podTemplateLocation.objectKey,
       sources: [Source.asset(filePath)],
+      role: this.assetUploadBucketRole,
     });
   }
 
