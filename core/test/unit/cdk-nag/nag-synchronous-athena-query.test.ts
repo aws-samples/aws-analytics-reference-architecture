@@ -1,6 +1,14 @@
+/**
+ * Tests data-generator
+ *
+ * @group unit/best-practice/sync-athena-query
+ */
+
+
+import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { SynchronousAthenaQuery } from '../synchronous-athena-query';
+import { SynchronousAthenaQuery } from '../../../src/synchronous-athena-query';
 // eslint-disable-next-line import/no-extraneous-dependencies
 
 const mockApp = new App();
@@ -53,3 +61,13 @@ NagSuppressions.addResourceSuppressionsByPath(
   'synchronous-athena-query/SynchronousAthenaQueryTes/logRetentionLambdaExecutionRolePolicyara-synchronousAthenaCrStart/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
+
+test('No unsuppressed Warnings', () => {
+  const warnings = Annotations.fromStack(synchronousAthenaStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  expect(warnings).toHaveLength(0);
+});
+
+test('No unsuppressed Errors', () => {
+  const errors = Annotations.fromStack(synchronousAthenaStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  expect(errors).toHaveLength(0);
+});

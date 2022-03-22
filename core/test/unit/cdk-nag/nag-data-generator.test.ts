@@ -1,8 +1,15 @@
+/**
+ * Tests data-generator
+ *
+ * @group unit/best-practice/data-generator
+ */
+
+import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { DataGenerator } from '../data-generator';
-import { Dataset } from '../datasets';
+import { DataGenerator } from '../../../src/data-generator';
+import { Dataset } from '../../../src/datasets';
 
 const mockApp = new App();
 
@@ -98,3 +105,14 @@ NagSuppressions.addResourceSuppressionsByPath(
   'data-generator/predefinedGenerator/createTargetTable/logRetentionLambdaExecutionRolePolicyara-synchronousAthenaCrWait/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card used for creating cloudwatch log group and putevent, which is only known once lambda is executed' }],
 );
+
+
+test('No unsuppressed Warnings', () => {
+  const warnings = Annotations.fromStack(dataGeneratorStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  expect(warnings).toHaveLength(0);
+});
+
+test('No unsuppressed Errors', () => {
+  const errors = Annotations.fromStack(dataGeneratorStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  expect(errors).toHaveLength(0);
+});

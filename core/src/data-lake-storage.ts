@@ -1,10 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import {Bucket, StorageClass, BucketEncryption, BlockPublicAccess} from '@aws-cdk/aws-s3';
+import { Bucket, StorageClass, BucketEncryption, BlockPublicAccess } from '@aws-cdk/aws-s3';
 import { Construct, Aws, RemovalPolicy, Duration } from '@aws-cdk/core';
-import {SingletonBucket} from "./singleton-bucket";
-import {SingletonKey} from "./singleton-kms-key";
+import { SingletonBucket } from './singleton-bucket';
+import { SingletonKey } from './singleton-kms-key';
 
 /**
  * Properties for the DataLakeStorage Construct

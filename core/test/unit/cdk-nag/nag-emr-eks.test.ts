@@ -1,11 +1,19 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+/**
+ * Tests data-generator
+ *
+ * @group unit/best-practice/emr-eks
+ */
+
+
 //import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
+import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Stack, Aspects } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { EmrEksCluster } from '../emr-eks-platform/';
+import { EmrEksCluster } from '../../../src/emr-eks-platform';
 //import { NotebookPlatform, StudioAuthMode } from '../notebook-platform/';
 
 
@@ -262,3 +270,13 @@ NagSuppressions.addResourceSuppressionsByPath(
     reason: 'Provide the CR with AWS Managed policy basic lambda execution role, read access to ECR and access to VPC to send kubectl command to control plan',
   }],
 );
+
+test('No unsuppressed Warnings', () => {
+  const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  expect(warnings).toHaveLength(0);
+});
+
+test('No unsuppressed Errors', () => {
+  const errors = Annotations.fromStack(stack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  expect(errors).toHaveLength(0);
+});
