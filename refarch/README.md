@@ -5,7 +5,7 @@ The AWS Analytics Reference Architecture is a set of analytics solutions put tog
 It regroups AWS best practices for designing, implementing, and operating analytics platforms through different purpose-built patterns, handling common requirements, and solving customers' challenges.
 
 This project is composed of:
- * Reusable core components exposed in an AWS CDK (Cloud Development Kit) library currently available in [Typescript](https://www.npmjs.com/package/aws-analytics-reference-architecture) and [Python](https://pypi.org/project/aws-analytics-reference-architecture/). This library contains [AWS CDK constructs](https://constructs.dev/packages/aws-analytics-reference-architecture/v/1.8.4?lang=python) that can be used to quickly provision analytics solutions in demos, prototypes, proof of concepts and end-to-end reference architectures. 
+ * Reusable core components exposed in an AWS CDK (Cloud Development Kit) library currently available in [Typescript](https://www.npmjs.com/package/aws-analytics-reference-architecture) and [Python](https://pypi.org/project/aws-analytics-reference-architecture/). This library contains [AWS CDK constructs](https://constructs.dev/packages/aws-analytics-reference-architecture/?lang=python) that can be used to quickly provision analytics solutions in demos, prototypes, proof of concepts and end-to-end reference architectures. 
  * Reference architectures consumming the reusable components to demonstrate end-to-end examples in a business context. Currently, the [AWS native reference architecture](https://aws-samples.github.io/aws-analytics-reference-architecture/) is available.
 
 This documentation explains how to get started with the AWS native reference architecture.
@@ -16,7 +16,8 @@ This documentation explains how to get started with the AWS native reference arc
   - [Getting started](#getting-started)
     - [Deploying the AWS native reference architecture](#deploying-the-aws-native-reference-architecture)
       - [Prerequisites](#prerequisites)
-      - [Deployment](#deployment)
+      - [Deployment option 1: provision stacks directly (without CI/CD pipeline)](#deployment-option-1-provision-stacks-directly-without-cicd-pipeline)
+      - [Deployment option 2: use CI/CD pipeline to maintain the stacks](#deployment-option-2-use-cicd-pipeline-to-maintain-the-stacks)
       - [Adding users to Kibana](#adding-users-to-kibana)
       - [Connecting to Amazon Redshift](#connecting-to-amazon-redshift)
     - [Clean up](#clean-up)

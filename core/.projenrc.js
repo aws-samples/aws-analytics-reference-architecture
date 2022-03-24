@@ -22,7 +22,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.139.0',
+  cdkVersion: '1.144.0',
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
@@ -68,6 +68,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@aws-cdk/lambda-layer-awscli',
     '@aws-cdk/aws-emr',
     '@aws-cdk/aws-kms',
+    '@aws-cdk/aws-lakeformation'
   ],
 
   deps: [
@@ -78,8 +79,9 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
-    'aws-cdk@1.139.0',
+    'aws-cdk@1.144.0',
     'jest-runner-groups',
+    'glob',
   ],
 
   jestOptions: {
@@ -123,18 +125,28 @@ project.addTask('test:integ', {
   exec: 'jest --group=integ',
 });
 
+project.addTask('test:integ/data-lake', {
+  exec: 'jest --group=integ/data-lake',
+});
+
+project.addTask('test:integ/redshift', {
+  exec: 'jest --group=integ/redshift',
+});
+
 const testDeploy = project.addTask('test:deploy', {
   exec: 'cdk --version && cdk deploy --app=./lib/integ.default.js',
 });
 
 testDeploy.prependExec('npx projen build');
 
+project.packageTask.spawn(project.tasks.tryFind("package-all"));
+
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',
 });
 
 
-project.addDevDeps('glob');
+// project.addDevDeps('glob');
 
 /**
  * Task to copy `resources` directories from `src` to `lib`

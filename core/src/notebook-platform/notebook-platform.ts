@@ -4,7 +4,7 @@
 import { ISecurityGroup, Peer, Port, SecurityGroup, SubnetType } from '@aws-cdk/aws-ec2';
 import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from '@aws-cdk/aws-emr';
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { IManagedPolicy, IRole, ManagedPolicy, PolicyDocument, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
+import { Effect, IManagedPolicy, IRole, ManagedPolicy, PolicyStatement, PolicyDocument, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Key } from '@aws-cdk/aws-kms';
 import { BlockPublicAccess, Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
@@ -263,13 +263,31 @@ export class NotebookPlatform extends NestedStack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
-    //Create a Managed policy for Studio service role
-    this.studioServicePolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
-      'StudioServiceManagedPolicy', createStudioServiceRolePolicy(this, this.notebookPlatformEncryptionKey.keyArn, this.workspacesBucket.bucketName,
-        props.studioName),
-    ));
+    this.notebookPlatformEncryptionKey.addToResourcePolicy(
+      new PolicyStatement( {
+        principals: [new ServicePrincipal('elasticmapreduce.amazonaws.com')],
+        effect: Effect.ALLOW,
+        actions: [
+          'kms:Encrypt*',
+          'kms:Decrypt*',
+          'kms:ReEncrypt*',
+          'kms:GenerateDataKey*',
+          'kms:Describe*',
+        ],
+        conditions: {
+          ArnEquals: {
+            'aws:s3:arn': `arn:aws:s3:::${'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + Utils.stringSanitizer(props.studioName)}/*`,
+          },
+        },
+        resources: ['*'],
+      }),
+      false,
+    );
 
-    //Create a role for the Studio
+    // Create a Managed policy for Studio service role
+    this.studioServicePolicy.push(createStudioServiceRolePolicy(this, this.notebookPlatformEncryptionKey, this.workspacesBucket, props.studioName));
+
+    // Create a role for the Studio
     this.studioServiceRole = new Role(this, 'studioServiceRole', {
       assumedBy: new ServicePrincipal(NotebookPlatform.STUDIO_PRINCIPAL),
       roleName: 'studioServiceRole+' + Utils.stringSanitizer(props.studioName),
@@ -279,10 +297,7 @@ export class NotebookPlatform extends NestedStack {
     // Create an EMR Studio user role only if the user uses SSO as authentication mode
     if (props.studioAuthMode === 'SSO') {
       //Get Managed policy for Studio user role and put it in an array to be assigned to a user role
-      this.studioUserPolicy.push(ManagedPolicy.fromManagedPolicyArn(this,
-        'StudioUserManagedPolicy',
-        createStudioUserRolePolicy(this, props.studioName, this.studioServiceRole, props.userIamPolicy),
-      ));
+      this.studioUserPolicy.push(createStudioUserRolePolicy(this, props.studioName, this.studioServiceRole, props.userIamPolicy));
 
       //Create a role for the EMR Studio user, this roles is further restricted by session policy for each user
       this.studioUserRole = new Role(this, 'studioUserRole', {
@@ -430,7 +445,7 @@ export class NotebookPlatform extends NestedStack {
 
       } else if (this.authMode === 'SSO') {
         //Create the session policy and gets its ARN
-        let sessionPolicyArn = createUserSessionPolicy(this, user, this.studioServiceRole,
+        let sessionPolicy = createUserSessionPolicy(this, user, this.studioServiceRole,
           managedEndpointArns, this.studioId);
 
         if (user.identityType == 'USER' || user.identityType == 'GROUP') {
@@ -438,7 +453,7 @@ export class NotebookPlatform extends NestedStack {
           new CfnStudioSessionMapping(this, 'studioUser' + user.identityName + user.identityName, {
             identityName: user.identityName,
             identityType: user.identityType,
-            sessionPolicyArn: sessionPolicyArn,
+            sessionPolicyArn: sessionPolicy.managedPolicyArn,
             studioId: this.studioId,
           });
         } else {

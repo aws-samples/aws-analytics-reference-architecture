@@ -17,12 +17,12 @@ test('dataLakeStorage', () => {
 
   // Instantiate DataLakeStorage Construct with custom Props
   new DataLakeStorage(dataLakeStorageStack, 'DataLakeStorageTest', {
-    rawInfrequentAccessDelay: 1,
-    rawArchiveDelay: 2,
-    cleanInfrequentAccessDelay: 1,
-    cleanArchiveDelay: 2,
-    transformInfrequentAccessDelay: 1,
-    transformArchiveDelay: 2,
+    rawInfrequentAccessDelay: 90,
+    rawArchiveDelay: 180,
+    cleanInfrequentAccessDelay: 180,
+    cleanArchiveDelay: 360,
+    transformInfrequentAccessDelay: 180,
+    transformArchiveDelay: 360,
   });
 
   // Test if the stack has 3 S3 Buckets
@@ -56,11 +56,11 @@ test('dataLakeStorage', () => {
           Transitions: [
             {
               StorageClass: 'STANDARD_IA',
-              TransitionInDays: 1,
+              TransitionInDays: 90,
             },
             {
               StorageClass: 'GLACIER',
-              TransitionInDays: 2,
+              TransitionInDays: 180,
             },
           ],
         },
@@ -96,11 +96,11 @@ test('dataLakeStorage', () => {
           Transitions: [
             {
               StorageClass: 'STANDARD_IA',
-              TransitionInDays: 1,
+              TransitionInDays: 180,
             },
             {
               StorageClass: 'GLACIER',
-              TransitionInDays: 2,
+              TransitionInDays: 360,
             },
           ],
         },
@@ -136,11 +136,11 @@ test('dataLakeStorage', () => {
           Transitions: [
             {
               StorageClass: 'STANDARD_IA',
-              TransitionInDays: 1,
+              TransitionInDays: 180,
             },
             {
               StorageClass: 'GLACIER',
-              TransitionInDays: 2,
+              TransitionInDays: 360,
             },
           ],
         },

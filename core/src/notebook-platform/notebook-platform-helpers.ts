@@ -6,6 +6,8 @@ import {
   FederatedPrincipal,
   IRole,
   ManagedPolicy,
+  IManagedPolicy,
+  Policy,
   PolicyDocument,
   PolicyStatement,
   Role,
@@ -13,23 +15,26 @@ import {
 } from '@aws-cdk/aws-iam';
 import { Aws, Construct, SecretValue, Stack } from '@aws-cdk/core';
 import { Utils } from '../utils';
-import { iamPolicyActionEvaluator } from './iamEmrStudioPolicyEvaluator';
 import { NotebookUserOptions } from './notebook-user';
+import { iamPolicyActionEvaluator } from './iamEmrStudioPolicyEvaluator';
 
+import * as studioS3Policy from './resources/studio/emr-studio-s3-policy.json';
 import * as studioServiceRolePolicy from './resources/studio/studio-service-role-policy.json';
 import * as studioUserRolePolicy from './resources/studio/studio-user-iam-role-policy.json';
 import * as studioSessionPolicy from './resources/studio/studio-user-session-policy.json';
 import * as studioUserPolicy from './resources/studio/studio-user-sso-role-policy.json';
+import { IKey } from '@aws-cdk/aws-kms';
+import { IBucket } from '@aws-cdk/aws-s3';
 
 
 /**
  * @internal
- * Create a session policy for each user scoped down to the managed endpoint
+ * Create a session policy for each user scoped down to the managed endpoints
  * @returns Return the ARN of the policy created
  */
 export function createUserSessionPolicy(scope: Construct, user: NotebookUserOptions,
   studioServiceRole: IRole,
-  managedEndpointArns: string [], studioId: string): string {
+  managedEndpointArns: string [], studioId: string): IManagedPolicy {
 
   let stack = Stack.of(scope);
 
@@ -84,8 +89,7 @@ export function createUserSessionPolicy(scope: Construct, user: NotebookUserOpti
     managedPolicyName: 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName) + studioId,
   });
 
-
-  return userSessionPolicy.managedPolicyArn;
+  return userSessionPolicy;
 }
 
 /**
@@ -96,7 +100,7 @@ export function createUserSessionPolicy(scope: Construct, user: NotebookUserOpti
 export function createStudioUserRolePolicy(scope: Construct,
   studioName: string,
   studioServiceRole: IRole,
-  policyDocument?: PolicyDocument): string {
+  policyDocument?: PolicyDocument): IManagedPolicy {
 
   let stack = Stack.of(scope);
 
@@ -113,7 +117,7 @@ export function createStudioUserRolePolicy(scope: Construct,
   let jsonPolicy = policy.toJSON();
 
   if (statementPosition === undefined) {
-    throw new Error ('The IAM policy does not have sufficient  to pass role or read from the Amazon EMR logs');
+    throw new Error ('The IAM policy does not have sufficient permissions to pass role or read from the Amazon EMR logs');
   } else {
     //replace the <your-emr-studio-service-role> with the service role created above
     jsonPolicy.Statement[statementPosition.get('iam:PassRole')!].Resource = studioServiceRole.roleArn;
@@ -128,14 +132,57 @@ export function createStudioUserRolePolicy(scope: Construct,
     });
   }
 
-  console.log(jsonPolicy);
-
   let userRolePolicy = new ManagedPolicy(scope, 'studioUserPolicy' + studioName, {
     document: PolicyDocument.fromJson(jsonPolicy),
     managedPolicyName: 'studioUserPolicy' + studioName,
   });
 
-  return userRolePolicy.managedPolicyArn;
+  return userRolePolicy;
+}
+
+/**
+ * @internal
+ * Add an inline policy to the role passed by the user
+ */
+export function addServiceRoleInlinePolicy (scope: Construct, studioServiceRole: IRole, bucketName: string ): IRole {
+
+  let stack = Stack.of(scope);
+
+  // actions to validates
+  const iamActionsToValidate: string [] = [
+    's3:PutObject',
+    's3:GetObject',
+    's3:GetEncryptionConfiguration',
+    's3:ListBucket',
+    's3:DeleteObject'
+  ];
+
+  let policy = PolicyDocument.fromJson(JSON.parse(JSON.stringify(studioS3Policy)));
+
+  let statementPosition: Map<string, number> | undefined = iamPolicyActionEvaluator(
+    policy, iamActionsToValidate);
+
+  let jsonPolicy = policy.toJSON();
+
+  if (statementPosition === undefined) {
+    throw new Error ('The IAM ServiceRoleInlinePolicy does not have sufficient permissions');
+  } else {
+    // Update the service role provided by the user with an inline policy
+    // to access the S3 bucket and store notebooks
+    const bucketArn = stack.formatArn({
+      region: '',
+      account: '',
+      service: 's3',
+      resource: bucketName,
+    });
+    jsonPolicy.Statement[statementPosition.get('s3:GetObject')!].Resource = [ bucketArn , bucketArn+'/*'];
+  }
+
+  studioServiceRole.attachInlinePolicy(new Policy(scope, 'studioServiceInlinePolicy', {
+    document: PolicyDocument.fromJson(jsonPolicy),
+  }));
+
+  return studioServiceRole;
 }
 
 /**
@@ -144,25 +191,68 @@ export function createStudioUserRolePolicy(scope: Construct,
  * The policy allow access only to a single bucket to store notebooks
  * @returns Return the ARN of the policy created
  */
-export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, bucketName: string, studioName: string): string {
+export function createStudioServiceRolePolicy(scope: Construct, kmsKey: IKey, bucket: IBucket, studioName: string): IManagedPolicy {
 
-  //Get policy from a JSON template
-  let policy = JSON.parse(JSON.stringify(studioServiceRolePolicy));
+  // actions to validates
+  const iamActionsToValidate: string [] = [
+    'ec2:CreateNetworkInterfacePermission',
+    'ec2:DeleteNetworkInterface',
+    'ec2:ModifyNetworkInterfaceAttribute',
+    'ec2:AuthorizeSecurityGroupEgress',
+    'ec2:AuthorizeSecurityGroupIngress',
+    'ec2:RevokeSecurityGroupEgress',
+    'ec2:RevokeSecurityGroupIngress',
+    'ec2:DeleteNetworkInterfacePermission',
+    'ec2:CreateSecurityGroup',
+    'ec2:CreateTags',
+    'ec2:CreateNetworkInterface',
+    'ec2:DescribeSecurityGroups',
+    'ec2:DescribeNetworkInterfaces',
+    'ec2:DescribeTags',
+    'ec2:DescribeInstances',
+    'ec2:DescribeSubnets',
+    'ec2:DescribeVpcs',
+    'secretsmanager:GetSecretValue',
+    's3:PutObject',
+    's3:GetObject',
+    's3:GetEncryptionConfiguration',
+    's3:ListBucket',
+    's3:DeleteObject',
+    'kms:Decrypt',
+    'kms:GenerateDataKey',
+    'kms:ReEncrypt',
+    'kms:DescribeKey',
+    'iam:GetUser',
+    'iam:GetRole',
+    'iam:ListUsers',
+    'iam:ListRoles',
+    'sso:GetManagedApplicationInstance',
+    'sso-directory:SearchUsers',
+  ];
 
-  //Update the policy with the bucketname to scope it down
-  policy.Statement[11].Resource[0] = policy.Statement[11].Resource[0].replace(/<your-amazon-s3-bucket>/gi, bucketName);
-  policy.Statement[11].Resource[1] = policy.Statement[11].Resource[1].replace(/<your-amazon-s3-bucket>/gi, bucketName);
+  let policy = PolicyDocument.fromJson(JSON.parse(JSON.stringify(studioServiceRolePolicy)));
 
-  //Update with KMS key ARN encrypting the bucket
-  policy.Statement[12].Resource[0] = keyArn;
+  let statementPosition: Map<string, number> | undefined = iamPolicyActionEvaluator(
+    policy, iamActionsToValidate);
+
+  let jsonPolicy = policy.toJSON();
+
+  if (statementPosition === undefined) {
+    throw new Error ('The IAM StudioServiceRolePolicy does not have sufficient permissions');
+  } else {
+    jsonPolicy.Statement[statementPosition.get('s3:GetObject')!].Resource = [ bucket.bucketArn , bucket.bucketArn+'/*'];
+
+    // put the right KMS key ARN in the policy
+    jsonPolicy.Statement[statementPosition.get('kms:Decrypt')!].Resource = kmsKey.keyArn;
+  }
 
   //Create the policy of service role
   let serviceRolePolicy = new ManagedPolicy(scope, 'studioServicePolicy' + studioName, {
-    document: PolicyDocument.fromJson(policy),
+    document: PolicyDocument.fromJson(jsonPolicy),
     managedPolicyName: 'studioServicePolicy' + studioName,
   });
 
-  return serviceRolePolicy.managedPolicyArn;
+  return serviceRolePolicy;
 }
 
 /**
@@ -197,7 +287,7 @@ export function createIAMRolePolicy(scope: Construct,
 
 
   if (statementPosition === undefined) {
-    throw new Error ('The IAM policy does not have sufficient  to pass role, connect to a managedendpoint or read from the Amazon EMR logs');
+    throw new Error ('The IAM Role Policy does not have sufficient permissions');
   } else {
     //replace the <your-emr-studio-service-role> with the service role created above
     jsonPolicy.Statement[statementPosition.get('iam:PassRole')!].Resource = studioServiceRole.roleArn;
@@ -238,7 +328,7 @@ export function createIAMRolePolicy(scope: Construct,
 
   //create the policy
   return new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName), {
-    document: PolicyDocument.fromJson(policy),
+    document: PolicyDocument.fromJson(jsonPolicy),
     managedPolicyName: 'studioIAMRolePolicy-' + Utils.stringSanitizer(user.identityName) + '-' + studioId,
   });
 

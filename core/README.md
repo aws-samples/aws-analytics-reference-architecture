@@ -4,7 +4,7 @@ The AWS Analytics Reference Architecture is a set of analytics solutions put tog
 It regroups AWS best practices for designing, implementing, and operating analytics platforms through different purpose-built patterns, handling common requirements, and solving customers' challenges.
 
 This project is composed of:
- * Reusable core components exposed in an AWS CDK (Cloud Development Kit) library currently available in [Typescript](https://www.npmjs.com/package/aws-analytics-reference-architecture) and [Python](https://pypi.org/project/aws-analytics-reference-architecture/). This library contains [AWS CDK constructs](https://constructs.dev/packages/aws-analytics-reference-architecture) that can be used to quickly provision analytics solutions in demos, prototypes, proof of concepts and end-to-end reference architectures. 
+ * Reusable core components exposed in an AWS CDK (Cloud Development Kit) library currently available in [Typescript](https://www.npmjs.com/package/aws-analytics-reference-architecture) and [Python](https://pypi.org/project/aws-analytics-reference-architecture/). This library contains [AWS CDK constructs](https://constructs.dev/packages/aws-analytics-reference-architecture/?lang=python) that can be used to quickly provision analytics solutions in demos, prototypes, proof of concepts and end-to-end reference architectures. 
  * Reference architectures consumming the reusable components to demonstrate end-to-end examples in a business context. Currently, the [AWS native reference architecture](https://aws-samples.github.io/aws-analytics-reference-architecture/) is available.
 
 This documentation explains how to get started with the core components of the AWS Analytics Reference Architecture. 
@@ -28,7 +28,7 @@ This documentation explains how to get started with the core components of the A
 2. The core components can be deployed in any AWS region
 3. Install the following components with the specified version on the machine from which the deployment will be executed:
     1. Python [3.8-3.9.2] or Typescript
-    2. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
+    2. AWS CDK v1: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) guide.
 
 
 ### Initialization (in Python)
@@ -47,8 +47,8 @@ source .venv/bin/activate
 
 ```bash
     install_requires=[
-        "aws-cdk.core==1.130.0",
-        "aws-analytics-reference-architecture==1.8.4",
+        "aws-cdk.core==1.144.0",
+        "aws-analytics-reference-architecture==1.15.0",
     ],
 ```
 3. Install The Packages via **pip**
@@ -147,7 +147,7 @@ cdk destroy
 
 ## API Reference
 
-More contructs, helpers and datasets are available in the AWS Analytics Reference Architecture. See the full API specification [here](https://constructs.dev/packages/aws-analytics-reference-architecture/v/1.8.4?lang=python)
+More contructs, helpers and datasets are available in the AWS Analytics Reference Architecture. See the full API specification [here](https://constructs.dev/packages/aws-analytics-reference-architecture/v/1.15.0?lang=python)
 
 ## Contributing
 
