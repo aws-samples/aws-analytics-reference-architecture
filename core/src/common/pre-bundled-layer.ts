@@ -7,7 +7,7 @@ import * as cdk from '@aws-cdk/core';
 import { Construct, Stack } from '@aws-cdk/core';
 
 /**
- * Extends existing FunctionProps as optional using `Partial`
+ * Extends existing LayerProps as optional using `Partial`
  * (as we don't require `Code` prop)
  */
 export interface PreBundledLayerProps extends Partial<LayerVersionProps>{
@@ -15,7 +15,7 @@ export interface PreBundledLayerProps extends Partial<LayerVersionProps>{
 }
 
 /**
- * A Lambda function with prebundled dependencies
+ * A Layer with prebundled dependencies
  *
  * It changes of the code path by based on the environment that `cdk synth` is running on.
  *

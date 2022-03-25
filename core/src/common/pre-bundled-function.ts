@@ -6,6 +6,7 @@ import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '
 import { Code, Function, FunctionProps } from '@aws-cdk/aws-lambda';
 import * as cdk from '@aws-cdk/core';
 import { Aws } from '@aws-cdk/core';
+import { PreBundledLayer } from './pre-bundled-layer';
 
 /**
  * Extends existing FunctionProps as optional using `Partial`
@@ -114,6 +115,8 @@ export class PreBundledFunction extends Function {
     delete functionProps.codePath;
     delete functionProps.name;
     delete functionProps.lambdaPolicyStatements;
+
+    functionProps.layers = PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer');
 
     super(scope, id, { ...(functionProps as FunctionProps) });
 
