@@ -31,7 +31,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   workflow: false,
   buildWorkflow: false,
   release: true,
-  depsUpgrade: false,
+  depsUpgrade: true,
   stale: false,
   pullRequestTemplate: false,
   cdkVersionPinning: true,

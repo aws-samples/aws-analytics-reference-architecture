@@ -113,7 +113,15 @@ public readonly resultBucket: Bucket;
 
 Replay the data in the given PartitionedDataset.
 
-It will dump files into the `sinkBucket` based on the given `frequency`. The computation is in a Step Function with two Lambda steps.  1. resources/lambdas/find-file-paths Read the manifest file and output a list of S3 file paths within that batch time range  2. resources/lambdas/write-in-batch Take a file path, filter only records within given time range, adjust the the time with offset to make it looks like just being generated. Then write the output to the `sinkBucket`
+It will dump files into the `sinkBucket` based on the given `frequency`.
+The computation is in a Step Function with two Lambda steps.
+
+1. resources/lambdas/find-file-paths
+Read the manifest file and output a list of S3 file paths within that batch time range
+
+2. resources/lambdas/write-in-batch
+Take a file path, filter only records within given time range, adjust the the time with offset to
+make it looks like just being generated. Then write the output to the `sinkBucket`
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.BatchReplayer.Initializer"></a>
 
@@ -235,7 +243,8 @@ public readonly frequency: number;
 
 Frequency (in Seconds) of the replaying.
 
-The batch job will start for every given frequency and replay the data in that period
+The batch job will start
+for every given frequency and replay the data in that period
 
 ---
 
@@ -261,7 +270,10 @@ public readonly outputFileMaxSizeInBytes: number;
 
 Maximum file size for each output file.
 
-If the output batch file is, larger than that, it will be splitted into multiple files that fit this size.  Default to 100MB (max value)
+If the output batch file is,
+larger than that, it will be splitted into multiple files that fit this size.
+
+Default to 100MB (max value)
 
 ---
 
@@ -570,7 +582,8 @@ AWS Glue Database for Transform data.
 
 DataLakeExporter Construct to export data from a stream to the data lake.
 
-Source can be an Amazon Kinesis Data Stream. Target can be an Amazon S3 bucket.
+Source can be an Amazon Kinesis Data Stream.
+Target can be an Amazon S3 bucket.
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DataLakeExporter.Initializer"></a>
 
@@ -684,7 +697,32 @@ Constructs a new instance of the DataLakeExporter class.
 
 A CDK Construct that creates the storage layers of a data lake composed of Amazon S3 Buckets.
 
-This construct is based on 3 Amazon S3 buckets configured with AWS best practices:   * S3 buckets for Raw/Cleaned/Transformed data,   * data lifecycle optimization/transitioning to different Amazon S3 storage classes   * server side buckets encryption managed by KMS  By default the transitioning rules to Amazon S3 storage classes are configured as following:   * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days   * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived  Usage example: ```typescript import * as cdk from '@aws-cdk/core'; import { DataLakeStorage } from 'aws-analytics-reference-architecture';  const exampleApp = new cdk.App(); const stack = new cdk.Stack(exampleApp, 'DataLakeStorageStack');  new DataLakeStorage(stack, 'MyDataLakeStorage', {   rawInfrequentAccessDelay: 90,   rawArchiveDelay: 180,   cleanInfrequentAccessDelay: 180,   cleanArchiveDelay: 360,   transformInfrequentAccessDelay: 180,   transformArchiveDelay: 360, }); ```
+This construct is based on 3 Amazon S3 buckets configured with AWS best practices:
+  * S3 buckets for Raw/Cleaned/Transformed data,
+  * data lifecycle optimization/transitioning to different Amazon S3 storage classes
+  * server side buckets encryption managed by KMS
+
+By default the transitioning rules to Amazon S3 storage classes are configured as following:
+  * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days
+  * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived
+
+Usage example:
+```typescript
+import * as cdk from '@aws-cdk/core';
+import { DataLakeStorage } from 'aws-analytics-reference-architecture';
+
+const exampleApp = new cdk.App();
+const stack = new cdk.Stack(exampleApp, 'DataLakeStorageStack');
+
+new DataLakeStorage(stack, 'MyDataLakeStorage', {
+  rawInfrequentAccessDelay: 90,
+  rawArchiveDelay: 180,
+  cleanInfrequentAccessDelay: 180,
+  cleanArchiveDelay: 360,
+  transformInfrequentAccessDelay: 180,
+  transformArchiveDelay: 360,
+});
+```
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DataLakeStorage.Initializer"></a>
 
@@ -896,7 +934,13 @@ public applyRemovalPolicy(policy: RemovalPolicy): void
 
 Apply the given removal policy to this resource.
 
-The Removal Policy controls what happens to this resource when it stops being managed by CloudFormation, either because you've removed it from the CDK application or because you've made a change that requires the resource to be replaced.  The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
+The Removal Policy controls what happens to this resource when it stops
+being managed by CloudFormation, either because you've removed it from the
+CDK application or because you've made a change that requires the resource
+to be replaced.
+
+The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
+account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 
 ###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.Ec2SsmRole.applyRemovalPolicy.parameter.policy"></a>
 
@@ -1010,7 +1054,11 @@ public withoutPolicyUpdates(options?: WithoutPolicyUpdatesOptions): IRole
 
 Return a copy of this Role object whose Policies will not be updated.
 
-Use the object returned by this method if you want this Role to be used by a construct without it automatically updating the Role's Policies.  If you do, you are responsible for adding the correct statements to the Role's policies yourself.
+Use the object returned by this method if you want this Role to be used by
+a construct without it automatically updating the Role's Policies.
+
+If you do, you are responsible for adding the correct statements to the
+Role's policies yourself.
 
 ###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.Ec2SsmRole.withoutPolicyUpdates.parameter.options"></a>
 
@@ -1070,7 +1118,14 @@ Ec2SsmRole.fromRoleArn(scope: Construct, id: string, roleArn: string, options?: 
 
 Import an external role by ARN.
 
-If the imported Role ARN is a Token (such as a `CfnParameter.valueAsString` or a `Fn.importValue()`) *and* the referenced role has a `path` (like `arn:...:role/AdminRoles/Alice`), the `roleName` property will not resolve to the correct value. Instead it will resolve to the first path component. We unfortunately cannot express the correct calculation of the full path name as a CloudFormation expression. In this scenario the Role ARN should be supplied without the `path` in order to resolve the correct role resource.
+If the imported Role ARN is a Token (such as a
+`CfnParameter.valueAsString` or a `Fn.importValue()`) *and* the referenced
+role has a `path` (like `arn:...:role/AdminRoles/Alice`), the
+`roleName` property will not resolve to the correct value. Instead it
+will resolve to the first path component. We unfortunately cannot express
+the correct calculation of the full path name as a CloudFormation
+expression. In this scenario the Role ARN should be supplied without the
+`path` in order to resolve the correct role resource.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.Ec2SsmRole.fromRoleArn.parameter.scope"></a>
 
@@ -1145,7 +1200,12 @@ public readonly env: ResourceEnvironment;
 
 The environment this resource belongs to.
 
-For resources that are created and managed by the CDK (generally, those created by creating new class instances like Role, Bucket, etc.), this is always the same as the environment of the stack they belong to; however, for imported resources (those obtained from static methods like fromRoleArn, fromBucketName, etc.), that might be different than the stack they were imported into.
+For resources that are created and managed by the CDK
+(generally, those created by creating new class instances like Role, Bucket, etc.),
+this is always the same as the environment of the stack they belong to;
+however, for imported resources
+(those obtained from static methods like fromRoleArn, fromBucketName, etc.),
+that might be different than the stack they were imported into.
 
 ---
 
@@ -1219,7 +1279,8 @@ public readonly roleId: string;
 
 Returns the stable and unique string identifying the role.
 
-For example, AIDAJQABLZS4A3QDU576Q.
+For example,
+AIDAJQABLZS4A3QDU576Q.
 
 ---
 
@@ -1269,7 +1330,10 @@ public readonly principalAccount: string;
 
 The AWS account ID of this principal.
 
-Can be undefined when the account is not known (for example, for service principals). Can be a Token - in that case, it's assumed to be AWS::AccountId.
+Can be undefined when the account is not known
+(for example, for service principals).
+Can be a Token - in that case,
+it's assumed to be AWS::AccountId.
 
 ---
 
@@ -1308,7 +1372,9 @@ public addEmrEksNodegroup(id: string, props: EmrEksNodegroupOptions): void
 
 Add new Amazon EMR on EKS nodegroups to the cluster.
 
-This method overrides Amazon EKS nodegroup options then create the nodegroup. If no subnet is provided, it creates one nodegroup per private subnet in the Amazon EKS Cluster. If NVME local storage is used, the user_data is modified.
+This method overrides Amazon EKS nodegroup options then create the nodegroup.
+If no subnet is provided, it creates one nodegroup per private subnet in the Amazon EKS Cluster.
+If NVME local storage is used, the user_data is modified.
 
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup.parameter.id"></a>
 
@@ -1390,7 +1456,8 @@ public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions
 
 Add a new Amazon EKS Nodegroup to the cluster.
 
-This method is be used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints   so it can be used for the cluster autoscaler.
+This method is be used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
+  so it can be used for the cluster autoscaler.
 
 ###### `nodegroupId`<sup>Required</sup> <a name="nodegroupId" id="aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity.parameter.nodegroupId"></a>
 
@@ -1599,7 +1666,8 @@ public readonly sharedDefaultConfig: string;
 
 Example Construct to help onboarding contributors.
 
-This example includes best practices for code comment/documentation generation, and for default parameters pattern in CDK using Props with Optional properties
+This example includes best practices for code comment/documentation generation,
+and for default parameters pattern in CDK using Props with Optional properties
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.Example.Initializer"></a>
 
@@ -1706,7 +1774,42 @@ The construct tree node associated with this construct.
 
 A CDK construct that runs flyway migration scripts against a redshift cluster.
 
-This construct is based on two main resource, an AWS Lambda hosting a flyway runner and one custom resource invoking it when content of migrationScriptsFolderAbsolutePath changes.  Usage example:  *This example assume that migration SQL files are located in `resources/sql` of the cdk project.* ```typescript import * as path from 'path'; import * as ec2 from '@aws-cdk/aws-ec2'; import * as redshift from '@aws-cdk/aws-redshift'; import * as cdk from '@aws-cdk/core';  import { FlywayRunner } from 'aws-analytics-reference-architecture';  const integTestApp = new cdk.App(); const stack = new cdk.Stack(integTestApp, 'fywayRunnerTest');  const vpc = new ec2.Vpc(stack, 'Vpc');  const dbName = 'testdb'; const cluster = new redshift.Cluster(stack, 'Redshift', {    removalPolicy: cdk.RemovalPolicy.DESTROY,    masterUser: {      masterUsername: 'admin',    },    vpc,    defaultDatabaseName: dbName, });  new FlywayRunner(stack, 'testMigration', {    migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),    cluster: cluster,    vpc: vpc,    databaseName: dbName, }); ```
+This construct is based on two main resource, an AWS Lambda hosting a flyway runner
+and one custom resource invoking it when content of migrationScriptsFolderAbsolutePath changes.
+
+Usage example:
+
+*This example assume that migration SQL files are located in `resources/sql` of the cdk project.*
+```typescript
+import * as path from 'path';
+import * as ec2 from '@aws-cdk/aws-ec2';
+import * as redshift from '@aws-cdk/aws-redshift';
+import * as cdk from '@aws-cdk/core';
+
+import { FlywayRunner } from 'aws-analytics-reference-architecture';
+
+const integTestApp = new cdk.App();
+const stack = new cdk.Stack(integTestApp, 'fywayRunnerTest');
+
+const vpc = new ec2.Vpc(stack, 'Vpc');
+
+const dbName = 'testdb';
+const cluster = new redshift.Cluster(stack, 'Redshift', {
+   removalPolicy: cdk.RemovalPolicy.DESTROY,
+   masterUser: {
+     masterUsername: 'admin',
+   },
+   vpc,
+   defaultDatabaseName: dbName,
+});
+
+new FlywayRunner(stack, 'testMigration', {
+   migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),
+   cluster: cluster,
+   vpc: vpc,
+   databaseName: dbName,
+});
+```
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.FlywayRunner.Initializer"></a>
 
@@ -1818,7 +1921,71 @@ public readonly runner: CustomResource;
 
 A CDK construct to create a notebook infrastructure based on Amazon EMR Studio and assign users to it.
 
-This construct is initialized through a constructor that takes as argument an interface defined in {@link NotebookPlatformProps} The construct has a method to add users {@link addUser} the method take as argument {@link NotebookUserOptions}  Resources deployed:  * An S3 Bucket used by EMR Studio to store the Jupyter notebooks * A KMS encryption Key used to encrypt an S3 bucket used by EMR Studio to store jupyter notebooks * An EMR Studio service Role as defined here, and allowed to access the S3 bucket and KMS key created above * An EMR Studio User Role as defined here - The policy template which is leveraged is the Basic one from the Amazon EMR Studio documentation * Multiple EMR on EKS Managed Endpoints, each for a user or a group of users * An execution role to be passed to the Managed endpoint from a policy provided by the user * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are: <br />    - EMR Virtual Cluster - created above <br />    - ManagedEndpoint <br />   Usage example:  ```typescript const emrEks = EmrEksCluster.getOrCreate(stack, {    eksAdminRoleArn: 'arn:aws:iam::012345678912:role/Admin-Admin',    eksClusterName: 'cluster', });  const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {    emrEks: emrEks,    eksNamespace: 'platformns',    studioName: 'platform',    studioAuthMode: StudioAuthMode.SSO, });   const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {    statements: [      new PolicyStatement({        resources: ['*'],        actions: ['s3:*'],      }),      new PolicyStatement({        resources: [          stack.formatArn({            account: Aws.ACCOUNT_ID,            region: Aws.REGION,            service: 'logs',            resource: '*',            arnFormat: ArnFormat.NO_RESOURCE_NAME,          }),        ],        actions: [          'logs:*',        ],      }),    ], });  notebookPlatform.addUser([{    identityName: 'user1',    identityType: SSOIdentityType.USER,    notebookManagedEndpoints: [{      emrOnEksVersion: 'emr-6.3.0-latest',      executionPolicy: policy1,    }], }]);  ```
+This construct is initialized through a constructor that takes as argument an interface defined in {@link NotebookPlatformProps}
+The construct has a method to add users {@link addUser} the method take as argument {@link NotebookUserOptions}
+
+Resources deployed:
+
+* An S3 Bucket used by EMR Studio to store the Jupyter notebooks
+* A KMS encryption Key used to encrypt an S3 bucket used by EMR Studio to store jupyter notebooks
+* An EMR Studio service Role as defined here, and allowed to access the S3 bucket and KMS key created above
+* An EMR Studio User Role as defined here - The policy template which is leveraged is the Basic one from the Amazon EMR Studio documentation
+* Multiple EMR on EKS Managed Endpoints, each for a user or a group of users
+* An execution role to be passed to the Managed endpoint from a policy provided by the user
+* Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are: <br />
+   - EMR Virtual Cluster - created above <br />
+   - ManagedEndpoint <br />
+
+
+Usage example:
+
+```typescript
+const emrEks = EmrEksCluster.getOrCreate(stack, {
+   eksAdminRoleArn: 'arn:aws:iam::012345678912:role/Admin-Admin',
+   eksClusterName: 'cluster',
+});
+
+const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {
+   emrEks: emrEks,
+   eksNamespace: 'platformns',
+   studioName: 'platform',
+   studioAuthMode: StudioAuthMode.SSO,
+});
+
+
+const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
+   statements: [
+     new PolicyStatement({
+       resources: ['*'],
+       actions: ['s3:*'],
+     }),
+     new PolicyStatement({
+       resources: [
+         stack.formatArn({
+           account: Aws.ACCOUNT_ID,
+           region: Aws.REGION,
+           service: 'logs',
+           resource: '*',
+           arnFormat: ArnFormat.NO_RESOURCE_NAME,
+         }),
+       ],
+       actions: [
+         'logs:*',
+       ],
+     }),
+   ],
+});
+
+notebookPlatform.addUser([{
+   identityName: 'user1',
+   identityType: SSOIdentityType.USER,
+   notebookManagedEndpoints: [{
+     emrOnEksVersion: 'emr-6.3.0-latest',
+     executionPolicy: policy1,
+   }],
+}]);
+
+```
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.NotebookPlatform.Initializer"></a>
 
@@ -1901,7 +2068,8 @@ public addDependency(target: Stack, reason?: string): void
 
 Add a dependency between this stack and another stack.
 
-This can be used to define dependencies between any two stacks within an app, and also supports nested stacks.
+This can be used to define dependencies between any two stacks within an
+app, and also supports nested stacks.
 
 ###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.NotebookPlatform.addDependency.parameter.target"></a>
 
@@ -1955,7 +2123,7 @@ Duplicate values are removed when stack is synthesized.
 
 > [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html)
 
-###### Example <a name="Example" id="aws-analytics-reference-architecture.NotebookPlatform.addTransform.example"></a>
+*Example*
 
 ```typescript
 declare const stack: Stack;
@@ -1980,7 +2148,48 @@ public exportValue(exportedValue: any, options?: ExportValueOptions): string
 
 Create a CloudFormation Export for a value.
 
-Returns a string representing the corresponding `Fn.importValue()` expression for this Export. You can control the name for the export by passing the `name` option.  If you don't supply a value for `name`, the value you're exporting must be a Resource attribute (for example: `bucket.bucketName`) and it will be given the same name as the automatic cross-stack reference that would be created if you used the attribute in another Stack.  One of the uses for this method is to *remove* the relationship between two Stacks established by automatic cross-stack references. It will temporarily ensure that the CloudFormation Export still exists while you remove the reference from the consuming stack. After that, you can remove the resource and the manual export.  ## Example  Here is how the process works. Let's say there are two stacks, `producerStack` and `consumerStack`, and `producerStack` has a bucket called `bucket`, which is referenced by `consumerStack` (perhaps because an AWS Lambda Function writes into it, or something like that).  It is not safe to remove `producerStack.bucket` because as the bucket is being deleted, `consumerStack` might still be using it.  Instead, the process takes two deployments:  ### Deployment 1: break the relationship  - Make sure `consumerStack` no longer references `bucket.bucketName` (maybe the consumer    stack now uses its own bucket, or it writes to an AWS DynamoDB table, or maybe you just    remove the Lambda Function altogether). - In the `ProducerStack` class, call `this.exportValue(this.bucket.bucketName)`. This    will make sure the CloudFormation Export continues to exist while the relationship    between the two stacks is being broken. - Deploy (this will effectively only change the `consumerStack`, but it's safe to deploy both).  ### Deployment 2: remove the bucket resource  - You are now free to remove the `bucket` resource from `producerStack`. - Don't forget to remove the `exportValue()` call as well. - Deploy again (this time only the `producerStack` will be changed -- the bucket will be deleted).
+Returns a string representing the corresponding `Fn.importValue()`
+expression for this Export. You can control the name for the export by
+passing the `name` option.
+
+If you don't supply a value for `name`, the value you're exporting must be
+a Resource attribute (for example: `bucket.bucketName`) and it will be
+given the same name as the automatic cross-stack reference that would be created
+if you used the attribute in another Stack.
+
+One of the uses for this method is to *remove* the relationship between
+two Stacks established by automatic cross-stack references. It will
+temporarily ensure that the CloudFormation Export still exists while you
+remove the reference from the consuming stack. After that, you can remove
+the resource and the manual export.
+
+## Example
+
+Here is how the process works. Let's say there are two stacks,
+`producerStack` and `consumerStack`, and `producerStack` has a bucket
+called `bucket`, which is referenced by `consumerStack` (perhaps because
+an AWS Lambda Function writes into it, or something like that).
+
+It is not safe to remove `producerStack.bucket` because as the bucket is being
+deleted, `consumerStack` might still be using it.
+
+Instead, the process takes two deployments:
+
+### Deployment 1: break the relationship
+
+- Make sure `consumerStack` no longer references `bucket.bucketName` (maybe the consumer
+   stack now uses its own bucket, or it writes to an AWS DynamoDB table, or maybe you just
+   remove the Lambda Function altogether).
+- In the `ProducerStack` class, call `this.exportValue(this.bucket.bucketName)`. This
+   will make sure the CloudFormation Export continues to exist while the relationship
+   between the two stacks is being broken.
+- Deploy (this will effectively only change the `consumerStack`, but it's safe to deploy both).
+
+### Deployment 2: remove the bucket resource
+
+- You are now free to remove the `bucket` resource from `producerStack`.
+- Don't forget to remove the `exportValue()` call as well.
+- Deploy again (this time only the `producerStack` will be changed -- the bucket will be deleted).
 
 ###### `exportedValue`<sup>Required</sup> <a name="exportedValue" id="aws-analytics-reference-architecture.NotebookPlatform.exportValue.parameter.exportedValue"></a>
 
@@ -2002,7 +2211,19 @@ public formatArn(components: ArnComponents): string
 
 Creates an ARN from components.
 
-If `partition`, `region` or `account` are not specified, the stack's partition, region and account will be used.  If any component is the empty string, an empty string will be inserted into the generated ARN at the location that component corresponds to.  The ARN will be formatted as follows:     arn:{partition}:{service}:{region}:{account}:{resource}{sep}}{resource-name}  The required ARN pieces that are omitted will be taken from the stack that the 'scope' is attached to. If all ARN pieces are supplied, the supplied scope can be 'undefined'.
+If `partition`, `region` or `account` are not specified, the stack's
+partition, region and account will be used.
+
+If any component is the empty string, an empty string will be inserted
+into the generated ARN at the location that component corresponds to.
+
+The ARN will be formatted as follows:
+
+   arn:{partition}:{service}:{region}:{account}:{resource}{sep}}{resource-name}
+
+The required ARN pieces that are omitted will be taken from the stack that
+the 'scope' is attached to. If all ARN pieces are supplied, the supplied scope
+can be 'undefined'.
 
 ###### `components`<sup>Required</sup> <a name="components" id="aws-analytics-reference-architecture.NotebookPlatform.formatArn.parameter.components"></a>
 
@@ -2018,7 +2239,13 @@ public getLogicalId(element: CfnElement): string
 
 Allocates a stack-unique CloudFormation-compatible logical identity for a specific resource.
 
-This method is called when a `CfnElement` is created and used to render the initial logical identity of resources. Logical ID renames are applied at this stage.  This method uses the protected method `allocateLogicalId` to render the logical ID for an element. To modify the naming scheme, extend the `Stack` class and override this method.
+This method is called when a `CfnElement` is created and used to render the
+initial logical identity of resources. Logical ID renames are applied at
+this stage.
+
+This method uses the protected method `allocateLogicalId` to render the
+logical ID for an element. To modify the naming scheme, extend the `Stack`
+class and override this method.
 
 ###### `element`<sup>Required</sup> <a name="element" id="aws-analytics-reference-architecture.NotebookPlatform.getLogicalId.parameter.element"></a>
 
@@ -2036,7 +2263,28 @@ public parseArn(arn: string, sepIfToken?: string, hasName?: boolean): ArnCompone
 
 Given an ARN, parses it and returns components.
 
-IF THE ARN IS A CONCRETE STRING...  ...it will be parsed and validated. The separator (`sep`) will be set to '/' if the 6th component includes a '/', in which case, `resource` will be set to the value before the '/' and `resourceName` will be the rest. In case there is no '/', `resource` will be set to the 6th components and `resourceName` will be set to the rest of the string.  IF THE ARN IS A TOKEN...  ...it cannot be validated, since we don't have the actual value yet at the time of this function call. You will have to supply `sepIfToken` and whether or not ARNs of the expected format usually have resource names in order to parse it properly. The resulting `ArnComponents` object will contain tokens for the subexpressions of the ARN, not string literals.  If the resource name could possibly contain the separator char, the actual resource name cannot be properly parsed. This only occurs if the separator char is '/', and happens for example for S3 object ARNs, IAM Role ARNs, IAM OIDC Provider ARNs, etc. To properly extract the resource name from a Tokenized ARN, you must know the resource type and call `Arn.extractResourceName`.
+IF THE ARN IS A CONCRETE STRING...
+
+...it will be parsed and validated. The separator (`sep`) will be set to '/'
+if the 6th component includes a '/', in which case, `resource` will be set
+to the value before the '/' and `resourceName` will be the rest. In case
+there is no '/', `resource` will be set to the 6th components and
+`resourceName` will be set to the rest of the string.
+
+IF THE ARN IS A TOKEN...
+
+...it cannot be validated, since we don't have the actual value yet at the
+time of this function call. You will have to supply `sepIfToken` and
+whether or not ARNs of the expected format usually have resource names
+in order to parse it properly. The resulting `ArnComponents` object will
+contain tokens for the subexpressions of the ARN, not string literals.
+
+If the resource name could possibly contain the separator char, the actual
+resource name cannot be properly parsed. This only occurs if the separator
+char is '/', and happens for example for S3 object ARNs, IAM Role ARNs,
+IAM OIDC Provider ARNs, etc. To properly extract the resource name from a
+Tokenized ARN, you must know the resource type and call
+`Arn.extractResourceName`.
 
 ###### `arn`<sup>Required</sup> <a name="arn" id="aws-analytics-reference-architecture.NotebookPlatform.parseArn.parameter.arn"></a>
 
@@ -2060,7 +2308,9 @@ The separator used to separate resource from resourceName.
 
 Whether there is a name component in the ARN at all.
 
-For example, SNS Topics ARNs have the 'resource' component contain the topic name, and no 'resourceName' component.
+For
+example, SNS Topics ARNs have the 'resource' component contain the topic
+name, and no 'resourceName' component.
 
 ---
 
@@ -2072,7 +2322,21 @@ public regionalFact(factName: string, defaultValue?: string): string
 
 Look up a fact value for the given fact for the region of this stack.
 
-Will return a definite value only if the region of the current stack is resolved. If not, a lookup map will be added to the stack and the lookup will be done at CDK deployment time.  What regions will be included in the lookup map is controlled by the `@aws-cdk/core:target-partitions` context value: it must be set to a list of partitions, and only regions from the given partitions will be included. If no such context key is set, all regions will be included.  This function is intended to be used by construct library authors. Application builders can rely on the abstractions offered by construct libraries and do not have to worry about regional facts.  If `defaultValue` is not given, it is an error if the fact is unknown for the given region.
+Will return a definite value only if the region of the current stack is resolved.
+If not, a lookup map will be added to the stack and the lookup will be done at
+CDK deployment time.
+
+What regions will be included in the lookup map is controlled by the
+`@aws-cdk/core:target-partitions` context value: it must be set to a list
+of partitions, and only regions from the given partitions will be included.
+If no such context key is set, all regions will be included.
+
+This function is intended to be used by construct library authors. Application
+builders can rely on the abstractions offered by construct libraries and do
+not have to worry about regional facts.
+
+If `defaultValue` is not given, it is an error if the fact is unknown for
+the given region.
 
 ###### `factName`<sup>Required</sup> <a name="factName" id="aws-analytics-reference-architecture.NotebookPlatform.regionalFact.parameter.factName"></a>
 
@@ -2094,7 +2358,8 @@ public renameLogicalId(oldId: string, newId: string): void
 
 Rename a generated logical identities.
 
-To modify the naming scheme strategy, extend the `Stack` class and override the `allocateLogicalId` method.
+To modify the naming scheme strategy, extend the `Stack` class and
+override the `allocateLogicalId` method.
 
 ###### `oldId`<sup>Required</sup> <a name="oldId" id="aws-analytics-reference-architecture.NotebookPlatform.renameLogicalId.parameter.oldId"></a>
 
@@ -2130,7 +2395,8 @@ public reportMissingContextKey(report: MissingContext): void
 
 Indicate that a context key was expected.
 
-Contains instructions which will be emitted into the cloud assembly on how the key should be supplied.
+Contains instructions which will be emitted into the cloud assembly on how
+the key should be supplied.
 
 ###### `report`<sup>Required</sup> <a name="report" id="aws-analytics-reference-architecture.NotebookPlatform.reportMissingContextKey.parameter.report"></a>
 
@@ -2162,7 +2428,10 @@ public splitArn(arn: string, arnFormat: ArnFormat): ArnComponents
 
 Splits the provided ARN into its components.
 
-Works both if 'arn' is a string like 'arn:aws:s3:::bucket', and a Token representing a dynamic CloudFormation expression (in which case the returned components will also be dynamic CloudFormation expressions, encoded as Tokens).
+Works both if 'arn' is a string like 'arn:aws:s3:::bucket',
+and a Token representing a dynamic CloudFormation expression
+(in which case the returned components will also be dynamic CloudFormation expressions,
+encoded as Tokens).
 
 ###### `arn`<sup>Required</sup> <a name="arn" id="aws-analytics-reference-architecture.NotebookPlatform.splitArn.parameter.arn"></a>
 
@@ -2369,7 +2638,22 @@ public readonly account: string;
 
 The AWS account into which this stack will be deployed.
 
-This value is resolved according to the following rules:  1. The value provided to `env.account` when the stack is defined. This can     either be a concerete account (e.g. `585695031111`) or the     `Aws.accountId` token. 3. `Aws.accountId`, which represents the CloudFormation intrinsic reference     `{ "Ref": "AWS::AccountId" }` encoded as a string token.  Preferably, you should use the return value as an opaque string and not attempt to parse it to implement your logic. If you do, you must first check that it is a concerete value an not an unresolved token. If this value is an unresolved token (`Token.isUnresolved(stack.account)` returns `true`), this implies that the user wishes that this stack will synthesize into a **account-agnostic template**. In this case, your code should either fail (throw an error, emit a synth error using `Annotations.of(construct).addError()`) or implement some other region-agnostic behavior.
+This value is resolved according to the following rules:
+
+1. The value provided to `env.account` when the stack is defined. This can
+    either be a concerete account (e.g. `585695031111`) or the
+    `Aws.accountId` token.
+3. `Aws.accountId`, which represents the CloudFormation intrinsic reference
+    `{ "Ref": "AWS::AccountId" }` encoded as a string token.
+
+Preferably, you should use the return value as an opaque string and not
+attempt to parse it to implement your logic. If you do, you must first
+check that it is a concerete value an not an unresolved token. If this
+value is an unresolved token (`Token.isUnresolved(stack.account)` returns
+`true`), this implies that the user wishes that this stack will synthesize
+into a **account-agnostic template**. In this case, your code should either
+fail (throw an error, emit a synth error using `Annotations.of(construct).addError()`) or
+implement some other region-agnostic behavior.
 
 ---
 
@@ -2395,7 +2679,16 @@ public readonly availabilityZones: string[];
 
 Returns the list of AZs that are available in the AWS environment (account/region) associated with this stack.
 
-If the stack is environment-agnostic (either account and/or region are tokens), this property will return an array with 2 tokens that will resolve at deploy-time to the first two availability zones returned from CloudFormation's `Fn::GetAZs` intrinsic function.  If they are not available in the context, returns a set of dummy values and reports them as missing, and let the CLI resolve them by calling EC2 `DescribeAvailabilityZones` on the target environment.  To specify a different strategy for selecting availability zones override this method.
+If the stack is environment-agnostic (either account and/or region are
+tokens), this property will return an array with 2 tokens that will resolve
+at deploy-time to the first two availability zones returned from CloudFormation's
+`Fn::GetAZs` intrinsic function.
+
+If they are not available in the context, returns a set of dummy values and
+reports them as missing, and let the CLI resolve them by calling EC2
+`DescribeAvailabilityZones` on the target environment.
+
+To specify a different strategy for selecting availability zones override this method.
 
 ---
 
@@ -2421,7 +2714,17 @@ public readonly environment: string;
 
 The environment coordinates in which this stack is deployed.
 
-In the form `aws://account/region`. Use `stack.account` and `stack.region` to obtain the specific values, no need to parse.  You can use this value to determine if two stacks are targeting the same environment.  If either `stack.account` or `stack.region` are not concrete values (e.g. `Aws.account` or `Aws.region`) the special strings `unknown-account` and/or `unknown-region` will be used respectively to indicate this stack is region/account-agnostic.
+In the form
+`aws://account/region`. Use `stack.account` and `stack.region` to obtain
+the specific values, no need to parse.
+
+You can use this value to determine if two stacks are targeting the same
+environment.
+
+If either `stack.account` or `stack.region` are not concrete values (e.g.
+`Aws.account` or `Aws.region`) the special strings `unknown-account` and/or
+`unknown-region` will be used respectively to indicate this stack is
+region/account-agnostic.
 
 ---
 
@@ -2471,7 +2774,22 @@ public readonly region: string;
 
 The AWS region into which this stack will be deployed (e.g. `us-west-2`).
 
-This value is resolved according to the following rules:  1. The value provided to `env.region` when the stack is defined. This can     either be a concerete region (e.g. `us-west-2`) or the `Aws.region`     token. 3. `Aws.region`, which is represents the CloudFormation intrinsic reference     `{ "Ref": "AWS::Region" }` encoded as a string token.  Preferably, you should use the return value as an opaque string and not attempt to parse it to implement your logic. If you do, you must first check that it is a concerete value an not an unresolved token. If this value is an unresolved token (`Token.isUnresolved(stack.region)` returns `true`), this implies that the user wishes that this stack will synthesize into a **region-agnostic template**. In this case, your code should either fail (throw an error, emit a synth error using `Annotations.of(construct).addError()`) or implement some other region-agnostic behavior.
+This value is resolved according to the following rules:
+
+1. The value provided to `env.region` when the stack is defined. This can
+    either be a concerete region (e.g. `us-west-2`) or the `Aws.region`
+    token.
+3. `Aws.region`, which is represents the CloudFormation intrinsic reference
+    `{ "Ref": "AWS::Region" }` encoded as a string token.
+
+Preferably, you should use the return value as an opaque string and not
+attempt to parse it to implement your logic. If you do, you must first
+check that it is a concerete value an not an unresolved token. If this
+value is an unresolved token (`Token.isUnresolved(stack.region)` returns
+`true`), this implies that the user wishes that this stack will synthesize
+into a **region-agnostic template**. In this case, your code should either
+fail (throw an error, emit a synth error using `Annotations.of(construct).addError()`) or
+implement some other region-agnostic behavior.
 
 ---
 
@@ -2485,7 +2803,11 @@ public readonly stackId: string;
 
 An attribute that represents the ID of the stack.
 
-This is a context aware attribute: - If this is referenced from the parent stack, it will return `{ "Ref": "LogicalIdOfNestedStackResource" }`. - If this is referenced from the context of the nested stack, it will return `{ "Ref": "AWS::StackId" }`  Example value: `arn:aws:cloudformation:us-east-2:123456789012:stack/mystack-mynestedstack-sggfrhxhum7w/f449b250-b969-11e0-a185-5081d0136786`
+This is a context aware attribute:
+- If this is referenced from the parent stack, it will return `{ "Ref": "LogicalIdOfNestedStackResource" }`.
+- If this is referenced from the context of the nested stack, it will return `{ "Ref": "AWS::StackId" }`
+
+Example value: `arn:aws:cloudformation:us-east-2:123456789012:stack/mystack-mynestedstack-sggfrhxhum7w/f449b250-b969-11e0-a185-5081d0136786`
 
 ---
 
@@ -2499,7 +2821,11 @@ public readonly stackName: string;
 
 An attribute that represents the name of the nested stack.
 
-This is a context aware attribute: - If this is referenced from the parent stack, it will return a token that parses the name from the stack ID. - If this is referenced from the context of the nested stack, it will return `{ "Ref": "AWS::StackName" }`  Example value: `mystack-mynestedstack-sggfrhxhum7w`
+This is a context aware attribute:
+- If this is referenced from the parent stack, it will return a token that parses the name from the stack ID.
+- If this is referenced from the context of the nested stack, it will return `{ "Ref": "AWS::StackName" }`
+
+Example value: `mystack-mynestedstack-sggfrhxhum7w`
 
 ---
 
@@ -2704,7 +3030,13 @@ public applyRemovalPolicy(policy: RemovalPolicy): void
 
 Apply the given removal policy to this resource.
 
-The Removal Policy controls what happens to this resource when it stops being managed by CloudFormation, either because you've removed it from the CDK application or because you've made a change that requires the resource to be replaced.  The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
+The Removal Policy controls what happens to this resource when it stops
+being managed by CloudFormation, either because you've removed it from the
+CDK application or because you've made a change that requires the resource
+to be replaced.
+
+The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
+account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 
 ###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonBucket.applyRemovalPolicy.parameter.policy"></a>
 
@@ -2722,7 +3054,7 @@ Adds a bucket notification event destination.
 
 > [https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html](https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
 
-###### Example <a name="Example" id="aws-analytics-reference-architecture.SingletonBucket.addEventNotification.example"></a>
+*Example*
 
 ```typescript
    declare const myLambda: lambda.Function;
@@ -2753,7 +3085,9 @@ The notification destination (Lambda, SNS Topic or SQS Queue).
 
 S3 object key filter rules to determine which objects trigger this event.
 
-Each filter must include a `prefix` and/or `suffix` that will be matched against the s3 object key. Refer to the S3 Developer Guide for details about allowed filter rules.
+Each filter must include a `prefix` and/or `suffix`
+that will be matched against the s3 object key. Refer to the S3 Developer Guide
+for details about allowed filter rules.
 
 ---
 
@@ -2765,7 +3099,8 @@ public addObjectCreatedNotification(dest: IBucketNotificationDestination, filter
 
 Subscribes a destination to receive notifications when an object is created in the bucket.
 
-This is identical to calling `onEvent(EventType.OBJECT_CREATED)`.
+This is identical to calling
+`onEvent(EventType.OBJECT_CREATED)`.
 
 ###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.SingletonBucket.addObjectCreatedNotification.parameter.dest"></a>
 
@@ -2791,7 +3126,8 @@ public addObjectRemovedNotification(dest: IBucketNotificationDestination, filter
 
 Subscribes a destination to receive notifications when an object is removed from the bucket.
 
-This is identical to calling `onEvent(EventType.OBJECT_REMOVED)`.
+This is identical to calling
+`onEvent(EventType.OBJECT_REMOVED)`.
 
 ###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.SingletonBucket.addObjectRemovedNotification.parameter.dest"></a>
 
@@ -2817,7 +3153,11 @@ public addToResourcePolicy(permission: PolicyStatement): AddToResourcePolicyResu
 
 Adds a statement to the resource policy for a principal (i.e. account/role/service) to perform actions on this bucket and/or its contents. Use `bucketArn` and `arnForObjects(keys)` to obtain ARNs for this bucket or objects.
 
-Note that the policy statement may or may not be added to the policy. For example, when an `IBucket` is created from an existing bucket, it's not possible to tell whether the bucket already has a policy attached, let alone to re-use that policy to add more statements to it. So it's safest to do nothing in these cases.
+Note that the policy statement may or may not be added to the policy.
+For example, when an `IBucket` is created from an existing bucket,
+it's not possible to tell whether the bucket already has a policy
+attached, let alone to re-use that policy to add more statements to it.
+So it's safest to do nothing in these cases.
 
 ###### `permission`<sup>Required</sup> <a name="permission" id="aws-analytics-reference-architecture.SingletonBucket.addToResourcePolicy.parameter.permission"></a>
 
@@ -2835,7 +3175,11 @@ public arnForObjects(keyPattern: string): string
 
 Returns an ARN that represents all objects within the bucket that match the key pattern specified.
 
-To represent all keys, specify ``"*"``.  If you need to specify a keyPattern with multiple components, concatenate them into a single string, e.g.:     arnForObjects(`home/${team}/${user}/*`)
+To represent all keys, specify ``"*"``.
+
+If you need to specify a keyPattern with multiple components, concatenate them into a single string, e.g.:
+
+   arnForObjects(`home/${team}/${user}/*`)
 
 ###### `keyPattern`<sup>Required</sup> <a name="keyPattern" id="aws-analytics-reference-architecture.SingletonBucket.arnForObjects.parameter.keyPattern"></a>
 
@@ -2875,7 +3219,24 @@ public grantPublicAccess(allowedActions: string, keyPrefix?: string): Grant
 
 Allows unrestricted access to objects from this bucket.
 
-IMPORTANT: This permission allows anyone to perform actions on S3 objects in this bucket, which is useful for when you configure your bucket as a website and want everyone to be able to read objects in the bucket without needing to authenticate.  Without arguments, this method will grant read ("s3:GetObject") access to all objects ("*") in the bucket.  The method returns the `iam.Grant` object, which can then be modified as needed. For example, you can add a condition that will restrict access only to an IPv4 range like this:       const grant = bucket.grantPublicAccess();      grant.resourceStatement!.addCondition(‘IpAddress’, { “aws:SourceIp”: “54.240.143.0/24” });  Note that if this `IBucket` refers to an existing bucket, possibly not managed by CloudFormation, this method will have no effect, since it's impossible to modify the policy of an existing bucket.
+IMPORTANT: This permission allows anyone to perform actions on S3 objects
+in this bucket, which is useful for when you configure your bucket as a
+website and want everyone to be able to read objects in the bucket without
+needing to authenticate.
+
+Without arguments, this method will grant read ("s3:GetObject") access to
+all objects ("*") in the bucket.
+
+The method returns the `iam.Grant` object, which can then be modified
+as needed. For example, you can add a condition that will restrict access only
+to an IPv4 range like this:
+
+     const grant = bucket.grantPublicAccess();
+     grant.resourceStatement!.addCondition(‘IpAddress’, { “aws:SourceIp”: “54.240.143.0/24” });
+
+Note that if this `IBucket` refers to an existing bucket, possibly not
+managed by CloudFormation, this method will have no effect, since it's
+impossible to modify the policy of an existing bucket.
 
 ###### `allowedActions`<sup>Required</sup> <a name="allowedActions" id="aws-analytics-reference-architecture.SingletonBucket.grantPublicAccess.parameter.allowedActions"></a>
 
@@ -2903,7 +3264,8 @@ public grantPut(identity: IGrantable, objectsKeyPattern?: any): Grant
 
 Grants s3:PutObject* and s3:Abort* permissions for this bucket to an IAM principal.
 
-If encryption is used, permission to use the key to encrypt the contents of written files will also be granted to the same principal.
+If encryption is used, permission to use the key to encrypt the contents
+of written files will also be granted to the same principal.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantPut.parameter.identity"></a>
 
@@ -2929,7 +3291,9 @@ public grantPutAcl(identity: IGrantable, objectsKeyPattern?: string): Grant
 
 Grant the given IAM identity permissions to modify the ACLs of objects in the given Bucket.
 
-If your application has the '@aws-cdk/aws-s3:grantWriteWithoutAcl' feature flag set, calling {@link grantWrite} or {@link grantReadWrite} no longer grants permissions to modify the ACLs of the objects; in this case, if you need to modify object ACLs, call this method explicitly.
+If your application has the '@aws-cdk/aws-s3:grantWriteWithoutAcl' feature flag set,
+calling {@link grantWrite} or {@link grantReadWrite} no longer grants permissions to modify the ACLs of the objects;
+in this case, if you need to modify object ACLs, call this method explicitly.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantPutAcl.parameter.identity"></a>
 
@@ -2951,7 +3315,8 @@ public grantRead(identity: IGrantable, objectsKeyPattern?: any): Grant
 
 Grant read permissions for this bucket and it's contents to an IAM principal (Role/Group/User).
 
-If encryption is used, permission to use the key to decrypt the contents of the bucket will also be granted to the same principal.
+If encryption is used, permission to use the key to decrypt the contents
+of the bucket will also be granted to the same principal.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantRead.parameter.identity"></a>
 
@@ -2977,7 +3342,16 @@ public grantReadWrite(identity: IGrantable, objectsKeyPattern?: any): Grant
 
 Grants read/write permissions for this bucket and it's contents to an IAM principal (Role/Group/User).
 
-If an encryption key is used, permission to use the key for encrypt/decrypt will also be granted.  Before CDK version 1.85.0, this method granted the `s3:PutObject*` permission that included `s3:PutObjectAcl`, which could be used to grant read/write object access to IAM principals in other accounts. If you want to get rid of that behavior, update your CDK version to 1.85.0 or later, and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true` in the `context` key of your cdk.json file. If you've already updated, but still need the principal to have permissions to modify the ACLs, use the {@link grantPutAcl} method.
+If an encryption key is used, permission to use the key for
+encrypt/decrypt will also be granted.
+
+Before CDK version 1.85.0, this method granted the `s3:PutObject*` permission that included `s3:PutObjectAcl`,
+which could be used to grant read/write object access to IAM principals in other accounts.
+If you want to get rid of that behavior, update your CDK version to 1.85.0 or later,
+and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true`
+in the `context` key of your cdk.json file.
+If you've already updated, but still need the principal to have permissions to modify the ACLs,
+use the {@link grantPutAcl} method.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantReadWrite.parameter.identity"></a>
 
@@ -2999,7 +3373,16 @@ public grantWrite(identity: IGrantable, objectsKeyPattern?: any): Grant
 
 Grant write permissions to this bucket to an IAM principal.
 
-If encryption is used, permission to use the key to encrypt the contents of written files will also be granted to the same principal.  Before CDK version 1.85.0, this method granted the `s3:PutObject*` permission that included `s3:PutObjectAcl`, which could be used to grant read/write object access to IAM principals in other accounts. If you want to get rid of that behavior, update your CDK version to 1.85.0 or later, and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true` in the `context` key of your cdk.json file. If you've already updated, but still need the principal to have permissions to modify the ACLs, use the {@link grantPutAcl} method.
+If encryption is used, permission to use the key to encrypt the contents
+of written files will also be granted to the same principal.
+
+Before CDK version 1.85.0, this method granted the `s3:PutObject*` permission that included `s3:PutObjectAcl`,
+which could be used to grant read/write object access to IAM principals in other accounts.
+If you want to get rid of that behavior, update your CDK version to 1.85.0 or later,
+and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true`
+in the `context` key of your cdk.json file.
+If you've already updated, but still need the principal to have permissions to modify the ACLs,
+use the {@link grantPutAcl} method.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantWrite.parameter.identity"></a>
 
@@ -3021,7 +3404,8 @@ public onCloudTrailEvent(id: string, options?: OnCloudTrailBucketEventOptions): 
 
 Define a CloudWatch event that triggers when something happens to this repository.
 
-Requires that there exists at least one CloudTrail Trail in your account that captures the event. This method will not create the Trail.
+Requires that there exists at least one CloudTrail Trail in your account
+that captures the event. This method will not create the Trail.
 
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailEvent.parameter.id"></a>
 
@@ -3047,7 +3431,12 @@ public onCloudTrailPutObject(id: string, options?: OnCloudTrailBucketEventOption
 
 Defines an AWS CloudWatch event that triggers when an object is uploaded to the specified paths (keys) in this bucket using the PutObject API call.
 
-Note that some tools like `aws s3 cp` will automatically use either PutObject or the multipart upload API depending on the file size, so using `onCloudTrailWriteObject` may be preferable.  Requires that there exists at least one CloudTrail Trail in your account that captures the event. This method will not create the Trail.
+Note that some tools like `aws s3 cp` will automatically use either
+PutObject or the multipart upload API depending on the file size,
+so using `onCloudTrailWriteObject` may be preferable.
+
+Requires that there exists at least one CloudTrail Trail in your account
+that captures the event. This method will not create the Trail.
 
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailPutObject.parameter.id"></a>
 
@@ -3073,7 +3462,15 @@ public onCloudTrailWriteObject(id: string, options?: OnCloudTrailBucketEventOpti
 
 Defines an AWS CloudWatch event that triggers when an object at the specified paths (keys) in this bucket are written to.
 
-This includes the events PutObject, CopyObject, and CompleteMultipartUpload.  Note that some tools like `aws s3 cp` will automatically use either PutObject or the multipart upload API depending on the file size, so using this method may be preferable to `onCloudTrailPutObject`.  Requires that there exists at least one CloudTrail Trail in your account that captures the event. This method will not create the Trail.
+This includes
+the events PutObject, CopyObject, and CompleteMultipartUpload.
+
+Note that some tools like `aws s3 cp` will automatically use either
+PutObject or the multipart upload API depending on the file size,
+so using this method may be preferable to `onCloudTrailPutObject`.
+
+Requires that there exists at least one CloudTrail Trail in your account
+that captures the event. This method will not create the Trail.
 
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailWriteObject.parameter.id"></a>
 
@@ -3099,7 +3496,8 @@ public s3UrlForObject(key?: string): string
 
 The S3 URL of an S3 object. For example:.
 
-`s3://onlybucket` - `s3://bucket/key`
+`s3://onlybucket`
+- `s3://bucket/key`
 
 ###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonBucket.s3UrlForObject.parameter.key"></a>
 
@@ -3107,7 +3505,8 @@ The S3 URL of an S3 object. For example:.
 
 The S3 key of the object.
 
-If not specified, the S3 URL of the bucket is returned.
+If not specified, the S3 URL of the
+bucket is returned.
 
 ---
 
@@ -3119,7 +3518,11 @@ public transferAccelerationUrlForObject(key?: string, options?: TransferAccelera
 
 The https Transfer Acceleration URL of an S3 object.
 
-Specify `dualStack: true` at the options for dual-stack endpoint (connect to the bucket over IPv6). For example:  - `https://bucket.s3-accelerate.amazonaws.com` - `https://bucket.s3-accelerate.amazonaws.com/key`
+Specify `dualStack: true` at the options
+for dual-stack endpoint (connect to the bucket over IPv6). For example:
+
+- `https://bucket.s3-accelerate.amazonaws.com`
+- `https://bucket.s3-accelerate.amazonaws.com/key`
 
 ###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonBucket.transferAccelerationUrlForObject.parameter.key"></a>
 
@@ -3127,7 +3530,8 @@ Specify `dualStack: true` at the options for dual-stack endpoint (connect to the
 
 The S3 key of the object.
 
-If not specified, the URL of the bucket is returned.
+If not specified, the URL of the
+bucket is returned.
 
 ---
 
@@ -3147,7 +3551,9 @@ public urlForObject(key?: string): string
 
 The https URL of an S3 object. Specify `regional: false` at the options for non-regional URLs. For example:.
 
-`https://s3.us-west-1.amazonaws.com/onlybucket` - `https://s3.us-west-1.amazonaws.com/bucket/key` - `https://s3.cn-north-1.amazonaws.com.cn/china-bucket/mykey`
+`https://s3.us-west-1.amazonaws.com/onlybucket`
+- `https://s3.us-west-1.amazonaws.com/bucket/key`
+- `https://s3.cn-north-1.amazonaws.com.cn/china-bucket/mykey`
 
 ###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonBucket.urlForObject.parameter.key"></a>
 
@@ -3155,7 +3561,8 @@ The https URL of an S3 object. Specify `regional: false` at the options for non-
 
 The S3 key of the object.
 
-If not specified, the URL of the bucket is returned.
+If not specified, the URL of the
+bucket is returned.
 
 ---
 
@@ -3167,7 +3574,10 @@ public virtualHostedUrlForObject(key?: string, options?: VirtualHostedStyleUrlOp
 
 The virtual hosted-style URL of an S3 object. Specify `regional: false` at the options for non-regional URL. For example:.
 
-`https://only-bucket.s3.us-west-1.amazonaws.com` - `https://bucket.s3.us-west-1.amazonaws.com/key` - `https://bucket.s3.amazonaws.com/key` - `https://china-bucket.s3.cn-north-1.amazonaws.com.cn/mykey`
+`https://only-bucket.s3.us-west-1.amazonaws.com`
+- `https://bucket.s3.us-west-1.amazonaws.com/key`
+- `https://bucket.s3.amazonaws.com/key`
+- `https://china-bucket.s3.cn-north-1.amazonaws.com.cn/mykey`
 
 ###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonBucket.virtualHostedUrlForObject.parameter.key"></a>
 
@@ -3175,7 +3585,8 @@ The virtual hosted-style URL of an S3 object. Specify `regional: false` at the o
 
 The S3 key of the object.
 
-If not specified, the URL of the bucket is returned.
+If not specified, the URL of the
+bucket is returned.
 
 ---
 
@@ -3355,7 +3766,8 @@ The construct's name.
 
 A `BucketAttributes` object.
 
-Can be obtained from a call to `bucket.export()` or manually created.
+Can be obtained from a call to
+`bucket.export()` or manually created.
 
 ---
 
@@ -3413,7 +3825,8 @@ SingletonBucket.getOrCreate(scope: Construct, bucketName: string)
 
 Get the Amazon S3 Bucket from the AWS CDK Stack based on the provided name.
 
-The method adds a prefix (ara-) and a suffix (-{ACCOUNT_ID}) to the provided name. If no bucket exists, it creates a new one.
+The method adds a prefix (ara-) and a suffix (-{ACCOUNT_ID}) to the provided name.
+If no bucket exists, it creates a new one.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonBucket.getOrCreate.parameter.scope"></a>
 
@@ -3469,7 +3882,12 @@ public readonly env: ResourceEnvironment;
 
 The environment this resource belongs to.
 
-For resources that are created and managed by the CDK (generally, those created by creating new class instances like Role, Bucket, etc.), this is always the same as the environment of the stack they belong to; however, for imported resources (those obtained from static methods like fromRoleArn, fromBucketName, etc.), that might be different than the stack they were imported into.
+For resources that are created and managed by the CDK
+(generally, those created by creating new class instances like Role, Bucket, etc.),
+this is always the same as the environment of the stack they belong to;
+however, for imported resources
+(those obtained from static methods like fromRoleArn, fromBucketName, etc.),
+that might be different than the stack they were imported into.
 
 ---
 
@@ -3603,7 +4021,8 @@ public readonly policy: BucketPolicy;
 
 The resource policy associated with this bucket.
 
-If `autoCreatePolicy` is true, a `BucketPolicy` will be created upon the first call to addToResourcePolicy(s).
+If `autoCreatePolicy` is true, a `BucketPolicy` will be created upon the
+first call to addToResourcePolicy(s).
 
 ---
 
@@ -3612,7 +4031,8 @@ If `autoCreatePolicy` is true, a `BucketPolicy` will be created upon the first c
 
 SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
 
-The role is created with AWSGlueServiceRole policy and authorize all actions on S3. The Construct provides a getOrCreate method for SingletonInstantiation
+The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
+The Construct provides a getOrCreate method for SingletonInstantiation
 
 #### Methods <a name="Methods" id="Methods"></a>
 
@@ -4421,7 +4841,11 @@ Kubernetes version for Amazon EKS cluster that will be created.
 
 The Options for adding EmrEksNodegroup to an EmrEksCluster.
 
-Some of the Amazon EKS Nodegroup parameters are overriden: -  NodegroupName by the id and an index per AZ -  LaunchTemplate spec -  SubnetList by either the subnet parameter or one subnet per Amazon EKS Cluster AZ. -  Labels and Taints are automatically used to tag the nodegroup for the cluster autoscaler
+Some of the Amazon EKS Nodegroup parameters are overriden:
+-  NodegroupName by the id and an index per AZ
+-  LaunchTemplate spec
+-  SubnetList by either the subnet parameter or one subnet per Amazon EKS Cluster AZ.
+-  Labels and Taints are automatically used to tag the nodegroup for the cluster autoscaler
 
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.EmrEksNodegroupOptions.Initializer"></a>
 
@@ -4469,7 +4893,8 @@ public readonly amiType: NodegroupAmiType;
 
 The AMI type for your node group.
 
-If you explicitly specify the launchTemplate with custom AMI, do not specify this property, or the node group deployment will fail. In other cases, you will need to specify correct amiType for the nodegroup.
+If you explicitly specify the launchTemplate with custom AMI, do not specify this property, or
+the node group deployment will fail. In other cases, you will need to specify correct amiType for the nodegroup.
 
 ---
 
@@ -4497,7 +4922,8 @@ public readonly desiredSize: number;
 
 The current number of worker nodes that the managed node group should maintain.
 
-If not specified, the nodewgroup will initially create `minSize` instances.
+If not specified,
+the nodewgroup will initially create `minSize` instances.
 
 ---
 
@@ -4525,7 +4951,9 @@ public readonly forceUpdate: boolean;
 
 Force the update if the existing node group's pods are unable to be drained due to a pod disruption budget issue.
 
-If an update fails because pods could not be drained, you can force the update after it fails to terminate the old node whether or not any pods are running on the node.
+If an update fails because pods could not be drained, you can force the update after it fails to terminate the old
+node whether or not any pods are
+running on the node.
 
 ---
 
@@ -4542,7 +4970,9 @@ public readonly instanceType: InstanceType;
 
 The instance type to use for your node group.
 
-Currently, you can specify a single instance type for a node group. The default value for this parameter is `t3.medium`. If you choose a GPU instance type, be sure to specify the `AL2_x86_64_GPU` with the amiType parameter.
+Currently, you can specify a single instance type for a node group.
+The default value for this parameter is `t3.medium`. If you choose a GPU instance type, be sure to specify the
+`AL2_x86_64_GPU` with the amiType parameter.
 
 ---
 
@@ -4643,7 +5073,10 @@ public readonly nodeRole: IRole;
 
 The IAM role to associate with your node group.
 
-The Amazon EKS worker node kubelet daemon makes calls to AWS APIs on your behalf. Worker nodes receive permissions for these API calls through an IAM instance profile and associated policies. Before you can launch worker nodes and register them into a cluster, you must create an IAM role for those worker nodes to use when they are launched.
+The Amazon EKS worker node kubelet daemon
+makes calls to AWS APIs on your behalf. Worker nodes receive permissions for these API calls through
+an IAM instance profile and associated policies. Before you can launch worker nodes and register them
+into a cluster, you must create an IAM role for those worker nodes to use when they are launched.
 
 ---
 
@@ -4671,7 +5104,9 @@ public readonly remoteAccess: NodegroupRemoteAccess;
 
 The remote access (SSH) configuration to use with your node group.
 
-Disabled by default, however, if you specify an Amazon EC2 SSH key but do not specify a source security group when you create a managed node group, then port 22 on the worker nodes is opened to the internet (0.0.0.0/0)
+Disabled by default, however, if you
+specify an Amazon EC2 SSH key but do not specify a source security group when you create a managed node group,
+then port 22 on the worker nodes is opened to the internet (0.0.0.0/0)
 
 ---
 
@@ -4686,7 +5121,10 @@ public readonly subnets: SubnetSelection;
 
 The subnets to use for the Auto Scaling group that is created for your node group.
 
-By specifying the SubnetSelection, the selected subnets will automatically apply required tags i.e. `kubernetes.io/cluster/CLUSTER_NAME` with a value of `shared`, where `CLUSTER_NAME` is replaced with the name of your cluster.
+By specifying the
+SubnetSelection, the selected subnets will automatically apply required tags i.e.
+`kubernetes.io/cluster/CLUSTER_NAME` with a value of `shared`, where `CLUSTER_NAME` is replaced with
+the name of your cluster.
 
 ---
 
@@ -4701,7 +5139,9 @@ public readonly tags: {[ key: string ]: string};
 
 The metadata to apply to the node group to assist with categorization and organization.
 
-Each tag consists of a key and an optional value, both of which you define. Node group tags do not propagate to any other resources associated with the node group, such as the Amazon EC2 instances or subnets.
+Each tag consists of
+a key and an optional value, both of which you define. Node group tags do not propagate to any other resources
+associated with the node group, such as the Amazon EC2 instances or subnets.
 
 ---
 
@@ -4742,7 +5182,8 @@ public readonly subnet: ISubnet;
 
 Configure the Amazon EKS NodeGroup in this subnet.
 
-Use this setting for resource dependencies like an Amazon RDS database.  The subnet must include the availability zone information because the nodegroup is tagged with the AZ for the K8S Cluster Autoscaler.
+Use this setting for resource dependencies like an Amazon RDS database. 
+The subnet must include the availability zone information because the nodegroup is tagged with the AZ for the K8S Cluster Autoscaler.
 
 ---
 
@@ -5039,7 +5480,20 @@ public readonly replaceDictionary: {[ key: string ]: string};
 
 A key-value map of string (encapsulated between `${` and `}`) to replace in the SQL files given.
 
-Example:  * The SQL file:     ```sql    SELECT * FROM ${TABLE_NAME};    ``` * The replacement map:     ```typescript    replaceDictionary = {      TABLE_NAME: 'my_table'    }    ```
+Example:
+
+* The SQL file:
+
+   ```sql
+   SELECT * FROM ${TABLE_NAME};
+   ```
+* The replacement map:
+
+   ```typescript
+   replaceDictionary = {
+     TABLE_NAME: 'my_table'
+   }
+   ```
 
 ---
 
@@ -5354,7 +5808,9 @@ public readonly dateTimeColumnsToAdjust: string[];
 
 Array of column names with datetime to adjust.
 
-The source data will have date in the past 2021-01-01T00:00:00 while the data replayer will have have the current time. The difference (aka. offset) must be added to all datetime columns
+The source data will have date in the past 2021-01-01T00:00:00 while
+the data replayer will have have the current time. The difference (aka. offset)
+must be added to all datetime columns
 
 ---
 
@@ -6049,7 +6505,28 @@ public readonly TOOLING_ALL: EmrEksNodegroupOptions;
 
 PartitionedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
 
-PartitionDataset has following properties:  1. Data is partitioned by timestamp (in seconds). Each folder stores data within a given range.  There is no constraint on how long the timestange range can be. But each file must not be larger tahn 100MB. Here is an example: |- time_range_start=16000000000     |- file1.csv 100MB     |- file2.csv 50MB |- time_range_start=16000000300 // 5 minute range (300 sec)     |- file1.csv 1MB |- time_range_start=16000000600     |- file1.csv 100MB     |- file2.csv 100MB     |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB 2. It has a manefest CSV file with two columns: start and path. Start is the timestamp start        , path 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file1.csv 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file2.csv 16000000300  , s3://<path>/<to>/<folder>/time_range_start=16000000300/file1.csv 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file1.csv 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
+PartitionDataset has following properties:
+
+1. Data is partitioned by timestamp (in seconds). Each folder stores data within a given range. 
+There is no constraint on how long the timestange range can be. But each file must not be larger tahn 100MB.
+Here is an example:
+|- time_range_start=16000000000
+    |- file1.csv 100MB
+    |- file2.csv 50MB
+|- time_range_start=16000000300 // 5 minute range (300 sec)
+    |- file1.csv 1MB
+|- time_range_start=16000000600
+    |- file1.csv 100MB
+    |- file2.csv 100MB
+    |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB
+2. It has a manefest CSV file with two columns: start and path. Start is the timestamp
+start        , path
+16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file1.csv
+16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file2.csv
+16000000300  , s3://<path>/<to>/<folder>/time_range_start=16000000300/file1.csv
+16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file1.csv
+16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv
+16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.PartitionedDataset.Initializer"></a>
 
@@ -6147,7 +6624,8 @@ public readonly startDateTime: string;
 
 Start datetime replaying this dataset.
 
-Your data set may start from 1 Jan 2020  But you can specify this to 1 Feb 2020 to omit the first month data.
+Your data set may start from 1 Jan 2020 
+But you can specify this to 1 Feb 2020 to omit the first month data.
 
 ---
 
