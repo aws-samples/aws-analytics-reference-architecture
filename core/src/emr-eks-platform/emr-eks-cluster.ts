@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import {join} from 'path';
-import {FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes} from '@aws-cdk/aws-ec2';
+import { join } from 'path';
+import { FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes } from '@aws-cdk/aws-ec2';
 import {
   CapacityType,
   Cluster,
@@ -11,7 +11,7 @@ import {
   KubernetesVersion,
   Nodegroup,
 } from '@aws-cdk/aws-eks';
-import {CfnVirtualCluster} from '@aws-cdk/aws-emrcontainers';
+import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import {
   CfnServiceLinkedRole,
   Effect,
@@ -24,18 +24,18 @@ import {
   Role,
   ServicePrincipal,
 } from '@aws-cdk/aws-iam';
-import {LogGroup, RetentionDays} from '@aws-cdk/aws-logs';
-import {Bucket, Location} from '@aws-cdk/aws-s3';
-import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
-import {Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags} from '@aws-cdk/core';
-import {SingletonBucket} from '../singleton-bucket';
-import {SingletonKey} from '../singleton-kms-key';
-import {SingletonCfnLaunchTemplate} from '../singleton-launch-template';
-import {validateSchema} from './config-override-schema-validation';
-import {EmrEksNodegroup, EmrEksNodegroupOptions} from './emr-eks-nodegroup';
-import {EmrEksNodegroupAsgTagProvider} from './emr-eks-nodegroup-asg-tag';
-import {EmrManagedEndpointOptions, EmrManagedEndpointProvider} from './emr-managed-endpoint';
-import {EmrVirtualClusterOptions} from './emr-virtual-cluster';
+import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
+import { Bucket, Location } from '@aws-cdk/aws-s3';
+import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
+import { Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags } from '@aws-cdk/core';
+import { SingletonBucket } from '../singleton-bucket';
+import { SingletonKey } from '../singleton-kms-key';
+import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
+import { validateSchema } from './config-override-schema-validation';
+import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
+import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
+import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
+import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
@@ -139,6 +139,14 @@ export class EmrEksCluster extends Construct {
 
     this.clusterName = props.eksClusterName ?? EmrEksCluster.DEFAULT_CLUSTER_NAME;
 
+    const eksClusterLogging: ClusterLoggingTypes [] = [
+      ClusterLoggingTypes.API,
+      ClusterLoggingTypes.AUTHENTICATOR,
+      ClusterLoggingTypes.SCHEDULER,
+      ClusterLoggingTypes.CONTROLLER_MANAGER,
+      ClusterLoggingTypes.AUDIT,
+    ];
+
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
     if ( props.eksVpcAttributes != undefined) {
 
@@ -149,13 +157,7 @@ export class EmrEksCluster extends Construct {
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
         vpc: this.eksVpc,
-        clusterLogging: [
-          ClusterLoggingTypes.API,
-          ClusterLoggingTypes.AUTHENTICATOR,
-          ClusterLoggingTypes.SCHEDULER,
-          ClusterLoggingTypes.CONTROLLER_MANAGER,
-          ClusterLoggingTypes.AUDIT,
-        ],
+        clusterLogging: eksClusterLogging,
       });
 
     } else {
@@ -163,13 +165,7 @@ export class EmrEksCluster extends Construct {
         defaultCapacity: 0,
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
-        clusterLogging: [
-          ClusterLoggingTypes.API,
-          ClusterLoggingTypes.AUTHENTICATOR,
-          ClusterLoggingTypes.SCHEDULER,
-          ClusterLoggingTypes.CONTROLLER_MANAGER,
-          ClusterLoggingTypes.AUDIT,
-        ],
+        clusterLogging: eksClusterLogging,
       });
 
       let eksVpcFlowLogLogGroup = new LogGroup(this, 'eksVpcFlowLogLogGroup', {
@@ -197,7 +193,6 @@ export class EmrEksCluster extends Construct {
           resources: ['*'],
         }),
       );
-
 
       const iamRoleforFlowLog = new Role(this, 'iamRoleforFlowLog', {
         assumedBy: new ServicePrincipal('vpc-flow-logs.amazonaws.com'),
@@ -247,7 +242,7 @@ export class EmrEksCluster extends Construct {
           },
         });
 
-    // Add the proper Amazon IAM Policy to the Amazon IAM Role for the Cluster Autoscaler
+    // Add the right Amazon IAM Policy to the Amazon IAM Role for the Cluster Autoscaler
     AutoscalerServiceAccount.addToPrincipalPolicy(
       autoscallingPolicyDescribe,
     );
