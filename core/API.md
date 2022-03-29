@@ -1664,11 +1664,6 @@ public readonly sharedDefaultConfig: string;
 
 ### Example <a name="Example" id="aws-analytics-reference-architecture.Example"></a>
 
-Example Construct to help onboarding contributors.
-
-This example includes best practices for code comment/documentation generation,
-and for default parameters pattern in CDK using Props with Optional properties
-
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.Example.Initializer"></a>
 
 ```typescript
@@ -5334,8 +5329,6 @@ name of the Amazon EKS namespace to be linked to the Amazon EMR virtual cluster.
 ---
 
 ### ExampleProps <a name="ExampleProps" id="aws-analytics-reference-architecture.ExampleProps"></a>
-
-The properties for the Example Construct class.
 
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.ExampleProps.Initializer"></a>
 
