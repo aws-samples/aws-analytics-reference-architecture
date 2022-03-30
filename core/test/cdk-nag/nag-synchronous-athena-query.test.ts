@@ -68,7 +68,7 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
 );
 
-NagSuppressions.addResourceSuppressionsByPath(
+/*NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
   'synchronous-athena-query/SynchronousAthenaQueryTes/synchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
@@ -78,7 +78,7 @@ NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
   'synchronous-athena-query/SynchronousAthenaQueryTes/synchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
-);
+);*/
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(synchronousAthenaStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
