@@ -2,19 +2,20 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests data-generator
+ * Tests data-platform
  *
- * @group unit/best-practice/emr-eks
+ * @group best-practice/data-platform
  */
 
 
-//import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
 import { Annotations, Match } from '@aws-cdk/assertions';
-import { App, Stack, Aspects } from '@aws-cdk/core';
-// eslint-disable-next-line import/no-extraneous-dependencies
+import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
+import { App, Stack, Aspects, ArnFormat, Aws } from '@aws-cdk/core';
+// eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { EmrEksCluster } from '../../../src/emr-eks-platform';
-//import { NotebookPlatform, StudioAuthMode } from '../notebook-platform/';
+import { SSOIdentityType } from '../../lib';
+import { EmrEksCluster } from '../../src/emr-eks-platform';
+import { NotebookPlatform, StudioAuthMode } from '../../src/notebook-platform';
 
 
 const mockApp = new App();
@@ -22,9 +23,49 @@ const stack = new Stack(mockApp, 'eks-emr-studio');
 
 Aspects.of(mockApp).add(new AwsSolutionsChecks());
 
-EmrEksCluster.getOrCreate(stack, {
+const emrEks = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
 });
+
+const notebookPlatform = new NotebookPlatform(stack, 'eks-emr-studio', {
+  emrEks: emrEks,
+  eksNamespace: 'platform7ns',
+  studioName: 'platform7',
+  studioAuthMode: StudioAuthMode.SSO,
+});
+
+
+const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
+  statements: [
+    new PolicyStatement({
+      resources: ['*'],
+      actions: ['s3:*'],
+    }),
+    new PolicyStatement({
+      resources: [
+        stack.formatArn({
+          account: Aws.ACCOUNT_ID,
+          region: Aws.REGION,
+          service: 'logs',
+          resource: '*',
+          arnFormat: ArnFormat.NO_RESOURCE_NAME,
+        }),
+      ],
+      actions: [
+        'logs:*',
+      ],
+    }),
+  ],
+});
+
+notebookPlatform.addUser([{
+  identityName: 'lotfi-emr-advanced',
+  identityType: SSOIdentityType.USER,
+  notebookManagedEndpoints: [{
+    emrOnEksVersion: 'emr-6.3.0-latest',
+    executionPolicy: policy1,
+  }],
+}]);
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
@@ -95,7 +136,7 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{
     id: 'AwsSolutions-IAM5',
     reason: 'IAM policy as provided by the open source community for AWS Load Balancer Controller ' +
-          'in https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.3.1/docs/install/iam_policy.json',
+            'in https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.3.1/docs/install/iam_policy.json',
   }],
 );
 
@@ -264,6 +305,51 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-isComplete/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-onTimeout/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/AsgTagProvider/lambdaExcutionRoleCRCustomResourceProvider/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
   'eks-emr-studio/@aws-cdk--aws-eks.KubectlProvider/Provider/framework-onEvent/ServiceRole/Resource',
   [{
     id: 'AwsSolutions-IAM4',
@@ -271,10 +357,97 @@ NagSuppressions.addResourceSuppressionsByPath(
   }],
 );
 
-test('No unsuppressed Warnings', () => {
-  const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
-  expect(warnings).toHaveLength(0);
-});
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-isComplete/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-onTimeout/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.KubectlProvider/Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/eks-emr-studio/studioServicePolicyplatform7/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Policy used in a role assumed by EMR. It is used to create the infrastructure for EMR Studio. This policy is defined in EMR documentation and will be used as is.',
+  }],
+);
+
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/eks-emr-studio/studioUserPolicyplatform7/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used as some resources are only known at run time. Policy used in a role assumed by EMR Studio. This role is then scoped at runtime with a session policy',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/eks-emr-studio/studioSessionPolicylotfiemradvanced/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used as some resources are only known at run time. Policy is used by EMR studio user as session policy, it is scoped to only the resources the user needs to access',
+  }],
+);
+
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/MyPolicy1/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Policy not relevant, it used for the cdk-nag test. The user will have to provide its own',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/eks-emr-studio/engineSecurityGroup/Resource',
+  [{
+    id: 'AwsSolutions-EC23',
+    reason: 'security group allow traffic coming from the VPC',
+  }],
+);
 
 test('No unsuppressed Errors', () => {
   const errors = Annotations.fromStack(stack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));

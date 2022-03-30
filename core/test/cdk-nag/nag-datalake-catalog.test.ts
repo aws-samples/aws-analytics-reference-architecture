@@ -1,14 +1,14 @@
 /**
- * Tests data-generator
+ * Tests data-catalog
  *
- * @group unit/best-practice/data-lake-catalog
+ * @group best-practice/data-lake-catalog
  */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks } from 'cdk-nag';
-import { DataLakeCatalog } from '../../../src/data-lake-catalog';
+import { DataLakeCatalog } from '../../src/data-lake-catalog';
 
 
 const mockApp = new App();

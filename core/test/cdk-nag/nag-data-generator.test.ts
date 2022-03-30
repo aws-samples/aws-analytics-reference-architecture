@@ -1,15 +1,15 @@
 /**
  * Tests data-generator
  *
- * @group unit/best-practice/data-generator
+ * @group best-practice/data-generator
  */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { DataGenerator } from '../../../src/data-generator';
-import { Dataset } from '../../../src/datasets';
+import { DataGenerator } from '../../src';
+import { Dataset } from '../../src';
 
 const mockApp = new App();
 
@@ -106,6 +106,29 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card used for creating cloudwatch log group and putevent, which is only known once lambda is executed' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  dataGeneratorStack,
+  'data-generator/predefinedGenerator/createSourceTable/lambdaExcutionRoleCRsynchronousAthenaQueryCRP/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataGeneratorStack,
+  'data-generator/predefinedGenerator/createSourceTable/synchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataGeneratorStack,
+  'data-generator/predefinedGenerator/createTargetTable/synchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataGeneratorStack,
+  'data-generator/predefinedGenerator/createTargetTable/lambdaExcutionRoleCRsynchronousAthenaQueryCRP/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+);
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(dataGeneratorStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));

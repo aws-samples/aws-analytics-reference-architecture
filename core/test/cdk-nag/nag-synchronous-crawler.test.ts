@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests data-generator
+ * Tests sync-crawler
  *
- * @group unit/best-practice/sync-crawler
+ * @group best-practice/sync-crawler
  */
 
 import { App, Aspects, Stack } from '@aws-cdk/core';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { SynchronousCrawler } from '../../../src/synchronous-crawler';
+import { SynchronousCrawler } from '../../src';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import '@aws-cdk/assert/jest';
 import { Annotations, Match } from '@aws-cdk/assertions';
@@ -61,6 +61,23 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card for log stream, log name generated at run time' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/lambdaExcutionRoleCRsynchronousCrawlerCRP/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/lambdaExcutionRoleCRsynchronousCrawlerCRP/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+);
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(crawlerStartWaitStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
