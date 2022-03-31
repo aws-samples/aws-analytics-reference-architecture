@@ -16,7 +16,7 @@ CENTRAL_ACC_ID = os.getenv("CENTRAL_ACC_ID")
 
 def on_event(event, ctx):
     log.info(event)
-    
+
     ram_invites = ram.get_resource_share_invitations()
     for ri in ram_invites["resourceShareInvitations"]:
         if ri["status"] == "PENDING" and ri["senderAccountId"] == CENTRAL_ACC_ID:

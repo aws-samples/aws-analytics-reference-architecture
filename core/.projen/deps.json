@@ -79,6 +79,10 @@
       "type": "build"
     },
     {
+      "name": "jsii-pacmak",
+      "type": "build"
+    },
+    {
       "name": "json-schema",
       "type": "build"
     },
@@ -117,6 +121,11 @@
     },
     {
       "name": "@aws-cdk/assertions",
+      "version": "1.144.0",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-apigatewayv2",
       "version": "1.144.0",
       "type": "peer"
     },
@@ -267,6 +276,11 @@
     },
     {
       "name": "@aws-cdk/assertions",
+      "version": "1.144.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-apigatewayv2",
       "version": "1.144.0",
       "type": "runtime"
     },
