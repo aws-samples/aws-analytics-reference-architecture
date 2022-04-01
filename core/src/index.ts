@@ -16,3 +16,4 @@ export { SingletonGlueDefaultRole } from './singleton-glue-default-role';
 export { EmrEksClusterProps, EmrEksCluster, EmrEksNodegroupOptions, EmrEksNodegroup, EmrVirtualClusterOptions, EmrManagedEndpointOptions } from './emr-eks-platform';
 export { FlywayRunner, FlywayRunnerProps } from './db-schema-manager';
 export { NotebookPlatform, NotebookPlatformProps, StudioAuthMode, IdpRelayState, NotebookUserOptions, NotebookManagedEndpointOptions, SSOIdentityType } from './notebook-platform';
+export { LakeformationS3Location, LakeFormationS3LocationProps } from './lf-s3-location';
