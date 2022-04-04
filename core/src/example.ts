@@ -4,6 +4,8 @@
 import { Construct, CfnOutput } from '@aws-cdk/core';
 
 /**
+ * @ignore
+ * // DO NOT include ignore tag, if you do TypeDoc will not include documentation of your construct
  * The properties for the Example Construct class.
  */
 
@@ -21,6 +23,8 @@ export interface ExampleProps {
 }
 
 /**
+ * @ignore
+ * // DO NOT include ignore tag, if you do TypeDoc will not include documentation of your construct
  * Example Construct to help onboarding contributors.
  * This example includes best practices for code comment/documentation generation,
  * and for default parameters pattern in CDK using Props with Optional properties
@@ -29,6 +33,8 @@ export interface ExampleProps {
 export class Example extends Construct {
 
   /**
+   * @ignore
+   * // DO NOT include ignore tag, if you do TypeDoc will not include documentation of your construct
    * Constructs a new instance of the Example class with CfnOutput.
    * CfnOutput can be customized.
    * @param {Construct} scope the Scope of the CDK Construct
