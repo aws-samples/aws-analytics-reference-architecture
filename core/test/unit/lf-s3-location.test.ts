@@ -12,11 +12,11 @@ import '@aws-cdk/assert/jest';
 import { Stack } from '@aws-cdk/core';
 import { Match, Template } from '@aws-cdk/assertions';
 
-describe('S3Location test', () => {
+describe('LakeFormationS3Location test', () => {
 
   const lfS3Stack = new Stack();  
  
-  new LakeformationS3Location(lfS3Stack, 'CustomExample', { 
+  new LakeformationS3Location(lfS3Stack, 'S3Location', { 
      s3Location: {
        bucketName: 'test',
        objectKey: 'test',

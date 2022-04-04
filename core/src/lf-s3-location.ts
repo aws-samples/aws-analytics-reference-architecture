@@ -41,9 +41,9 @@ export interface LakeFormationS3LocationProps {
  * const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
  * 
  * new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
- *   s3bucket:{
- *     bucketName: 'test',
- *     objectKey: 'test',
+ *   s3Location:{
+ *     bucketName: 'my-bucket',
+ *     objectKey: 'my-prefix',
  *   }
  * });
  * ```
