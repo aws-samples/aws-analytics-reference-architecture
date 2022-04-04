@@ -22,7 +22,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.144.0',
+  cdkVersion: '1.151.0',
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
@@ -79,8 +79,11 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
-    'aws-cdk@1.144.0',
+    'aws-cdk@1.151.0',
+    'cdk-assets@1.151.0',
     'jest-runner-groups',
+    'promptly',
+    'proxy-agent',
     'glob',
   ],
 
