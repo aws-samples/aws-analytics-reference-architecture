@@ -840,14 +840,6 @@
     jsonschema "^1.4.0"
     semver "^7.3.5"
 
-"@aws-cdk/cloud-assembly-schema@2.19.0":
-  version "2.19.0"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-2.19.0.tgz#f38cf6ec8b4a5cb802a9623005c952a3e02c687c"
-  integrity sha512-d+4bibWT77yksTylNjbQLQ5orgf4bpMFrWgzF0xWYRKk/S4rXdjWgzKqhrYEK5eldGPAjEj04rCajcj0ugV6zA==
-  dependencies:
-    jsonschema "^1.4.0"
-    semver "^7.3.5"
-
 "@aws-cdk/cloudformation-diff@1.151.0":
   version "1.151.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/cloudformation-diff/-/cloudformation-diff-1.151.0.tgz#edd4a48e964baa8d25e8652f2de95ce7ddfbb444"
@@ -895,14 +887,6 @@
   integrity sha512-Hn7MqwlFUqOw1zD7o35eU4HuJwfXTOHjPLfiLdBMhNfXuzqCQT3IdxqQCiyjcSfg0Q3h65osAz+a6xlkDL5N2A==
   dependencies:
     "@aws-cdk/cloud-assembly-schema" "1.151.0"
-    semver "^7.3.5"
-
-"@aws-cdk/cx-api@2.19.0":
-  version "2.19.0"
-  resolved "https://registry.yarnpkg.com/@aws-cdk/cx-api/-/cx-api-2.19.0.tgz#a4d49d2fc7a2485babbdfc25c3848f8c430ea8cc"
-  integrity sha512-192eSyul+9KCBK8EEFHN7V8uIcAoEbeAnN7ouiiIKze8S/bp9ZNii8gaa3cNweiQU1Fqg4NpetYfCwjFqsXSDw==
-  dependencies:
-    "@aws-cdk/cloud-assembly-schema" "2.19.0"
     semver "^7.3.5"
 
 "@aws-cdk/lambda-layer-awscli@1.151.0":
@@ -2420,13 +2404,13 @@ case@1.6.3, case@^1.6.3:
   resolved "https://registry.yarnpkg.com/case/-/case-1.6.3.tgz#0a4386e3e9825351ca2e6216c60467ff5f1ea1c9"
   integrity sha512-mzDSXIPaFwVDvZAHqZ9VlbyF4yyXRuX6IvB06WvPYkqJVO24kX1PPhv9bfpKNFZyxYFmmgo03HUiD8iklmJYRQ==
 
-cdk-assets@^2.19.0:
-  version "2.19.0"
-  resolved "https://registry.yarnpkg.com/cdk-assets/-/cdk-assets-2.19.0.tgz#bb5caad8bad9805a8dbdfcbe8558b5aef2939000"
-  integrity sha512-SGC4ra72IRWWIMIiYznpI7bNSIg8Ds+BoEMOC44gBDfOocnWrq4PqLHBAtyBUMCCib/bA6UvDyzMWFhO8Bg6Gw==
+cdk-assets@1.151.0:
+  version "1.151.0"
+  resolved "https://registry.yarnpkg.com/cdk-assets/-/cdk-assets-1.151.0.tgz#8f6597dba9c1c8d3ce13a9d28c74661d56813431"
+  integrity sha512-GdXT3xa8yXK7xRx9vWUBqr36nc6kaMjUQfDEYGuo+TulIhC0GqECaC4Bj83Qao4ZpUeKlRDL7fq+Z6tixtuyXQ==
   dependencies:
-    "@aws-cdk/cloud-assembly-schema" "2.19.0"
-    "@aws-cdk/cx-api" "2.19.0"
+    "@aws-cdk/cloud-assembly-schema" "1.151.0"
+    "@aws-cdk/cx-api" "1.151.0"
     archiver "^5.3.0"
     aws-sdk "^2.1093.0"
     glob "^7.2.0"

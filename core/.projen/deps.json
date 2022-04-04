@@ -30,6 +30,7 @@
     },
     {
       "name": "cdk-assets",
+      "version": "1.151.0",
       "type": "build"
     },
     {

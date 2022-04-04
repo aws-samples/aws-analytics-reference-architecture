@@ -80,7 +80,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@types/jest',
     'esbuild',
     'aws-cdk@1.151.0',
-    'cdk-assets',
+    'cdk-assets@1.151.0',
     'jest-runner-groups',
     'promptly',
     'proxy-agent',

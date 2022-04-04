@@ -54,7 +54,7 @@
     "@typescript-eslint/eslint-plugin": "^5",
     "@typescript-eslint/parser": "^5",
     "aws-cdk": "1.151.0",
-    "cdk-assets": "^2.19.0",
+    "cdk-assets": "1.151.0",
     "esbuild": "^0.14.29",
     "eslint": "^8",
     "eslint-import-resolver-node": "^0.3.6",
