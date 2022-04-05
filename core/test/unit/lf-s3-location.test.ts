@@ -47,6 +47,69 @@ describe('LakeFormationS3Location test', () => {
   });
 
   test('S3Location should create the proper IAM role', () => {
-    template.resourceCountIs('AWS::IAM::Role', 1);
+    template.hasResourceProperties('AWS::IAM::Policy', 
+      Match.objectLike({
+        PolicyDocument: {
+          Statement: Match.arrayWith([
+            {
+              Action: [
+                's3:GetObject',
+                's3:PutObject',
+                's3:DeleteObject',
+                's3:ListBucketMultipartUploads',
+                's3:ListMultipartUploadParts',
+                's3:AbortMultipartUpload',
+                's3:ListBucket',
+              ],
+              Effect: 'Allow',
+              Resource: Match.arrayEquals([
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::test/test/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::test"
+                    ]
+                  ]
+                }
+              ])
+            },
+          ])
+        }
+      })
+    );
+  });
+
+  test('S3Location should create the proper IAM role', () => {
+    template.hasResourceProperties('AWS::IAM::Role', 
+      Match.objectLike({
+        AssumeRolePolicyDocument: {
+          Statement: Match.arrayWith([
+            {
+              Action: "sts:AssumeRole",
+              Effect: "Allow",
+              Principal: {
+                Service: "lakeformation.amazonaws.com"
+              },
+            }
+          ])
+        }
+      })
+    );
   });
 });
