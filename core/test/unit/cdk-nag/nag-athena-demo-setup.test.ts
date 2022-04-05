@@ -9,25 +9,25 @@ import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { AthenaDefaultSetup } from '../../../src/athena-default-setup';
+import { AthenaDemoSetup } from '../../../src/athena-demo-setup';
 
 const mockApp = new App();
 
 const athenaDefaultSetupStack = new Stack(mockApp, 'athena-default-setup');
 // Instantiate an AthenaDefaultSetup
-new AthenaDefaultSetup(athenaDefaultSetupStack, 'athenaDefault');
+new AthenaDemoSetup(athenaDefaultSetupStack, 'athenaDefault');
 
 Aspects.of(athenaDefaultSetupStack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   athenaDefaultSetupStack,
-  'athena-default-setup/athenaDefault/athenaDefaultWorkgroup',
+  'athena-demo-setup/athenaDemo/athenaDemoWorkgroup',
   [{ id: 'AwsSolutions-ATH1', reason: 'Not setting up an encryption key since this the default athena workgroup' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   athenaDefaultSetupStack,
-  'athena-default-setup/ara-s3accesslogsBucket/Resource',
+  'athena-default-setup/ara-s3accesslogs/Resource',
   [{ id: 'AwsSolutions-S1', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 

@@ -4,18 +4,21 @@
 /**
  * Tests Amazon EMR Managed Endpoint custom resource provider 
  *
- * @group unit/other/emr-eks-cluster
+ * @group unit/emr-eks-platform/emr-eks-cluster
  */
 
 import { Stack } from '@aws-cdk/core';
 import { EmrManagedEndpointProvider } from '../../../src/emr-eks-platform/emr-managed-endpoint';
 import '@aws-cdk/assert/jest';
 import { Template, Match} from '@aws-cdk/assertions';
+import { AraBucket } from '../../../src/common/ara-bucket';
 
 
 describe ('ManagedEndpointProvider', () => {
   const ManagedEndpointProviderStack = new Stack();
-  new EmrManagedEndpointProvider(ManagedEndpointProviderStack, 'test');
+
+  const assetBucket = AraBucket.getOrCreate(ManagedEndpointProviderStack, { bucketName: 'asset'});
+  new EmrManagedEndpointProvider(ManagedEndpointProviderStack, 'test', { assetBucket: assetBucket});
 
   const template = Template.fromStack(ManagedEndpointProviderStack);
 

@@ -5,6 +5,7 @@ import { IRole } from '@aws-cdk/aws-iam';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
+import { IBucket } from '@aws-cdk/aws-s3';
 import { Construct, Duration, Aws } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
@@ -44,9 +45,9 @@ export interface EmrManagedEndpointOptions {
  */
 export interface EmrManagedEndpointProviderProps {
   /**
-   * The ARN of the bucket holding the k8 assets, in this case the pod templates
+   * The bucket containing the k8s assets, in this case the pod templates
    */
-  readonly assetBucketArn: string;
+  readonly assetBucket: IBucket;
 }
 
 /**
@@ -69,7 +70,7 @@ export class EmrManagedEndpointProvider extends Construct {
 
     const lambdaPolicy = [
       new PolicyStatement({
-        resources: [props.assetBucketArn],
+        resources: [props.assetBucket.bucketArn],
         actions: ['s3:GetObject*', 's3:GetBucket*', 's3:List*'],
       }),
       new PolicyStatement({
@@ -124,8 +125,6 @@ export class EmrManagedEndpointProvider extends Construct {
     });
 
     this.provider = new Provider(this, 'CustomResourceProvider', {
-      //isCompleteFnName: 'EmrManagedEndpointProviderIsComplete',
-      //onEventFnName: 'EmrManagedEndpointProviderOnEvent',
       onEventHandler: onEvent,
       isCompleteHandler: isComplete,
       totalTimeout: Duration.minutes(30),

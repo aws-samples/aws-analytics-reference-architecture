@@ -4,7 +4,7 @@
 /**
  * Tests EMR on EKS cluster
  *
- * @group unit/other/emr-eks-cluster
+ * @group unit/emr-eks-platform/emr-eks-cluster
  */
 
  import * as assertCDK from '@aws-cdk/assert';

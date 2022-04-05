@@ -6,7 +6,7 @@ import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from '@aws-cdk/aws
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { Effect, IManagedPolicy, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Key } from '@aws-cdk/aws-kms';
-import { BlockPublicAccess, Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
+import { Bucket } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
 import { EmrEksCluster } from '../emr-eks-platform';
 import { Utils } from '../utils';
@@ -19,7 +19,7 @@ import {
   createUserSessionPolicy,
 } from './notebook-platform-helpers';
 import { NotebookUserOptions } from './notebook-user';
-import {SingletonBucket} from "../singleton-bucket";
+import {AraBucket} from "../common/ara-bucket";
 
 
 /**
@@ -106,9 +106,9 @@ export enum IdpRelayState {
  * * An EMR Studio User Role as defined here - The policy template which is leveraged is the Basic one from the Amazon EMR Studio documentation
  * * Multiple EMR on EKS Managed Endpoints, each for a user or a group of users
  * * An execution role to be passed to the Managed endpoint from a policy provided by the user
- * * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are: <br />
- *   - EMR Virtual Cluster - created above <br />
- *   - ManagedEndpoint <br />
+ * * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are:
+ *   * EMR Virtual Cluster - created above
+ *   * ManagedEndpoint
  *
  *
  * Usage example:
@@ -154,7 +154,7 @@ export enum IdpRelayState {
  *   identityName: 'user1',
  *   identityType: SSOIdentityType.USER,
  *   notebookManagedEndpoints: [{
- *     emrOnEksVersion: 'emr-6.3.0-latest',
+ *     emrOnEksVersion: 'emr-6.4.0-latest',
  *     executionPolicy: policy1,
  *   }],
  * }]);
@@ -251,14 +251,10 @@ export class NotebookPlatform extends NestedStack {
 
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
-    this.workspacesBucket = new Bucket(this, 'WorkspacesBucket' + props.studioName, {
-      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + Utils.stringSanitizer(props.studioName),
-      enforceSSL: true,
+    this.workspacesBucket =  AraBucket.getOrCreate(this, {
+      bucketName: 'workspaces-bucket-' + Utils.stringSanitizer(props.studioName),
       encryptionKey: this.notebookPlatformEncryptionKey,
-      encryption: BucketEncryption.KMS,
-      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-      serverAccessLogsBucket: SingletonBucket.getOrCreate(this, 'ara-s3accesslogs'),
-      serverAccessLogsPrefix: `${props.studioName}`,
+      serverAccessLogsPrefix: `${props.studioName}-workspace`,
     });
 
     this.notebookPlatformEncryptionKey.addToResourcePolicy(

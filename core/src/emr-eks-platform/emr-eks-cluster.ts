@@ -28,7 +28,7 @@ import {LogGroup, RetentionDays} from '@aws-cdk/aws-logs';
 import {Bucket, Location} from '@aws-cdk/aws-s3';
 import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
 import {Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags} from '@aws-cdk/core';
-import {SingletonBucket} from '../singleton-bucket';
+import {AraBucket} from '../common/ara-bucket';
 import {SingletonKey} from '../singleton-kms-key';
 import {SingletonCfnLaunchTemplate} from '../singleton-launch-template';
 import {validateSchema} from './config-override-schema-validation';
@@ -208,7 +208,7 @@ export class EmrEksCluster extends Construct {
       });
     }
 
-    SingletonBucket.getOrCreate(this, 'ara-s3accesslogs');
+    AraBucket.getOrCreate(this, {bucketName: 's3-access-logs'});
 
     // Add the provided Amazon IAM Role as Amazon EKS Admin
     this.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( this, 'AdminRole', props.eksAdminRoleArn ), 'AdminRole');
@@ -353,7 +353,7 @@ export class EmrEksCluster extends Construct {
     //this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
     //this.addEmrEksNodegroup('notebook', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
     // Create an Amazon S3 Bucket for default podTemplate assets
-    this.assetBucket = SingletonBucket.getOrCreate(this, `${this.clusterName.toLowerCase()}-emr-eks-assets`);
+    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets`});
 
     //this.assetBucketRole = new Role();
 
@@ -523,7 +523,7 @@ export class EmrEksCluster extends Construct {
 
     // Set the custom resource provider service token here to avoid circular dependencies
     this.managedEndpointProviderServiceToken = new EmrManagedEndpointProvider(this, 'ManagedEndpointProvider', {
-      assetBucketArn: this.assetBucket.bucketArn,
+      assetBucket: this.assetBucket,
     }).provider.serviceToken;
 
     // Provide the Kubernetes Dashboard URL in AWS CloudFormation output

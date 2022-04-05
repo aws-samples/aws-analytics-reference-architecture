@@ -29,7 +29,7 @@ Aspects.of(dataLakeStorageStack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataLakeStorageStack,
-  'data-lake-storage/ara-s3accesslogsBucket/Resource',
+  'data-lake-storage/s3-access-logs/Resource',
   [{ id: 'AwsSolutions-S1', reason: 'This bucket is used for s3 server access log' }],
 );
 

@@ -8,8 +8,8 @@
  */
 
 import { Stack } from '@aws-cdk/core';
-import { DataGenerator } from '../../src/data-generator';
-import { Dataset } from '../../src/datasets';
+import { DataGenerator } from '../../../src/data-generator';
+import { Dataset } from '../../../src/datasets';
 import '@aws-cdk/assert/jest';
 
 const dataGeneratorStack = new Stack();

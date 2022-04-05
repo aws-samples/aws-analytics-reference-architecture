@@ -13,7 +13,7 @@ import { Construct, Arn, Aws, Stack, Duration, ArnFormat, RemovalPolicy } from '
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Dataset } from '../datasets/dataset';
-import { SingletonBucket } from '../singleton-bucket';
+import { AraBucket } from '../common/ara-bucket';
 import { SingletonGlueDatabase } from '../singleton-glue-database';
 import { SingletonKey } from '../singleton-kms-key';
 import { SynchronousAthenaQuery } from '../synchronous-athena-query';
@@ -85,7 +85,10 @@ export class DataGenerator extends Construct {
     const datageneratorDB = SingletonGlueDatabase.getOrCreate(this, DataGenerator.DATA_GENERATOR_DATABASE);
 
     // Singleton Amazon S3 bucket for Amazon Athena Query logs
-    const logBucket = SingletonBucket.getOrCreate(this, 'log');
+    const logBucket = AraBucket.getOrCreate(this, {
+      bucketName: 'athena-log',
+      serverAccessLogsPrefix: 'athena-log-bucket',
+    });
 
     // Source table creation in Amazon Athena
     const createSourceTable = new SynchronousAthenaQuery(this, 'createSourceTable', {

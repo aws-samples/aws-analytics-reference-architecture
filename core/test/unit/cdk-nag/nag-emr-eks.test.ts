@@ -34,13 +34,13 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/ara-s3accesslogsBucket/Resource',
+  'eks-emr-studio/s3-access-logs/Resource',
   [{ id: 'AwsSolutions-S1', reason: 'S3 bucket used for access log' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform-emr-eks-assetsBucket/Resource',
+  'eks-emr-studio/data-platform-emr-eks-assets/Resource',
   [{
     id: 'AwsSolutions-S1',
     reason: 'access log not activated because the bucket only stores pod templates no data',
@@ -49,7 +49,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/ara-s3accesslogsBucket/Resource',
+  'eks-emr-studio/s3-access-logs/Resource',
   [{ id: 'AwsSolutions-S1', reason: 'Bucket does not require access log, contains only EKS pod templates' }],
 );
 
