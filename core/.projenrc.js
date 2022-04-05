@@ -22,7 +22,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.149.0',
+  cdkVersion: '1.151.0',
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
@@ -31,7 +31,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   workflow: false,
   buildWorkflow: false,
   release: true,
-  depsUpgrade: false,
+  depsUpgrade: true,
   stale: false,
   pullRequestTemplate: false,
   cdkVersionPinning: true,
@@ -78,7 +78,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
-    'aws-cdk@1.149.0',
+    'aws-cdk@1.151.0',
     'jest-runner-groups',
     'cdk-nag@^1.0.0',
   ],
@@ -113,8 +113,13 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
 });
 
+project.testTask.reset('jest --group=best-practice');
 project.testTask.reset('jest --group=unit');
 project.testTask.spawn('eslint');
+
+project.addTask('test:best-practice', {
+  exec: 'jest --group=best-practice',
+});
 
 project.addTask('test:unit', {
   exec: 'jest --group=unit',

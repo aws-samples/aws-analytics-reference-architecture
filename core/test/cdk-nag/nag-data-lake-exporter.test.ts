@@ -1,7 +1,7 @@
 /**
  * Tests data-exporter
  *
- * @group unit/best-practice/data-lake-exporter
+ * @group best-practice/data-lake-exporter
  */
 
 
@@ -11,7 +11,7 @@ import { Stream } from '@aws-cdk/aws-kinesis';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { DataLakeExporter } from '../../../src/data-lake-exporter';
+import { DataLakeExporter } from '../../src/data-lake-exporter';
 
 const mockApp = new App();
 

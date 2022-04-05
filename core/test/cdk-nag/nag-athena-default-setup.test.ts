@@ -1,7 +1,7 @@
 /**
- * Tests data-generator
+ * Tests athena-default
  *
- * @group unit/best-practice/athena-setup-default
+ * @group best-practice/athena-setup-default
  */
 
 
@@ -9,7 +9,7 @@ import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { AthenaDemoSetup } from '../../../src/athena-demo-setup';
+import { AthenaDemoSetup } from '../../src/athena-demo-setup';
 
 const mockApp = new App();
 

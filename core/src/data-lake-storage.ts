@@ -121,6 +121,7 @@ export class DataLakeStorage extends Construct {
       lifecycleRules: [
         {
           transitions: rawTransitions,
+          abortIncompleteMultipartUploadAfter: Duration.days(1),
         },
       ],
       serverAccessLogsPrefix: 'raw-bucket',
@@ -148,6 +149,7 @@ export class DataLakeStorage extends Construct {
       lifecycleRules: [
         {
           transitions: cleanTransitions,
+          abortIncompleteMultipartUploadAfter: Duration.days(1),
         },
       ],
       serverAccessLogsPrefix: 'clean-bucket',
@@ -175,6 +177,7 @@ export class DataLakeStorage extends Construct {
       lifecycleRules: [
         {
           transitions: transformTransitions,
+          abortIncompleteMultipartUploadAfter: Duration.days(1),
         },
       ],
       serverAccessLogsPrefix: 'transform-bucket',

@@ -4,7 +4,7 @@
 import { IRole } from '@aws-cdk/aws-iam';
 import { IKey } from '@aws-cdk/aws-kms';
 import { BlockPublicAccess, Bucket, BucketAccessControl, BucketEncryption, BucketMetrics, CorsRule, IBucket, IntelligentTieringConfiguration, Inventory, LifecycleRule, ObjectOwnership } from '@aws-cdk/aws-s3';
-import { Construct, Stack, Aws, RemovalPolicy } from '@aws-cdk/core';
+import { Construct, Stack, Aws, RemovalPolicy, Duration } from '@aws-cdk/core';
 import { SingletonKey } from '../singleton-kms-key';
 
 export interface AraBucketProps{
@@ -209,6 +209,7 @@ export class AraBucket extends Bucket {
         serverAccessLogsBucket: serverAccessLogsBucket,
         serverAccessLogsPrefix: props.serverAccessLogsPrefix,
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+        lifecycleRules: props.lifecycleRules || [{ abortIncompleteMultipartUploadAfter: Duration.days(1)}],
       }
     }
     // build the S3 bucket

@@ -48,8 +48,14 @@ export class PreBundledFunction extends Function {
     let lambdaPolicyStatement: PolicyStatement [] = [];
 
     lambdaPolicyStatement.push(new PolicyStatement({
-      actions: ['logs:CreateLogGroup', 'logs:CreateLogStream'],
+      actions: ['logs:CreateLogGroup'],
       resources: [`arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:log-group:/aws/lambda/${functionProps.functionName}`],
+      effect: Effect.ALLOW,
+    }));
+
+    lambdaPolicyStatement.push(new PolicyStatement({
+      actions: ['logs:CreateLogStream'],
+      resources: [`arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:log-group:/aws/lambda/${functionProps.functionName}*`],
       effect: Effect.ALLOW,
     }));
 

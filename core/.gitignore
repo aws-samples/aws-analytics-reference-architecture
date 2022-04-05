@@ -36,6 +36,7 @@ junit.xml
 /dist/changelog.md
 /dist/version.txt
 !/.github/workflows/release.yml
+!/.github/workflows/upgrade-main.yml
 !/test/
 !/tsconfig.dev.json
 !/src/

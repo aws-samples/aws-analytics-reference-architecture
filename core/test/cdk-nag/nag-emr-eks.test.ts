@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests data-generator
+ * Tests emr-eks
  *
- * @group unit/best-practice/emr-eks
+ * @group best-practice/emr-eks
  */
 
 
 //import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Stack, Aspects } from '@aws-cdk/core';
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { EmrEksCluster } from '../../../src/emr-eks-platform';
+import { EmrEksCluster } from '../../src/emr-eks-platform';
 //import { NotebookPlatform, StudioAuthMode } from '../notebook-platform/';
 
 
@@ -95,7 +95,7 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{
     id: 'AwsSolutions-IAM5',
     reason: 'IAM policy as provided by the open source community for AWS Load Balancer Controller ' +
-          'in https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.3.1/docs/install/iam_policy.json',
+            'in https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.3.1/docs/install/iam_policy.json',
   }],
 );
 
@@ -264,10 +264,100 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-isComplete/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-onTimeout/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/AsgTagProvider/lambdaExcutionRoleCRCustomResourceProvider/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Cannot scope the policy further resource name generated at run time',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
   'eks-emr-studio/@aws-cdk--aws-eks.KubectlProvider/Provider/framework-onEvent/ServiceRole/Resource',
   [{
     id: 'AwsSolutions-IAM4',
     reason: 'Provide the CR with AWS Managed policy basic lambda execution role, read access to ECR and access to VPC to send kubectl command to control plan',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-isComplete/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-onTimeout/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.KubectlProvider/Provider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card used for scoped down resource as its is generated at runtime',
   }],
 );
 

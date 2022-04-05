@@ -69,7 +69,17 @@ describe ('AraBucket', () => {
         LoggingConfiguration: {
           DestinationBucketName: Match.anyValue(),
           LogFilePrefix: 'test',
-        }
+        },
+        LifecycleConfiguration: {
+          Rules: [
+            {
+              AbortIncompleteMultipartUpload: {
+                DaysAfterInitiation: 1,
+              },
+              Status: "Enabled",
+            },
+          ], 
+        }, 
       })
     );
   });
