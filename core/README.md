@@ -40,7 +40,7 @@ mkdir my_demo
 cd my_demo
 cdk init app --language python
 python3 -m venv .env
-source .venv/bin/activate
+source .env/bin/activate
 ```
 
 2. Add the AWS Analytics Reference Architecture library in the dependencies of your project. Update **setup.py** 
