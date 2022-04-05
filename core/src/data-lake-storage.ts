@@ -100,18 +100,70 @@ export class DataLakeStorage extends Construct {
    * @access public
    */
 
-  constructor(scope: Construct, id: string, props: DataLakeStorageProps) {
+  constructor(scope: Construct, id: string, props?: DataLakeStorageProps) {
     super(scope, id);
+
+    var rawInfrequentAccessDelay = 30;
+    var rawArchiveDelay = 90;
+    var cleanInfrequentAccessDelay = 90;
+    var cleanArchiveDelay = undefined;
+    var transformInfrequentAccessDelay = 90;
+    var transformArchiveDelay = undefined;
+
+    if (props) {
+      if (props.rawInfrequentAccessDelay) {
+        if (props.rawInfrequentAccessDelay < 30 ) {
+          throw new Error('Transitioning to infrequent access storage class cannot be done before 30 days');
+        } else {
+          rawInfrequentAccessDelay = props.rawInfrequentAccessDelay;
+        }
+      }
+      if (props.rawArchiveDelay) {
+        if (props.rawArchiveDelay < 90 ) {
+          throw new Error('Archiving to glacier storage class cannot be done before 90 days');
+        } else {
+          rawArchiveDelay = props.rawArchiveDelay;
+        }
+      }
+      if (props.cleanInfrequentAccessDelay) {
+        if (props.cleanInfrequentAccessDelay < 30 ) {
+          throw new Error('Transitioning to infrequent access storage class cannot be done before 30 days');
+        } else {
+          cleanInfrequentAccessDelay = props.cleanInfrequentAccessDelay;
+        }
+      }
+      if (props.cleanArchiveDelay) {
+        if (props.cleanArchiveDelay < 90 ) {
+          throw new Error('Archiving to glacier storage class cannot be done before 90 days');
+        } else {
+          cleanArchiveDelay = props.cleanArchiveDelay;
+        }
+      }
+      if (props.transformInfrequentAccessDelay) {
+        if (props.transformInfrequentAccessDelay < 30 ) {
+          throw new Error('Transitioning to infrequent access storage class cannot be done before 30 days');
+        } else {
+          transformInfrequentAccessDelay = props.transformInfrequentAccessDelay;
+        }
+      }
+      if (props.transformArchiveDelay) {
+        if (props.transformArchiveDelay < 90 ) {
+          throw new Error('Archiving to glacier storage class cannot be done before 90 days');
+        } else {
+          transformArchiveDelay = props.transformArchiveDelay;
+        }
+      } 
+    }
 
     // Prepare Amazon S3 Lifecycle Rules for raw data
     const rawTransitions = [
       {
         storageClass: StorageClass.INFREQUENT_ACCESS,
-        transitionAfter: Duration.days(props.rawInfrequentAccessDelay || 30),
+        transitionAfter: Duration.days(rawInfrequentAccessDelay),
       },
       {
         storageClass: StorageClass.GLACIER,
-        transitionAfter: Duration.days(props.rawArchiveDelay || 90),
+        transitionAfter: Duration.days(rawArchiveDelay),
       },
     ];
 
@@ -131,14 +183,14 @@ export class DataLakeStorage extends Construct {
     const cleanTransitions = [
       {
         storageClass: StorageClass.INFREQUENT_ACCESS,
-        transitionAfter: Duration.days(props.cleanInfrequentAccessDelay || 90),
+        transitionAfter: Duration.days(cleanInfrequentAccessDelay),
       },
     ];
-    if ( props.cleanArchiveDelay ) {
+    if ( cleanArchiveDelay ) {
       cleanTransitions.push(
         {
           storageClass: StorageClass.GLACIER,
-          transitionAfter: Duration.days(props.cleanArchiveDelay),
+          transitionAfter: Duration.days(cleanArchiveDelay),
         },
       );
     }
@@ -159,14 +211,14 @@ export class DataLakeStorage extends Construct {
     const transformTransitions = [
       {
         storageClass: StorageClass.INFREQUENT_ACCESS,
-        transitionAfter: Duration.days(props.transformInfrequentAccessDelay || 90),
+        transitionAfter: Duration.days(transformInfrequentAccessDelay),
       },
     ];
-    if ( props.transformArchiveDelay ) {
+    if ( transformArchiveDelay ) {
       transformTransitions.push(
         {
           storageClass: StorageClass.GLACIER,
-          transitionAfter: Duration.days(props.transformArchiveDelay),
+          transitionAfter: Duration.days(transformArchiveDelay),
         },
       );
     }

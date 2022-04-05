@@ -25,6 +25,58 @@ Object {
     },
   },
   "Resources": Object {
+    "stackEncryptionKeyKey39AD3538": Object {
+      "DeletionPolicy": "Retain",
+      "Properties": Object {
+        "EnableKeyRotation": true,
+        "KeyPolicy": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion",
+                "kms:GenerateDataKey",
+                "kms:TagResource",
+                "kms:UntagResource",
+              ],
+              "Effect": "Allow",
+              "Principal": Object {
+                "AWS": Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":root",
+                    ],
+                  ],
+                },
+              },
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::KMS::Key",
+      "UpdateReplacePolicy": "Retain",
+    },
     "testDB74E9B281": Object {
       "Properties": Object {
         "CatalogId": Object {
@@ -126,6 +178,12 @@ Object {
     "testExporterdataLakeExporterLogGroup610F71C7": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
+        "KmsKeyId": Object {
+          "Fn::GetAtt": Array [
+            "stackEncryptionKeyKey39AD3538",
+            "Arn",
+          ],
+        },
         "LogGroupName": "/data-lake-exporter/",
         "RetentionInDays": 1,
       },

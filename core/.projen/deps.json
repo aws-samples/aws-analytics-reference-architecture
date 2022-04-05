@@ -29,6 +29,11 @@
       "type": "build"
     },
     {
+      "name": "cdk-assets",
+      "version": "1.151.0",
+      "type": "build"
+    },
+    {
       "name": "cdk-nag",
       "version": "^1.0.0",
       "type": "build"
@@ -98,6 +103,14 @@
     },
     {
       "name": "projen",
+      "type": "build"
+    },
+    {
+      "name": "promptly",
+      "type": "build"
+    },
+    {
+      "name": "proxy-agent",
       "type": "build"
     },
     {
@@ -201,6 +214,11 @@
     },
     {
       "name": "@aws-cdk/aws-kms",
+      "version": "1.151.0",
+      "type": "peer"
+    },
+    {
+      "name": "@aws-cdk/aws-lakeformation",
       "version": "1.151.0",
       "type": "peer"
     },
@@ -346,6 +364,11 @@
     },
     {
       "name": "@aws-cdk/aws-kms",
+      "version": "1.151.0",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-cdk/aws-lakeformation",
       "version": "1.151.0",
       "type": "runtime"
     },

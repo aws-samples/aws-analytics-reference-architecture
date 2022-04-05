@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests Athena Default Setup
+ * Tests Athena Demo Setup
  *
- * @group unit/athena/default-setup
+ * @group unit/athena-demo-setup
  */
 
 import { Stack } from '@aws-cdk/core';
@@ -17,7 +17,7 @@ describe ('AthenaDemoSetup', () => {
 
   const athenaDemoSetupStack = new Stack();
   // Instantiate an AthenaDemoSetup
-  const demoSetup = new AthenaDemoSetup(athenaDemoSetupStack, 'AthenaDefault');
+  new AthenaDemoSetup(athenaDemoSetupStack, 'AthenaDefault');
 
   const template = Template.fromStack(athenaDemoSetupStack);
 
@@ -51,7 +51,7 @@ describe ('AthenaDemoSetup', () => {
   test('Athena Demo Setup creates the proper Athena workgroup', () => {
 
     // Test if the Amazon Athena Workgroup is correct
-    template.hasResourceProperties('AWS::S3::Bucket', 
+    template.hasResourceProperties('AWS::Athena::WorkGroup', 
       Match.objectLike({
         Name: 'demo',
         WorkGroupConfiguration: {
@@ -63,7 +63,7 @@ describe ('AthenaDemoSetup', () => {
                 [
                   's3://',
                   {
-                    Ref: demoSetup.resultBucket.bucketName,
+                    Ref: Match.anyValue(),
                   },
                   '/athena-console-results',
                 ],
@@ -74,4 +74,4 @@ describe ('AthenaDemoSetup', () => {
       })
     );
   });
-}
+});

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests data-platform
+ * Tests NotebookPlatform
  *
- * @group best-practice/data-platform
+ * @group best-practice/notebook-platform
  */
 
 

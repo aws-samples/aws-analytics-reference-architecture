@@ -1,5 +1,8 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 /**
- * Tests data-exporter
+ * Tests DataLakeExporter
  *
  * @group best-practice/data-lake-exporter
  */

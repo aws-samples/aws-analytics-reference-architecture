@@ -1843,7 +1843,7 @@ new DataLakeStorage(stack, 'MyDataLakeStorage', {
 ```typescript
 import { DataLakeStorage } from 'aws-analytics-reference-architecture'
 
-new DataLakeStorage(scope: Construct, id: string, props: DataLakeStorageProps)
+new DataLakeStorage(scope: Construct, id: string, props?: DataLakeStorageProps)
 ```
 
 | **Name** | **Type** | **Description** |
@@ -1870,7 +1870,7 @@ the ID of the CDK Construct.
 
 ---
 
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.props"></a>
+##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.props"></a>
 
 - *Type:* <a href="#aws-analytics-reference-architecture.DataLakeStorageProps">DataLakeStorageProps</a>
 
@@ -2810,11 +2810,6 @@ public readonly sharedDefaultConfig: string;
 
 ### Example <a name="Example" id="aws-analytics-reference-architecture.Example"></a>
 
-Example Construct to help onboarding contributors.
-
-This example includes best practices for code comment/documentation generation,
-and for default parameters pattern in CDK using Props with Optional properties
-
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.Example.Initializer"></a>
 
 ```typescript
@@ -3059,6 +3054,144 @@ public readonly runner: CustomResource;
 ```
 
 - *Type:* @aws-cdk/core.CustomResource
+
+---
+
+
+### LakeformationS3Location <a name="LakeformationS3Location" id="aws-analytics-reference-architecture.LakeformationS3Location"></a>
+
+This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
+
+This construct instantiate 2 objects:
+* An IAM role with read/write permissions to the S3 location and read access to the KMS key used to encypt the bucket 
+* A CfnResource is based on an IAM role with 2 policies folowing the least privilege AWS best practices:
+* Policy 1 is for GetObject, PutObject, DeleteObject from S3 bucket
+* Policy 2 is to list S3 Buckets
+
+Policy 1 takes as an input S3 object arn
+Policy 2 takes as an input S3 bucket arn
+
+
+The CDK construct instantiate the cfnresource in order to register the S3 location with Lakeformation using the IAM role defined above.
+
+Usage example:
+```typescript
+import * as cdk from '@aws-cdk/core';
+import { LakeformationS3Location } from 'aws-analytics-reference-architecture';
+
+const exampleApp = new cdk.App();
+const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
+
+new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
+   s3Location:{
+     bucketName: 'my-bucket',
+     objectKey: 'my-prefix',
+   }
+});
+```
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.LakeformationS3Location.Initializer"></a>
+
+```typescript
+import { LakeformationS3Location } from 'aws-analytics-reference-architecture'
+
+new LakeformationS3Location(scope: Construct, id: string, props: LakeFormationS3LocationProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps">LakeFormationS3LocationProps</a></code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps">LakeFormationS3LocationProps</a>
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.LakeformationS3Location.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.LakeformationS3Location.isConstruct"></a>
+
+```typescript
+import { LakeformationS3Location } from 'aws-analytics-reference-architecture'
+
+LakeformationS3Location.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.LakeformationS3Location.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.property.dataAccessRole">dataAccessRole</a></code> | <code>@aws-cdk/aws-iam.Role</code> | *No description.* |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.LakeformationS3Location.property.node"></a>
+
+```typescript
+public readonly node: ConstructNode;
+```
+
+- *Type:* @aws-cdk/core.ConstructNode
+
+The construct tree node associated with this construct.
+
+---
+
+##### `dataAccessRole`<sup>Required</sup> <a name="dataAccessRole" id="aws-analytics-reference-architecture.LakeformationS3Location.property.dataAccessRole"></a>
+
+```typescript
+public readonly dataAccessRole: Role;
+```
+
+- *Type:* @aws-cdk/aws-iam.Role
 
 ---
 
@@ -4099,6 +4232,125 @@ public readonly terminationProtection: boolean;
 - *Type:* boolean
 
 Whether termination protection is enabled for this stack.
+
+---
+
+
+### S3CrossAccount <a name="S3CrossAccount" id="aws-analytics-reference-architecture.S3CrossAccount"></a>
+
+This CDK construct grants cross account permissions on an Amazon S3 location.
+
+It uses a bucket policy and an Amazon KMS Key policy if the bucket is encrypted with KMS.
+The cross account permission is granted to the entire account and not to a specific principal in this account.
+It's the responsibility of the target account to grant permissions to the relevant principals.
+  
+Usage example:
+```typescript
+import * as cdk from '@aws-cdk/core';
+import { S3CrossAccount } from 'aws-analytics-reference-architecture';
+
+const exampleApp = new cdk.App();
+const stack = new cdk.Stack(exampleApp, 'S3CrossAccountStack');
+
+new S3CrossAccount(stack, 'S3CrossAccountGrant', {
+   s3Location:{
+     bucketName: 'my-bucket',
+     objectKey: 'my-prefix',
+   }
+});
+```
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.S3CrossAccount.Initializer"></a>
+
+```typescript
+import { S3CrossAccount } from 'aws-analytics-reference-architecture'
+
+new S3CrossAccount(scope: Construct, id: string, props: S3CrossAccountProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps">S3CrossAccountProps</a></code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.S3CrossAccountProps">S3CrossAccountProps</a>
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.S3CrossAccount.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.S3CrossAccount.isConstruct"></a>
+
+```typescript
+import { S3CrossAccount } from 'aws-analytics-reference-architecture'
+
+S3CrossAccount.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.S3CrossAccount.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.S3CrossAccount.property.node"></a>
+
+```typescript
+public readonly node: ConstructNode;
+```
+
+- *Type:* @aws-cdk/core.ConstructNode
+
+The construct tree node associated with this construct.
 
 ---
 
@@ -5727,8 +5979,6 @@ name of the Amazon EKS namespace to be linked to the Amazon EMR virtual cluster.
 
 ### ExampleProps <a name="ExampleProps" id="aws-analytics-reference-architecture.ExampleProps"></a>
 
-The properties for the Example Construct class.
-
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.ExampleProps.Initializer"></a>
 
 ```typescript
@@ -5886,6 +6136,38 @@ Example:
      TABLE_NAME: 'my_table'
    }
    ```
+
+---
+
+### LakeFormationS3LocationProps <a name="LakeFormationS3LocationProps" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps"></a>
+
+The props for LF-S3-Location Construct.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.Initializer"></a>
+
+```typescript
+import { LakeFormationS3LocationProps } from 'aws-analytics-reference-architecture'
+
+const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Location">s3Location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | S3 location to be registered with Lakeformation. |
+
+---
+
+##### `s3Location`<sup>Required</sup> <a name="s3Location" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Location"></a>
+
+```typescript
+public readonly s3Location: Location;
+```
+
+- *Type:* @aws-cdk/aws-s3.Location
+
+S3 location to be registered with Lakeformation.
 
 ---
 
@@ -6203,6 +6485,79 @@ Array of column names with datetime to adjust.
 The source data will have date in the past 2021-01-01T00:00:00 while
 the data replayer will have have the current time. The difference (aka. offset)
 must be added to all datetime columns
+
+---
+
+### S3CrossAccountProps <a name="S3CrossAccountProps" id="aws-analytics-reference-architecture.S3CrossAccountProps"></a>
+
+The props for S3CrossAccount construct.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.S3CrossAccountProps.Initializer"></a>
+
+```typescript
+import { S3CrossAccountProps } from 'aws-analytics-reference-architecture'
+
+const s3CrossAccountProps: S3CrossAccountProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.accountID">accountID</a></code> | <code>string</code> | The account ID to grant on the S3 location. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.bucket">bucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | The S3 Bucket object to grant cross account access. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.key">key</a></code> | <code>@aws-cdk/aws-kms.Key</code> | The KMS Key used to encrypt the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.objectKey">objectKey</a></code> | <code>string</code> | The S3 object key to grant cross account access (S3 prefix without the bucket name). |
+
+---
+
+##### `accountID`<sup>Required</sup> <a name="accountID" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.accountID"></a>
+
+```typescript
+public readonly accountID: string;
+```
+
+- *Type:* string
+
+The account ID to grant on the S3 location.
+
+---
+
+##### `bucket`<sup>Required</sup> <a name="bucket" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.bucket"></a>
+
+```typescript
+public readonly bucket: Bucket;
+```
+
+- *Type:* @aws-cdk/aws-s3.Bucket
+
+The S3 Bucket object to grant cross account access.
+
+---
+
+##### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.key"></a>
+
+```typescript
+public readonly key: Key;
+```
+
+- *Type:* @aws-cdk/aws-kms.Key
+- *Default:* No resource based policy is created on any KMS key
+
+The KMS Key used to encrypt the bucket.
+
+---
+
+##### `objectKey`<sup>Optional</sup> <a name="objectKey" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.objectKey"></a>
+
+```typescript
+public readonly objectKey: string;
+```
+
+- *Type:* string
+- *Default:* Grant cross account for the entire bucket
+
+The S3 object key to grant cross account access (S3 prefix without the bucket name).
 
 ---
 

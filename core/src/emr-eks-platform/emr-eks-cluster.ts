@@ -338,15 +338,15 @@ export class EmrEksCluster extends Construct {
     this.addNodegroupCapacity('tooling', EmrEksNodeGroupTooling as EmrEksNodegroupOptions);
     // Create default Amazon EMR on EKS Nodegroups. This will create one Amazon EKS nodegroup per AZ
     // Also create default configurations and pod templates for these nodegroups
-    //let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
-    //EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
-    //this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
-    //this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
-    //this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
+    let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
+    EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
+    this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
+    this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
+    this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
     // Add a nodegroup for notebooks
-    //this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
-    //this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
-    //this.addEmrEksNodegroup('notebook', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
+    this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
+    this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+    this.addEmrEksNodegroup('notebook', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
     // Create an Amazon S3 Bucket for default podTemplate assets
     this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets`});
 

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests emr-eks
+ * Tests EmrEksCluster
  *
  * @group best-practice/emr-eks
  */

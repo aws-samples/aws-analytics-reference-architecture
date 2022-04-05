@@ -1,5 +1,8 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 /**
- * Tests data-storage
+ * Tests DataLakeStorage
  *
  * @group best-practice/data-lake-storage
  */
@@ -16,12 +19,12 @@ const dataLakeStorageStack = new Stack(mockApp, 'data-lake-storage');
 
 // Instantiate DataLakeStorage Construct with custom Props
 new DataLakeStorage(dataLakeStorageStack, 'DataLakeStorageTest', {
-  rawInfrequentAccessDelay: 1,
-  rawArchiveDelay: 2,
-  cleanInfrequentAccessDelay: 1,
-  cleanArchiveDelay: 2,
-  transformInfrequentAccessDelay: 1,
-  transformArchiveDelay: 2,
+  rawInfrequentAccessDelay: 90,
+  rawArchiveDelay: 180,
+  cleanInfrequentAccessDelay: 180,
+  cleanArchiveDelay: 360,
+  transformInfrequentAccessDelay: 180,
+  transformArchiveDelay: 360,
 });
 
 

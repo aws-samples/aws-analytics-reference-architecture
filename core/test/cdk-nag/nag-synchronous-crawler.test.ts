@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests sync-crawler
+ * Tests SynchronousCrawler
  *
- * @group best-practice/sync-crawler
+ * @group best-practice/synchronous-crawler
  */
 
 import { App, Aspects, Stack } from '@aws-cdk/core';

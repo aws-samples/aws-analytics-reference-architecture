@@ -1,63 +1,27 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
-import { App, Stack, Aws, ArnFormat, CfnOutput } from '@aws-cdk/core';
-import { EmrEksCluster, NotebookPlatform, StudioAuthMode } from '.';
+import { App, Stack, RemovalPolicy } from '@aws-cdk/core';
+import { Key } from '@aws-cdk/aws-kms';
+import { Bucket } from '@aws-cdk/aws-s3';
+import { S3CrossAccount } from './s3-cross-account';
 
-const mockApp = new App();
-const stack = new Stack(mockApp, 'stack');
+const integTestApp = new App();
+const stack = new Stack(integTestApp, 'S3CrossAccountE2eTest');
 
-const policy = new ManagedPolicy(stack, 'MyPolicy', {
-  statements: [
-    new PolicyStatement({
-      resources: ['*'],
-      actions: ['s3:*'],
-    }),
-    new PolicyStatement({
-      resources: [
-        stack.formatArn({
-          account: Aws.ACCOUNT_ID,
-          region: Aws.REGION,
-          service: 'logs',
-          resource: '*',
-          arnFormat: ArnFormat.NO_RESOURCE_NAME,
-        }),
-      ],
-      actions: [
-        'logs:*',
-      ],
-    }),
-  ],
+const accountId = '1111111111111';
+const myKey = new Key(stack, 'MyKey', {
+  removalPolicy: RemovalPolicy.DESTROY,
+});
+const myBucket = new Bucket(stack, 'MyBucket', {
+    encryptionKey: myKey,
+    removalPolicy: RemovalPolicy.DESTROY,
+    autoDeleteObjects: true,
 });
 
-const emrEks = EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::xxxxxxxxxxxx:role/xxxxxxxxxx',
+new S3CrossAccount(stack, 'MyS3CrossAccount', {
+  bucket: myBucket,
+  objectKey: 'test',
+  key: myKey,
+  accountID: accountId
 });
-
-emrEks.addEmrVirtualCluster(stack,{
-  name: 'critical',
-  eksNamespace: 'critical',
-  createNamespace: true,
-})
-
-const role = emrEks.createExecutionRole(stack, 'critical', policy, 'critical-role');
-
-const  notebookPlatform = new NotebookPlatform(stack, 'platform1', {
-  emrEks: emrEks,
-  eksNamespace: 'test2',
-  studioName: 'notebook2',
-  studioAuthMode: StudioAuthMode.IAM,
-});
-
-notebookPlatform.addUser([{
-  identityName: 'vincent',
-  identityType: 'USER',
-  notebookManagedEndpoints: [{
-    emrOnEksVersion: 'emr-6.4.0-latest',
-    executionPolicy: policy,
-  }],
-}]);
-
-new CfnOutput(stack, 'execRole', {value: role.roleArn})
-

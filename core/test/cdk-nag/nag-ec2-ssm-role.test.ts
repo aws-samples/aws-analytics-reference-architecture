@@ -1,3 +1,12 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+/**
+ * Tests Ec2SsmRole
+ *
+ * @group best-practice/ec2-ssm-role
+ */
+
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { ServicePrincipal } from '@aws-cdk/aws-iam';
 import { App, Aspects, Stack } from '@aws-cdk/core';

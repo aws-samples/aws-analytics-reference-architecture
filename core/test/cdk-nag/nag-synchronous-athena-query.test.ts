@@ -1,7 +1,10 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 /**
- * Tests athena-query
+ * Tests SynchronousAthenaQuery
  *
- * @group best-practice/sync-athena-query
+ * @group best-practice/synchronous-athena-query
  */
 
 

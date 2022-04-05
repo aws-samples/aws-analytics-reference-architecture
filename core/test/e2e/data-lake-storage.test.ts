@@ -2,81 +2,70 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests FlywayRunner
+ * Tests DataLakeStorage
  *
- * @group integ/redshift/flyway-runner
+ * @group integ/data-lake/data-lake-storage
  */
 
-import * as path from 'path';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as redshift from '@aws-cdk/aws-redshift';
 import * as cdk from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 
-import { FlywayRunner } from '../../src/db-schema-manager';
+import { DataLakeStorage } from '../../src/data-lake-storage';
 
+jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'FlywayRunnerE2eTest');
+const stack = new cdk.Stack(integTestApp, 'DataLakeStorageE2eTest');
 
-const vpc = new ec2.Vpc(stack, 'Vpc');
+const dataLakeStorage = new DataLakeStorage(stack, 'MyDataLakeStorage');
 
-const dbName = 'testdb';
-const cluster = new redshift.Cluster(stack, 'Redshift', {
-  removalPolicy: cdk.RemovalPolicy.DESTROY,
-  masterUser: {
-    masterUsername: 'admin',
-  },
-  vpc,
-  defaultDatabaseName: dbName,
+new cdk.CfnOutput(stack, 'rawBucketName', {
+  value: dataLakeStorage.rawBucket.bucketName,
+  exportName: 'rawBucketName',
 });
 
-const tokenizedValue = new cdk.CfnOutput(stack, "tokenizedValue", {
-  value: "second_table"
-})
-
-const runner = new FlywayRunner(stack, 'testMigration', {
-  migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),
-  cluster: cluster,
-  vpc: vpc,
-  databaseName: dbName,
-  replaceDictionary: {TABLE_NAME: tokenizedValue.value},
+new cdk.CfnOutput(stack, 'cleanBucketName', {
+  value: dataLakeStorage.cleanBucket.bucketName,
+  exportName: 'cleanBucketName',
 });
 
-new cdk.CfnOutput(stack, 'schemaVersion', {
-  value: runner.runner.getAtt('version').toString(),
-  exportName: 'schemaVersion',
+new cdk.CfnOutput(stack, 'transformBucketName', {
+  value: dataLakeStorage.transformBucket.bucketName,
+  exportName: 'transformBucketName',
 });
 
 describe('deploy succeed', () => {
-  it.skip('can be deploy succcessfully', async () => {
+  it('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
+    
     const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
       profile: process.env.AWS_PROFILE,
     });
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
+    
     // WHEN
     const deployResult = await cloudFormation.deployStack({
       stack: stackArtifact,
     });
-
+    
     // THEN
-    expect(deployResult.outputs.schemaVersion).toEqual('3');
+    expect(deployResult.outputs.rawBucketName).toContain('raw-');
+    expect(deployResult.outputs.cleanBucketName).toContain('clean-');
+    expect(deployResult.outputs.transformBucketName).toContain('transform-');
+
   }, 9000000);
 });
 
 afterAll(async () => {
   const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
+  
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
     profile: process.env.AWS_PROFILE,
   });
   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
+  
   await cloudFormation.destroyStack({
     stack: stackArtifact,
   });

@@ -68,6 +68,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@aws-cdk/lambda-layer-awscli',
     '@aws-cdk/aws-emr',
     '@aws-cdk/aws-kms',
+    '@aws-cdk/aws-lakeformation'
   ],
 
   deps: [
@@ -79,8 +80,12 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@types/jest',
     'esbuild',
     'aws-cdk@1.151.0',
-    'jest-runner-groups',
     'cdk-nag@^1.0.0',
+    'cdk-assets@1.151.0',
+    'jest-runner-groups',
+    'promptly',
+    'proxy-agent',
+    'glob',
   ],
 
   jestOptions: {
@@ -127,6 +132,14 @@ project.addTask('test:unit', {
 
 project.addTask('test:integ', {
   exec: 'jest --group=integ',
+});
+
+project.addTask('test:integ/data-lake', {
+  exec: 'jest --group=integ/data-lake',
+});
+
+project.addTask('test:integ/redshift', {
+  exec: 'jest --group=integ/redshift',
 });
 
 const testDeploy = project.addTask('test:deploy', {
