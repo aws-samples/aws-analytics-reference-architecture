@@ -1,20 +1,22 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Construct, Duration } from "@aws-cdk/core";
+import { Aws, Construct, Duration } from "@aws-cdk/core";
 import { RetentionDays } from "@aws-cdk/aws-logs";
 import { LambdaInvoke } from "@aws-cdk/aws-stepfunctions-tasks";
 import { JsonPath, Map, StateMachine, TaskInput } from "@aws-cdk/aws-stepfunctions";
-import * as lambda from "@aws-cdk/aws-lambda";
+// import * as lambda from "@aws-cdk/aws-lambda";
 import { SfnStateMachine } from "@aws-cdk/aws-events-targets";
 import { Rule, Schedule } from "@aws-cdk/aws-events";
 import { Policy, PolicyStatement } from "@aws-cdk/aws-iam";
-import path = require("path");
+// import path = require("path");
 import { Bucket } from "@aws-cdk/aws-s3";
-import { PartitionedDataset } from "../datasets/partitioned-dataset";
+import { PreparedDataset } from "../datasets/prepared-dataset";
+import { PreBundledFunction } from "../common/pre-bundled-function";
+import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
 
 export interface BatchReplayerProps {
-  readonly dataset: PartitionedDataset;
+  readonly dataset: PreparedDataset;
   readonly frequency?: number;
   readonly sinkBucket: Bucket;
   readonly outputFileMaxSizeInBytes?: number;
@@ -38,7 +40,7 @@ export class BatchReplayer extends Construct {
   /**
    * Dataset used for replay
    */
-  public readonly dataset: PartitionedDataset;
+  public readonly dataset: PreparedDataset;
 
   /**
    * Frequency (in Seconds) of the replaying. The batch job will start
@@ -67,26 +69,37 @@ export class BatchReplayer extends Construct {
     this.sinkBucket = props.sinkBucket;
     this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
     
+    const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python38:6`);
 
+    const manifestBucketName = this.dataset.manifestLocation.bucketName;
+    const manifestObjectKey = this.dataset.manifestLocation.objectKey;
+    const dataBucketName = this.dataset.location.bucketName;
+    const dataObjectKey = this.dataset.location.objectKey;
     /**
      * Find all paths within the time range from the manifest file
      */
-    const findFilePathsFn = new lambda.DockerImageFunction(this, "findFilePathFn", {
+    const findFilePathsFn = new PreBundledFunction(this, 'FindFilePath', {
       memorySize: 1024,
-      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lib/data-generator/resources/lambdas/find-file-paths')),
+      codePath: 'data-generator/resources/lambdas/find-file-paths',
+      runtime: Runtime.PYTHON_3_8,
+      handler: 'find-file-paths.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.minutes(15),
+      layers: [ dataWranglerLayer ],
     });
 
     // Grant access to read S3
-    const { bucketName, objectKey } = this.dataset.manifestLocation;
     findFilePathsFn.role?.attachInlinePolicy(
       new Policy(this, 'read-manifest-file-policy', {
         statements: [
           new PolicyStatement({
-            actions: ['s3:GetObject'],
+            actions: [
+              's3:GetObject',
+              's3:ListBucket'
+            ],
             resources: [
-              `arn:aws:s3:::${bucketName}/${objectKey}`
+              `arn:aws:s3:::${manifestBucketName}/${manifestObjectKey}`,
+              `arn:aws:s3:::${manifestBucketName}`,
             ],
           }),
         ],
@@ -96,9 +109,9 @@ export class BatchReplayer extends Construct {
     const findFilePathsFnTask = new LambdaInvoke(this, "findFilePathFnTask", {
       lambdaFunction: findFilePathsFn,
       payload: TaskInput.fromObject({
-        frequency: props.frequency,
-        manifestFileBucket: this.dataset.manifestLocation?.bucketName,
-        manifestFileKey: this.dataset.manifestLocation?.objectKey,
+        frequency: this.frequency,
+        manifestFileBucket: manifestBucketName,
+        manifestFileKey: manifestObjectKey,
         triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
         offset: '' + this.dataset.offset,
       }),
@@ -107,15 +120,17 @@ export class BatchReplayer extends Construct {
       outputPath: "$.Payload",
     });
 
-
     /**
-     * Write data in batch step
+     * Rewrite data
      */
-    const writeInBatchFn = new lambda.DockerImageFunction(this, "writeInBatchFn", {
+    const writeInBatchFn = new PreBundledFunction(this, 'WriteInBatch', {
       memorySize: 1024 * 5,
-      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '../../lib/data-generator/resources/lambdas/write-in-batch')),
+      codePath: 'data-generator/resources/lambdas/write-in-batch',
+      runtime: Runtime.PYTHON_3_8,
+      handler: 'write-in-batch.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.minutes(15),
+      layers: [ dataWranglerLayer ],
     });
 
     // Grant access to all s3 file in the dataset bucket
@@ -123,9 +138,13 @@ export class BatchReplayer extends Construct {
       new Policy(this, 'read-dataset-buckets-policy', {
         statements: [
           new PolicyStatement({
-            actions: ['s3:GetObject'],
+            actions: [
+              's3:GetObject',
+              's3:ListBucket'
+            ],
             resources: [
-              `arn:aws:s3:::${this.dataset.location.bucketName}*`
+              `arn:aws:s3:::${dataBucketName}/${dataObjectKey}/*`,
+              `arn:aws:s3:::${dataBucketName}`,
             ],
           }),
         ],
@@ -141,7 +160,7 @@ export class BatchReplayer extends Construct {
         filePath: JsonPath.stringAt('$.filePath'),
         
         // For calculating the start/end time
-        frequency: props.frequency,
+        frequency: this.frequency,
         triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
         offset: '' + this.dataset.offset,
         

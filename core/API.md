@@ -202,7 +202,7 @@ Return whether the given object is a Construct.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PartitionedDataset">PartitionedDataset</a></code> | Dataset used for replay. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | Dataset used for replay. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.frequency">frequency</a></code> | <code>number</code> | Frequency (in Seconds) of the replaying. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | Sink bucket where the batch replayer will put data in. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | Maximum file size for each output file. |
@@ -224,10 +224,10 @@ The construct tree node associated with this construct.
 ##### `dataset`<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.BatchReplayer.property.dataset"></a>
 
 ```typescript
-public readonly dataset: PartitionedDataset;
+public readonly dataset: PreparedDataset;
 ```
 
-- *Type:* <a href="#aws-analytics-reference-architecture.PartitionedDataset">PartitionedDataset</a>
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
 
 Dataset used for replay.
 
@@ -4644,7 +4644,7 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PartitionedDataset">PartitionedDataset</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>number</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | *No description.* |
@@ -4654,10 +4654,10 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 ##### `dataset`<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.BatchReplayerProps.property.dataset"></a>
 
 ```typescript
-public readonly dataset: PartitionedDataset;
+public readonly dataset: PreparedDataset;
 ```
 
-- *Type:* <a href="#aws-analytics-reference-architecture.PartitionedDataset">PartitionedDataset</a>
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
 
 ---
 
@@ -6053,29 +6053,29 @@ Required Type of the identity either GROUP or USER, to be used when SSO is used 
 
 ---
 
-### PartitionedDatasetProps <a name="PartitionedDatasetProps" id="aws-analytics-reference-architecture.PartitionedDatasetProps"></a>
+### PreparedDatasetProps <a name="PreparedDatasetProps" id="aws-analytics-reference-architecture.PreparedDatasetProps"></a>
 
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.PartitionedDatasetProps.Initializer"></a>
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.PreparedDatasetProps.Initializer"></a>
 
 ```typescript
-import { PartitionedDatasetProps } from 'aws-analytics-reference-architecture'
+import { PreparedDatasetProps } from 'aws-analytics-reference-architecture'
 
-const partitionedDatasetProps: PartitionedDatasetProps = { ... }
+const preparedDatasetProps: PreparedDatasetProps = { ... }
 ```
 
 #### Properties <a name="Properties" id="Properties"></a>
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDatasetProps.property.dateTimeColumnToFilter">dateTimeColumnToFilter</a></code> | <code>string</code> | Datetime column for filtering data. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDatasetProps.property.location">location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The Amazon S3 Location of the source dataset. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDatasetProps.property.manifestLocation">manifestLocation</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Manifest file in csv format with two columns: start, path. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDatasetProps.property.startDatetime">startDatetime</a></code> | <code>string</code> | The minimum datetime value in the dataset used to calculate time offset. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDatasetProps.property.dateTimeColumnsToAdjust">dateTimeColumnsToAdjust</a></code> | <code>string[]</code> | Array of column names with datetime to adjust. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.dateTimeColumnToFilter">dateTimeColumnToFilter</a></code> | <code>string</code> | Datetime column for filtering data. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.location">location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The Amazon S3 Location of the source dataset. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.manifestLocation">manifestLocation</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Manifest file in csv format with two columns: start, path. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.startDatetime">startDatetime</a></code> | <code>string</code> | The minimum datetime value in the dataset used to calculate time offset. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.dateTimeColumnsToAdjust">dateTimeColumnsToAdjust</a></code> | <code>string[]</code> | Array of column names with datetime to adjust. |
 
 ---
 
-##### `dateTimeColumnToFilter`<sup>Required</sup> <a name="dateTimeColumnToFilter" id="aws-analytics-reference-architecture.PartitionedDatasetProps.property.dateTimeColumnToFilter"></a>
+##### `dateTimeColumnToFilter`<sup>Required</sup> <a name="dateTimeColumnToFilter" id="aws-analytics-reference-architecture.PreparedDatasetProps.property.dateTimeColumnToFilter"></a>
 
 ```typescript
 public readonly dateTimeColumnToFilter: string;
@@ -6087,7 +6087,7 @@ Datetime column for filtering data.
 
 ---
 
-##### `location`<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.PartitionedDatasetProps.property.location"></a>
+##### `location`<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.PreparedDatasetProps.property.location"></a>
 
 ```typescript
 public readonly location: Location;
@@ -6101,7 +6101,7 @@ It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
 
 ---
 
-##### `manifestLocation`<sup>Required</sup> <a name="manifestLocation" id="aws-analytics-reference-architecture.PartitionedDatasetProps.property.manifestLocation"></a>
+##### `manifestLocation`<sup>Required</sup> <a name="manifestLocation" id="aws-analytics-reference-architecture.PreparedDatasetProps.property.manifestLocation"></a>
 
 ```typescript
 public readonly manifestLocation: Location;
@@ -6113,7 +6113,7 @@ Manifest file in csv format with two columns: start, path.
 
 ---
 
-##### `startDatetime`<sup>Required</sup> <a name="startDatetime" id="aws-analytics-reference-architecture.PartitionedDatasetProps.property.startDatetime"></a>
+##### `startDatetime`<sup>Required</sup> <a name="startDatetime" id="aws-analytics-reference-architecture.PreparedDatasetProps.property.startDatetime"></a>
 
 ```typescript
 public readonly startDatetime: string;
@@ -6125,7 +6125,7 @@ The minimum datetime value in the dataset used to calculate time offset.
 
 ---
 
-##### `dateTimeColumnsToAdjust`<sup>Optional</sup> <a name="dateTimeColumnsToAdjust" id="aws-analytics-reference-architecture.PartitionedDatasetProps.property.dateTimeColumnsToAdjust"></a>
+##### `dateTimeColumnsToAdjust`<sup>Optional</sup> <a name="dateTimeColumnsToAdjust" id="aws-analytics-reference-architecture.PreparedDatasetProps.property.dateTimeColumnsToAdjust"></a>
 
 ```typescript
 public readonly dateTimeColumnsToAdjust: string[];
@@ -6582,14 +6582,6 @@ The name of the SQL table extracted from path.
 | <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE_SALE">RETAIL_100GB_STORE_SALE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The store sale dataset part of 100GB retail datasets. |
 | <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WAREHOUSE">RETAIL_100GB_WAREHOUSE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The warehouse dataset part 100GB of retail datasets. |
 | <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WEB_SALE">RETAIL_100GB_WEB_SALE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The web sale dataset part of 100GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_CUSTOMER">RETAIL_1GB_CUSTOMER</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The customer dataset part of 1GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_CUSTOMER_ADDRESS">RETAIL_1GB_CUSTOMER_ADDRESS</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The customer address dataset part of 1GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_ITEM">RETAIL_1GB_ITEM</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The item dataset part of 1GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_PROMO">RETAIL_1GB_PROMO</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The promotion dataset part of 1GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_STORE">RETAIL_1GB_STORE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The store dataset part of 1GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_STORE_SALE">RETAIL_1GB_STORE_SALE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The store sale dataset part of 1GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_WAREHOUSE">RETAIL_1GB_WAREHOUSE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The warehouse dataset part of 1GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_WEB_SALE">RETAIL_1GB_WEB_SALE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The web sale dataset part of 1GB retail datasets. |
 
 ---
 
@@ -6701,102 +6693,6 @@ The web sale dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_1GB_CUSTOMER`<sup>Required</sup> <a name="RETAIL_1GB_CUSTOMER" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_CUSTOMER"></a>
-
-```typescript
-public readonly RETAIL_1GB_CUSTOMER: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The customer dataset part of 1GB retail datasets.
-
----
-
-##### `RETAIL_1GB_CUSTOMER_ADDRESS`<sup>Required</sup> <a name="RETAIL_1GB_CUSTOMER_ADDRESS" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_CUSTOMER_ADDRESS"></a>
-
-```typescript
-public readonly RETAIL_1GB_CUSTOMER_ADDRESS: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The customer address dataset part of 1GB retail datasets.
-
----
-
-##### `RETAIL_1GB_ITEM`<sup>Required</sup> <a name="RETAIL_1GB_ITEM" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_ITEM"></a>
-
-```typescript
-public readonly RETAIL_1GB_ITEM: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The item dataset part of 1GB retail datasets.
-
----
-
-##### `RETAIL_1GB_PROMO`<sup>Required</sup> <a name="RETAIL_1GB_PROMO" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_PROMO"></a>
-
-```typescript
-public readonly RETAIL_1GB_PROMO: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The promotion dataset part of 1GB retail datasets.
-
----
-
-##### `RETAIL_1GB_STORE`<sup>Required</sup> <a name="RETAIL_1GB_STORE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_STORE"></a>
-
-```typescript
-public readonly RETAIL_1GB_STORE: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The store dataset part of 1GB retail datasets.
-
----
-
-##### `RETAIL_1GB_STORE_SALE`<sup>Required</sup> <a name="RETAIL_1GB_STORE_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_STORE_SALE"></a>
-
-```typescript
-public readonly RETAIL_1GB_STORE_SALE: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The store sale dataset part of 1GB retail datasets.
-
----
-
-##### `RETAIL_1GB_WAREHOUSE`<sup>Required</sup> <a name="RETAIL_1GB_WAREHOUSE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_WAREHOUSE"></a>
-
-```typescript
-public readonly RETAIL_1GB_WAREHOUSE: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The warehouse dataset part of 1GB retail datasets.
-
----
-
-##### `RETAIL_1GB_WEB_SALE`<sup>Required</sup> <a name="RETAIL_1GB_WEB_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_1GB_WEB_SALE"></a>
-
-```typescript
-public readonly RETAIL_1GB_WEB_SALE: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The web sale dataset part of 1GB retail datasets.
-
----
-
 ### EmrEksNodegroup <a name="EmrEksNodegroup" id="aws-analytics-reference-architecture.EmrEksNodegroup"></a>
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.EmrEksNodegroup.Initializer"></a>
@@ -6901,14 +6797,15 @@ public readonly TOOLING_ALL: EmrEksNodegroupOptions;
 
 ---
 
-### PartitionedDataset <a name="PartitionedDataset" id="aws-analytics-reference-architecture.PartitionedDataset"></a>
+### PreparedDataset <a name="PreparedDataset" id="aws-analytics-reference-architecture.PreparedDataset"></a>
 
-PartitionedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+PreparedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
 
-PartitionDataset has following properties:
+PreparedDataset has following properties:
 
-1. Data is partitioned by timestamp (in seconds). Each folder stores data within a given range. 
-There is no constraint on how long the timestange range can be. But each file must not be larger tahn 100MB.
+1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range. 
+There is no constraint on how long the timestamp range can be. But each file must not be larger than 100MB.
+The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions.
 Here is an example:
 |- time_range_start=16000000000
     |- file1.csv 100MB
@@ -6919,7 +6816,7 @@ Here is an example:
     |- file1.csv 100MB
     |- file2.csv 100MB
     |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB
-2. It has a manefest CSV file with two columns: start and path. Start is the timestamp
+2. It has a manifest CSV file with two columns: start and path. Start is the timestamp
 start        , path
 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file1.csv
 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file2.csv
@@ -6928,23 +6825,23 @@ start        , path
 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv
 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
 
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.PartitionedDataset.Initializer"></a>
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.PreparedDataset.Initializer"></a>
 
 ```typescript
-import { PartitionedDataset } from 'aws-analytics-reference-architecture'
+import { PreparedDataset } from 'aws-analytics-reference-architecture'
 
-new PartitionedDataset(props: PartitionedDatasetProps)
+new PreparedDataset(props: PreparedDatasetProps)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.PartitionedDatasetProps">PartitionedDatasetProps</a></code> | the DatasetProps. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps">PreparedDatasetProps</a></code> | the DatasetProps. |
 
 ---
 
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.PartitionedDataset.Initializer.parameter.props"></a>
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.PreparedDataset.Initializer.parameter.props"></a>
 
-- *Type:* <a href="#aws-analytics-reference-architecture.PartitionedDatasetProps">PartitionedDatasetProps</a>
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDatasetProps">PreparedDatasetProps</a>
 
 the DatasetProps.
 
@@ -6956,17 +6853,17 @@ the DatasetProps.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.property.dateTimeColumnToFilter">dateTimeColumnToFilter</a></code> | <code>string</code> | Datetime column for filtering data. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.property.location">location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The Amazon S3 Location of the source dataset. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.property.manifestLocation">manifestLocation</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Manifest file in csv format with two columns: start, path. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.property.offset">offset</a></code> | <code>number</code> | The offset of the Dataset (difference between min datetime and now) in Seconds. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.property.startDateTime">startDateTime</a></code> | <code>string</code> | Start datetime replaying this dataset. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.property.tableName">tableName</a></code> | <code>string</code> | The name of the SQL table extracted from path. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.property.dateTimeColumnsToAdjust">dateTimeColumnsToAdjust</a></code> | <code>string[]</code> | Array of column names with datetime to adjust. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.dateTimeColumnToFilter">dateTimeColumnToFilter</a></code> | <code>string</code> | Datetime column for filtering data. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.location">location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The Amazon S3 Location of the source dataset. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.manifestLocation">manifestLocation</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Manifest file in csv format with two columns: start, path. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.offset">offset</a></code> | <code>number</code> | The offset of the Dataset (difference between min datetime and now) in Seconds. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.startDateTime">startDateTime</a></code> | <code>string</code> | Start datetime replaying this dataset. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.tableName">tableName</a></code> | <code>string</code> | The name of the SQL table extracted from path. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.dateTimeColumnsToAdjust">dateTimeColumnsToAdjust</a></code> | <code>string[]</code> | Array of column names with datetime to adjust. |
 
 ---
 
-##### `dateTimeColumnToFilter`<sup>Required</sup> <a name="dateTimeColumnToFilter" id="aws-analytics-reference-architecture.PartitionedDataset.property.dateTimeColumnToFilter"></a>
+##### `dateTimeColumnToFilter`<sup>Required</sup> <a name="dateTimeColumnToFilter" id="aws-analytics-reference-architecture.PreparedDataset.property.dateTimeColumnToFilter"></a>
 
 ```typescript
 public readonly dateTimeColumnToFilter: string;
@@ -6978,7 +6875,7 @@ Datetime column for filtering data.
 
 ---
 
-##### `location`<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.PartitionedDataset.property.location"></a>
+##### `location`<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.PreparedDataset.property.location"></a>
 
 ```typescript
 public readonly location: Location;
@@ -6990,7 +6887,7 @@ The Amazon S3 Location of the source dataset.
 
 ---
 
-##### `manifestLocation`<sup>Required</sup> <a name="manifestLocation" id="aws-analytics-reference-architecture.PartitionedDataset.property.manifestLocation"></a>
+##### `manifestLocation`<sup>Required</sup> <a name="manifestLocation" id="aws-analytics-reference-architecture.PreparedDataset.property.manifestLocation"></a>
 
 ```typescript
 public readonly manifestLocation: Location;
@@ -7002,7 +6899,7 @@ Manifest file in csv format with two columns: start, path.
 
 ---
 
-##### `offset`<sup>Required</sup> <a name="offset" id="aws-analytics-reference-architecture.PartitionedDataset.property.offset"></a>
+##### `offset`<sup>Required</sup> <a name="offset" id="aws-analytics-reference-architecture.PreparedDataset.property.offset"></a>
 
 ```typescript
 public readonly offset: number;
@@ -7014,7 +6911,7 @@ The offset of the Dataset (difference between min datetime and now) in Seconds.
 
 ---
 
-##### `startDateTime`<sup>Required</sup> <a name="startDateTime" id="aws-analytics-reference-architecture.PartitionedDataset.property.startDateTime"></a>
+##### `startDateTime`<sup>Required</sup> <a name="startDateTime" id="aws-analytics-reference-architecture.PreparedDataset.property.startDateTime"></a>
 
 ```typescript
 public readonly startDateTime: string;
@@ -7029,7 +6926,7 @@ But you can specify this to 1 Feb 2020 to omit the first month data.
 
 ---
 
-##### `tableName`<sup>Required</sup> <a name="tableName" id="aws-analytics-reference-architecture.PartitionedDataset.property.tableName"></a>
+##### `tableName`<sup>Required</sup> <a name="tableName" id="aws-analytics-reference-architecture.PreparedDataset.property.tableName"></a>
 
 ```typescript
 public readonly tableName: string;
@@ -7041,7 +6938,7 @@ The name of the SQL table extracted from path.
 
 ---
 
-##### `dateTimeColumnsToAdjust`<sup>Optional</sup> <a name="dateTimeColumnsToAdjust" id="aws-analytics-reference-architecture.PartitionedDataset.property.dateTimeColumnsToAdjust"></a>
+##### `dateTimeColumnsToAdjust`<sup>Optional</sup> <a name="dateTimeColumnsToAdjust" id="aws-analytics-reference-architecture.PreparedDataset.property.dateTimeColumnsToAdjust"></a>
 
 ```typescript
 public readonly dateTimeColumnsToAdjust: string[];
@@ -7057,12 +6954,19 @@ Array of column names with datetime to adjust.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.property.DATASETS_BUCKET">DATASETS_BUCKET</a></code> | <code>string</code> | The bucket name of the AWS Analytics Reference Architecture datasets. |
-| <code><a href="#aws-analytics-reference-architecture.PartitionedDataset.property.RETAIL_1GB_WEB_SALE">RETAIL_1GB_WEB_SALE</a></code> | <code><a href="#aws-analytics-reference-architecture.PartitionedDataset">PartitionedDataset</a></code> | The web sale dataset part of 1GB retail datasets. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.DATASETS_BUCKET">DATASETS_BUCKET</a></code> | <code>string</code> | The bucket name of the AWS Analytics Reference Architecture datasets. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_CUSTOMER">RETAIL_1_GB_CUSTOMER</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The customer dataset part of 1GB retail datasets. The time range is one week from min(customer_datetime) to max(customer_datetime). |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_CUSTOMER_ADDRESS">RETAIL_1_GB_CUSTOMER_ADDRESS</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The customer address dataset part of 1GB retail datasets. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_ITEM">RETAIL_1_GB_ITEM</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The item dataset part of 1GB retail datasets The time range is one week from min(item_datetime) to max(item_datetime). |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_PROMO">RETAIL_1_GB_PROMO</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The promo dataset part of 1GB retail datasets The time range is one week from min(promo_datetime) to max(promo_datetime). |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_STORE">RETAIL_1_GB_STORE</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The store dataset part of 1GB retail datasets The time range is one week from min(store_datetime) to max(store_datetime). |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_STORE_SALE">RETAIL_1_GB_STORE_SALE</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The store sale dataset part of 1GB retail datasets. The time range is one week from min(sale_datetime) to max(sale_datetime). |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_WAREHOUSE">RETAIL_1_GB_WAREHOUSE</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The store dataset part of 1GB retail datasets The time range is one week from min(warehouse_datetime) to max(warehouse_datetime). |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_WEB_SALE">RETAIL_1_GB_WEB_SALE</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The web sale dataset part of 1GB retail datasets. The time range is one week from min(sale_datetime) to max(sale_datetime). |
 
 ---
 
-##### `DATASETS_BUCKET`<sup>Required</sup> <a name="DATASETS_BUCKET" id="aws-analytics-reference-architecture.PartitionedDataset.property.DATASETS_BUCKET"></a>
+##### `DATASETS_BUCKET`<sup>Required</sup> <a name="DATASETS_BUCKET" id="aws-analytics-reference-architecture.PreparedDataset.property.DATASETS_BUCKET"></a>
 
 ```typescript
 public readonly DATASETS_BUCKET: string;
@@ -7072,17 +6976,264 @@ public readonly DATASETS_BUCKET: string;
 
 The bucket name of the AWS Analytics Reference Architecture datasets.
 
+Bucket is public and
+
 ---
 
-##### `RETAIL_1GB_WEB_SALE`<sup>Required</sup> <a name="RETAIL_1GB_WEB_SALE" id="aws-analytics-reference-architecture.PartitionedDataset.property.RETAIL_1GB_WEB_SALE"></a>
+##### `RETAIL_1_GB_CUSTOMER`<sup>Required</sup> <a name="RETAIL_1_GB_CUSTOMER" id="aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_CUSTOMER"></a>
 
 ```typescript
-public readonly RETAIL_1GB_WEB_SALE: PartitionedDataset;
+public readonly RETAIL_1_GB_CUSTOMER: PreparedDataset;
 ```
 
-- *Type:* <a href="#aws-analytics-reference-architecture.PartitionedDataset">PartitionedDataset</a>
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
 
-The web sale dataset part of 1GB retail datasets.
+The customer dataset part of 1GB retail datasets. The time range is one week from min(customer_datetime) to max(customer_datetime).
+
+| Column name       	| Column type 	| Example                    	|
+|-------------------	|-------------	|----------------------------	|
+| customer_id       	| string      	| AAAAAAAAHCLFOHAA           	|
+| salutation        	| string      	| Miss                       	|
+| first_name        	| string      	| Tina                       	|
+| last_name         	| string      	| Frias                      	|
+| birth_country     	| string      	| GEORGIA                    	|
+| email_address     	| string      	| Tina.Frias@jdK4TZ1qJXB.org 	|
+| birth_date        	| string      	| 1924-06-14                 	|
+| gender            	| string      	| F                          	|
+| marital_status    	| string      	| D                          	|
+| education_status  	| string      	| 2 yr Degree                	|
+| purchase_estimate 	| bigint      	| 2500                       	|
+| credit_rating     	| string      	| Low Risk                   	|
+| buy_potential     	| string      	| 1001-5000                  	|
+| vehicle_count     	| bigint      	| 1                          	|
+| lower_bound       	| bigint      	| 170001                     	|
+| upper_bound       	| bigint      	| 180000                     	|
+| address_id        	| string      	| AAAAAAAALAFINEAA           	|
+| customer_datetime 	| string      	| 2021-01-19T08:07:47.140Z   	|
+
+The BatchReplayer adds two columns ingestion_start and ingestion_end
+
+---
+
+##### `RETAIL_1_GB_CUSTOMER_ADDRESS`<sup>Required</sup> <a name="RETAIL_1_GB_CUSTOMER_ADDRESS" id="aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_CUSTOMER_ADDRESS"></a>
+
+```typescript
+public readonly RETAIL_1_GB_CUSTOMER_ADDRESS: PreparedDataset;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
+
+The customer address dataset part of 1GB retail datasets.
+
+It can be joined with customer dataset on address_id column.
+The time range is one week from min(address_datetime) to max(address_datetime)
+
+| Column name      | Column type | Example                  |
+|------------------|-------------|--------------------------|
+| address_id       | string      | AAAAAAAAINDKAAAA         |
+| city             | string      | Farmington               |
+| county           | string      | Greeley County           |
+| state            | string      | KS                       |
+| zip              | bigint      | 69145                    |
+| country          | string      | United States            |
+| gmt_offset       | double      | -6.0                     |
+| location_type    | string      | apartment                |
+| street           | string      | 390 Pine South Boulevard |
+| address_datetime | string      | 2021-01-03T02:25:52.826Z |
+
+The BatchReplayer adds two columns ingestion_start and ingestion_end
+
+---
+
+##### `RETAIL_1_GB_ITEM`<sup>Required</sup> <a name="RETAIL_1_GB_ITEM" id="aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_ITEM"></a>
+
+```typescript
+public readonly RETAIL_1_GB_ITEM: PreparedDataset;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
+
+The item dataset part of 1GB retail datasets The time range is one week from min(item_datetime) to max(item_datetime).
+
+| Column name   | Column type | Example                                        |
+|---------------|-------------|------------------------------------------------|
+|       item_id |      bigint |                                          15018 |
+|     item_desc |      string | Even ready materials tell with a ministers; un |
+|         brand |      string |                                 scholarmaxi #9 |
+|         class |      string |                                        fishing |
+|      category |      string |                                         Sports |
+|      manufact |      string |                                    eseoughtpri |
+|          size |      string |                                            N/A |
+|         color |      string |                                        thistle |
+|         units |      string |                                         Bundle |
+|     container |      string |                                        Unknown |
+|  product_name |      string |                          eingoughtbarantiought |
+| item_datetime |      string |                       2021-01-01T18:17:56.718Z |
+
+The BatchReplayer adds two columns ingestion_start and ingestion_end
+
+---
+
+##### `RETAIL_1_GB_PROMO`<sup>Required</sup> <a name="RETAIL_1_GB_PROMO" id="aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_PROMO"></a>
+
+```typescript
+public readonly RETAIL_1_GB_PROMO: PreparedDataset;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
+
+The promo dataset part of 1GB retail datasets The time range is one week from min(promo_datetime) to max(promo_datetime).
+
+| Column name     | Column type | Example                  |
+|-----------------|-------------|--------------------------|
+|        promo_id |      string |         AAAAAAAAHIAAAAAA |
+|            cost |      double |                   1000.0 |
+| response_target |      bigint |                        1 |
+|      promo_name |      string |                     anti |
+|         purpose |      string |                  Unknown |
+|  start_datetime |      string | 2021-01-01 00:00:35.890Z |
+|    end_datetime |      string | 2021-01-02 13:16:09.785Z |
+|  promo_datetime |      string | 2021-01-01 00:00:16.104Z |
+
+The BatchReplayer adds two columns ingestion_start and ingestion_end
+
+---
+
+##### `RETAIL_1_GB_STORE`<sup>Required</sup> <a name="RETAIL_1_GB_STORE" id="aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_STORE"></a>
+
+```typescript
+public readonly RETAIL_1_GB_STORE: PreparedDataset;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
+
+The store dataset part of 1GB retail datasets The time range is one week from min(store_datetime) to max(store_datetime).
+
+| Column name      | Column type | Example                  |
+|------------------|-------------|--------------------------|
+|         store_id |      string |         AAAAAAAAKAAAAAAA |
+|       store_name |      string |                      bar |
+| number_employees |      bigint |                      219 |
+|      floor_space |      bigint |                  6505323 |
+|            hours |      string |                 8AM-12AM |
+|          manager |      string |             David Trahan |
+|        market_id |      bigint |                       10 |
+|   market_manager |      string |      Christopher Maxwell |
+|             city |      string |                   Midway |
+|           county |      string |        Williamson County |
+|            state |      string |                       TN |
+|              zip |      bigint |                    31904 |
+|          country |      string |            United States |
+|       gmt_offset |      double |                     -5.0 |
+|   tax_percentage |      double |                      0.0 |
+|           street |      string |            71 Cedar Blvd |
+|   store_datetime |      string | 2021-01-01T00:00:00.017Z |
+
+The BatchReplayer adds two columns ingestion_start and ingestion_end
+
+---
+
+##### `RETAIL_1_GB_STORE_SALE`<sup>Required</sup> <a name="RETAIL_1_GB_STORE_SALE" id="aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_STORE_SALE"></a>
+
+```typescript
+public readonly RETAIL_1_GB_STORE_SALE: PreparedDataset;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
+
+The store sale dataset part of 1GB retail datasets. The time range is one week from min(sale_datetime) to max(sale_datetime).
+
+| Column name        | Column type | Example                  |
+|--------------------|-------------|--------------------------|
+| item_id            | bigint      | 3935                     |
+| ticket_id          | bigint      | 81837                    |
+| quantity           | bigint      | 96                       |
+| wholesale_cost     | double      | 21.15                    |
+| list_price         | double      | 21.78                    |
+| sales_price        | double      | 21.18                    |
+| ext_discount_amt   | double      | 0.0                      |
+| ext_sales_price    | double      | 2033.28                  |
+| ext_wholesale_cost | double      | 2030.4                   |
+| ext_list_price     | double      | 2090.88                  |
+| ext_tax            | double      | 81.1                     |
+| coupon_amt         | double      | 0.0                      |
+| net_paid           | double      | 2033.28                  |
+| net_paid_inc_tax   | double      | 2114.38                  |
+| net_profit         | double      | 2.88                     |
+| customer_id        | string      | AAAAAAAAEOIDAAAA         |
+| store_id           | string      | AAAAAAAABAAAAAAA         |
+| promo_id           | string      | AAAAAAAAEEAAAAAA         |
+| sale_datetime      | string      | 2021-01-04T22:20:04.144Z |
+
+The BatchReplayer adds two columns ingestion_start and ingestion_end
+
+---
+
+##### `RETAIL_1_GB_WAREHOUSE`<sup>Required</sup> <a name="RETAIL_1_GB_WAREHOUSE" id="aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_WAREHOUSE"></a>
+
+```typescript
+public readonly RETAIL_1_GB_WAREHOUSE: PreparedDataset;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
+
+The store dataset part of 1GB retail datasets The time range is one week from min(warehouse_datetime) to max(warehouse_datetime).
+
+| Column name        | Column type | Example                  |
+|--------------------|-------------|--------------------------|
+|       warehouse_id |      string |         AAAAAAAAEAAAAAAA |
+|     warehouse_name |      string |               Operations |
+|             street |      string |    461 Second Johnson Wy |
+|               city |      string |                 Fairview |
+|                zip |      bigint |                    35709 |
+|             county |      string |        Williamson County |
+|              state |      string |                       TN |
+|            country |      string |            United States |
+|         gmt_offset |      double |                     -5.0 |
+| warehouse_datetime |      string | 2021-01-01T00:00:00.123Z |
+
+---
+
+##### `RETAIL_1_GB_WEB_SALE`<sup>Required</sup> <a name="RETAIL_1_GB_WEB_SALE" id="aws-analytics-reference-architecture.PreparedDataset.property.RETAIL_1_GB_WEB_SALE"></a>
+
+```typescript
+public readonly RETAIL_1_GB_WEB_SALE: PreparedDataset;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
+
+The web sale dataset part of 1GB retail datasets. The time range is one week from min(sale_datetime) to max(sale_datetime).
+
+| Column name           | Column type | Example                  |
+|-----------------------|-------------|--------------------------|
+| item_id               | bigint      | 3935                     |
+| order_id              | bigint      | 81837                    |
+| quantity              | bigint      | 65                       |
+| wholesale_cost        | double      | 32.98                    |
+| list_price            | double      | 47.82                    |
+| sales_price           | double      | 36.34                    |
+| ext_discount_amt      | double      | 2828.8                   |
+| ext_sales_price       | double      | 2362.1                   |
+| ext_wholesale_cost    | double      | 2143.7                   |
+| ext_list_price        | double      | 3108.3                   |
+| ext_tax               | double      | 0.0                      |
+| coupon_amt            | double      | 209.62                   |
+| ext_ship_cost         | double      | 372.45                   |
+| net_paid              | double      | 2152.48                  |
+| net_paid_inc_tax      | double      | 2152.48                  |
+| net_paid_inc_ship     | double      | 442.33                   |
+| net_paid_inc_ship_tax | double      | 442.33                   |
+| net_profit            | double      | 8.78                     |
+| bill_customer_id      | string      | AAAAAAAALNLFAAAA         |
+| ship_customer_id      | string      | AAAAAAAALPPJAAAA         |
+| warehouse_id          | string      | AAAAAAAABAAAAAAA         |
+| promo_id              | string      | AAAAAAAAPCAAAAAA         |
+| ship_delay            | string      | OVERNIGHT                |
+| ship_mode             | string      | SEA                      |
+| ship_carrier          | string      | GREAT EASTERN            |
+| sale_datetime         | string      | 2021-01-06T15:00:19.373Z |
+
+The BatchReplayer adds two columns ingestion_start and ingestion_end
 
 ---
 

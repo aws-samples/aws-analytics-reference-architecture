@@ -1,2 +1,2 @@
 export { Dataset, DatasetProps } from './dataset';
-export { PartitionedDataset, PartitionedDatasetProps } from './partitioned-dataset';
+export { PreparedDataset, PreparedDatasetProps } from './prepared-dataset';
