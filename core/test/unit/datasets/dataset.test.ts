@@ -51,12 +51,12 @@ test('custom Dataset createTable', () => {
 
 test('ParseCreateSourceQuery method', () => {
   // Test if create table statement is correctly parsed
-  expect(Dataset.RETAIL_1GB_STORE_SALE.parseCreateSourceQuery(
+  expect(Dataset.RETAIL_100GB_STORE_SALE.parseCreateSourceQuery(
     DataGenerator.DATA_GENERATOR_DATABASE,
-    Dataset.RETAIL_1GB_STORE_SALE.tableName,
-    Dataset.RETAIL_1GB_STORE_SALE.location.bucketName,
-    Dataset.RETAIL_1GB_STORE_SALE.location.objectKey,
-  )).toEqual(`CREATE EXTERNAL TABLE IF NOT EXISTS ${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_1GB_STORE_SALE.tableName}(
+    Dataset.RETAIL_100GB_STORE_SALE.tableName,
+    Dataset.RETAIL_100GB_STORE_SALE.location.bucketName,
+    Dataset.RETAIL_100GB_STORE_SALE.location.objectKey,
+  )).toEqual(`CREATE EXTERNAL TABLE IF NOT EXISTS ${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_100GB_STORE_SALE.tableName}(
   item_id bigint,
   ticket_id bigint,
   quantity bigint,
@@ -84,7 +84,7 @@ STORED AS INPUTFORMAT
 OUTPUTFORMAT 
   'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
 LOCATION
-  's3://${Dataset.RETAIL_1GB_STORE_SALE.location.bucketName}/${Dataset.RETAIL_1GB_STORE_SALE.location.objectKey}/'
+  's3://${Dataset.RETAIL_100GB_STORE_SALE.location.bucketName}/${Dataset.RETAIL_100GB_STORE_SALE.location.objectKey}/'
 TBLPROPERTIES (
   'skip.header.line.count'='1'
 )`);
@@ -92,12 +92,12 @@ TBLPROPERTIES (
 
 test('ParseGenerateQuery method', () => {
   // Test if generate data statement is correctly parsed
-  expect(Dataset.RETAIL_1GB_STORE_SALE.parseGenerateQuery(
+  expect(Dataset.RETAIL_100GB_STORE_SALE.parseGenerateQuery(
     DataGenerator.DATA_GENERATOR_DATABASE,
-    Dataset.RETAIL_1GB_STORE_SALE.tableName+'_source',
-    Dataset.RETAIL_1GB_STORE_SALE.tableName+'_target',
+    Dataset.RETAIL_100GB_STORE_SALE.tableName+'_source',
+    Dataset.RETAIL_100GB_STORE_SALE.tableName+'_target',
   ),
-  ).toEqual(`INSERT INTO ${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_1GB_STORE_SALE.tableName}`+'_target'+` (
+  ).toEqual(`INSERT INTO ${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_100GB_STORE_SALE.tableName}`+'_target'+` (
   SELECT
     item_id,
     ticket_id,
@@ -118,7 +118,7 @@ test('ParseGenerateQuery method', () => {
     store_id,
     promo_id,
     to_iso8601(date_add('second', {{OFFSET}}, from_iso8601_timestamp(sale_datetime))) as sale_datetime
-  FROM ${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_1GB_STORE_SALE.tableName}`+'_source'+`
+  FROM ${DataGenerator.DATA_GENERATOR_DATABASE}.${Dataset.RETAIL_100GB_STORE_SALE.tableName}`+'_source'+`
   WHERE sale_datetime
     BETWEEN '{{MIN}}' AND '{{MAX}}'
 )`);
