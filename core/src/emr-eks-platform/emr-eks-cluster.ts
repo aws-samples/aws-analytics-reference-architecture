@@ -257,6 +257,7 @@ export class EmrEksCluster extends Construct {
     this.eksCluster.addHelmChart('AutoScaler', {
       chart: 'cluster-autoscaler',
       repository: 'https://kubernetes.github.io/autoscaler',
+      version: '9.11.0',
       namespace: 'kube-system',
       timeout: Duration.minutes(14),
       values: {

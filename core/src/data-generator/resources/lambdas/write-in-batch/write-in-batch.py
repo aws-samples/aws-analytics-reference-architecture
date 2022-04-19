@@ -10,7 +10,7 @@ from os import path
 from dateutil import parser
 from datetime import datetime, timedelta
 import numpy as np
-
+import awswrangler as wr
 import pandas as pd
 
 logging.basicConfig(level=logging.INFO)
@@ -56,7 +56,7 @@ def filter_rows_by_datetime(df, col_name, start_time, end_time):
 
 def calculate_no_of_files(df, file_max_size):
     """
-    Calculate the maxmum number of files we can write within the constraint
+    Calculate the maximum number of files we can write within the constraint
     that no file will exceed file max_size
 
     We do not know actual file size until we write into the CSV file. 
@@ -109,9 +109,9 @@ def write_all(df_list, path_prefix):
         output_path = f'{path_prefix}-{idx:05d}.csv'
         output_paths.append(output_path)
         log.info(f"## Writing concatenated data to the {output_path}")
-        df.to_csv(
-            output_path,
-            index=False,
+        wr.s3.to_csv(
+            df=df,
+            path=output_path,
         )
     return output_paths
 
@@ -145,7 +145,7 @@ def handler(event, ctx):
 
 
     log.info('Concatenating all files together')
-    df=pd.read_csv(file_path)
+    df=wr.s3.read_csv(file_path)
 
     log.info(f"Filtering records from:  [{start_time.isoformat()}] to [{end_time.isoformat()}]")
     df[datetime_column_to_filter] = pd.to_datetime(df[datetime_column_to_filter])
@@ -163,7 +163,7 @@ def handler(event, ctx):
     # Find s3 path prefix
     adjusted_start_time = start_time + timedelta(seconds=offset)
     adjusted_end_time = end_time + timedelta(seconds=offset)
-    path_prefix = f'{sinkPath}/from-{adjusted_start_time.isoformat()}-to-{adjusted_end_time.isoformat()}/{output_file_index:03d}'
+    path_prefix = f'{sinkPath}/ingestion_start={adjusted_start_time.isoformat()}/ingestion_end={adjusted_end_time.isoformat()}/{output_file_index:03d}'
 
     # Write filtered dataframe to S3
     if len(df) > 0:
@@ -188,16 +188,16 @@ def handler(event, ctx):
 if __name__ == '__main__':
     event={
         # From find-file-paths Lambda
-        "filePath": "s3://aws-analytics-reference-architecture/sample-datasets/prepared-data/web-sales/time_range_start=1609469100/part-00029-1cfa7b6d-2c3d-4e79-839d-02cfa265d9e4.c000.csv",
+        "filePath": "s3://aws-analytics-reference-architecture/sample-datasets/prepared-data/web-sales/time_range_start=1609459200/part-00024-a03fd533-51a0-41eb-97ab-65ed7074a2be.c000.csv",
 
         # From step function directly
         'frequency': '600',
-        'triggerTime': '2021-12-27T14:30:00Z', 
-        'offset': '31146616',
+        'triggerTime': '2022-04-15T13:55:00Z', 
+        'offset': '40571714',
         'outputFileIndex': '1',
         'dateTimeColumnToFilter': 'sale_datetime',
         'dateTimeColumnsToAdjust': ['sale_datetime'],
-        'sinkPath': 's3://chadvit-test-sink-ara',
+        'sinkPath': 's3://gromav-test/sink-ara',
         'outputFileMaxSizeInBytes': '20480',
     }
     result = handler(event, {})

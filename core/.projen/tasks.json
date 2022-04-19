@@ -228,7 +228,13 @@
       "description": "pip install all folders in lib that has requirements.txt",
       "steps": [
         {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/find-file-paths/requirements.txt --target lib/data-generator/resources/lambdas/find-file-paths --upgrade"
+        },
+        {
           "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/write-in-batch/requirements.txt --target lib/data-generator/resources/lambdas/write-in-batch --upgrade"
         },
         {
           "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/managed-endpoint/requirements.txt --target lib/emr-eks-platform/resources/lambdas/managed-endpoint --upgrade"
