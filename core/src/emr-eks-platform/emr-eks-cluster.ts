@@ -24,18 +24,18 @@ import {
   Role,
   ServicePrincipal,
 } from '@aws-cdk/aws-iam';
-import {LogGroup, RetentionDays} from '@aws-cdk/aws-logs';
-import {Bucket, Location} from '@aws-cdk/aws-s3';
-import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
-import {Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags} from '@aws-cdk/core';
-import {AraBucket} from '../common/ara-bucket';
-import {SingletonKey} from '../singleton-kms-key';
-import {SingletonCfnLaunchTemplate} from '../singleton-launch-template';
-import {validateSchema} from './config-override-schema-validation';
-import {EmrEksNodegroup, EmrEksNodegroupOptions} from './emr-eks-nodegroup';
-import {EmrEksNodegroupAsgTagProvider} from './emr-eks-nodegroup-asg-tag';
-import {EmrManagedEndpointOptions, EmrManagedEndpointProvider} from './emr-managed-endpoint';
-import {EmrVirtualClusterOptions} from './emr-virtual-cluster';
+import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
+import { Bucket, Location } from '@aws-cdk/aws-s3';
+import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
+import { Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags } from '@aws-cdk/core';
+import { AraBucket } from '../common/ara-bucket';
+import { SingletonKey } from '../singleton-kms-key';
+import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
+import { validateSchema } from './config-override-schema-validation';
+import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
+import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
+import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
+import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
@@ -118,7 +118,7 @@ export class EmrEksCluster extends Construct {
   private readonly managedEndpointProviderServiceToken: string;
   private readonly nodegroupAsgTagsProviderServiceToken: string;
   private readonly emrServiceRole: CfnServiceLinkedRole;
-  private readonly eksOidcProvider: FederatedPrincipal;
+  public readonly eksOidcProvider: FederatedPrincipal;
   private readonly assetBucket: Bucket;
   private readonly clusterName: string;
   private readonly eksVpc: IVpc | undefined;
@@ -203,7 +203,7 @@ export class EmrEksCluster extends Construct {
       });
     }
 
-    AraBucket.getOrCreate(this, {bucketName: 's3-access-logs'});
+    AraBucket.getOrCreate(this, { bucketName: 's3-access-logs' });
 
     // Add the provided Amazon IAM Role as Amazon EKS Admin
     this.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( this, 'AdminRole', props.eksAdminRoleArn ), 'AdminRole');
@@ -349,7 +349,7 @@ export class EmrEksCluster extends Construct {
     this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
     this.addEmrEksNodegroup('notebook', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
     // Create an Amazon S3 Bucket for default podTemplate assets
-    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets`});
+    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets` });
 
     //this.assetBucketRole = new Role();
 

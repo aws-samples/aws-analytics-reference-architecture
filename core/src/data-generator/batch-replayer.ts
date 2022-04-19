@@ -100,7 +100,7 @@ export class BatchReplayer extends Construct {
       handler: 'find-file-paths.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.minutes(15),
-      layers: [dataWranglerLayer],
+      lambdaLayers: [dataWranglerLayer],
       lambdaPolicyStatements: findFilePathsFnPolicy,
     });
 
@@ -142,7 +142,7 @@ export class BatchReplayer extends Construct {
       handler: 'write-in-batch.handler',
       logRetention: RetentionDays.ONE_DAY,
       timeout: Duration.minutes(15),
-      layers: [dataWranglerLayer],
+      lambdaLayers: [dataWranglerLayer],
       lambdaPolicyStatements: writeInBatchFnPolicy,
     });
 
