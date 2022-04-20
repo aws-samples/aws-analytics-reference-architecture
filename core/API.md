@@ -6807,22 +6807,39 @@ PreparedDataset has following properties:
 There is no constraint on how long the timestamp range can be. But each file must not be larger than 100MB.
 The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions.
 Here is an example:
+
 |- time_range_start=16000000000
+
     |- file1.csv 100MB
+
     |- file2.csv 50MB
+
 |- time_range_start=16000000300 // 5 minute range (300 sec)
+
     |- file1.csv 1MB
+
 |- time_range_start=16000000600
+
     |- file1.csv 100MB
+
     |- file2.csv 100MB
+
     |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB
+
 2. It has a manifest CSV file with two columns: start and path. Start is the timestamp
+
 start        , path
+
 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file1.csv
+
 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file2.csv
+
 16000000300  , s3://<path>/<to>/<folder>/time_range_start=16000000300/file1.csv
+
 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file1.csv
+
 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv
+
 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.PreparedDataset.Initializer"></a>
