@@ -124,7 +124,7 @@ export class BatchReplayer extends Construct {
      * Rewrite data
      */
     const writeInBatchFn = new PreBundledFunction(this, 'WriteInBatch', {
-      memorySize: 1024 * 5,
+      memorySize: 3008,
       codePath: 'data-generator/resources/lambdas/write-in-batch',
       runtime: Runtime.PYTHON_3_8,
       handler: 'write-in-batch.handler',
