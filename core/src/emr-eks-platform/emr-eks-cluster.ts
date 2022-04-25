@@ -25,7 +25,7 @@ import {
   ServicePrincipal,
 } from '@aws-cdk/aws-iam';
 import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
-import { Bucket, Location } from '@aws-cdk/aws-s3';
+import { Bucket, BucketEncryption, Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags } from '@aws-cdk/core';
 import { AraBucket } from '../common/ara-bucket';
@@ -118,7 +118,7 @@ export class EmrEksCluster extends Construct {
   private readonly managedEndpointProviderServiceToken: string;
   private readonly nodegroupAsgTagsProviderServiceToken: string;
   private readonly emrServiceRole: CfnServiceLinkedRole;
-  public readonly eksOidcProvider: FederatedPrincipal;
+  private readonly eksOidcProvider: FederatedPrincipal;
   private readonly assetBucket: Bucket;
   private readonly clusterName: string;
   private readonly eksVpc: IVpc | undefined;
@@ -170,11 +170,11 @@ export class EmrEksCluster extends Construct {
 
       let eksVpcFlowLogLogGroup = new LogGroup(this, 'eksVpcFlowLogLogGroup', {
         logGroupName: `/ara/eksVpcFlowLog/${this.clusterName}`,
-        encryptionKey: SingletonKey.getOrCreate(this, 'stackEncryptionKey'),
+        encryptionKey: SingletonKey.getOrCreate(scope, 'DefaultKmsKey'),
         retention: RetentionDays.ONE_MONTH,
       });
 
-      SingletonKey.getOrCreate(this, 'stackEncryptionKey').addToResourcePolicy(
+      SingletonKey.getOrCreate(scope, 'DefaultKmsKey').addToResourcePolicy(
         new PolicyStatement({
           effect: Effect.ALLOW,
           principals: [new ServicePrincipal(`logs.${Stack.of(this).region}.amazonaws.com`)],
@@ -214,7 +214,7 @@ export class EmrEksCluster extends Construct {
       namespace: 'kube-system',
     });
 
-    let autoscallingPolicyDescribe =
+    let autoscalingPolicyDescribe =
         new PolicyStatement({
           effect: Effect.ALLOW,
           actions: [
@@ -223,11 +223,12 @@ export class EmrEksCluster extends Construct {
             'autoscaling:DescribeLaunchConfigurations',
             'autoscaling:DescribeTags',
             'ec2:DescribeLaunchTemplateVersions',
+            'eks:DescribeNodegroup',
           ],
           resources: ['*'],
         });
 
-    let autoscallingPolicyMutateGroup =
+    let autoscalingPolicyMutateGroup =
         new PolicyStatement({
           effect: Effect.ALLOW,
           actions: [
@@ -237,17 +238,17 @@ export class EmrEksCluster extends Construct {
           resources: ['*'],
           conditions: {
             StringEquals: {
-              'aws:ResourceTag/eks:cluster-name': props.eksClusterName,
+              'aws:ResourceTag/eks:cluster-name': props.eksClusterName || EmrEksCluster.DEFAULT_CLUSTER_NAME,
             },
           },
         });
 
     // Add the right Amazon IAM Policy to the Amazon IAM Role for the Cluster Autoscaler
     AutoscalerServiceAccount.addToPrincipalPolicy(
-      autoscallingPolicyDescribe,
+      autoscalingPolicyDescribe,
     );
     AutoscalerServiceAccount.addToPrincipalPolicy(
-      autoscallingPolicyMutateGroup,
+      autoscalingPolicyMutateGroup,
     );
 
     // @todo: check if we can create the service account from the Helm Chart
@@ -349,7 +350,7 @@ export class EmrEksCluster extends Construct {
     this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
     this.addEmrEksNodegroup('notebook', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
     // Create an Amazon S3 Bucket for default podTemplate assets
-    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets` });
+    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets`, encryption: BucketEncryption.KMS_MANAGED });
 
     //this.assetBucketRole = new Role();
 
@@ -793,12 +794,14 @@ ${userData.join('\r\n')}
     // Adding the Amazon SSM policy
     nodegroup.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
 
-    // Add tags for the Cluster Autoscaler management
+
+    // Add tags for the Cluster Autoscaler IAM scoping
     Tags.of(nodegroup).add(
-      `k8s.io/cluster-autoscaler/${this.clusterName}`,
-      'owned',
-      { applyToLaunchedInstances: true },
+      'eks:cluster-name',
+      `${this.clusterName}`,
     );
+
+    // Add tags for the Cluster Autoscaler management
     Tags.of(nodegroup).add(
       'k8s.io/cluster-autoscaler/enabled',
       'true',

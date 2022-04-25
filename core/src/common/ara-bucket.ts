@@ -3,8 +3,20 @@
 
 import { IRole } from '@aws-cdk/aws-iam';
 import { IKey } from '@aws-cdk/aws-kms';
-import { BlockPublicAccess, Bucket, BucketAccessControl, BucketEncryption, BucketMetrics, CorsRule, IBucket, IntelligentTieringConfiguration, Inventory, LifecycleRule, ObjectOwnership } from '@aws-cdk/aws-s3';
-import { Construct, Stack, Aws, RemovalPolicy, Duration } from '@aws-cdk/core';
+import {
+  BlockPublicAccess,
+  Bucket,
+  BucketAccessControl,
+  BucketEncryption,
+  BucketMetrics,
+  CorsRule,
+  IBucket,
+  IntelligentTieringConfiguration,
+  Inventory,
+  LifecycleRule,
+  ObjectOwnership,
+} from '@aws-cdk/aws-s3';
+import { Aws, Construct, Duration, RemovalPolicy, Stack } from '@aws-cdk/core';
 import { SingletonKey } from '../singleton-kms-key';
 
 export interface AraBucketProps{
@@ -35,7 +47,7 @@ export interface AraBucketProps{
    * The KMS key for the bucket encryption
    * @default - if encryption is undefined or KMS, use a unique KMS key across the stack called `AraDefaultKmsKey`
    */
-  readonly encryptionKey?: IKey;
+  readonly encryptionKey?: IKey ;
 
   /**
    * Enforces SSL for requests.
@@ -192,17 +204,20 @@ export class AraBucket extends Bucket {
 
     var serverAccessLogsBucket = undefined;
     if ( props.serverAccessLogsPrefix ) {
-      serverAccessLogsBucket = props.serverAccessLogsBucket || AraBucket.getOrCreate(scope, { bucketName: 's3-access-logs' });
+      serverAccessLogsBucket = props.serverAccessLogsBucket || AraBucket.getOrCreate(scope, { bucketName: 's3-access-logs', encryption: BucketEncryption.S3_MANAGED });
     }
+
+    //If using KMS encryption then use a customer managed key, if not set the key to undefined
+    let bucketEncryptionKey: IKey | undefined = BucketEncryption.KMS == props.encryption ? props.encryptionKey || SingletonKey.getOrCreate(scope, 'DefaultKmsKey') : undefined;
 
     // set the right default parameters in the S3 bucket props
     const bucketProps = {
       ...props,
       ...{
         bucketName: `${props.bucketName}-${Aws.ACCOUNT_ID}-${Aws.REGION}`,
-        encryption: props.encryption ? props.encryption : BucketEncryption.KMS,
-        encryptionKey: props.encryptionKey || SingletonKey.getOrCreate(scope, 'DefaultKmsKey'),
-        bucketKeyEnabled: props.bucketKeyEnabled || true,
+        encryption: props.encryption ? props.encryption : BucketEncryption.KMS_MANAGED,
+        encryptionKey: bucketEncryptionKey,
+        bucketKeyEnabled: BucketEncryption.KMS == props.encryption ? true : false,
         enforceSSL: props.enforceSSL || true,
         removalPolicy: props.removalPolicy || RemovalPolicy.DESTROY,
         autoDeleteObjects: props.autoDeleteObjects || true,
