@@ -15,7 +15,7 @@ export interface NotebookManagedEndpointOptions {
      * an example can be found [here]
      * (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json)
      */
-  readonly configurationOverrides?: string;
+  readonly configurationOverrides?: any;
 
   /**
      * The name of the policy to be used for the execution Role to pass to ManagedEndpoint,

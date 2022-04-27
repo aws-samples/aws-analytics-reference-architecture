@@ -7,7 +7,7 @@ export function validateSchema (
   if (overrideConfigData !== undefined) {
     const schemaObject = JSON.parse(overrideConfigSchema);
 
-    const data = JSON.parse(overrideConfigData);
+    const data = JSON.parse(JSON.stringify(overrideConfigData));
 
     const validate = validator(schemaObject);
 

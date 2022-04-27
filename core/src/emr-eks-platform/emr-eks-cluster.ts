@@ -119,7 +119,7 @@ export class EmrEksCluster extends Construct {
   private readonly nodegroupAsgTagsProviderServiceToken: string;
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly eksOidcProvider: FederatedPrincipal;
-  private readonly assetBucket: Bucket;
+  public readonly assetBucket: Bucket;
   private readonly clusterName: string;
   private readonly eksVpc: IVpc | undefined;
   private readonly assetUploadBucketRole: Role;
@@ -756,6 +756,7 @@ ${userData.join('\r\n')}
     let jsonConfigurationOverrides: string | undefined;
 
     try {
+
       //Check if the configOverride provided by user is valid
       let isConfigOverrideValid: boolean = validateSchema(JSON.stringify(configOverrideSchema), options.configurationOverrides);
 
