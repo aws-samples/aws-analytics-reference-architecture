@@ -22,4 +22,10 @@ export interface NotebookManagedEndpointOptions {
      * this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog
      * */
   readonly executionPolicy: ManagedPolicy;
+
+  /**
+   * The name of the managed endpoint
+   * if no name is provided then the name of the policy associated with managed endpoint will be used as a name
+   * */
+  readonly managedEndpointName?: string;
 }
