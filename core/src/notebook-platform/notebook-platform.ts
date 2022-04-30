@@ -8,6 +8,7 @@ import { Effect, IManagedPolicy, IRole, ManagedPolicy, PolicyStatement, Role, Se
 import { Key } from '@aws-cdk/aws-kms';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
+import { AraBucket } from '../common/ara-bucket';
 import { EmrEksCluster } from '../emr-eks-platform';
 import { Utils } from '../utils';
 import {
@@ -19,7 +20,6 @@ import {
   createUserSessionPolicy,
 } from './notebook-platform-helpers';
 import { NotebookUserOptions } from './notebook-user';
-import {AraBucket} from "../common/ara-bucket";
 
 
 /**
@@ -251,7 +251,7 @@ export class NotebookPlatform extends NestedStack {
 
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
-    this.workspacesBucket =  AraBucket.getOrCreate(this, {
+    this.workspacesBucket = AraBucket.getOrCreate(this, {
       bucketName: 'workspaces-bucket-' + Utils.stringSanitizer(props.studioName),
       encryptionKey: this.notebookPlatformEncryptionKey,
       serverAccessLogsPrefix: `${props.studioName}-workspace`,
@@ -362,7 +362,10 @@ export class NotebookPlatform extends NestedStack {
         //Check if the managedendpoint is already used in role which is created for a managed endpoint
         //if there is no managedendpointArn create a new managedendpoint
         //else get managedendpoint and push it to  @managedEndpointArns
-        if (!this.managedEndpointExecutionPolicyArnMapping.has(notebookManagedEndpoint.executionPolicy.managedPolicyName)) {
+        // eslint-disable-next-line max-len
+        let endpointName: string = notebookManagedEndpoint.managedEndpointName ? notebookManagedEndpoint.managedEndpointName : notebookManagedEndpoint.executionPolicy.managedPolicyName;
+
+        if (!this.managedEndpointExecutionPolicyArnMapping.has(endpointName)) {
 
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
@@ -374,7 +377,7 @@ export class NotebookPlatform extends NestedStack {
             this,
             `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.executionPolicy.managedPolicyName)}`,
             {
-              managedEndpointName: `${this.studioName}-${notebookManagedEndpoint.executionPolicy.managedPolicyName}`,
+              managedEndpointName: `${this.studioName}-${endpointName}`,
               virtualClusterId: this.emrVirtCluster.attrId,
               executionRole: this.emrEks.createExecutionRole(
                 this,
@@ -413,13 +416,12 @@ export class NotebookPlatform extends NestedStack {
           //This is to avoid the creation an endpoint with the same policy twice
           //Save resources and reduce the deployment time
           // TODO check the emr version is the same => to be fixed on a later commit need to solve adding a tuple to a JS map
-          this.managedEndpointExecutionPolicyArnMapping.set(notebookManagedEndpoint.executionPolicy.managedPolicyName, managedEndpoint.getAttString('arn'));
+          this.managedEndpointExecutionPolicyArnMapping.set(endpointName, managedEndpoint.getAttString('arn'));
 
           //Push the managedendpoint arn to be used in to build the policy to attach to it
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
-          let managedPolicyName = notebookManagedEndpoint.executionPolicy.managedPolicyName;
-          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(managedPolicyName));
+          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(endpointName));
         }
       });
 
