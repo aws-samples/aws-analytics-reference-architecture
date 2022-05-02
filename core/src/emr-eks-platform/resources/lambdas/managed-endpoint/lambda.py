@@ -36,7 +36,7 @@ def on_create(event):
         type='JUPYTER_ENTERPRISE_GATEWAY',
         releaseLabel=event['ResourceProperties']['releaseLabel'],
         executionRoleArn=event['ResourceProperties']['executionRoleArn'],
-        configurationOverrides=json.loads(event['ResourceProperties']['configurationOverrides']) if
+        configurationOverrides=event['ResourceProperties']['configurationOverrides'] if
         event['ResourceProperties']['configurationOverrides'] else None,
         clientToken=str(uuid.uuid4()),
         tags={'for-use-with':'cdk-analytics-reference-architecture'}

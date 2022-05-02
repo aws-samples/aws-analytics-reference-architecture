@@ -12,14 +12,14 @@ import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks } from 'cdk-nag';
 import { BatchReplayer } from '../../src';
-import { PartitionedDataset } from '../../src';
+import { PreparedDataset } from '../../src';
 
 const mockApp = new App();
 
 const batchReplayerStack = new Stack(mockApp, 'BatchReplayer');
 // Instantiate a DataGenerator
 const batchReplayer = new BatchReplayer(batchReplayerStack, "TestBatchReplayer", {
-  dataset: PartitionedDataset.RETAIL_1GB_WEB_SALE,
+  dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
   frequency: 120,
   s3LocationSink: {
     bucketName: 'test',

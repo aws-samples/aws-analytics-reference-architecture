@@ -24,18 +24,18 @@ import {
   Role,
   ServicePrincipal,
 } from '@aws-cdk/aws-iam';
-import {LogGroup, RetentionDays} from '@aws-cdk/aws-logs';
-import {Bucket, Location} from '@aws-cdk/aws-s3';
-import {BucketDeployment, Source} from '@aws-cdk/aws-s3-deployment';
-import {Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags} from '@aws-cdk/core';
-import {AraBucket} from '../common/ara-bucket';
-import {SingletonKey} from '../singleton-kms-key';
-import {SingletonCfnLaunchTemplate} from '../singleton-launch-template';
-import {validateSchema} from './config-override-schema-validation';
-import {EmrEksNodegroup, EmrEksNodegroupOptions} from './emr-eks-nodegroup';
-import {EmrEksNodegroupAsgTagProvider} from './emr-eks-nodegroup-asg-tag';
-import {EmrManagedEndpointOptions, EmrManagedEndpointProvider} from './emr-managed-endpoint';
-import {EmrVirtualClusterOptions} from './emr-virtual-cluster';
+import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
+import { Bucket, BucketEncryption, Location } from '@aws-cdk/aws-s3';
+import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
+import { Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags } from '@aws-cdk/core';
+import { AraBucket } from '../common/ara-bucket';
+import { SingletonKey } from '../singleton-kms-key';
+import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
+import { validateSchema } from './config-override-schema-validation';
+import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
+import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
+import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
+import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
@@ -105,7 +105,7 @@ export class EmrEksCluster extends Construct {
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-  private static readonly EMR_VERSIONS = ['emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
+  private static readonly EMR_VERSIONS = ['emr-6.5.0-latest', 'emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
   private static readonly DEFAULT_EMR_VERSION = 'emr-6.4.0-latest';
   private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
   private static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
@@ -119,7 +119,7 @@ export class EmrEksCluster extends Construct {
   private readonly nodegroupAsgTagsProviderServiceToken: string;
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly eksOidcProvider: FederatedPrincipal;
-  private readonly assetBucket: Bucket;
+  public readonly assetBucket: Bucket;
   private readonly clusterName: string;
   private readonly eksVpc: IVpc | undefined;
   private readonly assetUploadBucketRole: Role;
@@ -170,11 +170,11 @@ export class EmrEksCluster extends Construct {
 
       let eksVpcFlowLogLogGroup = new LogGroup(this, 'eksVpcFlowLogLogGroup', {
         logGroupName: `/ara/eksVpcFlowLog/${this.clusterName}`,
-        encryptionKey: SingletonKey.getOrCreate(this, 'stackEncryptionKey'),
+        encryptionKey: SingletonKey.getOrCreate(scope, 'DefaultKmsKey'),
         retention: RetentionDays.ONE_MONTH,
       });
 
-      SingletonKey.getOrCreate(this, 'stackEncryptionKey').addToResourcePolicy(
+      SingletonKey.getOrCreate(scope, 'DefaultKmsKey').addToResourcePolicy(
         new PolicyStatement({
           effect: Effect.ALLOW,
           principals: [new ServicePrincipal(`logs.${Stack.of(this).region}.amazonaws.com`)],
@@ -203,7 +203,7 @@ export class EmrEksCluster extends Construct {
       });
     }
 
-    AraBucket.getOrCreate(this, {bucketName: 's3-access-logs'});
+    AraBucket.getOrCreate(this, { bucketName: 's3-access-logs' });
 
     // Add the provided Amazon IAM Role as Amazon EKS Admin
     this.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( this, 'AdminRole', props.eksAdminRoleArn ), 'AdminRole');
@@ -214,7 +214,7 @@ export class EmrEksCluster extends Construct {
       namespace: 'kube-system',
     });
 
-    let autoscallingPolicyDescribe =
+    let autoscalingPolicyDescribe =
         new PolicyStatement({
           effect: Effect.ALLOW,
           actions: [
@@ -223,11 +223,12 @@ export class EmrEksCluster extends Construct {
             'autoscaling:DescribeLaunchConfigurations',
             'autoscaling:DescribeTags',
             'ec2:DescribeLaunchTemplateVersions',
+            'eks:DescribeNodegroup',
           ],
           resources: ['*'],
         });
 
-    let autoscallingPolicyMutateGroup =
+    let autoscalingPolicyMutateGroup =
         new PolicyStatement({
           effect: Effect.ALLOW,
           actions: [
@@ -237,17 +238,17 @@ export class EmrEksCluster extends Construct {
           resources: ['*'],
           conditions: {
             StringEquals: {
-              'aws:ResourceTag/eks:cluster-name': props.eksClusterName,
+              'aws:ResourceTag/eks:cluster-name': props.eksClusterName || EmrEksCluster.DEFAULT_CLUSTER_NAME,
             },
           },
         });
 
     // Add the right Amazon IAM Policy to the Amazon IAM Role for the Cluster Autoscaler
     AutoscalerServiceAccount.addToPrincipalPolicy(
-      autoscallingPolicyDescribe,
+      autoscalingPolicyDescribe,
     );
     AutoscalerServiceAccount.addToPrincipalPolicy(
-      autoscallingPolicyMutateGroup,
+      autoscalingPolicyMutateGroup,
     );
 
     // @todo: check if we can create the service account from the Helm Chart
@@ -257,6 +258,7 @@ export class EmrEksCluster extends Construct {
     this.eksCluster.addHelmChart('AutoScaler', {
       chart: 'cluster-autoscaler',
       repository: 'https://kubernetes.github.io/autoscaler',
+      version: '9.11.0',
       namespace: 'kube-system',
       timeout: Duration.minutes(14),
       values: {
@@ -348,7 +350,7 @@ export class EmrEksCluster extends Construct {
     this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
     this.addEmrEksNodegroup('notebook', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
     // Create an Amazon S3 Bucket for default podTemplate assets
-    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets`});
+    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets`, encryption: BucketEncryption.KMS_MANAGED });
 
     //this.assetBucketRole = new Role();
 
@@ -754,6 +756,7 @@ ${userData.join('\r\n')}
     let jsonConfigurationOverrides: string | undefined;
 
     try {
+
       //Check if the configOverride provided by user is valid
       let isConfigOverrideValid: boolean = validateSchema(JSON.stringify(configOverrideSchema), options.configurationOverrides);
 
@@ -792,12 +795,14 @@ ${userData.join('\r\n')}
     // Adding the Amazon SSM policy
     nodegroup.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
 
-    // Add tags for the Cluster Autoscaler management
+
+    // Add tags for the Cluster Autoscaler IAM scoping
     Tags.of(nodegroup).add(
-      `k8s.io/cluster-autoscaler/${this.clusterName}`,
-      'owned',
-      { applyToLaunchedInstances: true },
+      'eks:cluster-name',
+      `${this.clusterName}`,
     );
+
+    // Add tags for the Cluster Autoscaler management
     Tags.of(nodegroup).add(
       'k8s.io/cluster-autoscaler/enabled',
       'true',

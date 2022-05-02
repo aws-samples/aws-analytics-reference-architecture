@@ -105,6 +105,9 @@
       "description": "Copy all resources directories from src to lib",
       "steps": [
         {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/common/resources lib/common"
+        },
+        {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-generator/resources lib/data-generator"
         },
         {
@@ -228,7 +231,16 @@
       "description": "pip install all folders in lib that has requirements.txt",
       "steps": [
         {
+          "exec": "pip3 install -r lib/common/resources/lambdas/pre-bundled-layer/requirements.txt --target lib/common/resources/lambdas/pre-bundled-layer --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/find-file-paths/requirements.txt --target lib/data-generator/resources/lambdas/find-file-paths --upgrade"
+        },
+        {
           "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/write-in-batch/requirements.txt --target lib/data-generator/resources/lambdas/write-in-batch --upgrade"
         },
         {
           "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/managed-endpoint/requirements.txt --target lib/emr-eks-platform/resources/lambdas/managed-endpoint --upgrade"

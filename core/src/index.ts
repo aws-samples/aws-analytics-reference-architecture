@@ -4,7 +4,7 @@
 export { ExampleProps, Example } from './example';
 export { DataLakeStorageProps, DataLakeStorage } from './data-lake-storage';
 export { SynchronousCrawlerProps, SynchronousCrawler } from './synchronous-crawler';
-export { DatasetProps, Dataset, PartitionedDatasetProps, PartitionedDataset } from './datasets';
+export { DatasetProps, Dataset, PreparedDatasetProps, PreparedDataset } from './datasets';
 export { DataGeneratorProps, DataGenerator, BatchReplayerProps, BatchReplayer } from './data-generator';
 export { SynchronousAthenaQueryProps, SynchronousAthenaQuery } from './synchronous-athena-query';
 export { AraBucket, AraBucketProps } from './common/ara-bucket';

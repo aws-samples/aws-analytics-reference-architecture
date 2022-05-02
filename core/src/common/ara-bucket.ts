@@ -3,8 +3,20 @@
 
 import { IRole } from '@aws-cdk/aws-iam';
 import { IKey } from '@aws-cdk/aws-kms';
-import { BlockPublicAccess, Bucket, BucketAccessControl, BucketEncryption, BucketMetrics, CorsRule, IBucket, IntelligentTieringConfiguration, Inventory, LifecycleRule, ObjectOwnership } from '@aws-cdk/aws-s3';
-import { Construct, Stack, Aws, RemovalPolicy, Duration } from '@aws-cdk/core';
+import {
+  BlockPublicAccess,
+  Bucket,
+  BucketAccessControl,
+  BucketEncryption,
+  BucketMetrics,
+  CorsRule,
+  IBucket,
+  IntelligentTieringConfiguration,
+  Inventory,
+  LifecycleRule,
+  ObjectOwnership,
+} from '@aws-cdk/aws-s3';
+import { Aws, Construct, Duration, RemovalPolicy, Stack } from '@aws-cdk/core';
 import { SingletonKey } from '../singleton-kms-key';
 
 export interface AraBucketProps{
@@ -12,30 +24,30 @@ export interface AraBucketProps{
    * The Amazon S3 bucket name. The bucket name is postfixed with the AWS account ID and the AWS region
    */
   readonly bucketName: string;
-  
+
   /**
    * The log file prefix to use for the bucket's access logs.
    * @default - access are not logged
    */
-  readonly serverAccessLogsPrefix?: string; 
-  
+  readonly serverAccessLogsPrefix?: string;
+
   /**
    * Destination bucket for the server access logs.
    * @default - if serverAccessLogsPrefix is defined, use a unique bucket across the stack called `s3-access-logs`
    */
-  readonly serverAccessLogsBucket?: IBucket; 
-  
+  readonly serverAccessLogsBucket?: IBucket;
+
   /**
    * The encryption mode for the bucket
    * @default - Server side encryption with KMS customer key (SSE-KMS)
    */
-  readonly encryption?: BucketEncryption; 
+  readonly encryption?: BucketEncryption;
 
   /**
    * The KMS key for the bucket encryption
    * @default - if encryption is undefined or KMS, use a unique KMS key across the stack called `AraDefaultKmsKey`
    */
-  readonly encryptionKey?: IKey; 
+  readonly encryptionKey?: IKey ;
 
   /**
    * Enforces SSL for requests.
@@ -47,7 +59,7 @@ export interface AraBucketProps{
    * Specifies whether Amazon S3 should use an S3 Bucket Key with server-side encryption using KMS (SSE-KMS) for new objects in the bucket.
    * @default true
    */
-   readonly bucketKeyEnabled?: boolean;
+  readonly bucketKeyEnabled?: boolean;
 
   /**
    * Policy to apply when the bucket is removed from this stack.
@@ -84,8 +96,8 @@ export interface AraBucketProps{
    * Specifies a canned ACL that grants predefined permissions to the bucket.
    * @default BucketAccessControl.PRIVATE
    */
-  readonly accessControl?: BucketAccessControl;    
-  
+  readonly accessControl?: BucketAccessControl;
+
   /**
    * Grants public read access to all objects in the bucket.
    * Similar to calling `bucket.grantPublicAccess()`
@@ -140,7 +152,7 @@ export interface AraBucketProps{
 * An Amazon S3 Bucket following best practices for the AWS Analytics Reference Architecture.
 * The bucket name is mandatory and is used as the CDK id.
 * The bucket name is postfixed with the AWS account ID and the AWS region.
-* 
+*
 * The bucket has the following default properties:
 *  * the encryption mode is KMS customer key
 *  * the encryption key is the default and unique KMS key for ARA
@@ -150,16 +162,16 @@ export interface AraBucketProps{
 *  * the access are logged in a default and unique S3 bucket for ARA if serverAccessLogsPrefix is provided
 *  * the access are not logger if serverAccessLogsPrefix is  not provided
 *  * the public access is blocked and no bucket policy or object permission can grant public access
-* 
+*
 * All standard S3 Bucket properties can be provided to not use the defaults.
 * Usage example:
 * ```typescript
 * import * as cdk from '@aws-cdk/core';
 * import { AraBucket } from 'aws-analytics-reference-architecture';
-* 
+*
 * const exampleApp = new cdk.App();
 * const stack = new cdk.Stack(exampleApp, 'AraBucketStack');
-* 
+*
 * new AraBucket(stack, {
 *  bucketName: 'test-bucket',
 *  serverAccessLogsPrefix: 'test-bucket',
@@ -167,7 +179,7 @@ export interface AraBucketProps{
 * ```
 */
 export class AraBucket extends Bucket {
-  
+
   /**
   * Get the Amazon S3 Bucket from the AWS CDK Stack based on the provided name.
   * If no bucket exists, it creates a new one based on the provided properties.
@@ -175,43 +187,46 @@ export class AraBucket extends Bucket {
   public static getOrCreate(scope: Construct, props: AraBucketProps) {
     const stack = Stack.of(scope);
     const id = `${props.bucketName}`;
-    
+
     const stackBucket = stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Bucket : stack.node.tryFindChild(id) as Bucket;
-    
+
     return stackBucket || new AraBucket(stack, props);
   }
-  
+
   /**
   * Constructs a new instance of the AraBucket class
   * @param {Construct} scope the Scope of the CDK Construct
   * @param {AraBucketProps} props the AraBucketProps [properties]{@link AraBucketProps}
   * @access public
   */
-  
+
   constructor(scope: Construct, props: AraBucketProps) {
-    
+
     var serverAccessLogsBucket = undefined;
-    if ( props.serverAccessLogsPrefix ){
-      serverAccessLogsBucket = props.serverAccessLogsBucket || AraBucket.getOrCreate(scope, { bucketName: 's3-access-logs'});
+    if ( props.serverAccessLogsPrefix ) {
+      serverAccessLogsBucket = props.serverAccessLogsBucket || AraBucket.getOrCreate(scope, { bucketName: 's3-access-logs', encryption: BucketEncryption.S3_MANAGED });
     }
-    
+
+    //If using KMS encryption then use a customer managed key, if not set the key to undefined
+    let bucketEncryptionKey: IKey | undefined = BucketEncryption.KMS == props.encryption ? props.encryptionKey || SingletonKey.getOrCreate(scope, 'DefaultKmsKey') : undefined;
+
     // set the right default parameters in the S3 bucket props
     const bucketProps = {
       ...props,
       ...{
         bucketName: `${props.bucketName}-${Aws.ACCOUNT_ID}-${Aws.REGION}`,
-        encryption: props.encryption ? props.encryption : BucketEncryption.KMS,
-        encryptionKey: props.encryptionKey || SingletonKey.getOrCreate(scope, 'DefaultKmsKey'),
-        bucketKeyEnabled: props.bucketKeyEnabled || true,
+        encryption: props.encryption ? props.encryption : BucketEncryption.KMS_MANAGED,
+        encryptionKey: bucketEncryptionKey,
+        bucketKeyEnabled: BucketEncryption.KMS == props.encryption ? true : false,
         enforceSSL: props.enforceSSL || true,
         removalPolicy: props.removalPolicy || RemovalPolicy.DESTROY,
         autoDeleteObjects: props.autoDeleteObjects || true,
         serverAccessLogsBucket: serverAccessLogsBucket,
         serverAccessLogsPrefix: props.serverAccessLogsPrefix,
         blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-        lifecycleRules: props.lifecycleRules || [{ abortIncompleteMultipartUploadAfter: Duration.days(1)}],
-      }
-    }
+        lifecycleRules: props.lifecycleRules || [{ abortIncompleteMultipartUploadAfter: Duration.days(1) }],
+      },
+    };
     // build the S3 bucket
     super(scope, props.bucketName, bucketProps);
   }

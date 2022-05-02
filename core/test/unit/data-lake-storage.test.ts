@@ -28,14 +28,14 @@ describe('DataLakeStorage', () => {
   });
 
   const template = Template.fromStack(dataLakeStorageStack);
-  
+
   // Raw, Clean, Transform and AccessLog buckets
   test('DataLakeStorage should provision 4 buckets', () => {
     template.resourceCountIs('AWS::S3::Bucket', 4);
   });
 
   test('DataLakeStorage should create the proper raw bucket', () => {
-    template.hasResourceProperties('AWS::S3::Bucket', 
+    template.hasResourceProperties('AWS::S3::Bucket',
       Match.objectLike({
         BucketName: {
           'Fn::Join': [
@@ -55,10 +55,8 @@ describe('DataLakeStorage', () => {
         BucketEncryption: {
           ServerSideEncryptionConfiguration: [
             {
-              BucketKeyEnabled: true,
               ServerSideEncryptionByDefault: {
                 SSEAlgorithm: 'aws:kms',
-                KMSMasterKeyID: Match.anyValue(),
               },
             },
           ],
@@ -89,13 +87,13 @@ describe('DataLakeStorage', () => {
         LoggingConfiguration: {
           DestinationBucketName: Match.anyValue(),
           LogFilePrefix: 'raw-bucket',
-        }
-      })
-    )
+        },
+      }),
+    );
   });
 
   test('DataLakeStorage should create the proper clean bucket', () => {
-    template.hasResourceProperties('AWS::S3::Bucket', 
+    template.hasResourceProperties('AWS::S3::Bucket',
       Match.objectLike({
         BucketName: {
           'Fn::Join': [
@@ -115,10 +113,8 @@ describe('DataLakeStorage', () => {
         BucketEncryption: {
           ServerSideEncryptionConfiguration: [
             {
-              BucketKeyEnabled: true,
               ServerSideEncryptionByDefault: {
                 SSEAlgorithm: 'aws:kms',
-                KMSMasterKeyID: Match.anyValue(),
               },
             },
           ],
@@ -149,13 +145,13 @@ describe('DataLakeStorage', () => {
         LoggingConfiguration: {
           DestinationBucketName: Match.anyValue(),
           LogFilePrefix: 'clean-bucket',
-        }
-      })
-    )
+        },
+      }),
+    );
   });
 
   test('DataLakeStorage should create the proper transform bucket', () => {
-    template.hasResourceProperties('AWS::S3::Bucket', 
+    template.hasResourceProperties('AWS::S3::Bucket',
       Match.objectLike({
         BucketName: {
           'Fn::Join': [
@@ -175,10 +171,8 @@ describe('DataLakeStorage', () => {
         BucketEncryption: {
           ServerSideEncryptionConfiguration: [
             {
-              BucketKeyEnabled: true,
               ServerSideEncryptionByDefault: {
                 SSEAlgorithm: 'aws:kms',
-                KMSMasterKeyID: Match.anyValue(),
               },
             },
           ],
@@ -209,8 +203,8 @@ describe('DataLakeStorage', () => {
         LoggingConfiguration: {
           DestinationBucketName: Match.anyValue(),
           LogFilePrefix: 'transform-bucket',
-        }
-      })
-    )
+        },
+      }),
+    );
   });
-})
+});

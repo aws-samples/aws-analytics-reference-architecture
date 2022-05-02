@@ -50,7 +50,7 @@ export interface DataLakeStorageProps {
 
 /**
  * A CDK Construct that creates the storage layers of a data lake composed of Amazon S3 Buckets.
- * 
+ *
  * This construct is based on 3 Amazon S3 buckets configured with AWS best practices:
  *  * S3 buckets for Raw/Cleaned/Transformed data,
  *  * data lifecycle optimization/transitioning to different Amazon S3 storage classes
@@ -58,23 +58,23 @@ export interface DataLakeStorageProps {
  *  * SSL communication enforcement
  *  * access logged to an S3 bucket
  *  * All public access blocked
- *  
+ *
  * By default the transitioning rules to Amazon S3 storage classes are configured as following:
  *  * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days
  *  * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived
- * 
+ *
  * Objects and buckets are automatically deleted when the CDK application is detroyed.
- * 
+ *
  * For custom requirements, consider using {@link AraBucket}.
- * 
+ *
  * Usage example:
  * ```typescript
  * import * as cdk from '@aws-cdk/core';
  * import { DataLakeStorage } from 'aws-analytics-reference-architecture';
- * 
+ *
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'DataLakeStorageStack');
- * 
+ *
  * new DataLakeStorage(stack, 'MyDataLakeStorage', {
  *  rawInfrequentAccessDelay: 90,
  *  rawArchiveDelay: 180,
@@ -152,7 +152,7 @@ export class DataLakeStorage extends Construct {
         } else {
           transformArchiveDelay = props.transformArchiveDelay;
         }
-      } 
+      }
     }
 
     // Prepare Amazon S3 Lifecycle Rules for raw data

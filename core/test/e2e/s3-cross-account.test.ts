@@ -42,7 +42,7 @@ new cdk.CfnOutput(stack, 'BucketPolicy', {
 
 new cdk.CfnOutput(stack, 'KeyPolicy', {
   value: myKey.keyId,
-  exportName: 'keyId',
+  exportName: 's3CrossAccountKeyId',
 });
 
 describe('deploy succeed', () => {

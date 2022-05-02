@@ -10,7 +10,7 @@
 import { Stack } from "@aws-cdk/core";
 
 import { BatchReplayer } from "../../../src/data-generator/batch-replayer";
-import { PartitionedDataset } from "../../../src/datasets";
+import { PreparedDataset } from "../../../src/datasets";
 import "@aws-cdk/assert/jest";
 import { Template } from "@aws-cdk/assertions";
 
@@ -21,7 +21,7 @@ let template: Template;
 beforeEach(() => {
   testStack = new Stack();
   batchReplayer = new BatchReplayer(testStack, "TestBatchReplayer", {
-    dataset: PartitionedDataset.RETAIL_1GB_WEB_SALE,
+    dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
     frequency: 120,
     s3LocationSink: {
       bucketName: 'test',
@@ -37,7 +37,7 @@ test("BatchReplayer should use given frequency", () => {
 
 test("BatchReplayer should use default frequency", () => {
   const batchReplayerWithNoFreqProp = new BatchReplayer(testStack, "TestBatchReplayerWithNoFreqProp", {
-    dataset: PartitionedDataset.RETAIL_1GB_WEB_SALE,
+    dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
     s3LocationSink: {
       bucketName: 'test',
       objectKey: 'test',
@@ -48,7 +48,7 @@ test("BatchReplayer should use default frequency", () => {
 
 test("BatchReplayer should use given max output file size", () => {
   const batchReplayerWithFilesizeProp = new BatchReplayer(testStack, "TestBatchReplayerWithNoFreqProp", {
-    dataset: PartitionedDataset.RETAIL_1GB_WEB_SALE,
+    dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
     s3LocationSink: {
       bucketName: 'test',
       objectKey: 'test',
@@ -59,7 +59,7 @@ test("BatchReplayer should use given max output file size", () => {
 
 test("BatchReplayer should use default max output file size 100MB", () => {
   const batchReplayerWithNoFilesizeProp = new BatchReplayer(testStack, "TestBatchReplayerWithNoFreqProp", {
-    dataset: PartitionedDataset.RETAIL_1GB_WEB_SALE,
+    dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
     s3LocationSink: {
       bucketName: 'test',
       objectKey: 'test',
@@ -70,7 +70,7 @@ test("BatchReplayer should use default max output file size 100MB", () => {
 
 test("BatchReplayer should create 2 lambda functions from Dockerfile with 15 mins timeout", () => {
   template.hasResourceProperties("AWS::Lambda::Function", {
-    "PackageType": "Image",
+    //"PackageType": "Image",
     "Timeout": 900
   })
 });

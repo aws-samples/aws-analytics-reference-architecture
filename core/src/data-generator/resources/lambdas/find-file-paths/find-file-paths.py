@@ -4,8 +4,7 @@ import json
 import logging
 from dateutil import parser
 from datetime import datetime
-
-import pandas as pd
+import awswrangler as wr
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -21,7 +20,7 @@ def log_file_paths(df):
 
 
 def retrieve_df_manifest(manifest_file_bucket, manifest_file_key, start_time, end_time):
-    df_manifest=pd.read_csv(f"s3://{manifest_file_bucket}/{manifest_file_key}")
+    df_manifest=wr.s3.read_csv(f"s3://{manifest_file_bucket}/{manifest_file_key}")
     rows_in_range=df_manifest[START_COL].between(start_time, end_time, inclusive='left')
     df_manifest=df_manifest[rows_in_range]
     df_manifest=df_manifest.sort_values(by=[START_COL])

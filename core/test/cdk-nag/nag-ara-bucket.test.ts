@@ -19,13 +19,13 @@ const mockApp = new App();
 const araBucketStack = new Stack(mockApp, 'AraBucket');
 
 // Instantiate DataLakeStorage Construct with custom Props
-new AraBucket(araBucketStack, { 
+new AraBucket(araBucketStack, {
   bucketName: 'test',
   serverAccessLogsPrefix: 'test',
 });
 
 Aspects.of(araBucketStack).add(new AwsSolutionsChecks());
-  
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(araBucketStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   expect(warnings).toHaveLength(0);
@@ -35,5 +35,3 @@ test('No unsuppressed Errors', () => {
   const errors = Annotations.fromStack(araBucketStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   expect(errors).toHaveLength(0);
 });
-  
-  

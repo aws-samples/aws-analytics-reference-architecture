@@ -7,20 +7,22 @@
  * @group unit/common/arabucket
  */
 
-import { Stack } from '@aws-cdk/core';
-import { AraBucket } from '../../../src/common/ara-bucket';
+import {Stack} from '@aws-cdk/core';
+import {AraBucket} from '../../../src/common/ara-bucket';
 import '@aws-cdk/assert/jest';
-import { Match, Template } from '@aws-cdk/assertions';
+import {Match, Template} from '@aws-cdk/assertions';
+import {BucketEncryption} from "@aws-cdk/aws-s3";
 
 describe ('AraBucket', () => {
   const AraBucketStack = new Stack();
 
   // Instantiate 2 Bucket Constructs
-  AraBucket.getOrCreate(AraBucketStack, { 
+  AraBucket.getOrCreate(AraBucketStack, {
     bucketName: 'test',
     serverAccessLogsPrefix: 'test',
+    encryption: BucketEncryption.KMS,
   });
-  AraBucket.getOrCreate(AraBucketStack, { 
+  AraBucket.getOrCreate(AraBucketStack, {
     bucketName: 'test',
     serverAccessLogsPrefix: 'test',
   });
@@ -76,11 +78,11 @@ describe ('AraBucket', () => {
               AbortIncompleteMultipartUpload: {
                 DaysAfterInitiation: 1,
               },
-              Status: "Enabled",
+              Status: 'Enabled',
             },
-          ], 
-        }, 
-      })
+          ],
+        },
+      }),
     );
   });
 });
