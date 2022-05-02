@@ -1,8 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { IRole } from '@aws-cdk/aws-iam';
-import { PolicyStatement } from '@aws-cdk/aws-iam';
+import { IRole, PolicyStatement } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { IBucket } from '@aws-cdk/aws-s3';
@@ -24,7 +23,8 @@ export interface EmrManagedEndpointOptions {
    */
   readonly virtualClusterId: string;
   /**
-   * The Amazon IAM role used as the execution role
+   * The Amazon IAM role used as the execution role, this role must provide access to all the AWS resource a user will interact with
+   * These can be S3, DynamoDB, Glue Catalog
    */
   readonly executionRole: IRole;
   /**
@@ -42,6 +42,7 @@ export interface EmrManagedEndpointOptions {
 
 /**
  * The properties for the EMR Managed Endpoint to create.
+ * @private
  */
 export interface EmrManagedEndpointProviderProps {
   /**
@@ -52,10 +53,12 @@ export interface EmrManagedEndpointProviderProps {
 
 /**
  * ManagedEndpointProvider Construct implementing a custom resource provider for managing Amazon EMR on Amazon EKS Managed Endpoints.
+ * @private
  */
 export class EmrManagedEndpointProvider extends Construct {
   /**
    * The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources
+   * @private
    */
   public readonly provider: Provider;
 
@@ -63,11 +66,13 @@ export class EmrManagedEndpointProvider extends Construct {
    * Constructs a new instance of the ManageEndpointProvider. The provider can then be used to create Amazon EMR on EKS Managed Endpoint custom resources
    * @param { Construct} scope the Scope of the CDK Construct
    * @param id the ID of the CDK Construct
+   * @private
    */
 
   constructor(scope: Construct, id: string, props: EmrManagedEndpointProviderProps) {
     super(scope, id);
 
+    //The policy allowing the managed endpoint custom resource to create call the APIs for managed endpoint
     const lambdaPolicy = [
       new PolicyStatement({
         resources: [props.assetBucket.bucketArn],
