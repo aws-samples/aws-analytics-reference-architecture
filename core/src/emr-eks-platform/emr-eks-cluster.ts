@@ -81,6 +81,15 @@ export interface EmrEksClusterProps {
    * 'kubernetes.io/role/elb'='1'
    */
   readonly eksVpcAttributes?: VpcAttributes;
+
+  /**
+   * If set to true construct will create default EKS nodegroups. There are three types of Nodegroup:
+   *  * Nodegroup for critical jobs which use on-demand instances.
+   *  * Nodegroup using spot instances for jobs that are not critical and can be preempted if a spot instance is reclaimed
+   *  * Nodegroup to provide capacity for creating and running managed endpoints spark drivers and executors.
+   * @default -  true
+   */
+  readonly defaultNodeGroups?: boolean;
 }
 
 /**
@@ -140,6 +149,7 @@ export class EmrEksCluster extends Construct {
   private readonly assetUploadBucketRole: Role;
   private readonly awsNodeRole: Role;
   private readonly ec2InstanceNodeGroupRole: Role;
+  private readonly defaultNodeGroups: boolean;
 
   /**
    * Constructs a new instance of the EmrEksClus  ter class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
@@ -161,6 +171,8 @@ export class EmrEksCluster extends Construct {
       ClusterLoggingTypes.CONTROLLER_MANAGER,
       ClusterLoggingTypes.AUDIT,
     ];
+
+    this.defaultNodeGroups = props.defaultNodeGroups == undefined ? true : false;
 
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
     if ( props.eksVpcAttributes != undefined) {
@@ -358,14 +370,16 @@ export class EmrEksCluster extends Construct {
     this.addNodegroupCapacity('tooling', EmrEksNodeGroupTooling as EmrEksNodegroupOptions);
     // Create default Amazon EMR on EKS Nodegroups. This will create one Amazon EKS nodegroup per AZ
     // Also create default configurations and pod templates for these nodegroups
-    let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
-    EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
-    this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
-    this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
-    this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
-    // Add a nodegroup for notebooks
-    this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
-    this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+    if (this.defaultNodeGroups) {
+      let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
+      EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
+      this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
+      this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
+      this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
+      // Add a nodegroup for notebooks
+      this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
+      this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+    }
     // Create an Amazon S3 Bucket for default podTemplate assets
     this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets`, encryption: BucketEncryption.KMS_MANAGED });
 
