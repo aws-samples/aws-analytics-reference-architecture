@@ -3,6 +3,8 @@
 
 import { Bucket, StorageClass, BucketEncryption } from '@aws-cdk/aws-s3';
 import { Construct, Aws, RemovalPolicy, Duration } from '@aws-cdk/core';
+import { ContextOptions } from './common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from './common/tracked-construct';
 
 /**
  * Properties for the DataLakeStorage Construct
@@ -49,24 +51,24 @@ export interface DataLakeStorageProps {
 
 /**
  * A CDK Construct that creates the storage layers of a data lake composed of Amazon S3 Buckets.
- * 
+ *
  * This construct is based on 3 Amazon S3 buckets configured with AWS best practices:
  *  * S3 buckets for Raw/Cleaned/Transformed data,
  *  * data lifecycle optimization/transitioning to different Amazon S3 storage classes
  *  * server side buckets encryption managed by KMS
- * 
+ *
  * By default the transitioning rules to Amazon S3 storage classes are configured as following:
  *  * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days
  *  * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived
- * 
+ *
  * Usage example:
  * ```typescript
  * import * as cdk from '@aws-cdk/core';
  * import { DataLakeStorage } from 'aws-analytics-reference-architecture';
- * 
+ *
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'DataLakeStorageStack');
- * 
+ *
  * new DataLakeStorage(stack, 'MyDataLakeStorage', {
  *  rawInfrequentAccessDelay: 90,
  *  rawArchiveDelay: 180,
@@ -78,7 +80,7 @@ export interface DataLakeStorageProps {
  * ```
  */
 
-export class DataLakeStorage extends Construct {
+export class DataLakeStorage extends TrackedConstruct {
 
   public readonly rawBucket: Bucket;
   public readonly cleanBucket: Bucket;
@@ -93,7 +95,12 @@ export class DataLakeStorage extends Construct {
    */
 
   constructor(scope: Construct, id: string, props?: DataLakeStorageProps) {
-    super(scope, id);
+
+    const trackedConstructProps : TrackedConstructProps = {
+      trackingCode: ContextOptions.EMR_EKS_TRACKING_ID,
+    };
+
+    super(scope, id, trackedConstructProps);
 
     var rawInfrequentAccessDelay = 30;
     var rawArchiveDelay = 90;
@@ -144,7 +151,7 @@ export class DataLakeStorage extends Construct {
         } else {
           transformArchiveDelay = props.transformArchiveDelay;
         }
-      } 
+      }
     }
 
     // Prepare Amazon S3 Lifecycle Rules for raw data
