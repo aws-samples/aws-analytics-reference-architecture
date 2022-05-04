@@ -9,6 +9,8 @@ import { PolicyStatement, PolicyDocument, IManagedPolicy, Policy, Role, ManagedP
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
+import { ContextOptions } from '../common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { validateSchema } from './config-override-schema-validation';
@@ -65,7 +67,7 @@ export interface EmrEksClusterProps {
 /**
  * EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
  */
-export class EmrEksCluster extends Construct {
+export class EmrEksCluster extends TrackedConstruct {
 
   /**
    * Get an existing EmrEksCluster based on the cluster name property or create a new one
@@ -110,7 +112,12 @@ export class EmrEksCluster extends Construct {
    * @access private
    */
   private constructor(scope: Construct, id: string, props: EmrEksClusterProps) {
-    super(scope, id);
+
+    const trackedConstructProps : TrackedConstructProps = {
+      trackingCode: ContextOptions.EMR_EKS_TRACKING_ID,
+    };
+
+    super(scope, id, trackedConstructProps);
 
     this.clusterName = props.eksClusterName ?? EmrEksCluster.DEFAULT_CLUSTER_NAME;
 

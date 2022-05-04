@@ -7,7 +7,8 @@ import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { Effect, IManagedPolicy, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Key } from '@aws-cdk/aws-kms';
 import { BlockPublicAccess, Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
-import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
+import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Stack, Tags } from '@aws-cdk/core';
+import { ContextOptions } from '../common/context-options';
 import { EmrEksCluster } from '../emr-eks-platform';
 import { Utils } from '../utils';
 import {
@@ -191,6 +192,8 @@ export class NotebookPlatform extends NestedStack {
 
   constructor(scope: Construct, id: string, props: NotebookPlatformProps) {
     super(scope, id);
+
+    Stack.of(this).templateOptions.description = ContextOptions.DATA_ENG_PLATFORM_ID;
 
     this.studioServicePolicy = [];
     this.studioUserPolicy = [];
