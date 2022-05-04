@@ -114,19 +114,19 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/lambdaExecutionRolePolicyara-EmrEksNodegroupAsgTagOnEventFn/Resource',
+  'eks-emr-studio/data-platform/AsgTagProvider/LambdaExecutionRolePolicyEmrEksNodegroupAsgTagOnEventFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard needed and violation mitigated with tag based access control' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/ManagedEndpointProvider/lambdaExecutionRolePolicyara-EmrManagedEndpointProviderIsComplete/Resource',
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/LambdaExecutionRolePolicyEmrManagedEndpointProviderIsComplete/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard needed and violation mitigated with tag based access control' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/logRetentionLambdaExecutionRolePolicyara-EmrEksNodegroupAsgTagOnEventFn/Resource',
+  'eks-emr-studio/data-platform/AsgTagProvider/LogRetentionLambdaExecutionRolePolicyEmrEksNodegroupAsgTagOnEventFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard needed for puteventlog IAM action' }],
 );
 
@@ -214,7 +214,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/logRetentionLambdaExcutionRoleara-EmrEksNodegroupAsgTagOnEventFn/DefaultPolicy/Resource',
+  'eks-emr-studio/data-platform/AsgTagProvider/LogRetentionLambdaExcutionRoleEmrEksNodegroupAsgTagOnEventFn/DefaultPolicy/Resource',
   [{
     id: 'AwsSolutions-IAM5',
     reason: 'policy to change log retention cannot be scoped down further',
@@ -223,7 +223,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/lambdaExecutionRolePolicyCustomResourceProvider/Resource',
+  'eks-emr-studio/data-platform/AsgTagProvider/LambdaExecutionRolePolicyCustomResourceProvider/Resource',
   [{
     id: 'AwsSolutions-IAM5',
     reason: 'Policy cannot be scoped down further, log group is created at runtime',
@@ -341,7 +341,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/lambdaExcutionRoleCRCustomResourceProvider/DefaultPolicy/Resource',
+  'eks-emr-studio/data-platform/AsgTagProvider/LambdaExecutionRoleCRCustomResourceProvider/DefaultPolicy/Resource',
   [{
     id: 'AwsSolutions-IAM5',
     reason: 'Cannot scope the policy further resource name generated at run time',

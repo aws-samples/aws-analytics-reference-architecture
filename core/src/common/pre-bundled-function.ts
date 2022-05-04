@@ -45,7 +45,7 @@ export class PreBundledFunction extends Function {
     let assetPath = path.join(__dirname, `../${props.codePath}`);
 
     functionProps.code = Code.fromAsset(assetPath);
-    functionProps.functionName = `ara-${props.name.slice()}`;
+    functionProps.functionName = props.name.slice();
 
     let lambdaPolicyStatement: PolicyStatement [] = [];
 
@@ -72,18 +72,18 @@ export class PreBundledFunction extends Function {
     });
 
     //Policy to allow lambda access to cloudwatch logs
-    const lambdaExecutionRolePolicy = new ManagedPolicy(scope, 'lambdaExecutionRolePolicy' + functionProps.functionName, {
+    const lambdaExecutionRolePolicy = new ManagedPolicy(scope, 'LambdaExecutionRolePolicy' + functionProps.functionName, {
       statements: lambdaPolicyStatement,
       description: 'Policy similar to lambda execution role but scoped down',
     });
 
     //Create an execution role for the lambda and attach to it a policy formed from user input
-    const lambdaExcutionRole = new Role (scope,
-      'lambdaExcutionRole' + functionProps.functionName, {
+    const lambdaExecutionRole = new Role (scope,
+      'LambdaExecutionRole' + functionProps.functionName, {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
         description: 'Role used by lambda in createManagedEndpoint CR',
         managedPolicies: [lambdaExecutionRolePolicy],
-        roleName: 'lambdaExcutionRole' + functionProps.functionName,
+        roleName: 'LambdaExecutionRole' + functionProps.functionName,
       });
 
     let logRetentionLambdaPolicyStatement: PolicyStatement [] = [];
@@ -101,22 +101,22 @@ export class PreBundledFunction extends Function {
     }));
 
     //Policy to allow lambda access to cloudwatch logs
-    const logRetentionLambdaExecutionRolePolicy = new ManagedPolicy(scope, 'logRetentionLambdaExecutionRolePolicy' + functionProps.functionName, {
+    const logRetentionLambdaExecutionRolePolicy = new ManagedPolicy(scope, 'LogRetentionLambdaExecutionRolePolicy' + functionProps.functionName, {
       statements: logRetentionLambdaPolicyStatement,
       description: 'Policy used to allow CR for log retention',
     });
 
     //Create an execution role for the lambda and attach to it a policy formed from user input
-    const logRetentionLambdaExcutionRole = new Role (scope,
-      'logRetentionLambdaExcutionRole' + functionProps.functionName, {
+    const logRetentionLambdaExecutionRole = new Role (scope,
+      'LogRetentionLambdaExecutionRole' + functionProps.functionName, {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
         description: 'Role used by lambda to modify log retention',
         managedPolicies: [logRetentionLambdaExecutionRolePolicy],
-        roleName: 'logRetLambdaExec' + functionProps.functionName,
+        roleName: 'LogRetLambdaExec' + functionProps.functionName,
       });
 
-    functionProps.role = lambdaExcutionRole;
-    functionProps.logRetentionRole = logRetentionLambdaExcutionRole;
+    functionProps.role = lambdaExecutionRole;
+    functionProps.logRetentionRole = logRetentionLambdaExecutionRole;
 
     functionProps.layers = [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')];
 

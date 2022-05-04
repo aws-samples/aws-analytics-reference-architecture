@@ -91,7 +91,7 @@ export class DataGenerator extends Construct {
     });
 
     // Source table creation in Amazon Athena
-    const createSourceTable = new SynchronousAthenaQuery(this, 'createSourceTable', {
+    const createSourceTable = new SynchronousAthenaQuery(this, 'CreateSourceTable', {
       statement: this.dataset.parseCreateSourceQuery(
         datageneratorDB.databaseName,
         this.dataset.tableName+'_source',
@@ -139,7 +139,7 @@ export class DataGenerator extends Construct {
     Bucket.fromBucketArn(this, 'Sink', this.sinkArn);
 
     // Target table creation in Amazon Athena
-    const createTargetTable = new SynchronousAthenaQuery(this, 'createTargetTable', {
+    const createTargetTable = new SynchronousAthenaQuery(this, 'CreateTargetTable', {
       statement: this.dataset.parseCreateTargetQuery(
         datageneratorDB.databaseName,
         this.dataset.tableName+'_target',
@@ -183,14 +183,14 @@ export class DataGenerator extends Construct {
     createTargetTable.node.addDependency(datageneratorDB);
 
     let offsetCreateCRRole: Role = new Role(this,
-      'offsetCreateCRRole', {
+      'OffsetCreateCRRole', {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
         description: 'Role used by lambda in createManagedEndpoint CR',
         roleName: 'ara-data-generator-offsetCreateCRRole',
       });
 
     // AWS Custom Resource to store the datetime offset only on creation
-    const offsetCreate = new AwsCustomResource(this, 'offsetCreate', {
+    const offsetCreate = new AwsCustomResource(this, 'OffsetCreate', {
       onCreate: {
         service: 'SSM',
         action: 'putParameter',
@@ -233,14 +233,14 @@ export class DataGenerator extends Construct {
 
 
     let offsetGetCRRole: Role = new Role(this,
-      'offsetGetCRRole', {
+      'OffsetGetCRRole', {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
         description: 'Role used by lambda in createManagedEndpoint CR',
         roleName: 'ara-data-generator-offsetGetCRRole',
       });
 
     // AWS Custom Resource to get the datetime offset from AWS SSM
-    const offsetGet = new AwsCustomResource(this, 'offsetGet', {
+    const offsetGet = new AwsCustomResource(this, 'OffsetGet', {
       onCreate: {
         service: 'SSM',
         action: 'getParameter',
@@ -279,7 +279,7 @@ export class DataGenerator extends Construct {
     offsetGet.node.addDependency(offsetCreate);
 
     // AWS Lambda function to prepare data generation
-    const querySetupFn = new PreBundledFunction(this, 'querySetupFn', {
+    const querySetupFn = new PreBundledFunction(this, 'QuerySetupFn', {
       runtime: Runtime.PYTHON_3_8,
       codePath: 'data-generator/resources/lambdas/setup',
       name: 'DataGeneratorFn',
@@ -289,7 +289,7 @@ export class DataGenerator extends Construct {
     });
 
     // AWS Step Functions task to prepare data generation
-    const querySetupTask = new LambdaInvoke(this, 'querySetupTask', {
+    const querySetupTask = new LambdaInvoke(this, 'QuerySetupTask', {
       lambdaFunction: querySetupFn,
       payload: TaskInput.fromObject({
         Offset: offsetGet.getResponseField('Parameter.Value'),
@@ -305,7 +305,7 @@ export class DataGenerator extends Construct {
     });
 
     // AWS Step Functions Task to run an Amazon Athena Query for data generation
-    const athenaQueryTask = new AthenaStartQueryExecution(this, 'dataGeneratorQuery', {
+    const athenaQueryTask = new AthenaStartQueryExecution(this, 'DataGeneratorQuery', {
       queryString: JsonPath.stringAt('$'),
       timeout: Duration.minutes(5),
       workGroup: 'primary',
@@ -322,11 +322,11 @@ export class DataGenerator extends Construct {
     });
 
     // AWS Step Functions State Machine to generate data
-    const generatorStepFunctions = new StateMachine(this, 'dataGenerator', {
+    const generatorStepFunctions = new StateMachine(this, 'DataGenerator', {
       definition: querySetupTask.next(athenaQueryTask),
       timeout: Duration.minutes(7),
       logs: {
-        destination: new LogGroup(this, 'generatorStepFunctionsLog', {
+        destination: new LogGroup(this, 'GeneratorStepFunctionsLog', {
           removalPolicy: RemovalPolicy.DESTROY,
           retention: RetentionDays.FIVE_MONTHS,
           encryptionKey: SingletonKey.getOrCreate(this, 'stackEncryptionKey'),
@@ -393,7 +393,7 @@ export class DataGenerator extends Construct {
     }));
 
     // Amazon EventBridge Rule to trigger the AWS Step Functions
-    new Rule(this, 'dataGeneratorTrigger', {
+    new Rule(this, 'DataGeneratorTrigger', {
       schedule: Schedule.cron({ minute: `0/${Math.ceil(this.frequency/60)}` }),
       targets: [new SfnStateMachine(generatorStepFunctions, {})],
     });

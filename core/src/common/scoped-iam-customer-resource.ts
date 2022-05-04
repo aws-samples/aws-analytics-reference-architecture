@@ -68,14 +68,14 @@ export class ScopedIamProvider extends Provider {
     }
 
     //Policy to allow lambda access to cloudwatch logs
-    const lambdaExecutionRolePolicy = new ManagedPolicy(scope, 'lambdaExecutionRolePolicy' + id, {
+    const lambdaExecutionRolePolicy = new ManagedPolicy(scope, 'LambdaExecutionRolePolicy' + id, {
       statements: lambdaPolicyStatement,
       description: 'Policy used to allow Provider lambda to access log and not use managed policy',
     });
 
     //Create an execution role for the lambda and attach to it a policy formed from user input
     const lambdaExcutionRole = new Role (scope,
-      'lambdaExcutionRoleCR' + id, {
+      'LambdaExecutionRoleCR' + id, {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
         description: 'Role used by lambda in CR',
         managedPolicies: [lambdaExecutionRolePolicy],

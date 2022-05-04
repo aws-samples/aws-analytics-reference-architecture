@@ -1311,7 +1311,7 @@ Return whether the given object is a Construct.
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | Dataset used for replay. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.frequency">frequency</a></code> | <code>number</code> | Frequency (in Seconds) of the replaying. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | Sink bucket where the batch replayer will put data in. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.s3LocationSink">s3LocationSink</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Sink bucket where the batch replayer will put data in. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | Maximum file size for each output file. |
 
 ---
@@ -1355,13 +1355,13 @@ for every given frequency and replay the data in that period
 
 ---
 
-##### `sinkBucket`<sup>Required</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket"></a>
+##### `s3LocationSink`<sup>Required</sup> <a name="s3LocationSink" id="aws-analytics-reference-architecture.BatchReplayer.property.s3LocationSink"></a>
 
 ```typescript
-public readonly sinkBucket: Bucket;
+public readonly s3LocationSink: Location;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* @aws-cdk/aws-s3.Location
 
 Sink bucket where the batch replayer will put data in.
 
@@ -1811,7 +1811,7 @@ This construct is based on 3 Amazon S3 buckets configured with AWS best practice
   * SSL communication enforcement
   * access logged to an S3 bucket
   * All public access blocked
-  
+
 By default the transitioning rules to Amazon S3 storage classes are configured as following:
   * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days
   * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived
@@ -2737,6 +2737,7 @@ Get an existing EmrEksCluster based on the cluster name property or create a new
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.assetBucket">assetBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig">criticalDefaultConfig</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster">eksCluster</a></code> | <code>@aws-cdk/aws-eks.Cluster</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig">notebookDefaultConfig</a></code> | <code>string</code> | *No description.* |
@@ -2754,6 +2755,16 @@ public readonly node: ConstructNode;
 - *Type:* @aws-cdk/core.ConstructNode
 
 The construct tree node associated with this construct.
+
+---
+
+##### `assetBucket`<sup>Required</sup> <a name="assetBucket" id="aws-analytics-reference-architecture.EmrEksCluster.property.assetBucket"></a>
+
+```typescript
+public readonly assetBucket: Bucket;
+```
+
+- *Type:* @aws-cdk/aws-s3.Bucket
 
 ---
 
@@ -4992,7 +5003,7 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.s3LocationSink">s3LocationSink</a></code> | <code>@aws-cdk/aws-s3.Location</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>number</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | *No description.* |
 
@@ -5008,13 +5019,13 @@ public readonly dataset: PreparedDataset;
 
 ---
 
-##### `sinkBucket`<sup>Required</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket"></a>
+##### `s3LocationSink`<sup>Required</sup> <a name="s3LocationSink" id="aws-analytics-reference-architecture.BatchReplayerProps.property.s3LocationSink"></a>
 
 ```typescript
-public readonly sinkBucket: Bucket;
+public readonly s3LocationSink: Location;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* @aws-cdk/aws-s3.Location
 
 ---
 
@@ -6188,8 +6199,9 @@ const notebookManagedEndpointOptions: NotebookManagedEndpointOptions = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.executionPolicy">executionPolicy</a></code> | <code>@aws-cdk/aws-iam.ManagedPolicy</code> | The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>string</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json). |
+| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>any</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json). |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code>string</code> | The version of Amazon EMR to deploy. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name. |
 
 ---
 
@@ -6208,10 +6220,10 @@ The name of the policy to be used for the execution Role to pass to ManagedEndpo
 ##### `configurationOverrides`<sup>Optional</sup> <a name="configurationOverrides" id="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides"></a>
 
 ```typescript
-public readonly configurationOverrides: string;
+public readonly configurationOverrides: any;
 ```
 
-- *Type:* string
+- *Type:* any
 
 The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json).
 
@@ -6226,6 +6238,18 @@ public readonly emrOnEksVersion: string;
 - *Type:* string
 
 The version of Amazon EMR to deploy.
+
+---
+
+##### `managedEndpointName`<sup>Optional</sup> <a name="managedEndpointName" id="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName"></a>
+
+```typescript
+public readonly managedEndpointName: string;
+```
+
+- *Type:* string
+
+The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name.
 
 ---
 

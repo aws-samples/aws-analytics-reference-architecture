@@ -10,7 +10,7 @@
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { AwsSolutionsChecks } from 'cdk-nag';
+import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { BatchReplayer } from '../../src';
 import { PreparedDataset } from '../../src';
 
@@ -28,6 +28,54 @@ const batchReplayer = new BatchReplayer(batchReplayerStack, "TestBatchReplayer",
 });
 
 Aspects.of(batchReplayer).add(new AwsSolutionsChecks());
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/LambdaExecutionRolePolicyFindFilePathsFn/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'The IAM policy needs access to all objects in the source dataset' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRolePolicyFindFilePathsFn/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'The Lambda execution role for log retention needs * access' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRoleFindFilePathsFn/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'The Lambda execution role for log retention needs * access' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/LambdaExecutionRolePolicyWriteInBatchFn/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'The IAM policy needs access to all objects in the sink location'}],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/LambdaExecutionRoleWriteInBatchFn/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'The IAM policy needs access to all objects in the sink location' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRolePolicyWriteInBatchFn/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'The Lambda execution role for log retention needs * access'}],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/BatchReplayStepFn/Resource',
+  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function doesn\'t need X-ray'}],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/BatchReplayStepFn/Role/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'The Step Function default policy is using *'}],
+);
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(batchReplayerStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));

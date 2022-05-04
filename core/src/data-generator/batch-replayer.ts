@@ -7,9 +7,9 @@ import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 // import path = require("path");
 import { LayerVersion, Runtime } from '@aws-cdk/aws-lambda';
-import { RetentionDays } from '@aws-cdk/aws-logs';
+import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
-import { JsonPath, Map, StateMachine, TaskInput } from '@aws-cdk/aws-stepfunctions';
+import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from '@aws-cdk/aws-stepfunctions';
 import { LambdaInvoke } from '@aws-cdk/aws-stepfunctions-tasks';
 import { Aws, Construct, Duration } from '@aws-cdk/core';
 import { PreBundledFunction } from '../common/pre-bundled-function';
@@ -93,7 +93,7 @@ export class BatchReplayer extends Construct {
      * Find all paths within the time range from the manifest file
      */
     const findFilePathsFn = new PreBundledFunction(this, 'FindFilePath', {
-      name: 'findFilePathsFn',
+      name: 'FindFilePathsFn',
       memorySize: 1024,
       codePath: 'data-generator/resources/lambdas/find-file-paths',
       runtime: Runtime.PYTHON_3_8,
@@ -104,7 +104,7 @@ export class BatchReplayer extends Construct {
       lambdaPolicyStatements: findFilePathsFnPolicy,
     });
     
-    const findFilePathsFnTask = new LambdaInvoke(this, 'findFilePathFnTask', {
+    const findFilePathsFnTask = new LambdaInvoke(this, 'FindFilePathFnTask', {
       lambdaFunction: findFilePathsFn,
       payload: TaskInput.fromObject({
         frequency: this.frequency,
@@ -135,7 +135,7 @@ export class BatchReplayer extends Construct {
      * Rewrite data
      */
     const writeInBatchFn = new PreBundledFunction(this, 'WriteInBatch', {
-      name: 'writeInBatchFn',
+      name: 'WriteInBatchFn',
       memorySize: 1024 * 5,
       codePath: 'data-generator/resources/lambdas/write-in-batch',
       runtime: Runtime.PYTHON_3_8,
@@ -149,7 +149,7 @@ export class BatchReplayer extends Construct {
     const sinkBucket = Bucket.fromBucketName(this, 'SinkBucket', props.s3LocationSink.bucketName);
     sinkBucket.grantPut(writeInBatchFn);
     
-    const writeInBatchFnTask = new LambdaInvoke(this, 'writeInBatchFnTask', {
+    const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
       lambdaFunction: writeInBatchFn,
       payload: TaskInput.fromObject({
         // Array from the last step to be mapped
@@ -173,7 +173,7 @@ export class BatchReplayer extends Construct {
     });
     
     // Use "Map" step to write each filePath parallelly
-    const writeInBatchMapTask = new Map(this, 'writeInBatchMapTask', {
+    const writeInBatchMapTask = new Map(this, 'WriteInBatchMapTask', {
       itemsPath: JsonPath.stringAt('$.filePaths'),
       parameters: {
         index: JsonPath.stringAt('$$.Map.Item.Index'),
@@ -181,14 +181,21 @@ export class BatchReplayer extends Construct {
       },
     });
     writeInBatchMapTask.iterator(writeInBatchFnTask);
-    
+
     // Overarching Step Function StateMachine
-    const batchReplayStepFn = new StateMachine(this, 'batchReplayStepFn', {
+    const batchReplayStepFn = new StateMachine(this, 'BatchReplayStepFn', {
       definition: findFilePathsFnTask.next(writeInBatchMapTask),
       timeout: Duration.minutes(20),
+      logs: {
+        destination: LogGroup.fromLogGroupArn(
+          this, 'BatchReplayerStepFnLogGroup',
+          `arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:log-group:/aws/batch-replayer/${id}`,
+        ),
+        level: LogLevel.ALL,
+      },
     });
     
-    new Rule(this, 'batchReplayStepFnTrigger', {
+    new Rule(this, 'BatchReplayStepFnTrigger', {
       schedule: Schedule.cron({ minute: `0/${Math.ceil(this.frequency/60)}` }),
       targets: [new SfnStateMachine(batchReplayStepFn, {})],
     });

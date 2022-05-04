@@ -11,7 +11,7 @@
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { AwsSolutionsChecks } from 'cdk-nag';
+import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { AraBucket } from '../../src/common/ara-bucket';
 
 const mockApp = new App();
@@ -25,6 +25,12 @@ new AraBucket(araBucketStack, {
 });
 
 Aspects.of(araBucketStack).add(new AwsSolutionsChecks());
+
+NagSuppressions.addResourceSuppressionsByPath(
+  araBucketStack,
+  'AraBucket/s3-access-logs/Resource',
+  [{ id: 'AwsSolutions-S1', reason: 'The S3 bucket used for access logs can\'t have access log enabled' }],
+);
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(araBucketStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));

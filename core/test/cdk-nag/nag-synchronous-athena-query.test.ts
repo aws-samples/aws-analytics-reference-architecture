@@ -18,7 +18,7 @@ const mockApp = new App();
 
 const synchronousAthenaStack = new Stack(mockApp, 'synchronous-athena-query');
 // Instantiate a CrawlerStartWait custom resource
-new SynchronousAthenaQuery(synchronousAthenaStack, 'SynchronousAthenaQueryTes', {
+new SynchronousAthenaQuery(synchronousAthenaStack, 'SynchronousAthenaQueryTest', {
   statement: 'SELECT * FROM test.test;',
   resultPath: {
     bucketName: 'log',
@@ -31,57 +31,57 @@ Aspects.of(synchronousAthenaStack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTes/lambdaExecutionRolePolicyara-synchronousAthenaCrStart/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRolePolicySynchronousAthenaCrStart/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTes/lambdaExecutionRolePolicysynchronousAthenaQueryCRP/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRolePolicySynchronousAthenaQueryCRP/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time ' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTes/logRetentionLambdaExecutionRolePolicyara-synchronousAthenaCrWait/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LogRetentionLambdaExecutionRolePolicySynchronousAthenaCrWait/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTes/lambdaExecutionRolePolicyara-synchronousAthenaCrWait/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRolePolicySynchronousAthenaCrWait/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTes/logRetentionLambdaExcutionRoleara-synchronousAthenaCrStart/DefaultPolicy/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LogRetentionLambdaExecutionRoleSynchronousAthenaCrStart/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTes/logRetentionLambdaExecutionRolePolicyara-synchronousAthenaCrStart/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LogRetentionLambdaExecutionRolePolicySynchronousAthenaCrStart/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTes/lambdaExcutionRoleCRsynchronousAthenaQueryCRP/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
-);
-
-/*NagSuppressions.addResourceSuppressionsByPath(
-  synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTes/synchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRoleCRSynchronousAthenaQueryCRP/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTes/synchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/SynchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
-);*/
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/SynchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+);
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(synchronousAthenaStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
