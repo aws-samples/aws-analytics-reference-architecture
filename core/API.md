@@ -2486,14 +2486,28 @@ it's assumed to be AWS::AccountId.
 
 ### EmrEksCluster <a name="EmrEksCluster" id="aws-analytics-reference-architecture.EmrEksCluster"></a>
 
-EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
+EmrEksCluster Construct packaging all the resources required to run Amazon EMR on Amazon EKS. Usage example:.
+
+```typescript
+
+const emrEks: EmrEksCluster = EmrEksCluster.getOrCreate(stack, {
+   eksAdminRoleArn: <ROLE-ARN>,
+   eksClusterName: <CLUSTER NAME>,
+});
+
+emrEks.addEmrVirtualCluster(stack, {
+   name: <Virtual Cluster Name>,
+   createNamespace: <TRUE OR FALSE>,
+   eksNamespace: <K8S namespace>,
+});
+```
 
 #### Methods <a name="Methods" id="Methods"></a>
 
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.toString">toString</a></code> | Returns a string representation of this construct. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup">addEmrEksNodegroup</a></code> | Add new Amazon EMR on EKS nodegroups to the cluster. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup">addEmrEksNodegroup</a></code> | Add new nodegroups to the cluster for Amazon EMR on EKS. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster">addEmrVirtualCluster</a></code> | Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint">addManagedEndpoint</a></code> | Creates a new Amazon EMR managed endpoint to be used with Amazon EMR Virtual Cluster . |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity">addNodegroupCapacity</a></code> | Add a new Amazon EKS Nodegroup to the cluster. |
@@ -2516,7 +2530,7 @@ Returns a string representation of this construct.
 public addEmrEksNodegroup(id: string, props: EmrEksNodegroupOptions): void
 ```
 
-Add new Amazon EMR on EKS nodegroups to the cluster.
+Add new nodegroups to the cluster for Amazon EMR on EKS.
 
 This method overrides Amazon EKS nodegroup options then create the nodegroup.
 If no subnet is provided, it creates one nodegroup per private subnet in the Amazon EKS Cluster.
@@ -2690,7 +2704,7 @@ The local path of the yaml podTemplate files to upload.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.getOrCreate">getOrCreate</a></code> | Get an existing EmrEksCluster based on the cluster name property or create a new one. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.getOrCreate">getOrCreate</a></code> | Get an existing EmrEksCluster based on the cluster name property or create a new one only one EKS cluster can exist per stack. |
 
 ---
 
@@ -2718,7 +2732,7 @@ import { EmrEksCluster } from 'aws-analytics-reference-architecture'
 EmrEksCluster.getOrCreate(scope: Construct, props: EmrEksClusterProps)
 ```
 
-Get an existing EmrEksCluster based on the cluster name property or create a new one.
+Get an existing EmrEksCluster based on the cluster name property or create a new one only one EKS cluster can exist per stack.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.getOrCreate.parameter.scope"></a>
 
@@ -3242,11 +3256,11 @@ const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {
    studioAuthMode: StudioAuthMode.SSO,
 });
 
-
+// If the S3 bucket is encrypted, add policy to the key for the role
 const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
    statements: [
      new PolicyStatement({
-       resources: ['*'],
+       resources: <BUCKET ARN(s)>,
        actions: ['s3:*'],
      }),
      new PolicyStatement({
@@ -5422,6 +5436,7 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodeGroups">defaultNodeGroups</a></code> | <code>boolean</code> | If set to true construct will create default EKS nodegroups. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcAttributes">eksVpcAttributes</a></code> | <code>@aws-cdk/aws-ec2.VpcAttributes</code> | Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups">emrEksNodegroups</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup">EmrEksNodegroup</a>[]</code> | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}. |
@@ -5438,6 +5453,24 @@ public readonly eksAdminRoleArn: string;
 - *Type:* string
 
 Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
+
+---
+
+##### `defaultNodeGroups`<sup>Optional</sup> <a name="defaultNodeGroups" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodeGroups"></a>
+
+```typescript
+public readonly defaultNodeGroups: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+If set to true construct will create default EKS nodegroups.
+
+There are three types of Nodegroup:
+  * Nodegroup for critical jobs which use on-demand instances.
+  * Nodegroup using spot instances for jobs that are not critical and can be preempted if a spot instance is reclaimed
+  * Nodegroup to provide capacity for creating and running managed endpoints spark drivers and executors.
 
 ---
 
@@ -5858,7 +5891,7 @@ const emrManagedEndpointOptions: EmrManagedEndpointOptions = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.executionRole">executionRole</a></code> | <code>@aws-cdk/aws-iam.IRole</code> | The Amazon IAM role used as the execution role. |
+| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.executionRole">executionRole</a></code> | <code>@aws-cdk/aws-iam.IRole</code> | The Amazon IAM role used as the execution role, this role must provide access to all the AWS resource a user will interact with These can be S3, DynamoDB, Glue Catalog. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the EMR managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.virtualClusterId">virtualClusterId</a></code> | <code>string</code> | The Id of the Amazon EMR virtual cluster containing the managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>string</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint. |
@@ -5874,7 +5907,7 @@ public readonly executionRole: IRole;
 
 - *Type:* @aws-cdk/aws-iam.IRole
 
-The Amazon IAM role used as the execution role.
+The Amazon IAM role used as the execution role, this role must provide access to all the AWS resource a user will interact with These can be S3, DynamoDB, Glue Catalog.
 
 ---
 

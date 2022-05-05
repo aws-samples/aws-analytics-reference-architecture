@@ -12,10 +12,12 @@ import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
 * The properties for the EmrEksNodegroupAsgTagsProvider Construct class.
+ * @private
 */
 export interface EmrEksNodegroupAsgTagProviderProps {
   /**
    * The name of the EKS cluster
+   * @private
    */
   readonly eksClusterName: string;
 }
@@ -42,6 +44,7 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
   constructor(scope: Construct, id: string, props: EmrEksNodegroupAsgTagProviderProps) {
     super(scope, id);
 
+    //The policy allowing asg Tag custom resource call autoscaling api
     const lambdaPolicy = [
       new PolicyStatement({
         resources: ['*'],

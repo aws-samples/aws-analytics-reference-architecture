@@ -126,11 +126,11 @@ export enum IdpRelayState {
  *   studioAuthMode: StudioAuthMode.SSO,
  * });
  *
- *
+ * // If the S3 bucket is encrypted, add policy to the key for the role
  * const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
  *   statements: [
  *     new PolicyStatement({
- *       resources: ['*'],
+ *       resources: <BUCKET ARN(s)>,
  *       actions: ['s3:*'],
  *     }),
  *     new PolicyStatement({
