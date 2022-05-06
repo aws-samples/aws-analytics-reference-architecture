@@ -97,7 +97,7 @@ export class DataLakeStorage extends TrackedConstruct {
   constructor(scope: Construct, id: string, props?: DataLakeStorageProps) {
 
     const trackedConstructProps : TrackedConstructProps = {
-      trackingCode: ContextOptions.EMR_EKS_TRACKING_ID,
+      trackingCode: ContextOptions.DATA_LAKE_ID,
     };
 
     super(scope, id, trackedConstructProps);

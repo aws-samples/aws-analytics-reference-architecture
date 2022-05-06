@@ -1,7 +1,7 @@
 import * as cdk from '@aws-cdk/core';
 
 export interface TrackedConstructProps {
-  trackingCode: string;
+  readonly trackingCode: string;
 }
 
 export class TrackedConstruct extends cdk.Construct {

@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-export { ExampleProps, Example } from './example';
 export { DataLakeStorageProps, DataLakeStorage } from './data-lake-storage';
 export { SynchronousCrawlerProps, SynchronousCrawler } from './synchronous-crawler';
 export { DatasetProps, Dataset, PreparedDatasetProps, PreparedDataset } from './datasets';
@@ -18,3 +17,4 @@ export { FlywayRunner, FlywayRunnerProps } from './db-schema-manager';
 export { NotebookPlatform, NotebookPlatformProps, StudioAuthMode, IdpRelayState, NotebookUserOptions, NotebookManagedEndpointOptions, SSOIdentityType } from './notebook-platform';
 export { LakeformationS3Location, LakeFormationS3LocationProps } from './lf-s3-location';
 export { S3CrossAccount, S3CrossAccountProps } from './s3-cross-account';
+export { TrackedConstruct, TrackedConstructProps } from './common/tracked-construct';
