@@ -38,7 +38,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   githubOptions: {
     pullRequestLint: false,
   },
-  workflowContainerImage: 'jsii/superchain:1-buster-slim',
+  //workflowContainerImage: 'jsii/superchain:1-buster-slim',
 
   cdkDependencies: [
     '@aws-cdk/assertions',
