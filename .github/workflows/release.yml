@@ -42,7 +42,7 @@ jobs:
           name: dist
           path: core/dist
     container:
-      image: jsii/superchain:node14
+      image: jsii/superchain:1-buster-slim-node14
   release_github:
     name: Publish to GitHub Releases
     needs: release
@@ -106,7 +106,7 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
     container:
-      image: jsii/superchain:node14
+      image: jsii/superchain:1-buster-slim-node14
   slack:
     name: Publish to slack channel
     needs: 
