@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
-* Tests S3CrossAccount
-*
-* @group best-practice/s3-cross-account
-*/
+ * Tests S3CrossAccount
+ *
+ * @group best-practice/s3-cross-account
+ */
 
 
 import { Annotations, Match } from '@aws-cdk/assertions';
@@ -64,10 +64,12 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(s3CrossAccountStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  console.log(warnings);
   expect(warnings).toHaveLength(0);
 });
 
 test('No unsuppressed Errors', () => {
   const errors = Annotations.fromStack(s3CrossAccountStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  console.log(errors);
   expect(errors).toHaveLength(0);
 });

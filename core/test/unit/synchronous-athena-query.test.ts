@@ -4,7 +4,7 @@
 /**
  * Tests synchroneous Athena query
  *
- * @group unit/athena/synchroneous-query
+ * @group unit/athena-synchronous-query
  */
 
 import { Stack } from '@aws-cdk/core';

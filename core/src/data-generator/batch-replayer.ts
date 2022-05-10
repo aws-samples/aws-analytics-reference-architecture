@@ -5,16 +5,18 @@
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
-// import path = require("path");
 import { LayerVersion, Runtime } from '@aws-cdk/aws-lambda';
 import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from '@aws-cdk/aws-stepfunctions';
 import { LambdaInvoke } from '@aws-cdk/aws-stepfunctions-tasks';
-import { Aws, Construct, Duration } from '@aws-cdk/core';
+import { Aws, Construct, Duration, RemovalPolicy } from '@aws-cdk/core';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { PreparedDataset } from '../datasets/prepared-dataset';
 
+/**
+ * The properties for the BatchReplayer construct
+ */
 export interface BatchReplayerProps {
   readonly dataset: PreparedDataset;
   readonly frequency?: number;
@@ -98,7 +100,7 @@ export class BatchReplayer extends Construct {
       codePath: 'data-generator/resources/lambdas/find-file-paths',
       runtime: Runtime.PYTHON_3_8,
       handler: 'find-file-paths.handler',
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),
       lambdaLayers: [dataWranglerLayer],
       lambdaPolicyStatements: findFilePathsFnPolicy,
@@ -140,13 +142,14 @@ export class BatchReplayer extends Construct {
       codePath: 'data-generator/resources/lambdas/write-in-batch',
       runtime: Runtime.PYTHON_3_8,
       handler: 'write-in-batch.handler',
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),
       lambdaLayers: [dataWranglerLayer],
       lambdaPolicyStatements: writeInBatchFnPolicy,
     });
 
     const sinkBucket = Bucket.fromBucketName(this, 'SinkBucket', props.s3LocationSink.bucketName);
+    // grant permissions to write to the bucket and to use the KMS key
     sinkBucket.grantPut(writeInBatchFn);
     
     const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
@@ -187,10 +190,11 @@ export class BatchReplayer extends Construct {
       definition: findFilePathsFnTask.next(writeInBatchMapTask),
       timeout: Duration.minutes(20),
       logs: {
-        destination: LogGroup.fromLogGroupArn(
-          this, 'BatchReplayerStepFnLogGroup',
-          `arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:log-group:/aws/batch-replayer/${id}`,
-        ),
+        destination: new LogGroup(this, 'LogGroup', {
+          retention: RetentionDays.ONE_WEEK,
+          logGroupName: `/aws/batch-replayer/${this.dataset.tableName}`,
+          removalPolicy: RemovalPolicy.DESTROY,
+        }),
         level: LogLevel.ALL,
       },
     });

@@ -28,7 +28,7 @@ import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, BucketEncryption, Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
 import { Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags } from '@aws-cdk/core';
-import { AraBucket } from '../common/ara-bucket';
+import { AraBucket } from '../ara-bucket';
 import { SingletonKey } from '../singleton-kms-key';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { validateSchema } from './config-override-schema-validation';
@@ -43,8 +43,6 @@ import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-
-//import {AwsCustomResource, AwsCustomResourcePolicy} from "@aws-cdk/custom-resources";
 
 
 /**
@@ -68,7 +66,7 @@ export interface EmrEksClusterProps {
   readonly emrEksNodegroups?: EmrEksNodegroup[];
   /**
    * Kubernetes version for Amazon EKS cluster that will be created
-   * @default -  v1.20 version is used
+   * @default -  v1.21 version is used
    */
   readonly kubernetesVersion?: KubernetesVersion;
   /**
@@ -93,7 +91,18 @@ export interface EmrEksClusterProps {
 }
 
 /**
- * EmrEksCluster Construct packaging all the resources required to run Amazon EMR on Amazon EKS.
+ * EmrEksCluster Construct packaging all the resources required to run Amazon EMR on Amazon EKS. 
+ * It deploys:
+ * * An EKS cluster (VPC configuration can be customized) 
+ * * A tooling nodegroup to run tools including the Kubedashboard and the Cluster Autoscaler
+ * * Optionally multiple nodegroups (one per AZ) for critical/shared/notebook EMR workloads
+ * * Additional nodegroups can be configured
+ * 
+ * The construct will upload on S3 the Pod templates required to run EMR jobs on the default nodegroups. 
+ * It will also parse and store the configuration of EMR on EKS jobs for each default nodegroup in object parameters
+ * 
+ * Methods are available to add EMR Virtual Clusters to the EKS cluster and to create execution roles for the virtual clusters.
+ * 
  * Usage example:
  *
  * ```typescript
@@ -103,11 +112,23 @@ export interface EmrEksClusterProps {
  *   eksClusterName: <CLUSTER NAME>,
  * });
  *
- * emrEks.addEmrVirtualCluster(stack, {
+ * const virtualCluster = emrEks.addEmrVirtualCluster(stack, {
  *   name: <Virtual Cluster Name>,
  *   createNamespace: <TRUE OR FALSE>,
  *   eksNamespace: <K8S namespace>,
  * });
+ * 
+ * const role = emrEks.createExecutionRole(stack, 'ExecRole',{
+ *   policy: myPolicy,
+ * })
+ * 
+ * // EMR on EKS virtual cluster ID
+ * cdk.CfnOutput(self, 'VirtualClusterId',value = virtualCluster.attr_id)
+ * // Job config for each nodegroup
+ * cdk.CfnOutput(self, "CriticalConfig", value = emrEks.criticalDefaultConfig)
+ * cdk.CfnOutput(self, "SharedConfig", value = emrEks.sharedDefaultConfig)
+ * // Execution role arn
+ * cdk.CfnOutput(self,'ExecRoleArn', value = role.roleArn)
  * ```
  *
  */

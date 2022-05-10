@@ -9,7 +9,8 @@ import { Aws } from '@aws-cdk/core';
 import { PreBundledLayer } from './pre-bundled-layer';
 
 /**
- * Extends existing FunctionProps as optional using `Partial`
+ * The properties for the PreBundledFunction construct.
+ * It extends existing FunctionProps as optional using `Partial`
  * (as we don't require `Code` prop)
  */
 export interface PreBundledFunctionProps extends Partial<FunctionProps>{
@@ -30,6 +31,23 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
  *
  * When this construct is being run in JSII, this file will be in `node_modules` folder
  * (as it's installed as a 3rd party library.) So we need to change reference based on __dirname.
+ * 
+ *  * Usage example:
+ * ```typescript
+ * import { PreBundledFunction } from 'aws-analytics-reference-architecture';
+ * 
+ * new PreBundledFunction(this, 'PreBundledFunction', {
+ *   codePath: 'construct-dir/resources/lambdas/lambda_dir',
+ *   // you can use any property available in Function CDK Construct including
+ *   name: 'myFunctionName',
+ *   memorySize: 1024,
+ *   runtime: Runtime.PYTHON_3_8,
+ *   handler: 'lmabda-file-name.handler',
+ *   logRetention: RetentionDays.ONE_WEEK,
+ *   timeout: Duration.minutes(15),
+ *   lambdaPolicyStatements: findFilePathsFnPolicy,
+ * });
+ * ```
  */
 export class PreBundledFunction extends Function {
   constructor(scope: cdk.Construct, id: string, props: PreBundledFunctionProps) {

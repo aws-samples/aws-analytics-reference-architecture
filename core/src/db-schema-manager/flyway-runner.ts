@@ -14,7 +14,7 @@ import { PreBundledFunction } from '../common/pre-bundled-function';
 import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
- * Properties needed to run flyway migration scripts.
+ * The properties of the FlywayRunner construct, needed to run flyway migration scripts.
  */
 export interface FlywayRunnerProps {
   /**
@@ -41,7 +41,7 @@ export interface FlywayRunnerProps {
 
   /**
    * Period to keep the logs around.
-   * @default logs.RetentionDays.ONE_DAY (1 day)
+   * @default logs.RetentionDays.ONE_WEEK (1 day)
    */
   readonly logRetention?: logs.RetentionDays;
 
@@ -139,7 +139,7 @@ export class FlywayRunner extends cdk.Construct {
       lambdaPolicyStatements: flywayLambdaPolicy,
       handler: 'com.geekoosh.flyway.FlywayCustomResourceHandler::handleRequest',
       runtime: lambda.Runtime.JAVA_11,
-      logRetention: props.logRetention ?? logs.RetentionDays.ONE_DAY,
+      logRetention: props.logRetention ?? logs.RetentionDays.ONE_WEEK,
       memorySize: 2048,
       timeout: cdk.Duration.seconds(900),
       vpc: props.vpc,
@@ -160,7 +160,7 @@ export class FlywayRunner extends cdk.Construct {
     const flywayCustomResourceProvider = new ScopedIamProvider(this, 'FlywayCustomResourceProvider', {
       onEventHandler: flywayLambda,
       onEventFnName: 'flywayLambda',
-      logRetention: props.logRetention ?? logs.RetentionDays.ONE_DAY,
+      logRetention: props.logRetention ?? logs.RetentionDays.ONE_WEEK,
       securityGroups: props.cluster.connections.securityGroups,
       vpc: props.vpc,
     });

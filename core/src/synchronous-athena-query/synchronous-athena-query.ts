@@ -10,7 +10,7 @@ import { PreBundledFunction } from '../common/pre-bundled-function';
 import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
- * The properties for SynchronousAthenaQuery Construct.
+ * The properties for the SynchronousAthenaQuery construct.
  */
 export interface SynchronousAthenaQueryProps {
   /**
@@ -34,7 +34,7 @@ export interface SynchronousAthenaQueryProps {
 }
 
 /**
- * SynchronousAthenaQuery Construct to execute an Amazon Athena query synchronously
+ * Execute an Amazon Athena query synchronously during CDK deployment
  */
 
 export class SynchronousAthenaQuery extends Construct {
@@ -119,7 +119,7 @@ export class SynchronousAthenaQuery extends Construct {
       name: 'SynchronousAthenaCrStart',
       lambdaPolicyStatements: athenaQueryStartFnPolicy,
       handler: 'lambda.on_event',
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(20),
     });
 
@@ -132,7 +132,7 @@ export class SynchronousAthenaQuery extends Construct {
       name: 'SynchronousAthenaCrWait',
       lambdaPolicyStatements: athenaQueryWaitFnPolicy,
       handler: 'lambda.is_complete',
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(20),
     });
 
@@ -161,7 +161,7 @@ export class SynchronousAthenaQuery extends Construct {
       isCompleteFnName: 'SynchronousAthenaCrWait',
       queryInterval: Duration.seconds(10),
       totalTimeout: Duration.minutes(props.timeout || 1),
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
     });
 
     const resultPathBucket = Bucket.fromBucketName(this, 'ResultPathBucket', props.resultPath.bucketName);

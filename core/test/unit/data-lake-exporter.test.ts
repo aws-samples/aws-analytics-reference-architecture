@@ -53,8 +53,8 @@ test('dataLakeExporter', () => {
 
   // Test if stack has log group
   expect(dataLakeExporterStack).toHaveResourceLike('AWS::Logs::LogGroup', {
-    LogGroupName: '/data-lake-exporter/',
-    RetentionInDays: RetentionDays.ONE_DAY,
+    LogGroupName: '/aws/data-lake-exporter/',
+    RetentionInDays: RetentionDays.ONE_WEEK,
   });
 
   //Test stack for firehose stream

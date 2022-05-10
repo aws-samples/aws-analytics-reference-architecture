@@ -2,48 +2,41 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
-* Tests DataLakeStorage
-*
-* @group integ/lake-formation/s3-location
-*/
+ * Tests SyncrhonousCrawler
+ *
+ * @group integ/synchronous-crawler
+ */
 
-import { Key } from '@aws-cdk/aws-kms';
-import { Bucket } from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
-import { LakeformationS3Location } from '../../src/lf-s3-location';
+import { CfnCrawler } from '@aws-cdk/aws-glue';
+
+import { SynchronousCrawler } from '../../src/synchronous-crawler';
 
 jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'LakeformationS3LocationE2eTest');
+const stack = new cdk.Stack(integTestApp, 'SynchronousCrawlerE2eTest');
 
-const myKey = new Key(stack, 'MyKey', {
-  removalPolicy: cdk.RemovalPolicy.DESTROY,
-});
-const myBucket = new Bucket(stack, 'MyBucket', {
-  encryptionKey: myKey,
-  removalPolicy: cdk.RemovalPolicy.DESTROY,
-  autoDeleteObjects: true,
-});
-
-const s3Location = new LakeformationS3Location(stack, 'MyS3CrossAccount', {
-  s3Location: {
-    bucketName: myBucket.bucketName,
-    objectKey: 'test',
-  }
+const crawler = new CfnCrawler(stack, 'Crawler', {
+  role: 'role',
+  targets: {
+    catalogTargets: [{
+      databaseName: 'sampledb',
+      tables: ['elb_logs'],
+    }],
+  },
+  name: 'test-crawler',
 });
 
-new cdk.CfnOutput(stack, 'BucketPolicy', {
-  value: s3Location.dataAccessRole.assumeRolePolicy? 
-    s3Location.dataAccessRole.assumeRolePolicy.statementCount.toString() : '0',
-  exportName: 'role',
+const synchronousCrawler = new SynchronousCrawler(stack, 'SynchronousCrawler', {
+  crawlerName: crawler.name || '',
 });
 
-new cdk.CfnOutput(stack, 'KeyPolicy', {
-  value: myKey.keyId,
-  exportName: 's3LocationKeyId',
+new cdk.CfnOutput(stack, 'SynchronousCrawlerResource', {
+  value: synchronousCrawler.toString(),
+  exportName: 'SynchronousCrawlerResource',
 });
 
 describe('deploy succeed', () => {
@@ -57,12 +50,13 @@ describe('deploy succeed', () => {
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
     
     // WHEN
-    const deployResult = await cloudFormation.deployStack({
+    /*const deployResult =*/ await cloudFormation.deployStack({
       stack: stackArtifact,
     });
     
     // THEN
-    expect(deployResult.outputs.BucketPolicy).toContain('1');
+    expect(true);
+
   }, 9000000);
 });
 
@@ -72,7 +66,6 @@ afterAll(async () => {
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
     profile: process.env.AWS_PROFILE,
   });
-  
   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
   
   await cloudFormation.destroyStack({

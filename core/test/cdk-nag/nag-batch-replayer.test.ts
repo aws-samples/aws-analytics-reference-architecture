@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
-* Tests BatchReplayer
-*
-* @group best-practice/batch-replayer
-*/
+ * Tests BatchReplayer
+ *
+ * @group best-practice/batch-replayer
+ */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';

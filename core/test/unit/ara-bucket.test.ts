@@ -4,11 +4,11 @@
 /**
  * Tests AraBucket construct
  *
- * @group unit/common/arabucket
+ * @group unit/ara-bucket
  */
 
 import {Stack} from '@aws-cdk/core';
-import {AraBucket} from '../../../src/common/ara-bucket';
+import {AraBucket} from '../../src/ara-bucket';
 import '@aws-cdk/assert/jest';
 import {Match, Template} from '@aws-cdk/assertions';
 import {BucketEncryption} from "@aws-cdk/aws-s3";
@@ -29,7 +29,7 @@ describe ('AraBucket', () => {
 
   const template = Template.fromStack(AraBucketStack);
 
-  test('AraBucket is a singleton for a given name', () => {
+  test('AraBucket is a singleton for a given name but an S3 access log bucket is created', () => {
     template.resourceCountIs('AWS::S3::Bucket', 2);
   });
 

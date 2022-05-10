@@ -4,7 +4,7 @@
 /**
  * Test BatchReplayer
  *
- * @group unit/other/data-generator/batch replayer
+ * @group unit/data-generator/batch-replayer
  */
 
 import { Stack } from "@aws-cdk/core";

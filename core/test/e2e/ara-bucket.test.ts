@@ -4,21 +4,21 @@
 /**
 * Tests AraBucket
 *
-* @group integ/common/ara-bucket
+* @group integ/ara-bucket
 */
 
 import * as cdk from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 
-import { AraBucket } from '../../src/common/ara-bucket';
+import { AraBucket } from '../../src/ara-bucket';
 
 jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'AraBucketE2eTest');
 
-const araBucket = new AraBucket(stack, { bucketName: 'my-ara-bucket'});
+const araBucket = AraBucket.getOrCreate(stack, { bucketName: 'my-ara-bucket'});
 
 new cdk.CfnOutput(stack, 'BucketName', {
   value: araBucket.bucketName,

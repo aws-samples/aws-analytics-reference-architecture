@@ -3,6 +3,10 @@
 
 import { Location } from "@aws-cdk/aws-s3";
 
+/**
+ * The properties for the PreparedDataset class used by the BatchReplayer construct
+ */
+
 export interface PreparedDatasetProps {
   /**
    * The minimum datetime value in the dataset used to calculate time offset
@@ -36,12 +40,15 @@ export interface PreparedDatasetProps {
 
 /**
  * PreparedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+ * PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets
  * 
- * PreparedDataset has following properties:
+ * A PreparedDataset has following properties:
  * 
  * 1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range. 
  * There is no constraint on how long the timestamp range can be. But each file must not be larger than 100MB.
+ * Creating new PreparedDataset requires to find the right balance between number of partitions and the amount of data read by each BatchReplayer (micro-)batch 
  * The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions.
+ * 
  * Here is an example:
  * |- time_range_start=16000000000
  *    |- file1.csv 100MB

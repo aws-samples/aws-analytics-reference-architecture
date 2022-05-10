@@ -4,7 +4,7 @@
 /**
  * Tests data lake storage
  *
- * @group unit/datalake/datalakestorage
+ * @group unit/datalake/storage
  */
 
 import { Stack } from '@aws-cdk/core';

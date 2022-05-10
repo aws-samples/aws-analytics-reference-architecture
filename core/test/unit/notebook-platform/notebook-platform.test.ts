@@ -4,7 +4,7 @@
 /**
  * Tests Data Platform notebooks
  *
- * @group unit/other/notebooks-data-platform
+ * @group unit/notebook-data-platform
  */
 
 //TODO REDO this unit test to support the new way of deploying notebooks with nested stacks

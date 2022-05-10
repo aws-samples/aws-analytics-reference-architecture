@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests data-generator
+ * Tests DataGenerator
  *
- * @group unit/other/data-generator
+ * @group unit/data-generator/data-generator
  */
 
 import { Stack } from '@aws-cdk/core';

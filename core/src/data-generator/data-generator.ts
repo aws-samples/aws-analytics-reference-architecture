@@ -13,7 +13,7 @@ import { Construct, Arn, Aws, Stack, Duration, ArnFormat, RemovalPolicy } from '
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Dataset } from '../datasets/dataset';
-import { AraBucket } from '../common/ara-bucket';
+import { AraBucket } from '../ara-bucket';
 import { SingletonGlueDatabase } from '../singleton-glue-database';
 import { SingletonKey } from '../singleton-kms-key';
 import { SynchronousAthenaQuery } from '../synchronous-athena-query';
@@ -21,6 +21,9 @@ import { SynchronousAthenaQuery } from '../synchronous-athena-query';
 
 /**
  * The properties for DataGenerator Construct.
+ * 
+ * This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
+ * @deprecated
  */
 
 export interface DataGeneratorProps {
@@ -45,6 +48,9 @@ export interface DataGeneratorProps {
  * DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime
  * Target can be an Amazon S3 bucket or an Amazon Kinesis Data Stream.
  * DataGenerator can use pre-defined or custom datasets available in the [Dataset]{@link Dataset} Class
+ * 
+ * This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
+ * @deprecated
  */
 
 export class DataGenerator extends Construct {
@@ -227,7 +233,7 @@ export class DataGenerator extends Construct {
           ],
         }),
       ]),
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       role: offsetCreateCRRole,
     });
 
@@ -273,7 +279,7 @@ export class DataGenerator extends Construct {
           ],
         }),
       ]),
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       role: offsetGetCRRole,
     });
     offsetGet.node.addDependency(offsetCreate);
@@ -284,7 +290,7 @@ export class DataGenerator extends Construct {
       codePath: 'data-generator/resources/lambdas/setup',
       name: 'DataGeneratorFn',
       handler: 'lambda.handler',
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(30),
     });
 

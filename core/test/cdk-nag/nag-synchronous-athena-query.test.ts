@@ -85,10 +85,12 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(synchronousAthenaStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  console.log(warnings);
   expect(warnings).toHaveLength(0);
 });
 
 test('No unsuppressed Errors', () => {
   const errors = Annotations.fromStack(synchronousAthenaStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  console.log(errors);
   expect(errors).toHaveLength(0);
 });

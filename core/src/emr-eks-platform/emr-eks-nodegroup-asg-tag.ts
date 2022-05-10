@@ -73,7 +73,7 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
       handler: 'lambda.on_event',
       name: 'EmrEksNodegroupAsgTagOnEventFn',
       lambdaPolicyStatements: lambdaPolicy,
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(45),
       environment: {
         EKS_CLUSTER_NAME: props.eksClusterName,

@@ -5,7 +5,6 @@ import { CfnDeliveryStream } from '@aws-cdk/aws-kinesisfirehose';
 import { LogGroup, RetentionDays, LogStream } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { Construct, Aws, RemovalPolicy, Stack } from '@aws-cdk/core';
-import { SingletonKey } from './singleton-kms-key';
 
 
 /**
@@ -70,10 +69,9 @@ export class DataLakeExporter extends Construct {
 
     // Create log group for storing Amazon Kinesis Firehose logs.
     const logGroup = new LogGroup(this, 'dataLakeExporterLogGroup', {
-      logGroupName: '/data-lake-exporter/',
+      logGroupName: '/aws/data-lake-exporter/',
       removalPolicy: RemovalPolicy.DESTROY,
-      retention: RetentionDays.ONE_DAY,
-      encryptionKey: SingletonKey.getOrCreate(this, 'stackEncryptionKey'),
+      retention: RetentionDays.ONE_WEEK,
     });
 
     // Create the Kinesis Firehose log stream.

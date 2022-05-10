@@ -17,7 +17,7 @@ import {
   ObjectOwnership,
 } from '@aws-cdk/aws-s3';
 import { Aws, Construct, Duration, RemovalPolicy, Stack } from '@aws-cdk/core';
-import { SingletonKey } from '../singleton-kms-key';
+import { SingletonKey } from './singleton-kms-key';
 
 export interface AraBucketProps{
   /**
@@ -197,24 +197,26 @@ export class AraBucket extends Bucket {
   * Constructs a new instance of the AraBucket class
   * @param {Construct} scope the Scope of the CDK Construct
   * @param {AraBucketProps} props the AraBucketProps [properties]{@link AraBucketProps}
-  * @access public
+  * @access private
   */
 
-  constructor(scope: Construct, props: AraBucketProps) {
+  private constructor(scope: Construct, props: AraBucketProps) {
 
     var serverAccessLogsBucket = undefined;
     if ( props.serverAccessLogsPrefix ) {
       serverAccessLogsBucket = props.serverAccessLogsBucket || AraBucket.getOrCreate(scope, { bucketName: 's3-access-logs', encryption: BucketEncryption.S3_MANAGED });
     }
 
-    //If using KMS encryption then use a customer managed key, if not set the key to undefined
+    // If using KMS encryption then use a customer managed key, if not set the key to undefined
     let bucketEncryptionKey: IKey | undefined = BucketEncryption.KMS == props.encryption ? props.encryptionKey || SingletonKey.getOrCreate(scope, 'DefaultKmsKey') : undefined;
 
+    // If the bucket is for s3 access logs, we remove the bucketname to ensure uniqueness across stacks
+    let bucketName = (props.bucketName == 's3-access-logs') ? undefined : `${props.bucketName}-${Aws.ACCOUNT_ID}-${Aws.REGION}`;
     // set the right default parameters in the S3 bucket props
     const bucketProps = {
       ...props,
       ...{
-        bucketName: `${props.bucketName}-${Aws.ACCOUNT_ID}-${Aws.REGION}`,
+        bucketName: bucketName,
         encryption: props.encryption ? props.encryption : BucketEncryption.KMS_MANAGED,
         encryptionKey: bucketEncryptionKey,
         bucketKeyEnabled: BucketEncryption.KMS == props.encryption ? true : false,

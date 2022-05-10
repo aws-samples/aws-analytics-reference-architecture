@@ -11,7 +11,7 @@ import { Stack } from '@aws-cdk/core';
 import { EmrManagedEndpointProvider } from '../../../src/emr-eks-platform/emr-managed-endpoint';
 import '@aws-cdk/assert/jest';
 import { Template, Match} from '@aws-cdk/assertions';
-import { AraBucket } from '../../../src/common/ara-bucket';
+import { AraBucket } from '../../../src/ara-bucket';
 
 
 describe ('ManagedEndpointProvider', () => {

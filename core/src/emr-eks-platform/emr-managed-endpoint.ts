@@ -52,7 +52,7 @@ export interface EmrManagedEndpointProviderProps {
 }
 
 /**
- * ManagedEndpointProvider Construct implementing a custom resource provider for managing Amazon EMR on Amazon EKS Managed Endpoints.
+ * A custom resource provider for CRUD operations on Amazon EMR on EKS Managed Endpoints.
  * @private
  */
 export class EmrManagedEndpointProvider extends Construct {
@@ -114,7 +114,7 @@ export class EmrManagedEndpointProvider extends Construct {
       handler: 'lambda.on_event',
       name: 'EmrManagedEndpointProviderOnEvent',
       lambdaPolicyStatements: lambdaPolicy,
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(120),
     });
 
@@ -125,7 +125,7 @@ export class EmrManagedEndpointProvider extends Construct {
       name: 'EmrManagedEndpointProviderIsComplete',
       lambdaPolicyStatements: lambdaPolicy,
       runtime: Runtime.PYTHON_3_8,
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(120),
     });
 

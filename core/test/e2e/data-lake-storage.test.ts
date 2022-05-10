@@ -4,7 +4,7 @@
 /**
  * Tests DataLakeStorage
  *
- * @group integ/data-lake/data-lake-storage
+ * @group integ/data-lake/storage
  */
 
 import * as cdk from '@aws-cdk/core';

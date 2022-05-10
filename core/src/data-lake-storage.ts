@@ -3,7 +3,7 @@
 
 import { Bucket, StorageClass } from '@aws-cdk/aws-s3';
 import { Construct, Duration } from '@aws-cdk/core';
-import { AraBucket } from './common/ara-bucket';
+import { AraBucket } from './ara-bucket';
 
 /**
  * Properties for the DataLakeStorage Construct
@@ -168,7 +168,7 @@ export class DataLakeStorage extends Construct {
     ];
 
     // Create the raw data bucket with the raw transitions
-    this.rawBucket = new AraBucket(this, {
+    this.rawBucket = AraBucket.getOrCreate(this, {
       bucketName: 'raw',
       lifecycleRules: [
         {
@@ -196,7 +196,7 @@ export class DataLakeStorage extends Construct {
     }
 
     // Create the clean data bucket
-    this.cleanBucket = new AraBucket(this, {
+    this.cleanBucket = AraBucket.getOrCreate(this, {
       bucketName: 'clean',
       lifecycleRules: [
         {
@@ -224,7 +224,7 @@ export class DataLakeStorage extends Construct {
     }
 
     // Create the transform data bucket
-    this.transformBucket = new AraBucket(this, {
+    this.transformBucket = AraBucket.getOrCreate(this, {
       bucketName: 'transform',
       lifecycleRules: [
         {

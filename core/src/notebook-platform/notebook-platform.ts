@@ -8,7 +8,7 @@ import { Effect, IManagedPolicy, IRole, ManagedPolicy, PolicyStatement, Role, Se
 import { Key } from '@aws-cdk/aws-kms';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
-import { AraBucket } from '../common/ara-bucket';
+import { AraBucket } from '../ara-bucket';
 import { EmrEksCluster } from '../emr-eks-platform';
 import { Utils } from '../utils';
 import {

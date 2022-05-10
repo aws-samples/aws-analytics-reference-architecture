@@ -66,7 +66,7 @@ export class SynchronousCrawler extends Construct {
       name: 'SynchronousCrawlerStartFn',
       lambdaPolicyStatements: lambdaCRPolicy,
       handler: 'lambda.on_event',
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(20),
     });
 
@@ -77,7 +77,7 @@ export class SynchronousCrawler extends Construct {
       name: 'SynchronousCrawlerWaitFn',
       lambdaPolicyStatements: lambdaCRPolicy,
       handler: 'lambda.is_complete',
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(20),
     });
 
@@ -89,7 +89,7 @@ export class SynchronousCrawler extends Construct {
       isCompleteHandler: crawlerWaitFn,
       queryInterval: Duration.seconds(60),
       totalTimeout: Duration.seconds(props.timeout || 300),
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
     });
 
     // Create an AWS CDK Custom Resource for starting the source crawler and waiting for completion

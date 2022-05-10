@@ -4,7 +4,7 @@
 import { CfnWorkGroup } from '@aws-cdk/aws-athena';
 import {Bucket} from '@aws-cdk/aws-s3';
 import {Construct} from '@aws-cdk/core';
-import { AraBucket } from './common/ara-bucket';
+import { AraBucket } from './ara-bucket';
 
 /**
  * AthenaDemoSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box demo
@@ -13,6 +13,7 @@ import { AraBucket } from './common/ara-bucket';
 export class AthenaDemoSetup extends Construct {
 
   public readonly resultBucket: Bucket;
+  public readonly athenaWorkgroup: CfnWorkGroup;
 
   /**
    * Constructs a new instance of the AthenaDefaultSetup class
@@ -30,7 +31,7 @@ export class AthenaDemoSetup extends Construct {
       serverAccessLogsPrefix: 'athena-logs-bucket',
     });
 
-    new CfnWorkGroup(this, 'athenaDemoWorkgroup', {
+    this.athenaWorkgroup = new CfnWorkGroup(this, 'athenaDemoWorkgroup', {
       name: 'demo',
       recursiveDeleteOption: true,
       workGroupConfiguration: {

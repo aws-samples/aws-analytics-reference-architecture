@@ -25,10 +25,12 @@ Aspects.of(dataLakeCatalogStack).add(new AwsSolutionsChecks({ verbose: true }));
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(dataLakeCatalogStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  console.log(warnings);
   expect(warnings).toHaveLength(0);
 });
 
 test('No unsuppressed Errors', () => {
   const errors = Annotations.fromStack(dataLakeCatalogStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  console.log(errors);
   expect(errors).toHaveLength(0);
 });
