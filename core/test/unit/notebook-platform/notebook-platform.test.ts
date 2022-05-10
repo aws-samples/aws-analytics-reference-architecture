@@ -26,10 +26,10 @@ const notebookPlatformSSO: NotebookPlatform = new NotebookPlatform(stack, 'platf
   studioAuthMode: StudioAuthMode.SSO,
 });
 
-test('The stack should have nested stacks for the notebooks infrastructure', () => {
+test('The stack should have nested stacks for EKS but not for NotebookPlatform', () => {
 
   assertCDK.expect(stack).to(
-    assertCDK.countResources('AWS::CloudFormation::Stack', 3),
+    assertCDK.countResources('AWS::CloudFormation::Stack', 2),
   );
 });
 

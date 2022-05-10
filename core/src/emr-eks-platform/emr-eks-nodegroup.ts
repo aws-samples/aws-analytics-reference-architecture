@@ -30,8 +30,8 @@ export interface EmrEksNodegroupOptions extends NodegroupOptions {
  * @summary EmrEksNodegroup containing the default Nodegroups
  */
 export class EmrEksNodegroup {
-  /*
-   ** Default nodegroup configuration for Kubernetes applications required by EMR on EKS (e.g cert manager and cluster autoscaler)
+  /**
+   * Default nodegroup configuration for Kubernetes applications required by EMR on EKS (e.g cert manager and cluster autoscaler)
    */
   public static readonly TOOLING_ALL: EmrEksNodegroupOptions = {
     nodegroupName: 'tooling',
@@ -41,8 +41,8 @@ export class EmrEksNodegroup {
     labels: { role: 'tooling' },
   };
 
-  /*
-   ** Default nodegroup configuration for EMR on EKS critical workloads
+  /**
+   * Default nodegroup configuration for EMR on EKS critical workloads
    */
   public static readonly CRITICAL_ALL: EmrEksNodegroupOptions = {
     nodegroupName: 'critical',
@@ -64,8 +64,8 @@ export class EmrEksNodegroup {
     ],
   };
 
-  /*
-   ** Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads
+  /**
+   * Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads
    */
   public static readonly SHARED_DRIVER: EmrEksNodegroupOptions = {
     nodegroupName: 'shared-driver',
