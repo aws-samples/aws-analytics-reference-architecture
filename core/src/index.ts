@@ -18,3 +18,4 @@ export { NotebookPlatform, NotebookPlatformProps, StudioAuthMode, IdpRelayState,
 export { LakeformationS3Location, LakeFormationS3LocationProps } from './lf-s3-location';
 export { S3CrossAccount, S3CrossAccountProps } from './s3-cross-account';
 export { TrackedConstruct, TrackedConstructProps } from './common/tracked-construct';
+export { Example } from './example';
