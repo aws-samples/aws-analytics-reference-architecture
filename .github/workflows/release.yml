@@ -86,7 +86,7 @@ jobs:
           NPM_REGISTRY: registry.npmjs.org
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     container:
-      image: jsii/superchain:node14
+      image: jsii/superchain:1-buster-slim-node14
   release_pypi:
     name: Publish to PyPI
     needs: release
