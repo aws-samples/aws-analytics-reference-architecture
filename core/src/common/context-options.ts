@@ -3,4 +3,5 @@ export enum ContextOptions {
   EMR_EKS_TRACKING_ID = 'uksb-1sljh1bin',
   DATA_ENG_PLATFORM_ID = 'uksb-1sljh1big',
   DATA_LAKE_ID = 'uksb-1sljh1bja',
+  REPLAYER= 'uksb-1sljh1bgi',
 }
