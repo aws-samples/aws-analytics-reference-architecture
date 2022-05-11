@@ -38,7 +38,7 @@ export interface BatchReplayerProps {
  * make it looks like just being generated. Then write the output to the `sinkBucket`
  */
 export class BatchReplayer extends Construct {
-  
+
   /**
    * Dataset used for replay
    */
@@ -49,12 +49,12 @@ export class BatchReplayer extends Construct {
    * for every given frequency and replay the data in that period
    */
   public readonly frequency: number;
-  
+
   /**
    * Sink bucket where the batch replayer will put data in
    */
   public readonly s3LocationSink: Location;
-  
+
   /**
    * Maximum file size for each output file. If the output batch file is,
    * larger than that, it will be splitted into multiple files that fit this size.
@@ -62,10 +62,10 @@ export class BatchReplayer extends Construct {
    * Default to 100MB (max value)
    */
   public readonly outputFileMaxSizeInBytes?: number;
-  
+
   constructor(scope: Construct, id: string, props: BatchReplayerProps) {
     super(scope, id);
-    
+
     this.dataset = props.dataset;
     this.frequency = props.frequency || 60;
     this.s3LocationSink = props.s3LocationSink;
@@ -105,7 +105,7 @@ export class BatchReplayer extends Construct {
       lambdaLayers: [dataWranglerLayer],
       lambdaPolicyStatements: findFilePathsFnPolicy,
     });
-    
+
     const findFilePathsFnTask = new LambdaInvoke(this, 'FindFilePathFnTask', {
       lambdaFunction: findFilePathsFn,
       payload: TaskInput.fromObject({
@@ -151,19 +151,19 @@ export class BatchReplayer extends Construct {
     const sinkBucket = Bucket.fromBucketName(this, 'SinkBucket', props.s3LocationSink.bucketName);
     // grant permissions to write to the bucket and to use the KMS key
     sinkBucket.grantPut(writeInBatchFn);
-    
+
     const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
       lambdaFunction: writeInBatchFn,
       payload: TaskInput.fromObject({
         // Array from the last step to be mapped
         outputFileIndex: JsonPath.stringAt('$.index'),
         filePath: JsonPath.stringAt('$.filePath'),
-        
+
         // For calculating the start/end time
         frequency: this.frequency,
         triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
         offset: '' + this.dataset.offset,
-        
+
         // For file processing
         dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
         dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
@@ -174,7 +174,7 @@ export class BatchReplayer extends Construct {
       retryOnServiceExceptions: true,
       outputPath: '$.Payload',
     });
-    
+
     // Use "Map" step to write each filePath parallelly
     const writeInBatchMapTask = new Map(this, 'WriteInBatchMapTask', {
       itemsPath: JsonPath.stringAt('$.filePaths'),
@@ -198,10 +198,11 @@ export class BatchReplayer extends Construct {
         level: LogLevel.ALL,
       },
     });
-    
+
     new Rule(this, 'BatchReplayStepFnTrigger', {
       schedule: Schedule.cron({ minute: `0/${Math.ceil(this.frequency/60)}` }),
       targets: [new SfnStateMachine(batchReplayStepFn, {})],
     });
   }
+
 }

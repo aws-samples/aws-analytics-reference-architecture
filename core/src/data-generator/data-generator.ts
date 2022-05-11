@@ -21,9 +21,9 @@ import { SynchronousAthenaQuery } from '../synchronous-athena-query';
 
 /**
  * The properties for DataGenerator Construct.
- * 
+ *
  * This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
- * @deprecated
+ * @deprecated replaced with Batch replayer
  */
 
 export interface DataGeneratorProps {
@@ -48,9 +48,9 @@ export interface DataGeneratorProps {
  * DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime
  * Target can be an Amazon S3 bucket or an Amazon Kinesis Data Stream.
  * DataGenerator can use pre-defined or custom datasets available in the [Dataset]{@link Dataset} Class
- * 
+ *
  * This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
- * @deprecated
+ * @deprecated replaced with Batch replayer
  */
 
 export class DataGenerator extends Construct {

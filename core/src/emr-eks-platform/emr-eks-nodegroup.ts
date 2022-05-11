@@ -42,8 +42,8 @@ export class EmrEksNodegroup {
     labels: { role: 'tooling' },
   };
 
-  /*
-   ** Default nodegroup configuration for EMR on EKS critical workloads
+  /**
+   * Default nodegroup configuration for EMR on EKS critical workloads
    */
   public static readonly CRITICAL_ALL: EmrEksNodegroupOptions = {
     nodegroupName: 'critical',
@@ -65,8 +65,8 @@ export class EmrEksNodegroup {
     ],
   };
 
-  /*
-   ** Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads
+  /**
+   * Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads
    */
   public static readonly SHARED_DRIVER: EmrEksNodegroupOptions = {
     nodegroupName: 'shared-driver',

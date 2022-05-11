@@ -13,9 +13,9 @@ import { retailWebSaleCreate, retailWebSaleGenerate } from './retail-web-sale';
 
 /**
  * The properties of the Dataset class
- * 
+ *
  * This is deprecated in favor of the [PreparedDataset]{@link PreparedDataset} class
- * @deprecated
+ * @deprecated replaced with Batch replayer
  */
 
 export interface DatasetProps {
@@ -45,9 +45,9 @@ export interface DatasetProps {
 
 /**
  * Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
- * 
+ *
  * This is deprecated in favor of the [PreparedDataset]{@link PreparedDataset} class
- * @deprecated
+ * @deprecated replaced with Batch replayer
  */
 export class Dataset {
   /**
