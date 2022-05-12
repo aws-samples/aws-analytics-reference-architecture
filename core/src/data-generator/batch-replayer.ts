@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-// import * as lambda from "@aws-cdk/aws-lambda";
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
@@ -18,9 +17,24 @@ import { PreparedDataset } from '../datasets/prepared-dataset';
  * The properties for the BatchReplayer construct
  */
 export interface BatchReplayerProps {
+
+  /**
+   * The [PreparedDataset]{@link PreparedDataset} used to replay data
+   */
   readonly dataset: PreparedDataset;
+  /**
+   * The frequency of the replay in seconds
+   * @default - The BatchReplayer is triggered every 60 seconds
+   */
   readonly frequency?: number;
+  /**
+   * The S3 location sink where the BatchReplayer writes data
+   */
   readonly s3LocationSink: Location;
+  /**
+   * The maximum file size in Bytes written by the BatchReplayer
+   * @default - The BatchReplayer writes 100MB files maximum
+   */
   readonly outputFileMaxSizeInBytes?: number;
 }
 
@@ -36,6 +50,19 @@ export interface BatchReplayerProps {
  * 2. resources/lambdas/write-in-batch
  * Take a file path, filter only records within given time range, adjust the the time with offset to
  * make it looks like just being generated. Then write the output to the `sinkBucket`
+ * 
+ * Usage example:
+ * ```typescript
+ * new BatchReplayer(stack, "WebSalesReplayer", {
+ * dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
+ *   s3LocationSink: {
+ *     bucketName: 'someBucket',
+ *     objectKey: 'somePrefix',
+ *   },
+ *   frequency: 120,
+ *   outputFileMaxSizeInBytes: 10000000,
+ * });
+ * ```
  */
 export class BatchReplayer extends Construct {
 
@@ -63,6 +90,12 @@ export class BatchReplayer extends Construct {
    */
   public readonly outputFileMaxSizeInBytes?: number;
 
+  /**
+   * Constructs a new instance of the BatchReplayer construct
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {BatchReplayerProps} props the BatchReplayer [properties]{@link BatchReplayerProps}
+   */
   constructor(scope: Construct, id: string, props: BatchReplayerProps) {
     super(scope, id);
 

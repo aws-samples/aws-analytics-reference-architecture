@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 const ENCODING = 'utf8';
 
 /**
- * @deprecated Used by the DataGenerator construct but now replaced by the BatchReplayer
+ * @deprecated Used by the DataGenerator construct but now replaced by the [BatchReplayer]{@link BatchReplayer}
  */
 
 export function readSqlFile(path: string) {

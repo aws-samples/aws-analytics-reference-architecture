@@ -91,7 +91,7 @@ export interface EmrEksClusterProps {
 }
 
 /**
- * EmrEksCluster Construct packaging all the resources required to run Amazon EMR on Amazon EKS. 
+ * EmrEksCluster Construct packaging all the resources and configuration required to run Amazon EMR on EKS. 
  * It deploys:
  * * An EKS cluster (VPC configuration can be customized) 
  * * A tooling nodegroup to run tools including the Kubedashboard and the Cluster Autoscaler
@@ -106,20 +106,19 @@ export interface EmrEksClusterProps {
  * Usage example:
  *
  * ```typescript
- *
  * const emrEks: EmrEksCluster = EmrEksCluster.getOrCreate(stack, {
- *   eksAdminRoleArn: <ROLE-ARN>,
- *   eksClusterName: <CLUSTER NAME>,
+ *   eksAdminRoleArn: <ROLE_ARN>,
+ *   eksClusterName: <CLUSTER_NAME>,
  * });
  *
  * const virtualCluster = emrEks.addEmrVirtualCluster(stack, {
- *   name: <Virtual Cluster Name>,
+ *   name: <Virtual_Cluster_Name>,
  *   createNamespace: <TRUE OR FALSE>,
- *   eksNamespace: <K8S namespace>,
+ *   eksNamespace: <K8S_namespace>,
  * });
  * 
  * const role = emrEks.createExecutionRole(stack, 'ExecRole',{
- *   policy: myPolicy,
+ *   policy: <POLICY>,
  * })
  * 
  * // EMR on EKS virtual cluster ID
@@ -137,6 +136,8 @@ export class EmrEksCluster extends Construct {
   /**
    * Get an existing EmrEksCluster based on the cluster name property or create a new one
    * only one EKS cluster can exist per stack
+   * @param {Construct} scope the CDK scope used to search or create the cluster
+   * @param {EmrEksClusterProps} props the EmrEksClusterProps [properties]{@link EmrEksClusterProps} if created
    */
   public static getOrCreate(scope: Construct, props: EmrEksClusterProps) {
 
@@ -173,8 +174,7 @@ export class EmrEksCluster extends Construct {
   private readonly defaultNodeGroups: boolean;
 
   /**
-   * Constructs a new instance of the EmrEksClus  ter class. An EmrEksCluster contains everything required to run Amazon EMR on Amazon EKS.
-   * Amazon EKS Nodegroups and Amazon EKS Admin role can be customized.
+   * Constructs a new instance of the EmrEksCluster construct.
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
    * @param {EmrEksClusterProps} props the EmrEksClusterProps [properties]{@link EmrEksClusterProps}
@@ -592,8 +592,8 @@ export class EmrEksCluster extends Construct {
    * Add new nodegroups to the cluster for Amazon EMR on EKS. This method overrides Amazon EKS nodegroup options then create the nodegroup.
    * If no subnet is provided, it creates one nodegroup per private subnet in the Amazon EKS Cluster.
    * If NVME local storage is used, the user_data is modified.
+   * @param {string} id the CDK ID of the resource
    * @param {EmrEksNodegroupOptions} props the EmrEksNodegroupOptions [properties]{@link EmrEksNodegroupOptions}
-   * @access public
    */
   public addEmrEksNodegroup(id: string, props: EmrEksNodegroupOptions) {
 
@@ -693,7 +693,6 @@ ${userData.join('\r\n')}
    * Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster.
    * @param {Construct} scope of the stack where virtual cluster is deployed
    * @param {EmrVirtualClusterOptions} options the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}
-   * @access public
    */
 
   public addEmrVirtualCluster(scope: Construct, options: EmrVirtualClusterOptions): CfnVirtualCluster {
@@ -750,10 +749,9 @@ ${userData.join('\r\n')}
   /**
    * Creates a new Amazon EMR managed endpoint to be used with Amazon EMR Virtual Cluster .
    * CfnOutput can be customized.
-   * @param {Construct} scope of the stack where managed endpoint is deployed
-   * @param {string} id unique id for endpoint
-   * @param {EmrManagedEndpointOptions} options The EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint
-   * @access public
+   * @param {Construct} scope the scope of the stack where managed endpoint is deployed
+   * @param {string} id the CDK id for endpoint
+   * @param {EmrManagedEndpointOptions} options the EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint
    */
   public addManagedEndpoint(scope: Construct, id: string, options: EmrManagedEndpointOptions) {
 
@@ -803,7 +801,6 @@ ${userData.join('\r\n')}
    *  so it can be used for the cluster autoscaler.
    * @param {string} nodegroupId the ID of the nodegroup
    * @param {EmrEksNodegroupOptions} options the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}
-   * @access public
    */
   public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions): Nodegroup {
 
@@ -890,12 +887,11 @@ ${userData.join('\r\n')}
 
   /**
    * Create and configure a new Amazon IAM Role usable as an execution role.
-   * This method links the makes the created role assumed by the Amazon EKS cluster Open ID Connect provider.
-   * @param {IManagedPolicy} policy the execution policy to attach to the role
-   * @param {string} name for the Managed Endpoint
+   * This method makes the created role assumed by the Amazon EKS cluster Open ID Connect provider.
    * @param {Construct} scope of the IAM role
    * @param {string} id of the CDK resource to be created, it should be unique across the stack
-   * @access public
+   * @param {IManagedPolicy} policy the execution policy to attach to the role
+   * @param {string} name for the Managed Endpoint
    */
   public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, name?: string): Role {
 
@@ -931,7 +927,8 @@ ${userData.join('\r\n')}
 
   /**
    * Upload podTemplates to the Amazon S3 location used by the cluster.
-   * @param filePath The local path of the yaml podTemplate files to upload
+   * @param {string} id the unique ID of the CDK resource
+   * @param {string} filePath The local path of the yaml podTemplate files to upload
    */
   public uploadPodTemplate(id: string, filePath: string) {
 

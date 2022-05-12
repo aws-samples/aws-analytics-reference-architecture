@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import * as path from 'path';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as iam from '@aws-cdk/aws-iam';
@@ -41,7 +44,7 @@ export interface FlywayRunnerProps {
 
   /**
    * Period to keep the logs around.
-   * @default logs.RetentionDays.ONE_WEEK (1 day)
+   * @default logs.RetentionDays.ONE_WEEK 
    */
   readonly logRetention?: logs.RetentionDays;
 
@@ -62,6 +65,7 @@ export interface FlywayRunnerProps {
    *     TABLE_NAME: 'my_table'
    *   }
    *   ```
+   * @default - No replacement is done
    */
   readonly replaceDictionary?: { [key: string]: string };
 }
@@ -109,6 +113,12 @@ export interface FlywayRunnerProps {
 export class FlywayRunner extends cdk.Construct {
   public readonly runner: CustomResource;
 
+  /**
+   * Constructs a new instance of the FlywayRunner construct
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {FlywayRunnerProps} props the FlywayRunner [properties]{@link FlywayRunnerProps}
+   */
   constructor(scope: cdk.Construct, id: string, props: FlywayRunnerProps) {
     super(scope, id);
 

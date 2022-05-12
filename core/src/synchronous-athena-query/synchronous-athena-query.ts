@@ -44,7 +44,6 @@ export class SynchronousAthenaQuery extends Construct {
   * @param {Construct} scope the Scope of the CDK Construct
   * @param {string} id the ID of the CDK Construct
   * @param {SynchronousAthenaQueryProps} props the CrawlerStartWait [properties]{@link SynchronousAthenaQueryProps}
-  * @access public
   */
 
   constructor(scope: Construct, id: string, props: SynchronousAthenaQueryProps) {

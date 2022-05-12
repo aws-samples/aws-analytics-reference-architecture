@@ -50,6 +50,13 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
  * ```
  */
 export class PreBundledFunction extends Function {
+ 
+  /**
+   * Constructs a new instance of the PreBundledFunction construct
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {PreBundledFunctionProps} props the PreBundledFunction [properties]{@link PreBundledFunctionProps}
+   */
   constructor(scope: cdk.Construct, id: string, props: PreBundledFunctionProps) {
 
     if (props.code) {

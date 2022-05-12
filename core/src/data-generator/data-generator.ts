@@ -23,7 +23,7 @@ import { SynchronousAthenaQuery } from '../synchronous-athena-query';
  * The properties for DataGenerator Construct.
  *
  * This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
- * @deprecated replaced with Batch replayer
+ * @deprecated replaced by [BatchReplayer]{@link BatchReplayer}
  */
 
 export interface DataGeneratorProps {
@@ -50,7 +50,7 @@ export interface DataGeneratorProps {
  * DataGenerator can use pre-defined or custom datasets available in the [Dataset]{@link Dataset} Class
  *
  * This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
- * @deprecated replaced with Batch replayer
+ * @deprecated replaced by [BatchReplayer]{@link BatchReplayer}
  */
 
 export class DataGenerator extends Construct {

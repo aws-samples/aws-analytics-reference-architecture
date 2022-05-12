@@ -1,16 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-//import * as path from 'path';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
-//import { Code, Function, FunctionProps } from '@aws-cdk/aws-lambda';
 import * as cdk from '@aws-cdk/core';
 import { Aws, Stack } from '@aws-cdk/core';
 import { Provider, ProviderProps } from '@aws-cdk/custom-resources';
 
 /**
- * Extends existing FunctionProps as optional using `Partial`
- * (as we don't require `Code` prop)
+ * The properties for the ScopedIamProvider construct. 
+ * It extends existing FunctionProps as optional using `Partial` (as we don't require `Code` prop)
  */
 export interface ScopedIamProviderProps extends Partial<ProviderProps>{
   readonly onEventFnName: string;
@@ -18,9 +16,17 @@ export interface ScopedIamProviderProps extends Partial<ProviderProps>{
 }
 
 /**
- * Provide a custom resource provider with a custom IAM role scoped down for cloudwatch
+ * Provide a custom resource provider with a custom IAM role with permissions 
+ * scoped down for Cloudwatch based on the Lambda function names provided
  */
 export class ScopedIamProvider extends Provider {
+
+  /**
+   * Constructs a new instance of the ScopedIamProvider provider
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {ScopedIamProviderProps} props the ScopedIamProvider [properties]{@link ScopedIamProviderProps}
+   */
   constructor(scope: cdk.Construct, id: string, props: ScopedIamProviderProps) {
 
     const stack = Stack.of(scope);
@@ -86,6 +92,5 @@ export class ScopedIamProvider extends Provider {
     scopedIamCRProps.role = lambdaExcutionRole;
 
     super(scope, id, { ...(scopedIamCRProps as ProviderProps) });
-
   }
 }
