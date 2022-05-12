@@ -39,15 +39,15 @@ export interface S3CrossAccountProps {
  * It uses a bucket policy and an Amazon KMS Key policy if the bucket is encrypted with KMS.
  * The cross account permission is granted to the entire account and not to a specific principal in this account.
  * It's the responsibility of the target account to grant permissions to the relevant principals.
- *  
+ *
  * Usage example:
  * ```typescript
  * import * as cdk from '@aws-cdk/core';
  * import { S3CrossAccount } from 'aws-analytics-reference-architecture';
- * 
+ *
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'S3CrossAccountStack');
- * 
+ *
  * new S3CrossAccount(stack, 'S3CrossAccountGrant', {
  *   s3Location:{
  *     bucketName: 'my-bucket',
@@ -60,7 +60,7 @@ export class S3CrossAccount extends Construct {
 
   constructor(scope: Construct, id: string, props: S3CrossAccountProps) {
     super(scope, id);
-    
+
     // Get the target account as a Principal
     const targetAccount = new AccountPrincipal(props.accountID);
 
@@ -82,17 +82,18 @@ export class S3CrossAccount extends Construct {
         resources: [
           props.bucket.arnForObjects(props.objectKey || '') + '/*',
           props.bucket.bucketArn,
-        ]
-      })
+        ],
+      }),
     );
 
+    // TODO this need to be changed as the ARN only get the resolved at deployment time
     // If the bucket is encrypted with a custom KMS key, attach a policy to the key
     if (props.bucket.encryptionKey) {
       if (props.key && props.bucket.encryptionKey.keyArn == props.key.keyArn) {
         props.key.grantDecrypt(targetAccount);
       }
     } else {
-      throw new Error('The bucket is encrypted so S3CrossAccount should take a KMS key as parameter'); 
+      throw new Error('The bucket is encrypted so S3CrossAccount should take a KMS key as parameter');
     }
   };
 }

@@ -7,12 +7,12 @@
  * @group integ/data-lake/exporter
  */
 
- import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
+import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
+import { Stream } from '@aws-cdk/aws-kinesis';
 import { Bucket } from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
-import { Stream } from '@aws-cdk/aws-kinesis';
 
 import { DataLakeExporter } from '../../src/data-lake-exporter';
 
@@ -31,20 +31,20 @@ const sourceGlueTable = new Table(stack, 'SourceTable', {
   columns: [
     {
       name: 'test',
-      type: { 
-        isPrimitive: true, 
-        inputString: 'STRING' 
+      type: {
+        isPrimitive: true,
+        inputString: 'STRING',
       },
-    }
+    },
   ],
   dataFormat: DataFormat.JSON,
-})
+});
 const sourceKinesisStream = new Stream(stack, 'SourceStream');
 
 new DataLakeExporter(stack, 'DataLakeExporter', {
   sinkLocation: {
-      bucketName: sinkBucket.bucketName,
-      objectKey: '',
+    bucketName: sinkBucket.bucketName,
+    objectKey: '',
   },
   sourceGlueDatabase: sourceGlueDatabase,
   sourceGlueTable: sourceGlueTable,
@@ -55,33 +55,33 @@ describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    
+
     const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
       profile: process.env.AWS_PROFILE,
     });
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-    
+
     // WHEN
     /*const deployResult = */await cloudFormation.deployStack({
       stack: stackArtifact,
+      rollback: false,
     });
-     
-     // THEN
-     expect(true);
- 
-   }, 9000000);
- });
- 
- afterAll(async () => {
-   const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-   
-   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-     profile: process.env.AWS_PROFILE,
-   });
-   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-   
-   await cloudFormation.destroyStack({
-     stack: stackArtifact,
-   });
- });
- 
+
+    // THEN
+    expect(true);
+
+  }, 9000000);
+});
+
+afterAll(async () => {
+  const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
+
+  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
+    profile: process.env.AWS_PROFILE,
+  });
+  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
+
+  await cloudFormation.destroyStack({
+    stack: stackArtifact,
+  });
+});
