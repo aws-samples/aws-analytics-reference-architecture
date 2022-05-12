@@ -10,6 +10,7 @@ import { Bucket } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, RemovalPolicy, Tags } from '@aws-cdk/core';
 import { AraBucket } from '../ara-bucket';
 import { EmrEksCluster } from '../emr-eks-platform';
+import { SingletonKey } from '../singleton-kms-key';
 import { Utils } from '../utils';
 import {
   createIAMFederatedRole,
@@ -204,12 +205,7 @@ export class NotebookPlatform extends Construct {
     }
 
     //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
-    this.notebookPlatformEncryptionKey = new Key(
-      this,
-      'KMS-key-'+ Utils.stringSanitizer(props.studioName), {
-        enableKeyRotation: true,
-      },
-    );
+    this.notebookPlatformEncryptionKey = SingletonKey.getOrCreate(scope, 'DefaultKmsKey');
 
     this.emrVirtualClusterName = 'emr-vc-' + Utils.stringSanitizer(props.studioName);
     this.emrEks = props.emrEks;

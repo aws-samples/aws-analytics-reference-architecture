@@ -1,5 +1,5 @@
 import { Database, Table } from '@aws-cdk/aws-glue';
-import { Role, ServicePrincipal, PolicyStatement } from '@aws-cdk/aws-iam';
+import { Role, ServicePrincipal, PolicyStatement, PolicyDocument, ManagedPolicy } from '@aws-cdk/aws-iam';
 import { Stream } from '@aws-cdk/aws-kinesis';
 import { CfnDeliveryStream } from '@aws-cdk/aws-kinesisfirehose';
 import { LogGroup, RetentionDays, LogStream } from '@aws-cdk/aws-logs';
@@ -81,89 +81,85 @@ export class DataLakeExporter extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    // Create an Amazon IAM Role used by Amazon Kinesis Firehose delivery stream
-    const role = new Role(this, 'dataLakeExporterRole', {
-      assumedBy: new ServicePrincipal('firehose.amazonaws.com'),
+    const policyDocumentKinesisFirehose = new PolicyDocument({
+      statements: [
+        new PolicyStatement({
+          resources: [
+            props.sourceGlueTable.tableArn,
+            props.sourceGlueDatabase.catalogArn,
+            props.sourceGlueDatabase.databaseArn,
+          ],
+          actions: [
+            'glue:GetTable',
+            'glue:GetTableVersion',
+            'glue:GetTableVersions',
+          ],
+        }),
+        new PolicyStatement({
+          resources: [
+            props.sourceKinesisDataStream.streamArn,
+          ],
+          actions: [
+            'kinesis:DescribeStream',
+            'kinesis:GetShardIterator',
+            'kinesis:GetRecords',
+            'kinesis:ListShards',
+          ],
+        }),
+        new PolicyStatement({
+          resources: [
+            stack.formatArn({
+              account: '',
+              region: '',
+              service: 's3',
+              resource: props.sinkLocation.bucketName,
+              resourceName: props.sinkLocation.objectKey,
+            }),
+            stack.formatArn({
+              account: '',
+              region: '',
+              service: 's3',
+              resource: props.sinkLocation.bucketName,
+              resourceName: `${props.sinkLocation.objectKey}/*`,
+            }),
+            stack.formatArn({
+              account: '',
+              region: '',
+              service: 's3',
+              resource: props.sinkLocation.bucketName,
+            }),
+          ],
+          actions: [
+            's3:AbortMultipartUpload',
+            's3:GetBucketLocation',
+            's3:GetObject',
+            's3:ListBucket',
+            's3:ListBucketMultipartUploads',
+            's3:PutObject',
+          ],
+        }),
+        new PolicyStatement({
+          resources: [
+            `${logGroup.logGroupArn}:log-stream:${firehoseLogStream.logStreamName}`,
+          ],
+          actions: [
+            'logs:PutLogEvents',
+          ],
+        }),
+      ],
     });
 
-    // add policy to access AWS Glue Database and Table for format conversion
-    role.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          props.sourceGlueTable.tableArn,
-          props.sourceGlueDatabase.catalogArn,
-          props.sourceGlueDatabase.databaseArn,
-        ],
-        actions: [
-          'glue:GetTable',
-          'glue:GetTableVersion',
-          'glue:GetTableVersions',
-        ],
-      }),
-    );
+    const managedPolicyKinesisFirehose = new ManagedPolicy(this, 'managedPolicyKinesisFirehose', {
+      document: policyDocumentKinesisFirehose,
+    });
 
-    // add policy to access source stream
-    role.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          props.sourceKinesisDataStream.streamArn,
-        ],
-        actions: [
-          'kinesis:DescribeStream',
-          'kinesis:GetShardIterator',
-          'kinesis:GetRecords',
-          'kinesis:ListShards',
-        ],
-      }),
-    );
+    // Create an Amazon IAM Role used by Amazon Kinesis Firehose delivery stream
+    const roleKinesisFirehose = new Role(this, 'dataLakeExporterRole', {
+      assumedBy: new ServicePrincipal('firehose.amazonaws.com'),
+      managedPolicies: [managedPolicyKinesisFirehose],
+    });
 
-    // add policy to write data in Amazon S3 Location
-    role.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          stack.formatArn({
-            account: '',
-            region: '',
-            service: 's3',
-            resource: props.sinkLocation.bucketName,
-            resourceName: props.sinkLocation.objectKey,
-          }),
-          stack.formatArn({
-            account: '',
-            region: '',
-            service: 's3',
-            resource: props.sinkLocation.bucketName,
-            resourceName: `${props.sinkLocation.objectKey}/*`,
-          }),
-          stack.formatArn({
-            account: '',
-            region: '',
-            service: 's3',
-            resource: props.sinkLocation.bucketName,
-          }),
-        ],
-        actions: [
-          's3:AbortMultipartUpload',
-          's3:GetBucketLocation',
-          's3:GetObject',
-          's3:ListBucket',
-          's3:ListBucketMultipartUploads',
-          's3:PutObject',
-        ],
-      }),
-    );
-
-    // add policy to write logs to CloudWatch logs
-    role.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          `${logGroup.logGroupArn}:log-stream:${firehoseLogStream.logStreamName}`,
-        ],
-        actions: [
-          'logs:PutLogEvents',
-        ],
-      }),
-    );
+    roleKinesisFirehose.node.addDependency(managedPolicyKinesisFirehose);
 
     // TODO add policy for KMS managed?
 
@@ -183,9 +179,10 @@ export class DataLakeExporter extends Construct {
     // Create the Delivery stream from Cfn because L2 Construct doesn't support conversion to parquet and custom partitioning
     this.cfnIngestionStream = new CfnDeliveryStream(this, 'dataLakeExporter', {
       deliveryStreamType: 'KinesisStreamAsSource',
-      deliveryStreamEncryptionConfigurationInput: {
+      // Encryption only allowed with direct put
+      /*deliveryStreamEncryptionConfigurationInput: {
         keyType: 'AWS_OWNED_CMK',
-      },
+      },*/
       extendedS3DestinationConfiguration: {
         bucketArn: sinkBucket.bucketArn,
         bufferingHints: {
@@ -196,7 +193,7 @@ export class DataLakeExporter extends Construct {
           logGroupName: logGroup.logGroupName,
           logStreamName: firehoseLogStream.logStreamName,
         },
-        roleArn: role.roleArn,
+        roleArn: roleKinesisFirehose.roleArn,
         errorOutputPrefix: `${props.sinkLocation.objectKey}-error`,
         prefix: props.sinkLocation.objectKey,
         compressionFormat: 'UNCOMPRESSED',
@@ -214,7 +211,7 @@ export class DataLakeExporter extends Construct {
             },
           },
           schemaConfiguration: {
-            roleArn: role.roleArn,
+            roleArn: roleKinesisFirehose.roleArn,
             catalogId: Aws.ACCOUNT_ID,
             region: Aws.REGION,
             databaseName: props.sourceGlueDatabase.databaseName,
@@ -223,8 +220,8 @@ export class DataLakeExporter extends Construct {
         },
       },
       kinesisStreamSourceConfiguration: {
-        kinesisStreamArn: '',
-        roleArn: role.roleArn,
+        kinesisStreamArn: props.sourceKinesisDataStream.streamArn,
+        roleArn: roleKinesisFirehose.roleArn,
       },
     });
   }
