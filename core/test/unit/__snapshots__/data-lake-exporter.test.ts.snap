@@ -38,9 +38,6 @@ Object {
     },
     "testExporterdataLakeExporter51BD8EA9": Object {
       "Properties": Object {
-        "DeliveryStreamEncryptionConfigurationInput": Object {
-          "KeyType": "AWS_OWNED_CMK",
-        },
         "DeliveryStreamType": "KinesisStreamAsSource",
         "ExtendedS3DestinationConfiguration": Object {
           "BucketARN": Object {
@@ -112,7 +109,12 @@ Object {
           "S3BackupMode": "Disabled",
         },
         "KinesisStreamSourceConfiguration": Object {
-          "KinesisStreamARN": "",
+          "KinesisStreamARN": Object {
+            "Fn::GetAtt": Array [
+              "testStream8BCA7523",
+              "Arn",
+            ],
+          },
           "RoleARN": Object {
             "Fn::GetAtt": Array [
               "testExporterdataLakeExporterRole1BEE617B",
@@ -144,6 +146,9 @@ Object {
       "UpdateReplacePolicy": "Delete",
     },
     "testExporterdataLakeExporterRole1BEE617B": Object {
+      "DependsOn": Array [
+        "testExportermanagedPolicyKinesisFirehoseE66FDFBA",
+      ],
       "Properties": Object {
         "AssumeRolePolicyDocument": Object {
           "Statement": Array [
@@ -157,11 +162,18 @@ Object {
           ],
           "Version": "2012-10-17",
         },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Ref": "testExportermanagedPolicyKinesisFirehoseE66FDFBA",
+          },
+        ],
       },
       "Type": "AWS::IAM::Role",
     },
-    "testExporterdataLakeExporterRoleDefaultPolicy3EEE6D56": Object {
+    "testExportermanagedPolicyKinesisFirehoseE66FDFBA": Object {
       "Properties": Object {
+        "Description": "",
+        "Path": "/",
         "PolicyDocument": Object {
           "Statement": Array [
             Object {
@@ -332,14 +344,8 @@ Object {
           ],
           "Version": "2012-10-17",
         },
-        "PolicyName": "testExporterdataLakeExporterRoleDefaultPolicy3EEE6D56",
-        "Roles": Array [
-          Object {
-            "Ref": "testExporterdataLakeExporterRole1BEE617B",
-          },
-        ],
       },
-      "Type": "AWS::IAM::Policy",
+      "Type": "AWS::IAM::ManagedPolicy",
     },
     "testStream8BCA7523": Object {
       "Properties": Object {

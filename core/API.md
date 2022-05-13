@@ -34,37 +34,6 @@ new AraBucket(stack, {
 });
 ```
 
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.AraBucket.Initializer"></a>
-
-```typescript
-import { AraBucket } from 'aws-analytics-reference-architecture'
-
-new AraBucket(scope: Construct, props: AraBucketProps)
-```
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AraBucket.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucket.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.AraBucketProps">AraBucketProps</a></code> | the AraBucketProps [properties]{@link AraBucketProps}. |
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.AraBucket.Initializer.parameter.scope"></a>
-
-- *Type:* @aws-cdk/core.Construct
-
-the Scope of the CDK Construct.
-
----
-
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.AraBucket.Initializer.parameter.props"></a>
-
-- *Type:* <a href="#aws-analytics-reference-architecture.AraBucketProps">AraBucketProps</a>
-
-the AraBucketProps [properties]{@link AraBucketProps}.
-
----
-
 #### Methods <a name="Methods" id="Methods"></a>
 
 | **Name** | **Description** |
@@ -1189,6 +1158,7 @@ Return whether the given object is a Construct.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.athenaWorkgroup">athenaWorkgroup</a></code> | <code>@aws-cdk/aws-athena.CfnWorkGroup</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.resultBucket">resultBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
 
 ---
@@ -1202,6 +1172,16 @@ public readonly node: ConstructNode;
 - *Type:* @aws-cdk/core.ConstructNode
 
 The construct tree node associated with this construct.
+
+---
+
+##### `athenaWorkgroup`<sup>Required</sup> <a name="athenaWorkgroup" id="aws-analytics-reference-architecture.AthenaDemoSetup.property.athenaWorkgroup"></a>
+
+```typescript
+public readonly athenaWorkgroup: CfnWorkGroup;
+```
+
+- *Type:* @aws-cdk/aws-athena.CfnWorkGroup
 
 ---
 
@@ -1230,6 +1210,19 @@ Read the manifest file and output a list of S3 file paths within that batch time
 Take a file path, filter only records within given time range, adjust the the time with offset to
 make it looks like just being generated. Then write the output to the `sinkBucket`
 
+Usage example:
+```typescript
+new BatchReplayer(stack, "WebSalesReplayer", {
+dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
+   s3LocationSink: {
+     bucketName: 'someBucket',
+     objectKey: 'somePrefix',
+   },
+   frequency: 120,
+   outputFileMaxSizeInBytes: 10000000,
+});
+```
+
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.BatchReplayer.Initializer"></a>
 
 ```typescript
@@ -1240,9 +1233,9 @@ new BatchReplayer(scope: Construct, id: string, props: BatchReplayerProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps">BatchReplayerProps</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps">BatchReplayerProps</a></code> | the BatchReplayer [properties]{@link BatchReplayerProps}. |
 
 ---
 
@@ -1250,17 +1243,23 @@ new BatchReplayer(scope: Construct, id: string, props: BatchReplayerProps)
 
 - *Type:* @aws-cdk/core.Construct
 
+the Scope of the CDK Construct.
+
 ---
 
 ##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.id"></a>
 
 - *Type:* string
 
+the ID of the CDK Construct.
+
 ---
 
 ##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.props"></a>
 
 - *Type:* <a href="#aws-analytics-reference-architecture.BatchReplayerProps">BatchReplayerProps</a>
+
+the BatchReplayer [properties]{@link BatchReplayerProps}.
 
 ---
 
@@ -1391,6 +1390,8 @@ DataGenerator Construct to replay data from an existing dataset into a target re
 
 DataGenerator can use pre-defined or custom datasets available in the [Dataset]{@link Dataset} Class
 
+This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
+
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DataGenerator.Initializer"></a>
 
 ```typescript
@@ -1439,7 +1440,7 @@ the DataGenerator [properties]{@link DataGeneratorProps}.
 
 ---
 
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.DataGenerator.toString"></a>
+##### ~~`toString`~~ <a name="toString" id="aws-analytics-reference-architecture.DataGenerator.toString"></a>
 
 ```typescript
 public toString(): string
@@ -1455,7 +1456,7 @@ Returns a string representation of this construct.
 
 ---
 
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.DataGenerator.isConstruct"></a>
+##### ~~`isConstruct`~~ <a name="isConstruct" id="aws-analytics-reference-architecture.DataGenerator.isConstruct"></a>
 
 ```typescript
 import { DataGenerator } from 'aws-analytics-reference-architecture'
@@ -1482,7 +1483,9 @@ Return whether the given object is a Construct.
 
 ---
 
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataGenerator.property.node"></a>
+##### ~~`node`~~<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataGenerator.property.node"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly node: ConstructNode;
@@ -1494,7 +1497,9 @@ The construct tree node associated with this construct.
 
 ---
 
-##### `dataset`<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGenerator.property.dataset"></a>
+##### ~~`dataset`~~<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGenerator.property.dataset"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly dataset: Dataset;
@@ -1506,7 +1511,9 @@ Dataset used to generate data.
 
 ---
 
-##### `frequency`<sup>Required</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGenerator.property.frequency"></a>
+##### ~~`frequency`~~<sup>Required</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGenerator.property.frequency"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly frequency: number;
@@ -1518,7 +1525,9 @@ Frequency (in Seconds) of the data generation.
 
 ---
 
-##### `sinkArn`<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGenerator.property.sinkArn"></a>
+##### ~~`sinkArn`~~<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGenerator.property.sinkArn"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly sinkArn: string;
@@ -1538,7 +1547,9 @@ Sink Arn to receive the generated data.
 
 ---
 
-##### `DATA_GENERATOR_DATABASE`<sup>Required</sup> <a name="DATA_GENERATOR_DATABASE" id="aws-analytics-reference-architecture.DataGenerator.property.DATA_GENERATOR_DATABASE"></a>
+##### ~~`DATA_GENERATOR_DATABASE`~~<sup>Required</sup> <a name="DATA_GENERATOR_DATABASE" id="aws-analytics-reference-architecture.DataGenerator.property.DATA_GENERATOR_DATABASE"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly DATA_GENERATOR_DATABASE: string;
@@ -2486,20 +2497,44 @@ it's assumed to be AWS::AccountId.
 
 ### EmrEksCluster <a name="EmrEksCluster" id="aws-analytics-reference-architecture.EmrEksCluster"></a>
 
-EmrEksCluster Construct packaging all the resources required to run Amazon EMR on Amazon EKS. Usage example:.
+EmrEksCluster Construct packaging all the resources and configuration required to run Amazon EMR on EKS.
+
+It deploys:
+* An EKS cluster (VPC configuration can be customized) 
+* A tooling nodegroup to run tools including the Kubedashboard and the Cluster Autoscaler
+* Optionally multiple nodegroups (one per AZ) for critical/shared/notebook EMR workloads
+* Additional nodegroups can be configured
+
+The construct will upload on S3 the Pod templates required to run EMR jobs on the default nodegroups. 
+It will also parse and store the configuration of EMR on EKS jobs for each default nodegroup in object parameters
+
+Methods are available to add EMR Virtual Clusters to the EKS cluster and to create execution roles for the virtual clusters.
+
+Usage example:
 
 ```typescript
-
 const emrEks: EmrEksCluster = EmrEksCluster.getOrCreate(stack, {
-   eksAdminRoleArn: <ROLE-ARN>,
-   eksClusterName: <CLUSTER NAME>,
+   eksAdminRoleArn: <ROLE_ARN>,
+   eksClusterName: <CLUSTER_NAME>,
 });
 
-emrEks.addEmrVirtualCluster(stack, {
-   name: <Virtual Cluster Name>,
+const virtualCluster = emrEks.addEmrVirtualCluster(stack, {
+   name: <Virtual_Cluster_Name>,
    createNamespace: <TRUE OR FALSE>,
-   eksNamespace: <K8S namespace>,
+   eksNamespace: <K8S_namespace>,
 });
+
+const role = emrEks.createExecutionRole(stack, 'ExecRole',{
+   policy: <POLICY>,
+})
+
+// EMR on EKS virtual cluster ID
+cdk.CfnOutput(self, 'VirtualClusterId',value = virtualCluster.attr_id)
+// Job config for each nodegroup
+cdk.CfnOutput(self, "CriticalConfig", value = emrEks.criticalDefaultConfig)
+cdk.CfnOutput(self, "SharedConfig", value = emrEks.sharedDefaultConfig)
+// Execution role arn
+cdk.CfnOutput(self,'ExecRoleArn', value = role.roleArn)
 ```
 
 #### Methods <a name="Methods" id="Methods"></a>
@@ -2539,6 +2574,8 @@ If NVME local storage is used, the user_data is modified.
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup.parameter.id"></a>
 
 - *Type:* string
+
+the CDK ID of the resource.
 
 ---
 
@@ -2588,7 +2625,7 @@ CfnOutput can be customized.
 
 - *Type:* @aws-cdk/core.Construct
 
-of the stack where managed endpoint is deployed.
+the scope of the stack where managed endpoint is deployed.
 
 ---
 
@@ -2596,7 +2633,7 @@ of the stack where managed endpoint is deployed.
 
 - *Type:* string
 
-unique id for endpoint.
+the CDK id for endpoint.
 
 ---
 
@@ -2604,7 +2641,7 @@ unique id for endpoint.
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions">EmrManagedEndpointOptions</a>
 
-The EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint.
+the EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint.
 
 ---
 
@@ -2643,7 +2680,7 @@ public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy,
 
 Create and configure a new Amazon IAM Role usable as an execution role.
 
-This method links the makes the created role assumed by the Amazon EKS cluster Open ID Connect provider.
+This method makes the created role assumed by the Amazon EKS cluster Open ID Connect provider.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.scope"></a>
 
@@ -2688,6 +2725,8 @@ Upload podTemplates to the Amazon S3 location used by the cluster.
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksCluster.uploadPodTemplate.parameter.id"></a>
 
 - *Type:* string
+
+the unique ID of the CDK resource.
 
 ---
 
@@ -2738,11 +2777,15 @@ Get an existing EmrEksCluster based on the cluster name property or create a new
 
 - *Type:* @aws-cdk/core.Construct
 
+the CDK scope used to search or create the cluster.
+
 ---
 
 ###### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.EmrEksCluster.getOrCreate.parameter.props"></a>
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksClusterProps">EmrEksClusterProps</a>
+
+the EmrEksClusterProps [properties]{@link EmrEksClusterProps} if created.
 
 ---
 
@@ -2833,109 +2876,6 @@ public readonly sharedDefaultConfig: string;
 ---
 
 
-### Example <a name="Example" id="aws-analytics-reference-architecture.Example"></a>
-
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.Example.Initializer"></a>
-
-```typescript
-import { Example } from 'aws-analytics-reference-architecture'
-
-new Example(scope: Construct, id: string, props: ExampleProps)
-```
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Example.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.Example.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.Example.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.ExampleProps">ExampleProps</a></code> | the ExampleProps properties. |
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.Example.Initializer.parameter.scope"></a>
-
-- *Type:* @aws-cdk/core.Construct
-
-the Scope of the CDK Construct.
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.Example.Initializer.parameter.id"></a>
-
-- *Type:* string
-
-the ID of the CDK Construct.
-
----
-
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.Example.Initializer.parameter.props"></a>
-
-- *Type:* <a href="#aws-analytics-reference-architecture.ExampleProps">ExampleProps</a>
-
-the ExampleProps properties.
-
----
-
-#### Methods <a name="Methods" id="Methods"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Example.toString">toString</a></code> | Returns a string representation of this construct. |
-
----
-
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.Example.toString"></a>
-
-```typescript
-public toString(): string
-```
-
-Returns a string representation of this construct.
-
-#### Static Functions <a name="Static Functions" id="Static Functions"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Example.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
-
----
-
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.Example.isConstruct"></a>
-
-```typescript
-import { Example } from 'aws-analytics-reference-architecture'
-
-Example.isConstruct(x: any)
-```
-
-Return whether the given object is a Construct.
-
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.Example.isConstruct.parameter.x"></a>
-
-- *Type:* any
-
----
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Example.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-
----
-
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.Example.property.node"></a>
-
-```typescript
-public readonly node: ConstructNode;
-```
-
-- *Type:* @aws-cdk/core.ConstructNode
-
-The construct tree node associated with this construct.
-
----
-
-
 ### FlywayRunner <a name="FlywayRunner" id="aws-analytics-reference-architecture.FlywayRunner"></a>
 
 A CDK construct that runs flyway migration scripts against a redshift cluster.
@@ -2987,9 +2927,9 @@ new FlywayRunner(scope: Construct, id: string, props: FlywayRunnerProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps">FlywayRunnerProps</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps">FlywayRunnerProps</a></code> | the FlywayRunner [properties]{@link FlywayRunnerProps}. |
 
 ---
 
@@ -2997,17 +2937,23 @@ new FlywayRunner(scope: Construct, id: string, props: FlywayRunnerProps)
 
 - *Type:* @aws-cdk/core.Construct
 
+the Scope of the CDK Construct.
+
 ---
 
 ##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.id"></a>
 
 - *Type:* string
 
+the ID of the CDK Construct.
+
 ---
 
 ##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.props"></a>
 
 - *Type:* <a href="#aws-analytics-reference-architecture.FlywayRunnerProps">FlywayRunnerProps</a>
+
+the FlywayRunner [properties]{@link FlywayRunnerProps}.
 
 ---
 
@@ -3083,12 +3029,107 @@ public readonly runner: CustomResource;
 ---
 
 
+### GlueDefaultRole <a name="GlueDefaultRole" id="aws-analytics-reference-architecture.GlueDefaultRole"></a>
+
+SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
+
+The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
+If you would like to scope down the permission you should create a new role with a scoped down policy
+The Construct provides a getOrCreate method for SingletonInstantiation
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.GlueDefaultRole.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate">getOrCreate</a></code> | *No description.* |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.GlueDefaultRole.isConstruct"></a>
+
+```typescript
+import { GlueDefaultRole } from 'aws-analytics-reference-architecture'
+
+GlueDefaultRole.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.GlueDefaultRole.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate"></a>
+
+```typescript
+import { GlueDefaultRole } from 'aws-analytics-reference-architecture'
+
+GlueDefaultRole.getOrCreate(scope: Construct)
+```
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole">iamRole</a></code> | <code>@aws-cdk/aws-iam.Role</code> | *No description.* |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.GlueDefaultRole.property.node"></a>
+
+```typescript
+public readonly node: ConstructNode;
+```
+
+- *Type:* @aws-cdk/core.ConstructNode
+
+The construct tree node associated with this construct.
+
+---
+
+##### `iamRole`<sup>Required</sup> <a name="iamRole" id="aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole"></a>
+
+```typescript
+public readonly iamRole: Role;
+```
+
+- *Type:* @aws-cdk/aws-iam.Role
+
+---
+
+
 ### LakeformationS3Location <a name="LakeformationS3Location" id="aws-analytics-reference-architecture.LakeformationS3Location"></a>
 
 This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
 
 This construct instantiate 2 objects:
-* An IAM role with read/write permissions to the S3 location and read access to the KMS key used to encypt the bucket 
+* An IAM role with read/write permissions to the S3 location and read access to the KMS key used to encypt the bucket
 * A CfnResource is based on an IAM role with 2 policies folowing the least privilege AWS best practices:
 * Policy 1 is for GetObject, PutObject, DeleteObject from S3 bucket
 * Policy 2 is to list S3 Buckets
@@ -3336,22 +3377,6 @@ the DataPlatformNotebooks [properties]{@link NotebookPlatformProps}.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.toString">toString</a></code> | Returns a string representation of this construct. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.addDependency">addDependency</a></code> | Add a dependency between this stack and another stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.addDockerImageAsset">addDockerImageAsset</a></code> | Register a docker image asset on this Stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.addFileAsset">addFileAsset</a></code> | Register a file asset on this Stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.addTransform">addTransform</a></code> | Add a Transform to this stack. A Transform is a macro that AWS CloudFormation uses to process your template. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.exportValue">exportValue</a></code> | Create a CloudFormation Export for a value. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.formatArn">formatArn</a></code> | Creates an ARN from components. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.getLogicalId">getLogicalId</a></code> | Allocates a stack-unique CloudFormation-compatible logical identity for a specific resource. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.parseArn">parseArn</a></code> | Given an ARN, parses it and returns components. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.regionalFact">regionalFact</a></code> | Look up a fact value for the given fact for the region of this stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.renameLogicalId">renameLogicalId</a></code> | Rename a generated logical identities. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.reportMissingContext">reportMissingContext</a></code> | DEPRECATED. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.reportMissingContextKey">reportMissingContextKey</a></code> | Indicate that a context key was expected. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.resolve">resolve</a></code> | Resolve a tokenized value in the context of the current stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.splitArn">splitArn</a></code> | Splits the provided ARN into its components. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.toJsonString">toJsonString</a></code> | Convert an object, potentially containing tokens, to a JSON string. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.setParameter">setParameter</a></code> | Assign a value to one of the nested stack parameters. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.addUser">addUser</a></code> | *No description.* |
 
 ---
@@ -3363,439 +3388,6 @@ public toString(): string
 ```
 
 Returns a string representation of this construct.
-
-##### `addDependency` <a name="addDependency" id="aws-analytics-reference-architecture.NotebookPlatform.addDependency"></a>
-
-```typescript
-public addDependency(target: Stack, reason?: string): void
-```
-
-Add a dependency between this stack and another stack.
-
-This can be used to define dependencies between any two stacks within an
-app, and also supports nested stacks.
-
-###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.NotebookPlatform.addDependency.parameter.target"></a>
-
-- *Type:* @aws-cdk/core.Stack
-
----
-
-###### `reason`<sup>Optional</sup> <a name="reason" id="aws-analytics-reference-architecture.NotebookPlatform.addDependency.parameter.reason"></a>
-
-- *Type:* string
-
----
-
-##### ~~`addDockerImageAsset`~~ <a name="addDockerImageAsset" id="aws-analytics-reference-architecture.NotebookPlatform.addDockerImageAsset"></a>
-
-```typescript
-public addDockerImageAsset(asset: DockerImageAssetSource): DockerImageAssetLocation
-```
-
-Register a docker image asset on this Stack.
-
-###### `asset`<sup>Required</sup> <a name="asset" id="aws-analytics-reference-architecture.NotebookPlatform.addDockerImageAsset.parameter.asset"></a>
-
-- *Type:* @aws-cdk/core.DockerImageAssetSource
-
----
-
-##### ~~`addFileAsset`~~ <a name="addFileAsset" id="aws-analytics-reference-architecture.NotebookPlatform.addFileAsset"></a>
-
-```typescript
-public addFileAsset(asset: FileAssetSource): FileAssetLocation
-```
-
-Register a file asset on this Stack.
-
-###### `asset`<sup>Required</sup> <a name="asset" id="aws-analytics-reference-architecture.NotebookPlatform.addFileAsset.parameter.asset"></a>
-
-- *Type:* @aws-cdk/core.FileAssetSource
-
----
-
-##### `addTransform` <a name="addTransform" id="aws-analytics-reference-architecture.NotebookPlatform.addTransform"></a>
-
-```typescript
-public addTransform(transform: string): void
-```
-
-Add a Transform to this stack. A Transform is a macro that AWS CloudFormation uses to process your template.
-
-Duplicate values are removed when stack is synthesized.
-
-> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html)
-
-*Example*
-
-```typescript
-declare const stack: Stack;
-
-stack.addTransform('AWS::Serverless-2016-10-31')
-```
-
-
-###### `transform`<sup>Required</sup> <a name="transform" id="aws-analytics-reference-architecture.NotebookPlatform.addTransform.parameter.transform"></a>
-
-- *Type:* string
-
-The transform to add.
-
----
-
-##### `exportValue` <a name="exportValue" id="aws-analytics-reference-architecture.NotebookPlatform.exportValue"></a>
-
-```typescript
-public exportValue(exportedValue: any, options?: ExportValueOptions): string
-```
-
-Create a CloudFormation Export for a value.
-
-Returns a string representing the corresponding `Fn.importValue()`
-expression for this Export. You can control the name for the export by
-passing the `name` option.
-
-If you don't supply a value for `name`, the value you're exporting must be
-a Resource attribute (for example: `bucket.bucketName`) and it will be
-given the same name as the automatic cross-stack reference that would be created
-if you used the attribute in another Stack.
-
-One of the uses for this method is to *remove* the relationship between
-two Stacks established by automatic cross-stack references. It will
-temporarily ensure that the CloudFormation Export still exists while you
-remove the reference from the consuming stack. After that, you can remove
-the resource and the manual export.
-
-## Example
-
-Here is how the process works. Let's say there are two stacks,
-`producerStack` and `consumerStack`, and `producerStack` has a bucket
-called `bucket`, which is referenced by `consumerStack` (perhaps because
-an AWS Lambda Function writes into it, or something like that).
-
-It is not safe to remove `producerStack.bucket` because as the bucket is being
-deleted, `consumerStack` might still be using it.
-
-Instead, the process takes two deployments:
-
-### Deployment 1: break the relationship
-
-- Make sure `consumerStack` no longer references `bucket.bucketName` (maybe the consumer
-   stack now uses its own bucket, or it writes to an AWS DynamoDB table, or maybe you just
-   remove the Lambda Function altogether).
-- In the `ProducerStack` class, call `this.exportValue(this.bucket.bucketName)`. This
-   will make sure the CloudFormation Export continues to exist while the relationship
-   between the two stacks is being broken.
-- Deploy (this will effectively only change the `consumerStack`, but it's safe to deploy both).
-
-### Deployment 2: remove the bucket resource
-
-- You are now free to remove the `bucket` resource from `producerStack`.
-- Don't forget to remove the `exportValue()` call as well.
-- Deploy again (this time only the `producerStack` will be changed -- the bucket will be deleted).
-
-###### `exportedValue`<sup>Required</sup> <a name="exportedValue" id="aws-analytics-reference-architecture.NotebookPlatform.exportValue.parameter.exportedValue"></a>
-
-- *Type:* any
-
----
-
-###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.NotebookPlatform.exportValue.parameter.options"></a>
-
-- *Type:* @aws-cdk/core.ExportValueOptions
-
----
-
-##### `formatArn` <a name="formatArn" id="aws-analytics-reference-architecture.NotebookPlatform.formatArn"></a>
-
-```typescript
-public formatArn(components: ArnComponents): string
-```
-
-Creates an ARN from components.
-
-If `partition`, `region` or `account` are not specified, the stack's
-partition, region and account will be used.
-
-If any component is the empty string, an empty string will be inserted
-into the generated ARN at the location that component corresponds to.
-
-The ARN will be formatted as follows:
-
-   arn:{partition}:{service}:{region}:{account}:{resource}{sep}}{resource-name}
-
-The required ARN pieces that are omitted will be taken from the stack that
-the 'scope' is attached to. If all ARN pieces are supplied, the supplied scope
-can be 'undefined'.
-
-###### `components`<sup>Required</sup> <a name="components" id="aws-analytics-reference-architecture.NotebookPlatform.formatArn.parameter.components"></a>
-
-- *Type:* @aws-cdk/core.ArnComponents
-
----
-
-##### `getLogicalId` <a name="getLogicalId" id="aws-analytics-reference-architecture.NotebookPlatform.getLogicalId"></a>
-
-```typescript
-public getLogicalId(element: CfnElement): string
-```
-
-Allocates a stack-unique CloudFormation-compatible logical identity for a specific resource.
-
-This method is called when a `CfnElement` is created and used to render the
-initial logical identity of resources. Logical ID renames are applied at
-this stage.
-
-This method uses the protected method `allocateLogicalId` to render the
-logical ID for an element. To modify the naming scheme, extend the `Stack`
-class and override this method.
-
-###### `element`<sup>Required</sup> <a name="element" id="aws-analytics-reference-architecture.NotebookPlatform.getLogicalId.parameter.element"></a>
-
-- *Type:* @aws-cdk/core.CfnElement
-
-The CloudFormation element for which a logical identity is needed.
-
----
-
-##### ~~`parseArn`~~ <a name="parseArn" id="aws-analytics-reference-architecture.NotebookPlatform.parseArn"></a>
-
-```typescript
-public parseArn(arn: string, sepIfToken?: string, hasName?: boolean): ArnComponents
-```
-
-Given an ARN, parses it and returns components.
-
-IF THE ARN IS A CONCRETE STRING...
-
-...it will be parsed and validated. The separator (`sep`) will be set to '/'
-if the 6th component includes a '/', in which case, `resource` will be set
-to the value before the '/' and `resourceName` will be the rest. In case
-there is no '/', `resource` will be set to the 6th components and
-`resourceName` will be set to the rest of the string.
-
-IF THE ARN IS A TOKEN...
-
-...it cannot be validated, since we don't have the actual value yet at the
-time of this function call. You will have to supply `sepIfToken` and
-whether or not ARNs of the expected format usually have resource names
-in order to parse it properly. The resulting `ArnComponents` object will
-contain tokens for the subexpressions of the ARN, not string literals.
-
-If the resource name could possibly contain the separator char, the actual
-resource name cannot be properly parsed. This only occurs if the separator
-char is '/', and happens for example for S3 object ARNs, IAM Role ARNs,
-IAM OIDC Provider ARNs, etc. To properly extract the resource name from a
-Tokenized ARN, you must know the resource type and call
-`Arn.extractResourceName`.
-
-###### `arn`<sup>Required</sup> <a name="arn" id="aws-analytics-reference-architecture.NotebookPlatform.parseArn.parameter.arn"></a>
-
-- *Type:* string
-
-The ARN string to parse.
-
----
-
-###### `sepIfToken`<sup>Optional</sup> <a name="sepIfToken" id="aws-analytics-reference-architecture.NotebookPlatform.parseArn.parameter.sepIfToken"></a>
-
-- *Type:* string
-
-The separator used to separate resource from resourceName.
-
----
-
-###### `hasName`<sup>Optional</sup> <a name="hasName" id="aws-analytics-reference-architecture.NotebookPlatform.parseArn.parameter.hasName"></a>
-
-- *Type:* boolean
-
-Whether there is a name component in the ARN at all.
-
-For
-example, SNS Topics ARNs have the 'resource' component contain the topic
-name, and no 'resourceName' component.
-
----
-
-##### `regionalFact` <a name="regionalFact" id="aws-analytics-reference-architecture.NotebookPlatform.regionalFact"></a>
-
-```typescript
-public regionalFact(factName: string, defaultValue?: string): string
-```
-
-Look up a fact value for the given fact for the region of this stack.
-
-Will return a definite value only if the region of the current stack is resolved.
-If not, a lookup map will be added to the stack and the lookup will be done at
-CDK deployment time.
-
-What regions will be included in the lookup map is controlled by the
-`@aws-cdk/core:target-partitions` context value: it must be set to a list
-of partitions, and only regions from the given partitions will be included.
-If no such context key is set, all regions will be included.
-
-This function is intended to be used by construct library authors. Application
-builders can rely on the abstractions offered by construct libraries and do
-not have to worry about regional facts.
-
-If `defaultValue` is not given, it is an error if the fact is unknown for
-the given region.
-
-###### `factName`<sup>Required</sup> <a name="factName" id="aws-analytics-reference-architecture.NotebookPlatform.regionalFact.parameter.factName"></a>
-
-- *Type:* string
-
----
-
-###### `defaultValue`<sup>Optional</sup> <a name="defaultValue" id="aws-analytics-reference-architecture.NotebookPlatform.regionalFact.parameter.defaultValue"></a>
-
-- *Type:* string
-
----
-
-##### `renameLogicalId` <a name="renameLogicalId" id="aws-analytics-reference-architecture.NotebookPlatform.renameLogicalId"></a>
-
-```typescript
-public renameLogicalId(oldId: string, newId: string): void
-```
-
-Rename a generated logical identities.
-
-To modify the naming scheme strategy, extend the `Stack` class and
-override the `allocateLogicalId` method.
-
-###### `oldId`<sup>Required</sup> <a name="oldId" id="aws-analytics-reference-architecture.NotebookPlatform.renameLogicalId.parameter.oldId"></a>
-
-- *Type:* string
-
----
-
-###### `newId`<sup>Required</sup> <a name="newId" id="aws-analytics-reference-architecture.NotebookPlatform.renameLogicalId.parameter.newId"></a>
-
-- *Type:* string
-
----
-
-##### ~~`reportMissingContext`~~ <a name="reportMissingContext" id="aws-analytics-reference-architecture.NotebookPlatform.reportMissingContext"></a>
-
-```typescript
-public reportMissingContext(report: MissingContext): void
-```
-
-DEPRECATED.
-
-###### `report`<sup>Required</sup> <a name="report" id="aws-analytics-reference-architecture.NotebookPlatform.reportMissingContext.parameter.report"></a>
-
-- *Type:* @aws-cdk/cx-api.MissingContext
-
----
-
-##### `reportMissingContextKey` <a name="reportMissingContextKey" id="aws-analytics-reference-architecture.NotebookPlatform.reportMissingContextKey"></a>
-
-```typescript
-public reportMissingContextKey(report: MissingContext): void
-```
-
-Indicate that a context key was expected.
-
-Contains instructions which will be emitted into the cloud assembly on how
-the key should be supplied.
-
-###### `report`<sup>Required</sup> <a name="report" id="aws-analytics-reference-architecture.NotebookPlatform.reportMissingContextKey.parameter.report"></a>
-
-- *Type:* @aws-cdk/cloud-assembly-schema.MissingContext
-
-The set of parameters needed to obtain the context.
-
----
-
-##### `resolve` <a name="resolve" id="aws-analytics-reference-architecture.NotebookPlatform.resolve"></a>
-
-```typescript
-public resolve(obj: any): any
-```
-
-Resolve a tokenized value in the context of the current stack.
-
-###### `obj`<sup>Required</sup> <a name="obj" id="aws-analytics-reference-architecture.NotebookPlatform.resolve.parameter.obj"></a>
-
-- *Type:* any
-
----
-
-##### `splitArn` <a name="splitArn" id="aws-analytics-reference-architecture.NotebookPlatform.splitArn"></a>
-
-```typescript
-public splitArn(arn: string, arnFormat: ArnFormat): ArnComponents
-```
-
-Splits the provided ARN into its components.
-
-Works both if 'arn' is a string like 'arn:aws:s3:::bucket',
-and a Token representing a dynamic CloudFormation expression
-(in which case the returned components will also be dynamic CloudFormation expressions,
-encoded as Tokens).
-
-###### `arn`<sup>Required</sup> <a name="arn" id="aws-analytics-reference-architecture.NotebookPlatform.splitArn.parameter.arn"></a>
-
-- *Type:* string
-
-the ARN to split into its components.
-
----
-
-###### `arnFormat`<sup>Required</sup> <a name="arnFormat" id="aws-analytics-reference-architecture.NotebookPlatform.splitArn.parameter.arnFormat"></a>
-
-- *Type:* @aws-cdk/core.ArnFormat
-
-the expected format of 'arn' - depends on what format the service 'arn' represents uses.
-
----
-
-##### `toJsonString` <a name="toJsonString" id="aws-analytics-reference-architecture.NotebookPlatform.toJsonString"></a>
-
-```typescript
-public toJsonString(obj: any, space?: number): string
-```
-
-Convert an object, potentially containing tokens, to a JSON string.
-
-###### `obj`<sup>Required</sup> <a name="obj" id="aws-analytics-reference-architecture.NotebookPlatform.toJsonString.parameter.obj"></a>
-
-- *Type:* any
-
----
-
-###### `space`<sup>Optional</sup> <a name="space" id="aws-analytics-reference-architecture.NotebookPlatform.toJsonString.parameter.space"></a>
-
-- *Type:* number
-
----
-
-##### `setParameter` <a name="setParameter" id="aws-analytics-reference-architecture.NotebookPlatform.setParameter"></a>
-
-```typescript
-public setParameter(name: string, value: string): void
-```
-
-Assign a value to one of the nested stack parameters.
-
-###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.NotebookPlatform.setParameter.parameter.name"></a>
-
-- *Type:* string
-
-The parameter name (ID).
-
----
-
-###### `value`<sup>Required</sup> <a name="value" id="aws-analytics-reference-architecture.NotebookPlatform.setParameter.parameter.value"></a>
-
-- *Type:* string
-
-The value to assign.
-
----
 
 ##### `addUser` <a name="addUser" id="aws-analytics-reference-architecture.NotebookPlatform.addUser"></a>
 
@@ -3816,9 +3408,6 @@ list of users.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.isStack">isStack</a></code> | Return whether the given object is a Stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.of">of</a></code> | Looks up the first stack scope in which `construct` is defined. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.isNestedStack">isNestedStack</a></code> | Checks if `x` is an object of type `NestedStack`. |
 
 ---
 
@@ -3838,86 +3427,11 @@ Return whether the given object is a Construct.
 
 ---
 
-##### `isStack` <a name="isStack" id="aws-analytics-reference-architecture.NotebookPlatform.isStack"></a>
-
-```typescript
-import { NotebookPlatform } from 'aws-analytics-reference-architecture'
-
-NotebookPlatform.isStack(x: any)
-```
-
-Return whether the given object is a Stack.
-
-We do attribute detection since we can't reliably use 'instanceof'.
-
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.NotebookPlatform.isStack.parameter.x"></a>
-
-- *Type:* any
-
----
-
-##### `of` <a name="of" id="aws-analytics-reference-architecture.NotebookPlatform.of"></a>
-
-```typescript
-import { NotebookPlatform } from 'aws-analytics-reference-architecture'
-
-NotebookPlatform.of(construct: IConstruct)
-```
-
-Looks up the first stack scope in which `construct` is defined.
-
-Fails if there is no stack up the tree.
-
-###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.NotebookPlatform.of.parameter.construct"></a>
-
-- *Type:* constructs.IConstruct
-
-The construct to start the search from.
-
----
-
-##### `isNestedStack` <a name="isNestedStack" id="aws-analytics-reference-architecture.NotebookPlatform.isNestedStack"></a>
-
-```typescript
-import { NotebookPlatform } from 'aws-analytics-reference-architecture'
-
-NotebookPlatform.isNestedStack(x: any)
-```
-
-Checks if `x` is an object of type `NestedStack`.
-
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.NotebookPlatform.isNestedStack.parameter.x"></a>
-
-- *Type:* any
-
----
-
 #### Properties <a name="Properties" id="Properties"></a>
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.account">account</a></code> | <code>string</code> | The AWS account into which this stack will be deployed. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.artifactId">artifactId</a></code> | <code>string</code> | The ID of the cloud assembly artifact for this stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.availabilityZones">availabilityZones</a></code> | <code>string[]</code> | Returns the list of AZs that are available in the AWS environment (account/region) associated with this stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.bundlingRequired">bundlingRequired</a></code> | <code>boolean</code> | Indicates whether the stack requires bundling or not. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.dependencies">dependencies</a></code> | <code>@aws-cdk/core.Stack[]</code> | Return the stacks this stack depends on. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.environment">environment</a></code> | <code>string</code> | The environment coordinates in which this stack is deployed. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.nested">nested</a></code> | <code>boolean</code> | Indicates if this is a nested stack, in which case `parentStack` will include a reference to it's parent. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.notificationArns">notificationArns</a></code> | <code>string[]</code> | Returns the list of notification Amazon Resource Names (ARNs) for the current stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.partition">partition</a></code> | <code>string</code> | The partition in which this stack is defined. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.region">region</a></code> | <code>string</code> | The AWS region into which this stack will be deployed (e.g. `us-west-2`). |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.stackId">stackId</a></code> | <code>string</code> | An attribute that represents the ID of the stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.stackName">stackName</a></code> | <code>string</code> | An attribute that represents the name of the nested stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.synthesizer">synthesizer</a></code> | <code>@aws-cdk/core.IStackSynthesizer</code> | Synthesis method for this stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.tags">tags</a></code> | <code>@aws-cdk/core.TagManager</code> | Tags to be applied to the stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.templateFile">templateFile</a></code> | <code>string</code> | The name of the CloudFormation template file emitted to the output directory during synthesis. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.templateOptions">templateOptions</a></code> | <code>@aws-cdk/core.ITemplateOptions</code> | Options for CloudFormation template (like version, transform, description). |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.urlSuffix">urlSuffix</a></code> | <code>string</code> | The Amazon domain suffix for the region in which this stack is defined. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.nestedStackParent">nestedStackParent</a></code> | <code>@aws-cdk/core.Stack</code> | If this is a nested stack, returns it's parent stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.nestedStackResource">nestedStackResource</a></code> | <code>@aws-cdk/core.CfnResource</code> | If this is a nested stack, this represents its `AWS::CloudFormation::Stack` resource. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.parentStack">parentStack</a></code> | <code>@aws-cdk/core.Stack</code> | Returns the parent of a nested stack. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.terminationProtection">terminationProtection</a></code> | <code>boolean</code> | Whether termination protection is enabled for this stack. |
 
 ---
 
@@ -3933,333 +3447,6 @@ The construct tree node associated with this construct.
 
 ---
 
-##### `account`<sup>Required</sup> <a name="account" id="aws-analytics-reference-architecture.NotebookPlatform.property.account"></a>
-
-```typescript
-public readonly account: string;
-```
-
-- *Type:* string
-
-The AWS account into which this stack will be deployed.
-
-This value is resolved according to the following rules:
-
-1. The value provided to `env.account` when the stack is defined. This can
-    either be a concerete account (e.g. `585695031111`) or the
-    `Aws.accountId` token.
-3. `Aws.accountId`, which represents the CloudFormation intrinsic reference
-    `{ "Ref": "AWS::AccountId" }` encoded as a string token.
-
-Preferably, you should use the return value as an opaque string and not
-attempt to parse it to implement your logic. If you do, you must first
-check that it is a concerete value an not an unresolved token. If this
-value is an unresolved token (`Token.isUnresolved(stack.account)` returns
-`true`), this implies that the user wishes that this stack will synthesize
-into a **account-agnostic template**. In this case, your code should either
-fail (throw an error, emit a synth error using `Annotations.of(construct).addError()`) or
-implement some other region-agnostic behavior.
-
----
-
-##### `artifactId`<sup>Required</sup> <a name="artifactId" id="aws-analytics-reference-architecture.NotebookPlatform.property.artifactId"></a>
-
-```typescript
-public readonly artifactId: string;
-```
-
-- *Type:* string
-
-The ID of the cloud assembly artifact for this stack.
-
----
-
-##### `availabilityZones`<sup>Required</sup> <a name="availabilityZones" id="aws-analytics-reference-architecture.NotebookPlatform.property.availabilityZones"></a>
-
-```typescript
-public readonly availabilityZones: string[];
-```
-
-- *Type:* string[]
-
-Returns the list of AZs that are available in the AWS environment (account/region) associated with this stack.
-
-If the stack is environment-agnostic (either account and/or region are
-tokens), this property will return an array with 2 tokens that will resolve
-at deploy-time to the first two availability zones returned from CloudFormation's
-`Fn::GetAZs` intrinsic function.
-
-If they are not available in the context, returns a set of dummy values and
-reports them as missing, and let the CLI resolve them by calling EC2
-`DescribeAvailabilityZones` on the target environment.
-
-To specify a different strategy for selecting availability zones override this method.
-
----
-
-##### `bundlingRequired`<sup>Required</sup> <a name="bundlingRequired" id="aws-analytics-reference-architecture.NotebookPlatform.property.bundlingRequired"></a>
-
-```typescript
-public readonly bundlingRequired: boolean;
-```
-
-- *Type:* boolean
-
-Indicates whether the stack requires bundling or not.
-
----
-
-##### `dependencies`<sup>Required</sup> <a name="dependencies" id="aws-analytics-reference-architecture.NotebookPlatform.property.dependencies"></a>
-
-```typescript
-public readonly dependencies: Stack[];
-```
-
-- *Type:* @aws-cdk/core.Stack[]
-
-Return the stacks this stack depends on.
-
----
-
-##### `environment`<sup>Required</sup> <a name="environment" id="aws-analytics-reference-architecture.NotebookPlatform.property.environment"></a>
-
-```typescript
-public readonly environment: string;
-```
-
-- *Type:* string
-
-The environment coordinates in which this stack is deployed.
-
-In the form
-`aws://account/region`. Use `stack.account` and `stack.region` to obtain
-the specific values, no need to parse.
-
-You can use this value to determine if two stacks are targeting the same
-environment.
-
-If either `stack.account` or `stack.region` are not concrete values (e.g.
-`Aws.account` or `Aws.region`) the special strings `unknown-account` and/or
-`unknown-region` will be used respectively to indicate this stack is
-region/account-agnostic.
-
----
-
-##### `nested`<sup>Required</sup> <a name="nested" id="aws-analytics-reference-architecture.NotebookPlatform.property.nested"></a>
-
-```typescript
-public readonly nested: boolean;
-```
-
-- *Type:* boolean
-
-Indicates if this is a nested stack, in which case `parentStack` will include a reference to it's parent.
-
----
-
-##### `notificationArns`<sup>Required</sup> <a name="notificationArns" id="aws-analytics-reference-architecture.NotebookPlatform.property.notificationArns"></a>
-
-```typescript
-public readonly notificationArns: string[];
-```
-
-- *Type:* string[]
-
-Returns the list of notification Amazon Resource Names (ARNs) for the current stack.
-
----
-
-##### `partition`<sup>Required</sup> <a name="partition" id="aws-analytics-reference-architecture.NotebookPlatform.property.partition"></a>
-
-```typescript
-public readonly partition: string;
-```
-
-- *Type:* string
-
-The partition in which this stack is defined.
-
----
-
-##### `region`<sup>Required</sup> <a name="region" id="aws-analytics-reference-architecture.NotebookPlatform.property.region"></a>
-
-```typescript
-public readonly region: string;
-```
-
-- *Type:* string
-
-The AWS region into which this stack will be deployed (e.g. `us-west-2`).
-
-This value is resolved according to the following rules:
-
-1. The value provided to `env.region` when the stack is defined. This can
-    either be a concerete region (e.g. `us-west-2`) or the `Aws.region`
-    token.
-3. `Aws.region`, which is represents the CloudFormation intrinsic reference
-    `{ "Ref": "AWS::Region" }` encoded as a string token.
-
-Preferably, you should use the return value as an opaque string and not
-attempt to parse it to implement your logic. If you do, you must first
-check that it is a concerete value an not an unresolved token. If this
-value is an unresolved token (`Token.isUnresolved(stack.region)` returns
-`true`), this implies that the user wishes that this stack will synthesize
-into a **region-agnostic template**. In this case, your code should either
-fail (throw an error, emit a synth error using `Annotations.of(construct).addError()`) or
-implement some other region-agnostic behavior.
-
----
-
-##### `stackId`<sup>Required</sup> <a name="stackId" id="aws-analytics-reference-architecture.NotebookPlatform.property.stackId"></a>
-
-```typescript
-public readonly stackId: string;
-```
-
-- *Type:* string
-
-An attribute that represents the ID of the stack.
-
-This is a context aware attribute:
-- If this is referenced from the parent stack, it will return `{ "Ref": "LogicalIdOfNestedStackResource" }`.
-- If this is referenced from the context of the nested stack, it will return `{ "Ref": "AWS::StackId" }`
-
-Example value: `arn:aws:cloudformation:us-east-2:123456789012:stack/mystack-mynestedstack-sggfrhxhum7w/f449b250-b969-11e0-a185-5081d0136786`
-
----
-
-##### `stackName`<sup>Required</sup> <a name="stackName" id="aws-analytics-reference-architecture.NotebookPlatform.property.stackName"></a>
-
-```typescript
-public readonly stackName: string;
-```
-
-- *Type:* string
-
-An attribute that represents the name of the nested stack.
-
-This is a context aware attribute:
-- If this is referenced from the parent stack, it will return a token that parses the name from the stack ID.
-- If this is referenced from the context of the nested stack, it will return `{ "Ref": "AWS::StackName" }`
-
-Example value: `mystack-mynestedstack-sggfrhxhum7w`
-
----
-
-##### `synthesizer`<sup>Required</sup> <a name="synthesizer" id="aws-analytics-reference-architecture.NotebookPlatform.property.synthesizer"></a>
-
-```typescript
-public readonly synthesizer: IStackSynthesizer;
-```
-
-- *Type:* @aws-cdk/core.IStackSynthesizer
-
-Synthesis method for this stack.
-
----
-
-##### `tags`<sup>Required</sup> <a name="tags" id="aws-analytics-reference-architecture.NotebookPlatform.property.tags"></a>
-
-```typescript
-public readonly tags: TagManager;
-```
-
-- *Type:* @aws-cdk/core.TagManager
-
-Tags to be applied to the stack.
-
----
-
-##### `templateFile`<sup>Required</sup> <a name="templateFile" id="aws-analytics-reference-architecture.NotebookPlatform.property.templateFile"></a>
-
-```typescript
-public readonly templateFile: string;
-```
-
-- *Type:* string
-
-The name of the CloudFormation template file emitted to the output directory during synthesis.
-
-Example value: `MyStack.template.json`
-
----
-
-##### `templateOptions`<sup>Required</sup> <a name="templateOptions" id="aws-analytics-reference-architecture.NotebookPlatform.property.templateOptions"></a>
-
-```typescript
-public readonly templateOptions: ITemplateOptions;
-```
-
-- *Type:* @aws-cdk/core.ITemplateOptions
-
-Options for CloudFormation template (like version, transform, description).
-
----
-
-##### `urlSuffix`<sup>Required</sup> <a name="urlSuffix" id="aws-analytics-reference-architecture.NotebookPlatform.property.urlSuffix"></a>
-
-```typescript
-public readonly urlSuffix: string;
-```
-
-- *Type:* string
-
-The Amazon domain suffix for the region in which this stack is defined.
-
----
-
-##### `nestedStackParent`<sup>Optional</sup> <a name="nestedStackParent" id="aws-analytics-reference-architecture.NotebookPlatform.property.nestedStackParent"></a>
-
-```typescript
-public readonly nestedStackParent: Stack;
-```
-
-- *Type:* @aws-cdk/core.Stack
-
-If this is a nested stack, returns it's parent stack.
-
----
-
-##### `nestedStackResource`<sup>Optional</sup> <a name="nestedStackResource" id="aws-analytics-reference-architecture.NotebookPlatform.property.nestedStackResource"></a>
-
-```typescript
-public readonly nestedStackResource: CfnResource;
-```
-
-- *Type:* @aws-cdk/core.CfnResource
-
-If this is a nested stack, this represents its `AWS::CloudFormation::Stack` resource.
-
-`undefined` for top-level (non-nested) stacks.
-
----
-
-##### ~~`parentStack`~~<sup>Optional</sup> <a name="parentStack" id="aws-analytics-reference-architecture.NotebookPlatform.property.parentStack"></a>
-
-- *Deprecated:* use `nestedStackParent`
-
-```typescript
-public readonly parentStack: Stack;
-```
-
-- *Type:* @aws-cdk/core.Stack
-
-Returns the parent of a nested stack.
-
----
-
-##### `terminationProtection`<sup>Optional</sup> <a name="terminationProtection" id="aws-analytics-reference-architecture.NotebookPlatform.property.terminationProtection"></a>
-
-```typescript
-public readonly terminationProtection: boolean;
-```
-
-- *Type:* boolean
-
-Whether termination protection is enabled for this stack.
-
----
-
 
 ### S3CrossAccount <a name="S3CrossAccount" id="aws-analytics-reference-architecture.S3CrossAccount"></a>
 
@@ -4268,7 +3455,7 @@ This CDK construct grants cross account permissions on an Amazon S3 location.
 It uses a bucket policy and an Amazon KMS Key policy if the bucket is encrypted with KMS.
 The cross account permission is granted to the entire account and not to a specific principal in this account.
 It's the responsibility of the target account to grant permissions to the relevant principals.
-  
+
 Usage example:
 ```typescript
 import * as cdk from '@aws-cdk/core';
@@ -4380,22 +3567,70 @@ The construct tree node associated with this construct.
 ---
 
 
-### SingletonGlueDefaultRole <a name="SingletonGlueDefaultRole" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole"></a>
+### SingletonCfnLaunchTemplate <a name="SingletonCfnLaunchTemplate" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate"></a>
 
-SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
+An Amazon S3 Bucket implementing the singleton pattern.
 
-The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
-The Construct provides a getOrCreate method for SingletonInstantiation
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer"></a>
+
+```typescript
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
+
+new SingletonCfnLaunchTemplate(scope: Construct, id: string, props?: CfnLaunchTemplateProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | - scope in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.id">id</a></code> | <code>string</code> | - scoped id of the resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-ec2.CfnLaunchTemplateProps</code> | - resource properties. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+scope in which this resource is defined.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+scoped id of the resource.
+
+---
+
+##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props"></a>
+
+- *Type:* @aws-cdk/aws-ec2.CfnLaunchTemplateProps
+
+resource properties.
+
+---
 
 #### Methods <a name="Methods" id="Methods"></a>
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.overrideLogicalId">overrideLogicalId</a></code> | Overrides the auto-generated logical ID with a specific ID. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDeletionOverride">addDeletionOverride</a></code> | Syntactic sugar for `addOverride(path, undefined)`. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn">addDependsOn</a></code> | Indicates that this resource depends on another resource and cannot be provisioned unless the other resource has been successfully provisioned. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addMetadata">addMetadata</a></code> | Add a value to the CloudFormation Resource Metadata. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addOverride">addOverride</a></code> | Adds an override to the synthesized CloudFormation resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyDeletionOverride">addPropertyDeletionOverride</a></code> | Adds an override that deletes the value of a property from the resource definition. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyOverride">addPropertyOverride</a></code> | Adds an override to a resource property. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy">applyRemovalPolicy</a></code> | Sets the deletion policy of the resource based on the removal policy specified. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getAtt">getAtt</a></code> | Returns a token for an runtime attribute of this resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getMetadata">getMetadata</a></code> | Retrieve a value value from the CloudFormation Resource Metadata. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.inspect">inspect</a></code> | Examines the CloudFormation resource and discloses attributes. |
 
 ---
 
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.toString"></a>
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.toString"></a>
 
 ```typescript
 public toString(): string
@@ -4403,42 +3638,370 @@ public toString(): string
 
 Returns a string representation of this construct.
 
-#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+##### `overrideLogicalId` <a name="overrideLogicalId" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.overrideLogicalId"></a>
 
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.getOrCreate">getOrCreate</a></code> | *No description.* |
+```typescript
+public overrideLogicalId(newLogicalId: string): void
+```
+
+Overrides the auto-generated logical ID with a specific ID.
+
+###### `newLogicalId`<sup>Required</sup> <a name="newLogicalId" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.overrideLogicalId.parameter.newLogicalId"></a>
+
+- *Type:* string
+
+The new logical ID to use for this stack element.
 
 ---
 
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.isConstruct"></a>
+##### `addDeletionOverride` <a name="addDeletionOverride" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDeletionOverride"></a>
 
 ```typescript
-import { SingletonGlueDefaultRole } from 'aws-analytics-reference-architecture'
-
-SingletonGlueDefaultRole.isConstruct(x: any)
+public addDeletionOverride(path: string): void
 ```
 
-Return whether the given object is a Construct.
+Syntactic sugar for `addOverride(path, undefined)`.
 
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.isConstruct.parameter.x"></a>
+###### `path`<sup>Required</sup> <a name="path" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDeletionOverride.parameter.path"></a>
+
+- *Type:* string
+
+The path of the value to delete.
+
+---
+
+##### `addDependsOn` <a name="addDependsOn" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn"></a>
+
+```typescript
+public addDependsOn(target: CfnResource): void
+```
+
+Indicates that this resource depends on another resource and cannot be provisioned unless the other resource has been successfully provisioned.
+
+This can be used for resources across stacks (or nested stack) boundaries
+and the dependency will automatically be transferred to the relevant scope.
+
+###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn.parameter.target"></a>
+
+- *Type:* @aws-cdk/core.CfnResource
+
+---
+
+##### `addMetadata` <a name="addMetadata" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addMetadata"></a>
+
+```typescript
+public addMetadata(key: string, value: any): void
+```
+
+Add a value to the CloudFormation Resource Metadata.
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html
+
+Note that this is a different set of metadata from CDK node metadata; this
+metadata ends up in the stack template under the resource, whereas CDK
+node metadata ends up in the Cloud Assembly.](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html
+
+Note that this is a different set of metadata from CDK node metadata; this
+metadata ends up in the stack template under the resource, whereas CDK
+node metadata ends up in the Cloud Assembly.)
+
+###### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addMetadata.parameter.key"></a>
+
+- *Type:* string
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addMetadata.parameter.value"></a>
 
 - *Type:* any
 
 ---
 
-##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.getOrCreate"></a>
+##### `addOverride` <a name="addOverride" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addOverride"></a>
 
 ```typescript
-import { SingletonGlueDefaultRole } from 'aws-analytics-reference-architecture'
-
-SingletonGlueDefaultRole.getOrCreate(scope: Construct)
+public addOverride(path: string, value: any): void
 ```
 
-###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.getOrCreate.parameter.scope"></a>
+Adds an override to the synthesized CloudFormation resource.
+
+To add a
+property override, either use `addPropertyOverride` or prefix `path` with
+"Properties." (i.e. `Properties.TopicName`).
+
+If the override is nested, separate each nested level using a dot (.) in the path parameter.
+If there is an array as part of the nesting, specify the index in the path.
+
+To include a literal `.` in the property name, prefix with a `\`. In most
+programming languages you will need to write this as `"\\."` because the
+`\` itself will need to be escaped.
+
+For example,
+```typescript
+cfnResource.addOverride('Properties.GlobalSecondaryIndexes.0.Projection.NonKeyAttributes', ['myattribute']);
+cfnResource.addOverride('Properties.GlobalSecondaryIndexes.1.ProjectionType', 'INCLUDE');
+```
+would add the overrides
+```json
+"Properties": {
+   "GlobalSecondaryIndexes": [
+     {
+       "Projection": {
+         "NonKeyAttributes": [ "myattribute" ]
+         ...
+       }
+       ...
+     },
+     {
+       "ProjectionType": "INCLUDE"
+       ...
+     },
+   ]
+   ...
+}
+```
+
+The `value` argument to `addOverride` will not be processed or translated
+in any way. Pass raw JSON values in here with the correct capitalization
+for CloudFormation. If you pass CDK classes or structs, they will be
+rendered with lowercased key names, and CloudFormation will reject the
+template.
+
+###### `path`<sup>Required</sup> <a name="path" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addOverride.parameter.path"></a>
+
+- *Type:* string
+
+The path of the property, you can use dot notation to override values in complex types.
+
+Any intermdediate keys
+will be created as needed.
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addOverride.parameter.value"></a>
+
+- *Type:* any
+
+The value.
+
+Could be primitive or complex.
+
+---
+
+##### `addPropertyDeletionOverride` <a name="addPropertyDeletionOverride" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyDeletionOverride"></a>
+
+```typescript
+public addPropertyDeletionOverride(propertyPath: string): void
+```
+
+Adds an override that deletes the value of a property from the resource definition.
+
+###### `propertyPath`<sup>Required</sup> <a name="propertyPath" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyDeletionOverride.parameter.propertyPath"></a>
+
+- *Type:* string
+
+The path to the property.
+
+---
+
+##### `addPropertyOverride` <a name="addPropertyOverride" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyOverride"></a>
+
+```typescript
+public addPropertyOverride(propertyPath: string, value: any): void
+```
+
+Adds an override to a resource property.
+
+Syntactic sugar for `addOverride("Properties.<...>", value)`.
+
+###### `propertyPath`<sup>Required</sup> <a name="propertyPath" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyOverride.parameter.propertyPath"></a>
+
+- *Type:* string
+
+The path of the property.
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyOverride.parameter.value"></a>
+
+- *Type:* any
+
+The value.
+
+---
+
+##### `applyRemovalPolicy` <a name="applyRemovalPolicy" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy"></a>
+
+```typescript
+public applyRemovalPolicy(policy?: RemovalPolicy, options?: RemovalPolicyOptions): void
+```
+
+Sets the deletion policy of the resource based on the removal policy specified.
+
+The Removal Policy controls what happens to this resource when it stops
+being managed by CloudFormation, either because you've removed it from the
+CDK application or because you've made a change that requires the resource
+to be replaced.
+
+The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
+account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
+
+###### `policy`<sup>Optional</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy.parameter.policy"></a>
+
+- *Type:* @aws-cdk/core.RemovalPolicy
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy.parameter.options"></a>
+
+- *Type:* @aws-cdk/core.RemovalPolicyOptions
+
+---
+
+##### `getAtt` <a name="getAtt" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getAtt"></a>
+
+```typescript
+public getAtt(attributeName: string): Reference
+```
+
+Returns a token for an runtime attribute of this resource.
+
+Ideally, use generated attribute accessors (e.g. `resource.arn`), but this can be used for future compatibility
+in case there is no generated attribute.
+
+###### `attributeName`<sup>Required</sup> <a name="attributeName" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getAtt.parameter.attributeName"></a>
+
+- *Type:* string
+
+The name of the attribute.
+
+---
+
+##### `getMetadata` <a name="getMetadata" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getMetadata"></a>
+
+```typescript
+public getMetadata(key: string): any
+```
+
+Retrieve a value value from the CloudFormation Resource Metadata.
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html
+
+Note that this is a different set of metadata from CDK node metadata; this
+metadata ends up in the stack template under the resource, whereas CDK
+node metadata ends up in the Cloud Assembly.](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html
+
+Note that this is a different set of metadata from CDK node metadata; this
+metadata ends up in the stack template under the resource, whereas CDK
+node metadata ends up in the Cloud Assembly.)
+
+###### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getMetadata.parameter.key"></a>
+
+- *Type:* string
+
+---
+
+##### `inspect` <a name="inspect" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.inspect"></a>
+
+```typescript
+public inspect(inspector: TreeInspector): void
+```
+
+Examines the CloudFormation resource and discloses attributes.
+
+###### `inspector`<sup>Required</sup> <a name="inspector" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.inspect.parameter.inspector"></a>
+
+- *Type:* @aws-cdk/core.TreeInspector
+
+tree inspector to collect and process attributes.
+
+---
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnElement">isCfnElement</a></code> | Returns `true` if a construct is a stack element (i.e. part of the synthesized cloudformation template). |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource">isCfnResource</a></code> | Check whether the given construct is a CfnResource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate">getOrCreate</a></code> | *No description.* |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct"></a>
+
+```typescript
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
+
+SingletonCfnLaunchTemplate.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+##### `isCfnElement` <a name="isCfnElement" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnElement"></a>
+
+```typescript
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
+
+SingletonCfnLaunchTemplate.isCfnElement(x: any)
+```
+
+Returns `true` if a construct is a stack element (i.e. part of the synthesized cloudformation template).
+
+Uses duck-typing instead of `instanceof` to allow stack elements from different
+versions of this library to be included in the same stack.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnElement.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+##### `isCfnResource` <a name="isCfnResource" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource"></a>
+
+```typescript
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
+
+SingletonCfnLaunchTemplate.isCfnResource(construct: IConstruct)
+```
+
+Check whether the given construct is a CfnResource.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource.parameter.construct"></a>
+
+- *Type:* constructs.IConstruct
+
+---
+
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate"></a>
+
+```typescript
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
+
+SingletonCfnLaunchTemplate.getOrCreate(scope: Construct, name: string, data: string)
+```
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate.parameter.scope"></a>
 
 - *Type:* @aws-cdk/core.Construct
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate.parameter.name"></a>
+
+- *Type:* string
+
+---
+
+###### `data`<sup>Required</sup> <a name="data" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate.parameter.data"></a>
+
+- *Type:* string
 
 ---
 
@@ -4446,12 +4009,22 @@ SingletonGlueDefaultRole.getOrCreate(scope: Construct)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.iamRole">iamRole</a></code> | <code>@aws-cdk/aws-iam.Role</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.creationStack">creationStack</a></code> | <code>string[]</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.logicalId">logicalId</a></code> | <code>string</code> | The logical ID for this CloudFormation stack element. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this element is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.ref">ref</a></code> | <code>string</code> | Return a string that will be resolved to a CloudFormation `{ Ref }` for this element. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnOptions">cfnOptions</a></code> | <code>@aws-cdk/core.ICfnResourceOptions</code> | Options for this resource, such as condition, update policy etc. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnResourceType">cfnResourceType</a></code> | <code>string</code> | AWS resource type. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrDefaultVersionNumber">attrDefaultVersionNumber</a></code> | <code>string</code> | The default version of the launch template, such as 2. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrLatestVersionNumber">attrLatestVersionNumber</a></code> | <code>string</code> | The latest version of the launch template, such as `5` . |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData">launchTemplateData</a></code> | <code>@aws-cdk/core.IResolvable \| @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateDataProperty</code> | The information for the launch template. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateName">launchTemplateName</a></code> | <code>string</code> | A name for the launch template. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications">tagSpecifications</a></code> | <code>@aws-cdk/core.IResolvable \| @aws-cdk/core.IResolvable \| @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty[]</code> | The tags to apply to the launch template during creation. |
 
 ---
 
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.node"></a>
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.node"></a>
 
 ```typescript
 public readonly node: ConstructNode;
@@ -4463,20 +4036,919 @@ The construct tree node associated with this construct.
 
 ---
 
-##### `iamRole`<sup>Required</sup> <a name="iamRole" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.iamRole"></a>
+##### `creationStack`<sup>Required</sup> <a name="creationStack" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.creationStack"></a>
 
 ```typescript
-public readonly iamRole: Role;
+public readonly creationStack: string[];
 ```
 
-- *Type:* @aws-cdk/aws-iam.Role
+- *Type:* string[]
+
+---
+
+##### `logicalId`<sup>Required</sup> <a name="logicalId" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.logicalId"></a>
+
+```typescript
+public readonly logicalId: string;
+```
+
+- *Type:* string
+
+The logical ID for this CloudFormation stack element.
+
+The logical ID of the element
+is calculated from the path of the resource node in the construct tree.
+
+To override this value, use `overrideLogicalId(newLogicalId)`.
+
+---
+
+##### `stack`<sup>Required</sup> <a name="stack" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.stack"></a>
+
+```typescript
+public readonly stack: Stack;
+```
+
+- *Type:* @aws-cdk/core.Stack
+
+The stack in which this element is defined.
+
+CfnElements must be defined within a stack scope (directly or indirectly).
+
+---
+
+##### `ref`<sup>Required</sup> <a name="ref" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.ref"></a>
+
+```typescript
+public readonly ref: string;
+```
+
+- *Type:* string
+
+Return a string that will be resolved to a CloudFormation `{ Ref }` for this element.
+
+If, by any chance, the intrinsic reference of a resource is not a string, you could
+coerce it to an IResolvable through `Lazy.any({ produce: resource.ref })`.
+
+---
+
+##### `cfnOptions`<sup>Required</sup> <a name="cfnOptions" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnOptions"></a>
+
+```typescript
+public readonly cfnOptions: ICfnResourceOptions;
+```
+
+- *Type:* @aws-cdk/core.ICfnResourceOptions
+
+Options for this resource, such as condition, update policy etc.
+
+---
+
+##### `cfnResourceType`<sup>Required</sup> <a name="cfnResourceType" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnResourceType"></a>
+
+```typescript
+public readonly cfnResourceType: string;
+```
+
+- *Type:* string
+
+AWS resource type.
+
+---
+
+##### `attrDefaultVersionNumber`<sup>Required</sup> <a name="attrDefaultVersionNumber" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrDefaultVersionNumber"></a>
+
+```typescript
+public readonly attrDefaultVersionNumber: string;
+```
+
+- *Type:* string
+
+The default version of the launch template, such as 2.
+
+The default version of a launch template cannot be specified in AWS CloudFormation . The default version can be set in the Amazon EC2 Console or by using the `modify-launch-template` AWS CLI command.
+
+---
+
+##### `attrLatestVersionNumber`<sup>Required</sup> <a name="attrLatestVersionNumber" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrLatestVersionNumber"></a>
+
+```typescript
+public readonly attrLatestVersionNumber: string;
+```
+
+- *Type:* string
+
+The latest version of the launch template, such as `5` .
+
+---
+
+##### `launchTemplateData`<sup>Optional</sup> <a name="launchTemplateData" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData"></a>
+
+```typescript
+public readonly launchTemplateData: IResolvable | LaunchTemplateDataProperty;
+```
+
+- *Type:* @aws-cdk/core.IResolvable | @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateDataProperty
+
+The information for the launch template.
+
+> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatedata](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatedata)
+
+---
+
+##### `launchTemplateName`<sup>Optional</sup> <a name="launchTemplateName" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateName"></a>
+
+```typescript
+public readonly launchTemplateName: string;
+```
+
+- *Type:* string
+
+A name for the launch template.
+
+> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatename](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatename)
+
+---
+
+##### `tagSpecifications`<sup>Optional</sup> <a name="tagSpecifications" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications"></a>
+
+```typescript
+public readonly tagSpecifications: IResolvable | IResolvable | LaunchTemplateTagSpecificationProperty[];
+```
+
+- *Type:* @aws-cdk/core.IResolvable | @aws-cdk/core.IResolvable | @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty[]
+
+The tags to apply to the launch template during creation.
+
+> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications)
+
+---
+
+#### Constants <a name="Constants" id="Constants"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.CFN_RESOURCE_TYPE_NAME">CFN_RESOURCE_TYPE_NAME</a></code> | <code>string</code> | The CloudFormation resource type name for this resource class. |
+
+---
+
+##### `CFN_RESOURCE_TYPE_NAME`<sup>Required</sup> <a name="CFN_RESOURCE_TYPE_NAME" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.CFN_RESOURCE_TYPE_NAME"></a>
+
+```typescript
+public readonly CFN_RESOURCE_TYPE_NAME: string;
+```
+
+- *Type:* string
+
+The CloudFormation resource type name for this resource class.
+
+---
+
+### SingletonGlueDatabase <a name="SingletonGlueDatabase" id="aws-analytics-reference-architecture.SingletonGlueDatabase"></a>
+
+An Amazon S3 Bucket implementing the singleton pattern.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer"></a>
+
+```typescript
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
+
+new SingletonGlueDatabase(scope: Construct, id: string, props: DatabaseProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-glue.DatabaseProps</code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.props"></a>
+
+- *Type:* @aws-cdk/aws-glue.DatabaseProps
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.applyRemovalPolicy">applyRemovalPolicy</a></code> | Apply the given removal policy to this resource. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SingletonGlueDatabase.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+##### `applyRemovalPolicy` <a name="applyRemovalPolicy" id="aws-analytics-reference-architecture.SingletonGlueDatabase.applyRemovalPolicy"></a>
+
+```typescript
+public applyRemovalPolicy(policy: RemovalPolicy): void
+```
+
+Apply the given removal policy to this resource.
+
+The Removal Policy controls what happens to this resource when it stops
+being managed by CloudFormation, either because you've removed it from the
+CDK application or because you've made a change that requires the resource
+to be replaced.
+
+The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
+account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
+
+###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonGlueDatabase.applyRemovalPolicy.parameter.policy"></a>
+
+- *Type:* @aws-cdk/core.RemovalPolicy
+
+---
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn">fromDatabaseArn</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate">getOrCreate</a></code> | *No description.* |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct"></a>
+
+```typescript
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
+
+SingletonGlueDatabase.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+##### `isResource` <a name="isResource" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isResource"></a>
+
+```typescript
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
+
+SingletonGlueDatabase.isResource(construct: IConstruct)
+```
+
+Check whether the given construct is a Resource.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isResource.parameter.construct"></a>
+
+- *Type:* @aws-cdk/core.IConstruct
+
+---
+
+##### `fromDatabaseArn` <a name="fromDatabaseArn" id="aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn"></a>
+
+```typescript
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
+
+SingletonGlueDatabase.fromDatabaseArn(scope: Construct, id: string, databaseArn: string)
+```
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+###### `databaseArn`<sup>Required</sup> <a name="databaseArn" id="aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn.parameter.databaseArn"></a>
+
+- *Type:* string
+
+---
+
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate"></a>
+
+```typescript
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
+
+SingletonGlueDatabase.getOrCreate(scope: Construct, name: string)
+```
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate.parameter.name"></a>
+
+- *Type:* string
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogArn">catalogArn</a></code> | <code>string</code> | ARN of the Glue catalog in which this database is stored. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogId">catalogId</a></code> | <code>string</code> | The catalog id of the database (usually, the AWS account id). |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.databaseArn">databaseArn</a></code> | <code>string</code> | ARN of this database. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.databaseName">databaseName</a></code> | <code>string</code> | Name of this database. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.locationUri">locationUri</a></code> | <code>string</code> | Location URI of this database. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.node"></a>
+
+```typescript
+public readonly node: ConstructNode;
+```
+
+- *Type:* @aws-cdk/core.ConstructNode
+
+The construct tree node associated with this construct.
+
+---
+
+##### `env`<sup>Required</sup> <a name="env" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.env"></a>
+
+```typescript
+public readonly env: ResourceEnvironment;
+```
+
+- *Type:* @aws-cdk/core.ResourceEnvironment
+
+The environment this resource belongs to.
+
+For resources that are created and managed by the CDK
+(generally, those created by creating new class instances like Role, Bucket, etc.),
+this is always the same as the environment of the stack they belong to;
+however, for imported resources
+(those obtained from static methods like fromRoleArn, fromBucketName, etc.),
+that might be different than the stack they were imported into.
+
+---
+
+##### `stack`<sup>Required</sup> <a name="stack" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.stack"></a>
+
+```typescript
+public readonly stack: Stack;
+```
+
+- *Type:* @aws-cdk/core.Stack
+
+The stack in which this resource is defined.
+
+---
+
+##### `catalogArn`<sup>Required</sup> <a name="catalogArn" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogArn"></a>
+
+```typescript
+public readonly catalogArn: string;
+```
+
+- *Type:* string
+
+ARN of the Glue catalog in which this database is stored.
+
+---
+
+##### `catalogId`<sup>Required</sup> <a name="catalogId" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogId"></a>
+
+```typescript
+public readonly catalogId: string;
+```
+
+- *Type:* string
+
+The catalog id of the database (usually, the AWS account id).
+
+---
+
+##### `databaseArn`<sup>Required</sup> <a name="databaseArn" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.databaseArn"></a>
+
+```typescript
+public readonly databaseArn: string;
+```
+
+- *Type:* string
+
+ARN of this database.
+
+---
+
+##### `databaseName`<sup>Required</sup> <a name="databaseName" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.databaseName"></a>
+
+```typescript
+public readonly databaseName: string;
+```
+
+- *Type:* string
+
+Name of this database.
+
+---
+
+##### `locationUri`<sup>Optional</sup> <a name="locationUri" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.locationUri"></a>
+
+```typescript
+public readonly locationUri: string;
+```
+
+- *Type:* string
+
+Location URI of this database.
+
+---
+
+
+### SingletonKey <a name="SingletonKey" id="aws-analytics-reference-architecture.SingletonKey"></a>
+
+An Amazon S3 Bucket implementing the singleton pattern.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SingletonKey.Initializer"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+new SingletonKey(scope: Construct, id: string, props?: KeyProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-kms.KeyProps</code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.props"></a>
+
+- *Type:* @aws-cdk/aws-kms.KeyProps
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.applyRemovalPolicy">applyRemovalPolicy</a></code> | Apply the given removal policy to this resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.addAlias">addAlias</a></code> | Defines a new alias for the key. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.addToResourcePolicy">addToResourcePolicy</a></code> | Adds a statement to the KMS key resource policy. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grant">grant</a></code> | Grant the indicated permissions on this key to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantAdmin">grantAdmin</a></code> | Grant admins permissions using this key to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantDecrypt">grantDecrypt</a></code> | Grant decryption permissions using this key to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantEncrypt">grantEncrypt</a></code> | Grant encryption permissions using this key to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantEncryptDecrypt">grantEncryptDecrypt</a></code> | Grant encryption and decryption permissions using this key to the given principal. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SingletonKey.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+##### `applyRemovalPolicy` <a name="applyRemovalPolicy" id="aws-analytics-reference-architecture.SingletonKey.applyRemovalPolicy"></a>
+
+```typescript
+public applyRemovalPolicy(policy: RemovalPolicy): void
+```
+
+Apply the given removal policy to this resource.
+
+The Removal Policy controls what happens to this resource when it stops
+being managed by CloudFormation, either because you've removed it from the
+CDK application or because you've made a change that requires the resource
+to be replaced.
+
+The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
+account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
+
+###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonKey.applyRemovalPolicy.parameter.policy"></a>
+
+- *Type:* @aws-cdk/core.RemovalPolicy
+
+---
+
+##### `addAlias` <a name="addAlias" id="aws-analytics-reference-architecture.SingletonKey.addAlias"></a>
+
+```typescript
+public addAlias(aliasName: string): Alias
+```
+
+Defines a new alias for the key.
+
+###### `aliasName`<sup>Required</sup> <a name="aliasName" id="aws-analytics-reference-architecture.SingletonKey.addAlias.parameter.aliasName"></a>
+
+- *Type:* string
+
+---
+
+##### `addToResourcePolicy` <a name="addToResourcePolicy" id="aws-analytics-reference-architecture.SingletonKey.addToResourcePolicy"></a>
+
+```typescript
+public addToResourcePolicy(statement: PolicyStatement, allowNoOp?: boolean): AddToResourcePolicyResult
+```
+
+Adds a statement to the KMS key resource policy.
+
+###### `statement`<sup>Required</sup> <a name="statement" id="aws-analytics-reference-architecture.SingletonKey.addToResourcePolicy.parameter.statement"></a>
+
+- *Type:* @aws-cdk/aws-iam.PolicyStatement
+
+The policy statement to add.
+
+---
+
+###### `allowNoOp`<sup>Optional</sup> <a name="allowNoOp" id="aws-analytics-reference-architecture.SingletonKey.addToResourcePolicy.parameter.allowNoOp"></a>
+
+- *Type:* boolean
+
+If this is set to `false` and there is no policy defined (i.e. external key), the operation will fail. Otherwise, it will no-op.
+
+---
+
+##### `grant` <a name="grant" id="aws-analytics-reference-architecture.SingletonKey.grant"></a>
+
+```typescript
+public grant(grantee: IGrantable, actions: string): Grant
+```
+
+Grant the indicated permissions on this key to the given principal.
+
+This modifies both the principal's policy as well as the resource policy,
+since the default CloudFormation setup for KMS keys is that the policy
+must not be empty and so default grants won't work.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grant.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+###### `actions`<sup>Required</sup> <a name="actions" id="aws-analytics-reference-architecture.SingletonKey.grant.parameter.actions"></a>
+
+- *Type:* string
+
+---
+
+##### `grantAdmin` <a name="grantAdmin" id="aws-analytics-reference-architecture.SingletonKey.grantAdmin"></a>
+
+```typescript
+public grantAdmin(grantee: IGrantable): Grant
+```
+
+Grant admins permissions using this key to the given principal.
+
+Key administrators have permissions to manage the key (e.g., change permissions, revoke), but do not have permissions
+to use the key in cryptographic operations (e.g., encrypt, decrypt).
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantAdmin.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+##### `grantDecrypt` <a name="grantDecrypt" id="aws-analytics-reference-architecture.SingletonKey.grantDecrypt"></a>
+
+```typescript
+public grantDecrypt(grantee: IGrantable): Grant
+```
+
+Grant decryption permissions using this key to the given principal.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantDecrypt.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+##### `grantEncrypt` <a name="grantEncrypt" id="aws-analytics-reference-architecture.SingletonKey.grantEncrypt"></a>
+
+```typescript
+public grantEncrypt(grantee: IGrantable): Grant
+```
+
+Grant encryption permissions using this key to the given principal.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantEncrypt.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+##### `grantEncryptDecrypt` <a name="grantEncryptDecrypt" id="aws-analytics-reference-architecture.SingletonKey.grantEncryptDecrypt"></a>
+
+```typescript
+public grantEncryptDecrypt(grantee: IGrantable): Grant
+```
+
+Grant encryption and decryption permissions using this key to the given principal.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantEncryptDecrypt.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromCfnKey">fromCfnKey</a></code> | Create a mutable {@link IKey} based on a low-level {@link CfnKey}. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromKeyArn">fromKeyArn</a></code> | Import an externally defined KMS Key using its ARN. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromLookup">fromLookup</a></code> | Import an existing Key by querying the AWS environment this stack is deployed to. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.getOrCreate">getOrCreate</a></code> | Get the Amazon KMS Key the AWS CDK Stack based on the provided name. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SingletonKey.isConstruct"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonKey.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+##### `isResource` <a name="isResource" id="aws-analytics-reference-architecture.SingletonKey.isResource"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.isResource(construct: IConstruct)
+```
+
+Check whether the given construct is a Resource.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonKey.isResource.parameter.construct"></a>
+
+- *Type:* @aws-cdk/core.IConstruct
+
+---
+
+##### `fromCfnKey` <a name="fromCfnKey" id="aws-analytics-reference-architecture.SingletonKey.fromCfnKey"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.fromCfnKey(cfnKey: CfnKey)
+```
+
+Create a mutable {@link IKey} based on a low-level {@link CfnKey}.
+
+This is most useful when combined with the cloudformation-include module.
+This method is different than {@link fromKeyArn()} because the {@link IKey}
+returned from this method is mutable;
+meaning, calling any mutating methods on it,
+like {@link IKey.addToResourcePolicy()},
+will actually be reflected in the resulting template,
+as opposed to the object returned from {@link fromKeyArn()},
+on which calling those methods would have no effect.
+
+###### `cfnKey`<sup>Required</sup> <a name="cfnKey" id="aws-analytics-reference-architecture.SingletonKey.fromCfnKey.parameter.cfnKey"></a>
+
+- *Type:* @aws-cdk/aws-kms.CfnKey
+
+---
+
+##### `fromKeyArn` <a name="fromKeyArn" id="aws-analytics-reference-architecture.SingletonKey.fromKeyArn"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.fromKeyArn(scope: Construct, id: string, keyArn: string)
+```
+
+Import an externally defined KMS Key using its ARN.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonKey.fromKeyArn.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the construct that will "own" the imported key.
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonKey.fromKeyArn.parameter.id"></a>
+
+- *Type:* string
+
+the id of the imported key in the construct tree.
+
+---
+
+###### `keyArn`<sup>Required</sup> <a name="keyArn" id="aws-analytics-reference-architecture.SingletonKey.fromKeyArn.parameter.keyArn"></a>
+
+- *Type:* string
+
+the ARN of an existing KMS key.
+
+---
+
+##### `fromLookup` <a name="fromLookup" id="aws-analytics-reference-architecture.SingletonKey.fromLookup"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.fromLookup(scope: Construct, id: string, options: KeyLookupOptions)
+```
+
+Import an existing Key by querying the AWS environment this stack is deployed to.
+
+This function only needs to be used to use Keys not defined in your CDK
+application. If you are looking to share a Key between stacks, you can
+pass the `Key` object between stacks and use it as normal. In addition,
+it's not necessary to use this method if an interface accepts an `IKey`.
+In this case, `Alias.fromAliasName()` can be used which returns an alias
+that extends `IKey`.
+
+Calling this method will lead to a lookup when the CDK CLI is executed.
+You can therefore not use any values that will only be available at
+CloudFormation execution time (i.e., Tokens).
+
+The Key information will be cached in `cdk.context.json` and the same Key
+will be used on future runs. To refresh the lookup, you will have to
+evict the value from the cache using the `cdk context` command. See
+https://docs.aws.amazon.com/cdk/latest/guide/context.html for more information.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonKey.fromLookup.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonKey.fromLookup.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+###### `options`<sup>Required</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonKey.fromLookup.parameter.options"></a>
+
+- *Type:* @aws-cdk/aws-kms.KeyLookupOptions
+
+---
+
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.SingletonKey.getOrCreate"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.getOrCreate(scope: Construct, keyName: string)
+```
+
+Get the Amazon KMS Key the AWS CDK Stack based on the provided name.
+
+If no key exists, it creates a new one.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonKey.getOrCreate.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+---
+
+###### `keyName`<sup>Required</sup> <a name="keyName" id="aws-analytics-reference-architecture.SingletonKey.getOrCreate.parameter.keyName"></a>
+
+- *Type:* string
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.keyArn">keyArn</a></code> | <code>string</code> | The ARN of the key. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.keyId">keyId</a></code> | <code>string</code> | The ID of the key (the part that looks something like: 1234abcd-12ab-34cd-56ef-1234567890ab). |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonKey.property.node"></a>
+
+```typescript
+public readonly node: ConstructNode;
+```
+
+- *Type:* @aws-cdk/core.ConstructNode
+
+The construct tree node associated with this construct.
+
+---
+
+##### `env`<sup>Required</sup> <a name="env" id="aws-analytics-reference-architecture.SingletonKey.property.env"></a>
+
+```typescript
+public readonly env: ResourceEnvironment;
+```
+
+- *Type:* @aws-cdk/core.ResourceEnvironment
+
+The environment this resource belongs to.
+
+For resources that are created and managed by the CDK
+(generally, those created by creating new class instances like Role, Bucket, etc.),
+this is always the same as the environment of the stack they belong to;
+however, for imported resources
+(those obtained from static methods like fromRoleArn, fromBucketName, etc.),
+that might be different than the stack they were imported into.
+
+---
+
+##### `stack`<sup>Required</sup> <a name="stack" id="aws-analytics-reference-architecture.SingletonKey.property.stack"></a>
+
+```typescript
+public readonly stack: Stack;
+```
+
+- *Type:* @aws-cdk/core.Stack
+
+The stack in which this resource is defined.
+
+---
+
+##### `keyArn`<sup>Required</sup> <a name="keyArn" id="aws-analytics-reference-architecture.SingletonKey.property.keyArn"></a>
+
+```typescript
+public readonly keyArn: string;
+```
+
+- *Type:* string
+
+The ARN of the key.
+
+---
+
+##### `keyId`<sup>Required</sup> <a name="keyId" id="aws-analytics-reference-architecture.SingletonKey.property.keyId"></a>
+
+```typescript
+public readonly keyId: string;
+```
+
+- *Type:* string
+
+The ID of the key (the part that looks something like: 1234abcd-12ab-34cd-56ef-1234567890ab).
 
 ---
 
 
 ### SynchronousAthenaQuery <a name="SynchronousAthenaQuery" id="aws-analytics-reference-architecture.SynchronousAthenaQuery"></a>
 
-SynchronousAthenaQuery Construct to execute an Amazon Athena query synchronously.
+Execute an Amazon Athena query synchronously during CDK deployment.
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SynchronousAthenaQuery.Initializer"></a>
 
@@ -5004,6 +5476,8 @@ Whether this bucket should have versioning turned on or not.
 
 ### BatchReplayerProps <a name="BatchReplayerProps" id="aws-analytics-reference-architecture.BatchReplayerProps"></a>
 
+The properties for the BatchReplayer construct.
+
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.BatchReplayerProps.Initializer"></a>
 
 ```typescript
@@ -5016,10 +5490,10 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.s3LocationSink">s3LocationSink</a></code> | <code>@aws-cdk/aws-s3.Location</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>number</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The [PreparedDataset]{@link PreparedDataset} used to replay data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.s3LocationSink">s3LocationSink</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The S3 location sink where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>number</code> | The frequency of the replay in seconds. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | The maximum file size in Bytes written by the BatchReplayer. |
 
 ---
 
@@ -5031,6 +5505,8 @@ public readonly dataset: PreparedDataset;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
 
+The [PreparedDataset]{@link PreparedDataset} used to replay data.
+
 ---
 
 ##### `s3LocationSink`<sup>Required</sup> <a name="s3LocationSink" id="aws-analytics-reference-architecture.BatchReplayerProps.property.s3LocationSink"></a>
@@ -5041,6 +5517,8 @@ public readonly s3LocationSink: Location;
 
 - *Type:* @aws-cdk/aws-s3.Location
 
+The S3 location sink where the BatchReplayer writes data.
+
 ---
 
 ##### `frequency`<sup>Optional</sup> <a name="frequency" id="aws-analytics-reference-architecture.BatchReplayerProps.property.frequency"></a>
@@ -5050,6 +5528,9 @@ public readonly frequency: number;
 ```
 
 - *Type:* number
+- *Default:* The BatchReplayer is triggered every 60 seconds
+
+The frequency of the replay in seconds.
 
 ---
 
@@ -5060,12 +5541,17 @@ public readonly outputFileMaxSizeInBytes: number;
 ```
 
 - *Type:* number
+- *Default:* The BatchReplayer writes 100MB files maximum
+
+The maximum file size in Bytes written by the BatchReplayer.
 
 ---
 
 ### DataGeneratorProps <a name="DataGeneratorProps" id="aws-analytics-reference-architecture.DataGeneratorProps"></a>
 
 The properties for DataGenerator Construct.
+
+This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
 
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DataGeneratorProps.Initializer"></a>
 
@@ -5085,7 +5571,9 @@ const dataGeneratorProps: DataGeneratorProps = { ... }
 
 ---
 
-##### `dataset`<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGeneratorProps.property.dataset"></a>
+##### ~~`dataset`~~<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGeneratorProps.property.dataset"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly dataset: Dataset;
@@ -5099,7 +5587,9 @@ Use a pre-defined [Dataset]{@link Dataset} or create a [custom one]{@link Datase
 
 ---
 
-##### `sinkArn`<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGeneratorProps.property.sinkArn"></a>
+##### ~~`sinkArn`~~<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGeneratorProps.property.sinkArn"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly sinkArn: string;
@@ -5113,7 +5603,9 @@ Sink must be an Amazon S3 bucket.
 
 ---
 
-##### `frequency`<sup>Optional</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGeneratorProps.property.frequency"></a>
+##### ~~`frequency`~~<sup>Optional</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGeneratorProps.property.frequency"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly frequency: number;
@@ -5336,6 +5828,8 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 
 ### DatasetProps <a name="DatasetProps" id="aws-analytics-reference-architecture.DatasetProps"></a>
 
+The properties of the Dataset class.
+
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DatasetProps.Initializer"></a>
 
 ```typescript
@@ -5356,7 +5850,9 @@ const datasetProps: DatasetProps = { ... }
 
 ---
 
-##### `createSourceTable`<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.DatasetProps.property.createSourceTable"></a>
+##### ~~`createSourceTable`~~<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.DatasetProps.property.createSourceTable"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly createSourceTable: string;
@@ -5368,7 +5864,9 @@ The CREATE TABLE DDL command to create the source AWS Glue Table.
 
 ---
 
-##### `generateData`<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.DatasetProps.property.generateData"></a>
+##### ~~`generateData`~~<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.DatasetProps.property.generateData"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly generateData: string;
@@ -5380,7 +5878,9 @@ The SELECT query used to generate new data.
 
 ---
 
-##### `location`<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.DatasetProps.property.location"></a>
+##### ~~`location`~~<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.DatasetProps.property.location"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly location: Location;
@@ -5394,7 +5894,9 @@ It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
 
 ---
 
-##### `startDatetime`<sup>Required</sup> <a name="startDatetime" id="aws-analytics-reference-architecture.DatasetProps.property.startDatetime"></a>
+##### ~~`startDatetime`~~<sup>Required</sup> <a name="startDatetime" id="aws-analytics-reference-architecture.DatasetProps.property.startDatetime"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly startDatetime: string;
@@ -5406,7 +5908,9 @@ The minimum datetime value in the dataset used to calculate time offset.
 
 ---
 
-##### `createTargetTable`<sup>Optional</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.DatasetProps.property.createTargetTable"></a>
+##### ~~`createTargetTable`~~<sup>Optional</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.DatasetProps.property.createTargetTable"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly createTargetTable: string;
@@ -5519,7 +6023,7 @@ public readonly kubernetesVersion: KubernetesVersion;
 ```
 
 - *Type:* @aws-cdk/aws-eks.KubernetesVersion
-- *Default:* v1.20 version is used
+- *Default:* v1.21 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
 
@@ -6021,54 +6525,9 @@ name of the Amazon EKS namespace to be linked to the Amazon EMR virtual cluster.
 
 ---
 
-### ExampleProps <a name="ExampleProps" id="aws-analytics-reference-architecture.ExampleProps"></a>
-
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.ExampleProps.Initializer"></a>
-
-```typescript
-import { ExampleProps } from 'aws-analytics-reference-architecture'
-
-const exampleProps: ExampleProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.ExampleProps.property.name">name</a></code> | <code>string</code> | Name used to qualify the CfnOutput in the Stack. |
-| <code><a href="#aws-analytics-reference-architecture.ExampleProps.property.value">value</a></code> | <code>string</code> | Value used in the CfnOutput in the Stack. |
-
----
-
-##### `name`<sup>Optional</sup> <a name="name" id="aws-analytics-reference-architecture.ExampleProps.property.name"></a>
-
-```typescript
-public readonly name: string;
-```
-
-- *Type:* string
-- *Default:* Set to 'defaultMessage' if not provided
-
-Name used to qualify the CfnOutput in the Stack.
-
----
-
-##### `value`<sup>Optional</sup> <a name="value" id="aws-analytics-reference-architecture.ExampleProps.property.value"></a>
-
-```typescript
-public readonly value: string;
-```
-
-- *Type:* string
-- *Default:* Set to 'defaultValue!' if not provided
-
-Value used in the CfnOutput in the Stack.
-
----
-
 ### FlywayRunnerProps <a name="FlywayRunnerProps" id="aws-analytics-reference-architecture.FlywayRunnerProps"></a>
 
-Properties needed to run flyway migration scripts.
+The properties of the FlywayRunner construct, needed to run flyway migration scripts.
 
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.FlywayRunnerProps.Initializer"></a>
 
@@ -6150,7 +6609,7 @@ public readonly logRetention: RetentionDays;
 ```
 
 - *Type:* @aws-cdk/aws-logs.RetentionDays
-- *Default:* logs.RetentionDays.ONE_DAY (1 day)
+- *Default:* logs.RetentionDays.ONE_WEEK
 
 Period to keep the logs around.
 
@@ -6163,6 +6622,7 @@ public readonly replaceDictionary: {[ key: string ]: string};
 ```
 
 - *Type:* {[ key: string ]: string}
+- *Default:* No replacement is done
 
 A key-value map of string (encapsulated between `${` and `}`) to replace in the SQL files given.
 
@@ -6459,6 +6919,8 @@ Required Type of the identity either GROUP or USER, to be used when SSO is used 
 
 ### PreparedDatasetProps <a name="PreparedDatasetProps" id="aws-analytics-reference-architecture.PreparedDatasetProps"></a>
 
+The properties for the PreparedDataset class used by the BatchReplayer construct.
+
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.PreparedDatasetProps.Initializer"></a>
 
 ```typescript
@@ -6620,7 +7082,7 @@ The S3 object key to grant cross account access (S3 prefix without the bucket na
 
 ### SynchronousAthenaQueryProps <a name="SynchronousAthenaQueryProps" id="aws-analytics-reference-architecture.SynchronousAthenaQueryProps"></a>
 
-The properties for SynchronousAthenaQuery Construct.
+The properties for the SynchronousAthenaQuery construct.
 
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.SynchronousAthenaQueryProps.Initializer"></a>
 
@@ -6743,6 +7205,8 @@ The timeout in seconds to wait for the Crawler success.
 
 Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
 
+This is deprecated in favor of the [PreparedDataset]{@link PreparedDataset} class
+
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.Dataset.Initializer"></a>
 
 ```typescript
@@ -6775,7 +7239,7 @@ the DatasetProps.
 
 ---
 
-##### `parseCreateSourceQuery` <a name="parseCreateSourceQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery"></a>
+##### ~~`parseCreateSourceQuery`~~ <a name="parseCreateSourceQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery"></a>
 
 ```typescript
 public parseCreateSourceQuery(database: string, table: string, bucket: string, key: string): string
@@ -6815,7 +7279,7 @@ the key to parse.
 
 ---
 
-##### `parseCreateTargetQuery` <a name="parseCreateTargetQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery"></a>
+##### ~~`parseCreateTargetQuery`~~ <a name="parseCreateTargetQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery"></a>
 
 ```typescript
 public parseCreateTargetQuery(database: string, table: string, bucket: string, key: string): string
@@ -6855,7 +7319,7 @@ the key to parse.
 
 ---
 
-##### `parseGenerateQuery` <a name="parseGenerateQuery" id="aws-analytics-reference-architecture.Dataset.parseGenerateQuery"></a>
+##### ~~`parseGenerateQuery`~~ <a name="parseGenerateQuery" id="aws-analytics-reference-architecture.Dataset.parseGenerateQuery"></a>
 
 ```typescript
 public parseGenerateQuery(database: string, sourceTable: string, targetTable: string): string
@@ -6901,7 +7365,9 @@ the target table name to parse.
 
 ---
 
-##### `createSourceTable`<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.Dataset.property.createSourceTable"></a>
+##### ~~`createSourceTable`~~<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.Dataset.property.createSourceTable"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly createSourceTable: string;
@@ -6913,7 +7379,9 @@ The CREATE TABLE DDL command to create the source AWS Glue Table.
 
 ---
 
-##### `createTargetTable`<sup>Required</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.Dataset.property.createTargetTable"></a>
+##### ~~`createTargetTable`~~<sup>Required</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.Dataset.property.createTargetTable"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly createTargetTable: string;
@@ -6925,7 +7393,9 @@ The CREATE TABLE DDL command to create the target AWS Glue Table.
 
 ---
 
-##### `generateData`<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.Dataset.property.generateData"></a>
+##### ~~`generateData`~~<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.Dataset.property.generateData"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly generateData: string;
@@ -6937,7 +7407,9 @@ The SELECT query used to generate new data.
 
 ---
 
-##### `location`<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.Dataset.property.location"></a>
+##### ~~`location`~~<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.Dataset.property.location"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly location: Location;
@@ -6949,7 +7421,9 @@ The Amazon S3 Location of the source dataset.
 
 ---
 
-##### `offset`<sup>Required</sup> <a name="offset" id="aws-analytics-reference-architecture.Dataset.property.offset"></a>
+##### ~~`offset`~~<sup>Required</sup> <a name="offset" id="aws-analytics-reference-architecture.Dataset.property.offset"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly offset: number;
@@ -6961,7 +7435,9 @@ The offset of the Dataset (difference between min datetime and now) in Seconds.
 
 ---
 
-##### `tableName`<sup>Required</sup> <a name="tableName" id="aws-analytics-reference-architecture.Dataset.property.tableName"></a>
+##### ~~`tableName`~~<sup>Required</sup> <a name="tableName" id="aws-analytics-reference-architecture.Dataset.property.tableName"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly tableName: string;
@@ -6989,7 +7465,9 @@ The name of the SQL table extracted from path.
 
 ---
 
-##### `DATASETS_BUCKET`<sup>Required</sup> <a name="DATASETS_BUCKET" id="aws-analytics-reference-architecture.Dataset.property.DATASETS_BUCKET"></a>
+##### ~~`DATASETS_BUCKET`~~<sup>Required</sup> <a name="DATASETS_BUCKET" id="aws-analytics-reference-architecture.Dataset.property.DATASETS_BUCKET"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly DATASETS_BUCKET: string;
@@ -7001,7 +7479,9 @@ The bucket name of the AWS Analytics Reference Architecture datasets.
 
 ---
 
-##### `RETAIL_100GB_CUSTOMER`<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER"></a>
+##### ~~`RETAIL_100GB_CUSTOMER`~~<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_CUSTOMER: Dataset;
@@ -7013,7 +7493,9 @@ The customer dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_CUSTOMER_ADDRESS`<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER_ADDRESS" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER_ADDRESS"></a>
+##### ~~`RETAIL_100GB_CUSTOMER_ADDRESS`~~<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER_ADDRESS" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER_ADDRESS"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_CUSTOMER_ADDRESS: Dataset;
@@ -7025,7 +7507,9 @@ The customer address dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_ITEM`<sup>Required</sup> <a name="RETAIL_100GB_ITEM" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_ITEM"></a>
+##### ~~`RETAIL_100GB_ITEM`~~<sup>Required</sup> <a name="RETAIL_100GB_ITEM" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_ITEM"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_ITEM: Dataset;
@@ -7037,7 +7521,9 @@ The item dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_PROMO`<sup>Required</sup> <a name="RETAIL_100GB_PROMO" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_PROMO"></a>
+##### ~~`RETAIL_100GB_PROMO`~~<sup>Required</sup> <a name="RETAIL_100GB_PROMO" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_PROMO"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_PROMO: Dataset;
@@ -7049,7 +7535,9 @@ The promotion dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_STORE`<sup>Required</sup> <a name="RETAIL_100GB_STORE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE"></a>
+##### ~~`RETAIL_100GB_STORE`~~<sup>Required</sup> <a name="RETAIL_100GB_STORE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_STORE: Dataset;
@@ -7061,7 +7549,9 @@ The store dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_STORE_SALE`<sup>Required</sup> <a name="RETAIL_100GB_STORE_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE_SALE"></a>
+##### ~~`RETAIL_100GB_STORE_SALE`~~<sup>Required</sup> <a name="RETAIL_100GB_STORE_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE_SALE"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_STORE_SALE: Dataset;
@@ -7073,7 +7563,9 @@ The store sale dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_WAREHOUSE`<sup>Required</sup> <a name="RETAIL_100GB_WAREHOUSE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WAREHOUSE"></a>
+##### ~~`RETAIL_100GB_WAREHOUSE`~~<sup>Required</sup> <a name="RETAIL_100GB_WAREHOUSE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WAREHOUSE"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_WAREHOUSE: Dataset;
@@ -7085,7 +7577,9 @@ The warehouse dataset part 100GB of retail datasets.
 
 ---
 
-##### `RETAIL_100GB_WEB_SALE`<sup>Required</sup> <a name="RETAIL_100GB_WEB_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WEB_SALE"></a>
+##### ~~`RETAIL_100GB_WEB_SALE`~~<sup>Required</sup> <a name="RETAIL_100GB_WEB_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WEB_SALE"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_WEB_SALE: Dataset;
@@ -7119,12 +7613,12 @@ new EmrEksNodegroup()
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.CRITICAL_ALL">CRITICAL_ALL</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_DRIVER">NOTEBOOK_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_EXECUTOR">NOTEBOOK_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_WITHOUT_PODTEMPLATE">NOTEBOOK_WITHOUT_PODTEMPLATE</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER">SHARED_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_EXECUTOR">SHARED_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.CRITICAL_ALL">CRITICAL_ALL</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS critical workloads (both drivers and executors). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_DRIVER">NOTEBOOK_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (drivers only). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_EXECUTOR">NOTEBOOK_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (executors only). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_WITHOUT_PODTEMPLATE">NOTEBOOK_WITHOUT_PODTEMPLATE</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER} and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS  Managed Endpoint currently doesn't support Pod Template customization. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER">SHARED_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (drivers only). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_EXECUTOR">SHARED_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (executors only). |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.TOOLING_ALL">TOOLING_ALL</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
 
 ---
@@ -7137,6 +7631,8 @@ public readonly CRITICAL_ALL: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
+Default nodegroup configuration for EMR on EKS critical workloads (both drivers and executors).
+
 ---
 
 ##### `NOTEBOOK_DRIVER`<sup>Required</sup> <a name="NOTEBOOK_DRIVER" id="aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_DRIVER"></a>
@@ -7146,6 +7642,8 @@ public readonly NOTEBOOK_DRIVER: EmrEksNodegroupOptions;
 ```
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
+
+Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (drivers only).
 
 ---
 
@@ -7157,7 +7655,7 @@ public readonly NOTEBOOK_EXECUTOR: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
-Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
+Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (executors only).
 
 ---
 
@@ -7169,6 +7667,8 @@ public readonly NOTEBOOK_WITHOUT_PODTEMPLATE: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
+Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER} and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS  Managed Endpoint currently doesn't support Pod Template customization.
+
 ---
 
 ##### `SHARED_DRIVER`<sup>Required</sup> <a name="SHARED_DRIVER" id="aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER"></a>
@@ -7179,6 +7679,8 @@ public readonly SHARED_DRIVER: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
+Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (drivers only).
+
 ---
 
 ##### `SHARED_EXECUTOR`<sup>Required</sup> <a name="SHARED_EXECUTOR" id="aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_EXECUTOR"></a>
@@ -7188,6 +7690,8 @@ public readonly SHARED_EXECUTOR: EmrEksNodegroupOptions;
 ```
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
+
+Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (executors only).
 
 ---
 
@@ -7205,28 +7709,49 @@ public readonly TOOLING_ALL: EmrEksNodegroupOptions;
 
 PreparedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
 
-PreparedDataset has following properties:
+PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets
 
-1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range. 
+A PreparedDataset has following properties:
+
+1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range.
 There is no constraint on how long the timestamp range can be. But each file must not be larger than 100MB.
+Creating new PreparedDataset requires to find the right balance between number of partitions and the amount of data read by each BatchReplayer (micro-)batch
 The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions.
+
 Here is an example:
+
 |- time_range_start=16000000000
+
     |- file1.csv 100MB
+
     |- file2.csv 50MB
+
 |- time_range_start=16000000300 // 5 minute range (300 sec)
+
     |- file1.csv 1MB
+
 |- time_range_start=16000000600
+
     |- file1.csv 100MB
+
     |- file2.csv 100MB
+
     |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB
+
 2. It has a manifest CSV file with two columns: start and path. Start is the timestamp
+
 start        , path
+
 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file1.csv
+
 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file2.csv
+
 16000000300  , s3://<path>/<to>/<folder>/time_range_start=16000000300/file1.csv
+
 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file1.csv
+
 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv
+
 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.PreparedDataset.Initializer"></a>
@@ -7325,7 +7850,7 @@ public readonly startDateTime: string;
 
 Start datetime replaying this dataset.
 
-Your data set may start from 1 Jan 2020 
+Your data set may start from 1 Jan 2020
 But you can specify this to 1 Feb 2020 to omit the first month data.
 
 ---

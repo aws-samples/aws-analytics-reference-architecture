@@ -27,7 +27,7 @@
     "monitoringConfiguration": {
         "persistentAppUI": "ENABLED",
         "cloudWatchMonitoringConfiguration": {
-            "logGroupName": "/emr-containers/shared",
+            "logGroupName": "/aws/emr-containers/shared",
             "logStreamNamePrefix": "default"
         }
     }

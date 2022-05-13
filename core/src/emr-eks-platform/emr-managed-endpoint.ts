@@ -41,7 +41,7 @@ export interface EmrManagedEndpointOptions {
 
 
 /**
- * The properties for the EMR Managed Endpoint to create.
+ * The properties for the EMR on EKS Managed Endpoint to create.
  * @private
  */
 export interface EmrManagedEndpointProviderProps {

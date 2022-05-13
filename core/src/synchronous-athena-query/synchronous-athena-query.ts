@@ -7,7 +7,8 @@ import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
+//import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
+import { Provider } from '@aws-cdk/custom-resources';
 
 /**
  * The properties for the SynchronousAthenaQuery construct.
@@ -153,11 +154,11 @@ export class SynchronousAthenaQuery extends Construct {
     }));
 
     // Create an AWS CDK Custom Resource Provider for starting the source crawler and waiting for completion
-    const synchronousAthenaQueryCRP = new ScopedIamProvider(this, 'SynchronousAthenaQueryCRP', {
+    const synchronousAthenaQueryCRP = new Provider(this, 'SynchronousAthenaQueryCRP', {
       onEventHandler: athenaQueryStartFn,
       isCompleteHandler: athenaQueryWaitFn,
-      onEventFnName: 'SynchronousAthenaCrStart',
-      isCompleteFnName: 'SynchronousAthenaCrWait',
+      //onEventFnName: 'SynchronousAthenaCrStart',
+      //isCompleteFnName: 'SynchronousAthenaCrWait',
       queryInterval: Duration.seconds(10),
       totalTimeout: Duration.minutes(props.timeout || 1),
       logRetention: RetentionDays.ONE_WEEK,

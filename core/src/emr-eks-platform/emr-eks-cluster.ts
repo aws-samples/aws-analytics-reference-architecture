@@ -27,7 +27,7 @@ import {
 import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, BucketEncryption, Location } from '@aws-cdk/aws-s3';
 import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import { Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags } from '@aws-cdk/core';
+import { Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy } from '@aws-cdk/core';
 import { AraBucket } from '../ara-bucket';
 import { SingletonKey } from '../singleton-kms-key';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
@@ -218,9 +218,10 @@ export class EmrEksCluster extends Construct {
 
       //Create VPC flow log for the EKS VPC
       let eksVpcFlowLogLogGroup = new LogGroup(this, 'eksVpcFlowLogLogGroup', {
-        logGroupName: `/ara/eksVpcFlowLog/${this.clusterName}`,
+        logGroupName: `/aws/emr-eks-vpc-flow/${this.clusterName}`,
         encryptionKey: SingletonKey.getOrCreate(scope, 'DefaultKmsKey'),
-        retention: RetentionDays.ONE_MONTH,
+        retention: RetentionDays.ONE_WEEK,
+        removalPolicy: RemovalPolicy.DESTROY,
       });
 
       //Allow vpc flowlog to access KMS key to encrypt logs
