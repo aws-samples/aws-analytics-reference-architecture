@@ -11,6 +11,7 @@ import * as cdk from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import { CfnCrawler } from '@aws-cdk/aws-glue';
+import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 
 import { SynchronousCrawler } from '../../src/synchronous-crawler';
 
@@ -18,6 +19,10 @@ jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'SynchronousCrawlerE2eTest');
+
+const crawlerRole = new Role(stack, 'CrawlerRole', {
+  assumedBy: new ServicePrincipal('glue.amazonaws.com'),
+})
 
 const crawler = new CfnCrawler(stack, 'Crawler', {
   role: 'role',
@@ -31,7 +36,7 @@ const crawler = new CfnCrawler(stack, 'Crawler', {
 });
 
 const synchronousCrawler = new SynchronousCrawler(stack, 'SynchronousCrawler', {
-  crawlerName: crawler.name || '',
+  crawlerName: 'test-crawler',
 });
 
 new cdk.CfnOutput(stack, 'SynchronousCrawlerResource', {

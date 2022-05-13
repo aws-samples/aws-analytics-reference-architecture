@@ -125,17 +125,6 @@ export class SynchronousAthenaQuery extends Construct {
 
     let athenaQueryWaitFnPolicy: PolicyStatement [] = [];
 
-    // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
-    const athenaQueryWaitFn = new PreBundledFunction(this, 'AthenaQueryStartWaitFn', {
-      runtime: Runtime.PYTHON_3_8,
-      codePath: 'synchronous-athena-query/resources/lambdas',
-      name: 'SynchronousAthenaCrWait',
-      lambdaPolicyStatements: athenaQueryWaitFnPolicy,
-      handler: 'lambda.is_complete',
-      logRetention: RetentionDays.ONE_WEEK,
-      timeout: Duration.seconds(20),
-    });
-
     // Add permissions to the Function
     athenaQueryWaitFnPolicy.push(new PolicyStatement({
       resources: [
@@ -152,6 +141,17 @@ export class SynchronousAthenaQuery extends Construct {
         'athena:GetQueryResults',
       ],
     }));
+
+    // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
+    const athenaQueryWaitFn = new PreBundledFunction(this, 'AthenaQueryStartWaitFn', {
+      runtime: Runtime.PYTHON_3_8,
+      codePath: 'synchronous-athena-query/resources/lambdas',
+      name: 'SynchronousAthenaCrWait',
+      lambdaPolicyStatements: athenaQueryWaitFnPolicy,
+      handler: 'lambda.is_complete',
+      logRetention: RetentionDays.ONE_WEEK,
+      timeout: Duration.seconds(20),
+    });
 
     // Create an AWS CDK Custom Resource Provider for starting the source crawler and waiting for completion
     const synchronousAthenaQueryCRP = new Provider(this, 'SynchronousAthenaQueryCRP', {

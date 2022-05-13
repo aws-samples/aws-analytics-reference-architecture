@@ -5,8 +5,9 @@ import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
+import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import {ScopedIamProvider} from "../common/scoped-iam-customer-resource";
+//import {ScopedIamProvider} from "../common/scoped-iam-customer-resource";
 
 /**
  * The properties for SynchronousCrawler Construct.
@@ -82,9 +83,9 @@ export class SynchronousCrawler extends Construct {
     });
 
     // Create an AWS CDK Custom Resource Provider for starting the source crawler and waiting for completion
-    const crawlerStartWaitCRP = new ScopedIamProvider(this, 'synchronousCrawlerCRP', {
-      onEventFnName: 'SynchronousCrawlerStartFn',
-      isCompleteFnName: 'SynchronousCrawlerWaitFn',
+    const crawlerStartWaitCRP = new Provider(this, 'synchronousCrawlerCRP', {
+      //onEventFnName: 'SynchronousCrawlerStartFn',
+      //isCompleteFnName: 'SynchronousCrawlerWaitFn',
       onEventHandler: crawlerStartFn,
       isCompleteHandler: crawlerWaitFn,
       queryInterval: Duration.seconds(60),

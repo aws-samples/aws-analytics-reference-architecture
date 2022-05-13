@@ -46,7 +46,7 @@ export class ScopedIamProvider extends Provider {
           region: Aws.REGION,
           service: 'lambda',
           resource: 'function',
-          resourceName: `ara-${props.onEventFnName}`,
+          resourceName: props.onEventFnName,
         }),
       ],
       actions: [
@@ -63,7 +63,7 @@ export class ScopedIamProvider extends Provider {
             region: Aws.REGION,
             service: 'lambda',
             resource: 'function',
-            resourceName: `ara-${props.isCompleteFnName}`,
+            resourceName: props.isCompleteFnName,
           }),
         ],
         actions: [
