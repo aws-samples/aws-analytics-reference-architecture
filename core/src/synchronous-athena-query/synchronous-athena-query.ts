@@ -1,15 +1,13 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { PolicyStatement } from '@aws-cdk/aws-iam';
+import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
+import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-//import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
-import { Provider } from '@aws-cdk/custom-resources';
-
 /**
  * The properties for the SynchronousAthenaQuery construct.
  */
@@ -143,7 +141,7 @@ export class SynchronousAthenaQuery extends Construct {
     }));
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
-    const athenaQueryWaitFn = new PreBundledFunction(this, 'AthenaQueryStartWaitFn', {
+    const athenaQueryWaitFn = new PreBundledFunction(this, 'AthenaQueryWaitFn', {
       runtime: Runtime.PYTHON_3_8,
       codePath: 'synchronous-athena-query/resources/lambdas',
       name: 'SynchronousAthenaCrWait',
@@ -153,26 +151,43 @@ export class SynchronousAthenaQuery extends Construct {
       timeout: Duration.seconds(20),
     });
 
+    const providerManagedPolicy = new ManagedPolicy(this, 'providerManagedPolicy', {
+      statements: [new PolicyStatement({
+        actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+        resources: [`arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:*`],
+        effect: Effect.ALLOW,
+      })],
+    });
+
+    const providerRole = new Role(this, 'providerRole', {
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [providerManagedPolicy],
+    });
+
     // Create an AWS CDK Custom Resource Provider for starting the source crawler and waiting for completion
-    const synchronousAthenaQueryCRP = new Provider(this, 'SynchronousAthenaQueryCRP', {
+    const synchronousAthenaQueryCRP = new Provider(this, 'customresourceprovider', {
       onEventHandler: athenaQueryStartFn,
       isCompleteHandler: athenaQueryWaitFn,
-      //onEventFnName: 'SynchronousAthenaCrStart',
-      //isCompleteFnName: 'SynchronousAthenaCrWait',
       queryInterval: Duration.seconds(10),
       totalTimeout: Duration.minutes(props.timeout || 1),
       logRetention: RetentionDays.ONE_WEEK,
+      role: providerRole,
     });
+
+    synchronousAthenaQueryCRP.node.addDependency(athenaQueryStartFn);
+    synchronousAthenaQueryCRP.node.addDependency(athenaQueryWaitFn);
 
     const resultPathBucket = Bucket.fromBucketName(this, 'ResultPathBucket', props.resultPath.bucketName);
 
     // Create an AWS CDK Custom Resource for starting the source crawler and waiting for completion
-    new CustomResource(this, 'SynchronousAthenaQueryCR', {
+    const myCR = new CustomResource(this, 'SynchronousAthenaQueryCR', {
       serviceToken: synchronousAthenaQueryCRP.serviceToken,
       properties: {
         Statement: props.statement,
         ResultPath: resultPathBucket.s3UrlForObject(props.resultPath.objectKey),
       },
     });
+
+    myCR.node.addDependency(synchronousAthenaQueryCRP);
   }
 }

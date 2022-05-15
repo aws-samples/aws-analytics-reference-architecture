@@ -7,7 +7,7 @@ import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Construct, Duration } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
+//import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 
 /**
@@ -80,8 +80,8 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
       },
     });
 
-    this.provider = new ScopedIamProvider(this, 'CustomResourceProvider', {
-      onEventFnName: 'EmrEksNodegroupAsgTagOnEventFn',
+    this.provider = new Provider(this, 'CustomResourceProvider', {
+      //onEventFnName: 'EmrEksNodegroupAsgTagOnEventFn',
       onEventHandler: onEvent,
     });
   }

@@ -5,9 +5,9 @@ import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
-import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-//import {ScopedIamProvider} from "../common/scoped-iam-customer-resource";
+import { Provider } from '@aws-cdk/custom-resources';
+//import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
  * The properties for SynchronousCrawler Construct.

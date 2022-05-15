@@ -31,11 +31,11 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
  *
  * When this construct is being run in JSII, this file will be in `node_modules` folder
  * (as it's installed as a 3rd party library.) So we need to change reference based on __dirname.
- * 
+ *
  *  * Usage example:
  * ```typescript
  * import { PreBundledFunction } from 'aws-analytics-reference-architecture';
- * 
+ *
  * new PreBundledFunction(this, 'PreBundledFunction', {
  *   codePath: 'construct-dir/resources/lambdas/lambda_dir',
  *   // you can use any property available in Function CDK Construct including
@@ -50,7 +50,7 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
  * ```
  */
 export class PreBundledFunction extends Function {
- 
+
   /**
    * Constructs a new instance of the PreBundledFunction construct
    * @param {Construct} scope the Scope of the CDK Construct
@@ -106,7 +106,7 @@ export class PreBundledFunction extends Function {
     const lambdaExecutionRole = new Role (scope,
       'LambdaExecutionRole' + functionProps.functionName, {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-        description: 'Role used by lambda in createManagedEndpoint CR',
+        description: 'Role used by lambda in ARA',
         managedPolicies: [lambdaExecutionRolePolicy],
         roleName: 'LambdaExecutionRole' + functionProps.functionName,
       });
