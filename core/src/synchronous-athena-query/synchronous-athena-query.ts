@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
+import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Runtime } from '@aws-cdk/aws-lambda';
 import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
@@ -151,7 +151,7 @@ export class SynchronousAthenaQuery extends Construct {
       timeout: Duration.seconds(20),
     });
 
-    const providerManagedPolicy = new ManagedPolicy(this, 'providerManagedPolicy', {
+    /*const providerManagedPolicy = new ManagedPolicy(this, 'providerManagedPolicy', {
       statements: [new PolicyStatement({
         actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
         resources: [`arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:*`],
@@ -162,7 +162,7 @@ export class SynchronousAthenaQuery extends Construct {
     const providerRole = new Role(this, 'providerRole', {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [providerManagedPolicy],
-    });
+    });*/
 
     // Create an AWS CDK Custom Resource Provider for starting the source crawler and waiting for completion
     const synchronousAthenaQueryCRP = new Provider(this, 'customresourceprovider', {
@@ -171,7 +171,7 @@ export class SynchronousAthenaQuery extends Construct {
       queryInterval: Duration.seconds(10),
       totalTimeout: Duration.minutes(props.timeout || 1),
       logRetention: RetentionDays.ONE_WEEK,
-      role: providerRole,
+      //role: providerRole,
     });
 
     synchronousAthenaQueryCRP.node.addDependency(athenaQueryStartFn);

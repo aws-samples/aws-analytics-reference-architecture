@@ -29,17 +29,13 @@ new SynchronousAthenaQuery(synchronousAthenaStack, 'SynchronousAthenaQueryTest',
 Aspects.of(synchronousAthenaStack).add(new AwsSolutionsChecks());
 
 
+Aspects.of(synchronousAthenaStack).add(new AwsSolutionsChecks());
+
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
   'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRolePolicySynchronousAthenaCrStart/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
-/*
-NagSuppressions.addResourceSuppressionsByPath(
-  synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRolePolicySynchronousAthenaQueryCRP/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time ' }],
-);*/
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
@@ -65,23 +61,23 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
-/*NagSuppressions.addResourceSuppressionsByPath(
+NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRoleCRSynchronousAthenaQueryCRP/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
-);*/
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card needed for the proper execution' }],
+);
 
-/*NagSuppressions.addResourceSuppressionsByPath(
+NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/SynchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/providerRole/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/SynchronousAthenaQueryCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/providerManagedPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
-);*/
+);
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(synchronousAthenaStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
