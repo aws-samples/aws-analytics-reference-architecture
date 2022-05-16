@@ -32,16 +32,16 @@ const cluster = new redshift.Cluster(stack, 'Redshift', {
   defaultDatabaseName: dbName,
 });
 
-const tokenizedValue = new cdk.CfnOutput(stack, "tokenizedValue", {
-  value: "second_table"
-})
+const tokenizedValue = new cdk.CfnOutput(stack, 'tokenizedValue', {
+  value: 'second_table',
+});
 
 const runner = new FlywayRunner(stack, 'testMigration', {
   migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),
   cluster: cluster,
   vpc: vpc,
   databaseName: dbName,
-  replaceDictionary: {TABLE_NAME: tokenizedValue.value},
+  replaceDictionary: { TABLE_NAME: tokenizedValue.value },
 });
 
 new cdk.CfnOutput(stack, 'schemaVersion', {
@@ -50,7 +50,7 @@ new cdk.CfnOutput(stack, 'schemaVersion', {
 });
 
 describe('deploy succeed', () => {
-  it.skip('can be deploy succcessfully', async () => {
+  it('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
 
@@ -77,7 +77,18 @@ afterAll(async () => {
   });
   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
 
-  await cloudFormation.destroyStack({
-    stack: stackArtifact,
-  });
-});
+  let retryCount = 1;
+  while (retryCount >= 0) {
+    try {
+      await cloudFormation.destroyStack({
+        stack: stackArtifact,
+      });
+    } catch (e) {
+      console.error(`Fail to delete stack retrying`);
+      if(retryCount == 0) {
+        throw e;
+      }
+    }
+    retryCount--;
+  }
+}, 9000000);
