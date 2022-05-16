@@ -15,12 +15,14 @@ import { PolicyStatement } from '@aws-cdk/aws-iam';
  
 import { SynchronousAthenaQuery } from '../../src/synchronous-athena-query';
  
-jest.setTimeout(100000);
+jest.setTimeout(300000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'SynchronousAthenaQueryE2eTest');
 
 const resultsBucket = new Bucket(stack, 'ResultsBucket');
+
+const sourceBucket = Bucket.fromBucketName(stack, 'SourceBucket', `athena-examples-${cdk.Aws.REGION}`);
 
 const synchronousAthenaQuery = new SynchronousAthenaQuery(stack, 'SynchronousAthenaQuery', {
   statement: 'SELECT * FROM sampledb.elb_logs limit 10;',
@@ -54,8 +56,19 @@ const synchronousAthenaQuery = new SynchronousAthenaQuery(stack, 'SynchronousAth
       ],
       actions: [
         'glue:GetTable',
+        'glue:GetPartitions',
       ],
-    })
+    }),
+    new PolicyStatement({
+      resources: [
+        sourceBucket.arnForObjects('elb/plaintext/*'),
+        sourceBucket.bucketArn,
+      ],  
+      actions: [
+        's3:GetObject',
+        's3:ListBucket',
+      ],
+    }),
   ],
 });
 

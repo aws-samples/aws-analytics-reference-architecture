@@ -57,6 +57,7 @@ export class SynchronousCrawler extends Construct {
       actions: [
         'glue:StartCrawler',
         'glue:GetCrawler',
+        'glue:StopCrawler',
       ],
     })];
 
@@ -89,7 +90,7 @@ export class SynchronousCrawler extends Construct {
       onEventHandler: crawlerStartFn,
       isCompleteHandler: crawlerWaitFn,
       queryInterval: Duration.seconds(60),
-      totalTimeout: Duration.seconds(props.timeout || 300),
+      totalTimeout: Duration.seconds(props.timeout || 600),
       logRetention: RetentionDays.ONE_WEEK,
     });
 

@@ -5,6 +5,7 @@ import boto3
 import os
 import time
 import logging
+from botocore.exceptions import ClientError
 
 glue_client = boto3.client('glue', os.getenv('AWS_REGION'))
 log = logging.getLogger()
@@ -43,8 +44,14 @@ def on_update(event):
 def on_delete(event):
     log.info(event)
     crawler_name = event['ResourceProperties']['CrawlerName']
-    response_stop = glue_client.stop_crawler(Name=crawler_name)
-    log.info(response_stop)
+    try:
+        response_stop = glue_client.stop_crawler(Name=crawler_name)
+        log.info(response_stop)
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'CrawlerNotRunningException':
+            pass
+        else:
+            raise e
     return {
         'PhysicalResourceId': crawler_name,
         'Data': {
@@ -57,16 +64,27 @@ def is_complete(event, ctx):
     crawler_name = event['ResourceProperties']['CrawlerName']
     response_get = glue_client.get_crawler(Name=crawler_name)
     log.info(response_get)
-    state = response_get["Crawler"]["State"]
-    status = response_get['Crawler']['LastCrawl']['Status']
     # Possible states: RUNNING, STOPPING, READY
-    # Possible status: SUCCEEDED, CANCELLED, FAILED
+    state = response_get["Crawler"]["State"]
     log.info(f"Crawler {crawler_name} is {state.lower()}.")
-    if state != 'READY' and status != 'SUCCEEDED': 
-        return {
-            'IsComplete': False
-        }
-    else:
-        return {
-            'IsComplete': True
-        }
+    if state == 'READY':
+        try:
+            # Possible status: SUCCEEDED, CANCELLED, FAILED
+            status = response_get['Crawler']['LastCrawl']['Status']
+        except KeyError:
+            # The crawler has never ran, LastCrawl does not exist, we wait for another query interval
+            log.info(f"Crawler {crawler_name} has never ran, waiting for another query interval")
+            return {
+                'IsComplete': False
+            }
+        if status == 'SUCCEEDED':
+            log.info(f"Crawler {crawler_name} has completed successfully.")
+            return {
+                'IsComplete': True
+            }
+        else:
+            raise BaseException('The Crawler has completed but is not successful')
+    log.info(f"Crawler {crawler_name} has not completed.")
+    return {
+        'IsComplete': False
+    }

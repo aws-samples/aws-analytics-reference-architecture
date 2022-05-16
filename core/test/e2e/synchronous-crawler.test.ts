@@ -10,33 +10,70 @@
 import * as cdk from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
-import { CfnCrawler } from '@aws-cdk/aws-glue';
-import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
+import { CfnCrawler, Database } from '@aws-cdk/aws-glue';
+import { ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 
 import { SynchronousCrawler } from '../../src/synchronous-crawler';
 
-jest.setTimeout(100000);
+jest.setTimeout(300000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'SynchronousCrawlerE2eTest');
 
+const testDb = new Database(stack, 'TestDb', {
+  databaseName: 'sync_crawler_test_db',
+})
+
 const crawlerRole = new Role(stack, 'CrawlerRole', {
   assumedBy: new ServicePrincipal('glue.amazonaws.com'),
+  managedPolicies: [
+    new ManagedPolicy(stack, 'CrawlerPolicy',{
+      statements: [
+        new PolicyStatement({
+          actions: ['glue:GetTable'],
+          resources: [
+            stack.formatArn({
+              account: cdk.Aws.ACCOUNT_ID,
+              region: cdk.Aws.REGION,
+              service: 'glue',
+              resource: 'table',
+              resourceName: 'sampledb/elb_logs',
+            }),
+            stack.formatArn({
+              account: cdk.Aws.ACCOUNT_ID,
+              region: cdk.Aws.REGION,
+              service: 'glue',
+              resource: 'catalog',
+            }),
+            stack.formatArn({
+              account: cdk.Aws.ACCOUNT_ID,
+              region: cdk.Aws.REGION,
+              service: 'glue',
+              resource: 'database',
+              resourceName: 'sampledb',
+            }),
+          ],
+        }),
+      ]
+    }),
+    ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSGlueServiceRole'),
+  ]
 })
 
 const crawler = new CfnCrawler(stack, 'Crawler', {
-  role: 'role',
+  role: crawlerRole.roleName,
   targets: {
-    catalogTargets: [{
-      databaseName: 'sampledb',
-      tables: ['elb_logs'],
+    s3Targets: [{
+      path: `s3://athena-examples-${cdk.Aws.REGION}/elb/plaintext`,
+      sampleSize: 1,
     }],
   },
   name: 'test-crawler',
+  databaseName: testDb.databaseName,
 });
 
 const synchronousCrawler = new SynchronousCrawler(stack, 'SynchronousCrawler', {
-  crawlerName: 'test-crawler',
+  crawlerName: crawler.name || 'test-crawler',
 });
 
 new cdk.CfnOutput(stack, 'SynchronousCrawlerResource', {
