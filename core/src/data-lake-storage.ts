@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Bucket, StorageClass } from '@aws-cdk/aws-s3';
+import { Bucket, BucketEncryption, StorageClass } from '@aws-cdk/aws-s3';
 import { Construct, Duration } from '@aws-cdk/core';
 import { AraBucket } from './ara-bucket';
 
@@ -169,6 +169,7 @@ export class DataLakeStorage extends Construct {
 
     // Create the raw data bucket with the raw transitions
     this.rawBucket = AraBucket.getOrCreate(this, {
+      encryption: BucketEncryption.KMS,
       bucketName: 'raw',
       lifecycleRules: [
         {
@@ -197,6 +198,7 @@ export class DataLakeStorage extends Construct {
 
     // Create the clean data bucket
     this.cleanBucket = AraBucket.getOrCreate(this, {
+      encryption: BucketEncryption.KMS,
       bucketName: 'clean',
       lifecycleRules: [
         {
@@ -225,6 +227,7 @@ export class DataLakeStorage extends Construct {
 
     // Create the transform data bucket
     this.transformBucket = AraBucket.getOrCreate(this, {
+      encryption: BucketEncryption.KMS,
       bucketName: 'transform',
       lifecycleRules: [
         {
