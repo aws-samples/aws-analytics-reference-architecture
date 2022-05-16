@@ -191,7 +191,6 @@ export class DataGenerator extends Construct {
     let offsetCreateCRRole: Role = new Role(this,
       'OffsetCreateCRRole', {
         assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-        description: 'Role used by lambda in createManagedEndpoint CR',
         roleName: 'ara-data-generator-offsetCreateCRRole',
       });
 

@@ -13,8 +13,9 @@ import { Asset } from '@aws-cdk/aws-s3-assets';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 import * as cdk from '@aws-cdk/core';
 import { CustomResource } from '@aws-cdk/core';
+import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
+//import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
  * The properties of the FlywayRunner construct, needed to run flyway migration scripts.
@@ -44,7 +45,7 @@ export interface FlywayRunnerProps {
 
   /**
    * Period to keep the logs around.
-   * @default logs.RetentionDays.ONE_WEEK 
+   * @default logs.RetentionDays.ONE_WEEK
    */
   readonly logRetention?: logs.RetentionDays;
 
@@ -167,9 +168,8 @@ export class FlywayRunner extends cdk.Construct {
     props.cluster.secret?.grantRead(flywayLambda);
     migrationFilesBucket.grantRead(flywayLambda);
 
-    const flywayCustomResourceProvider = new ScopedIamProvider(this, 'FlywayCustomResourceProvider', {
+    const flywayCustomResourceProvider = new Provider(this, 'FlywayCustomResourceProvider', {
       onEventHandler: flywayLambda,
-      onEventFnName: 'flywayLambda',
       logRetention: props.logRetention ?? logs.RetentionDays.ONE_WEEK,
       securityGroups: props.cluster.connections.securityGroups,
       vpc: props.vpc,

@@ -184,6 +184,9 @@ export class BatchReplayer extends Construct {
     const sinkBucket = Bucket.fromBucketName(this, 'SinkBucket', props.s3LocationSink.bucketName);
     // grant permissions to write to the bucket and to use the KMS key
     sinkBucket.grantPut(writeInBatchFn);
+    if (sinkBucket.encryptionKey) {
+      sinkBucket.encryptionKey.grantEncrypt(writeInBatchFn);
+    }
 
     const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
       lambdaFunction: writeInBatchFn,

@@ -5284,7 +5284,7 @@ public readonly encryption: BucketEncryption;
 ```
 
 - *Type:* @aws-cdk/aws-s3.BucketEncryption
-- *Default:* Server side encryption with KMS customer key (SSE-KMS)
+- *Default:* Server side encryption with AWS managed key (SSE-KMS)
 
 The encryption mode for the bucket.
 
@@ -5297,7 +5297,7 @@ public readonly encryptionKey: IKey;
 ```
 
 - *Type:* @aws-cdk/aws-kms.IKey
-- *Default:* if encryption is undefined or KMS, use a unique KMS key across the stack called `AraDefaultKmsKey`
+- *Default:* if encryption is KMS, use a unique KMS key across the stack called `AraDefaultKmsKey`
 
 The KMS key for the bucket encryption.
 

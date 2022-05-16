@@ -54,9 +54,6 @@ def on_delete(event):
             raise e
     return {
         'PhysicalResourceId': crawler_name,
-        'Data': {
-            'StartResponse': response_stop
-        }
     }
 
 def is_complete(event, ctx):

@@ -16,7 +16,7 @@ export class SingletonKey extends Key {
   public static getOrCreate(scope: Construct, keyName: string) {
 
     const stack = Stack.of(scope);
-    const id = `${keyName}-Key`;
+    const id = `${keyName}`;
 
     const stackKey = stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Key : stack.node.tryFindChild(id) as Key;
 

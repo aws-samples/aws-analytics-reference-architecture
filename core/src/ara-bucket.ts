@@ -39,13 +39,13 @@ export interface AraBucketProps{
 
   /**
    * The encryption mode for the bucket
-   * @default - Server side encryption with KMS customer key (SSE-KMS)
+   * @default - Server side encryption with AWS managed key (SSE-KMS)
    */
   readonly encryption?: BucketEncryption;
 
   /**
    * The KMS key for the bucket encryption
-   * @default - if encryption is undefined or KMS, use a unique KMS key across the stack called `AraDefaultKmsKey`
+   * @default - if encryption is KMS, use a unique KMS key across the stack called `AraDefaultKmsKey`
    */
   readonly encryptionKey?: IKey ;
 
