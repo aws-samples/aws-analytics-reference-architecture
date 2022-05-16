@@ -5,6 +5,8 @@ import { CfnDeliveryStream } from '@aws-cdk/aws-kinesisfirehose';
 import { LogGroup, RetentionDays, LogStream } from '@aws-cdk/aws-logs';
 import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { Construct, Aws, RemovalPolicy, Stack } from '@aws-cdk/core';
+import { ContextOptions } from './common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from './common/tracked-construct';
 
 
 /**
@@ -45,7 +47,7 @@ export interface DataLakeExporterProps {
  * Source can be an Amazon Kinesis Data Stream.
  * Target can be an Amazon S3 bucket.
  */
-export class DataLakeExporter extends Construct {
+export class DataLakeExporter extends TrackedConstruct {
 
   /**
    * Constructs a new instance of the DataLakeExporter class
@@ -57,7 +59,11 @@ export class DataLakeExporter extends Construct {
   public readonly cfnIngestionStream: CfnDeliveryStream;
 
   constructor(scope: Construct, id: string, props: DataLakeExporterProps) {
-    super(scope, id);
+    const trackedConstructProps : TrackedConstructProps = {
+      trackingCode: ContextOptions.DATA_LAKE_ID,
+    };
+
+    super(scope, id, trackedConstructProps);
 
     if ( props.deliverySize || 128 > 128 ) { throw 'deliverySize cannot be more than 128MB';}
     if ( props.deliveryInterval || 900 > 900 ) { throw 'deliveryInterval cannot be more than 900s';}

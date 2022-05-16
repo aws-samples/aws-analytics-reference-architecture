@@ -66,7 +66,7 @@ export class BatchReplayer extends TrackedConstruct {
   constructor(scope: Construct, id: string, props: BatchReplayerProps) {
 
     const trackedConstructProps : TrackedConstructProps = {
-      trackingCode: ContextOptions.REPLAYER,
+      trackingCode: ContextOptions.DATA_GENERATOR,
     };
 
     super(scope, id, trackedConstructProps);
