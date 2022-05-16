@@ -191,12 +191,10 @@ const gradleBuildTask = project.addTask('gradle-build', {
   description: './gradlew shadowJar all folders in lib that has requirements.txt',
 });
 
-for (const dirPath of findAllGradleLambdaDir('src')) {
+for (const gradlePath of findAllGradleLambdaDir('src')) {
   console.log('loop over gradle dir');
-  // Assume that all folders with 'requirements.txt' have been copied to lib
-  // by the task 'copy-resources'
-  const dirPathInLib = dirname(dirPath.replace('src', 'lib'));
-  const gradleCmd = `cd ${dirPathInLib} && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null`;
+  const dirPath = dirname(gradlePath);
+  const gradleCmd = `cd ${dirPath} && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null`;
 
   gradleBuildTask.exec(gradleCmd);
 }
@@ -204,9 +202,9 @@ for (const dirPath of findAllGradleLambdaDir('src')) {
 /**
  * Run `copy-resources` and `pip-install` as part of compile
  */
+project.compileTask.exec('npx projen gradle-build');
 project.compileTask.exec('npx projen copy-resources');
 project.compileTask.exec('npx projen pip-install');
-project.compileTask.exec('npx projen gradle-build');
 
 /**
  * Find all directory that has a Python package.
