@@ -23,11 +23,11 @@ const stack = new cdk.Stack(integTestApp, 'BatchReplayerE2eTest');
 const sinkBucket = new Bucket(stack, 'SinkBucket');
 
 const batchReplayer = new BatchReplayer(stack, 'BatchReplay', {
-    dataset: PreparedDataset.RETAIL_1_GB_STORE_SALE,
-    s3LocationSink: {
-        bucketName: sinkBucket.bucketName,
-        objectKey: '',
-    }
+  dataset: PreparedDataset.RETAIL_1_GB_STORE_SALE,
+  s3LocationSink: {
+    bucketName: sinkBucket.bucketName,
+    objectKey: '',
+  },
 });
 
 new cdk.CfnOutput(stack, 'DatasetName', {
@@ -39,31 +39,31 @@ describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    
+
     const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
       profile: process.env.AWS_PROFILE,
     });
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-    
+
     // WHEN
     const deployResult = await cloudFormation.deployStack({
       stack: stackArtifact,
     });
-    
+
     // THEN
-    expect(deployResult.outputs.DatasetName).toEqual(`store_sale`);
+    expect(deployResult.outputs.DatasetName).toEqual('store_sale');
 
   }, 9000000);
 });
 
 afterAll(async () => {
   const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-  
+
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
     profile: process.env.AWS_PROFILE,
   });
   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-  
+
   await cloudFormation.destroyStack({
     stack: stackArtifact,
   });
