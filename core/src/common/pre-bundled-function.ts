@@ -5,7 +5,6 @@ import * as path from 'path';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Code, Function, FunctionProps, ILayerVersion } from '@aws-cdk/aws-lambda';
 import { Aws, Construct } from '@aws-cdk/core';
-import { SingletonKey } from '../singleton-kms-key';
 import { PreBundledLayer } from './pre-bundled-layer';
 
 /**
@@ -139,8 +138,6 @@ export class PreBundledFunction extends Function {
         managedPolicies: [logRetentionLambdaExecutionRolePolicy],
         roleName: 'LogRetLambdaExec' + functionProps.functionName,
       });
-
-    SingletonKey.getOrCreate(scope, 'DefaultKmsKey');
 
     functionProps.role = lambdaExecutionRole;
     functionProps.logRetentionRole = logRetentionLambdaExecutionRole;

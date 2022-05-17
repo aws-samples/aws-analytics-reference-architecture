@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Key } from '@aws-cdk/aws-kms';
-import { Construct, Stack } from '@aws-cdk/core';
+import { Construct, RemovalPolicy, Stack } from '@aws-cdk/core';
 
 /**
  * An Amazon S3 Bucket implementing the singleton pattern
@@ -22,6 +22,7 @@ export class SingletonKey extends Key {
 
     return stackKey || new Key(stack, id, {
       enableKeyRotation: true,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
   }
 }

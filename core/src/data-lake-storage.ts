@@ -55,6 +55,7 @@ export interface DataLakeStorageProps {
  *  * S3 buckets for Raw/Cleaned/Transformed data,
  *  * data lifecycle optimization/transitioning to different Amazon S3 storage classes
  *  * server side buckets encryption managed by KMS customer key
+ *  * Default single KMS key
  *  * SSL communication enforcement
  *  * access logged to an S3 bucket
  *  * All public access blocked

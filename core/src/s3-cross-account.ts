@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT-0
 
 import { PolicyStatement, AccountPrincipal } from '@aws-cdk/aws-iam';
-import { Key } from '@aws-cdk/aws-kms';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { Construct } from '@aws-cdk/core';
 
@@ -12,7 +11,8 @@ import { Construct } from '@aws-cdk/core';
 export interface S3CrossAccountProps {
 
   /**
-   * The S3 Bucket object to grant cross account access
+   * The S3 Bucket object to grant cross account access. 
+   * This needs to be a Bucket object and not an IBucket because the construct modifies the Bucket policy
    */
   readonly bucket: Bucket;
 
@@ -23,15 +23,9 @@ export interface S3CrossAccountProps {
   readonly objectKey?: string;
 
   /**
-   * The KMS Key used to encrypt the bucket
-   * @default - No resource based policy is created on any KMS key
-   */
-  readonly key?: Key;
-
-  /**
    * The account ID to grant on the S3 location
    */
-  readonly accountID: string;
+  readonly accountId: string;
 }
 
 /**
@@ -48,11 +42,12 @@ export interface S3CrossAccountProps {
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'S3CrossAccountStack');
  *
+ * const myBucket = new Bucket(stack, 'MyBucket')
+ * 
  * new S3CrossAccount(stack, 'S3CrossAccountGrant', {
- *   s3Location:{
- *     bucketName: 'my-bucket',
- *     objectKey: 'my-prefix',
- *   }
+ *   bucket: myBucket,
+ *   objectKey: 'my-data',
+ *   accountId: '1234567891011',
  * });
  * ```
  */
@@ -62,7 +57,7 @@ export class S3CrossAccount extends Construct {
     super(scope, id);
 
     // Get the target account as a Principal
-    const targetAccount = new AccountPrincipal(props.accountID);
+    const targetAccount = new AccountPrincipal(props.accountId);
 
     // Get the bucket from the S3 location to attache a bucket policy
     props.bucket.addToResourcePolicy(
@@ -86,14 +81,7 @@ export class S3CrossAccount extends Construct {
       }),
     );
 
-    // TODO this need to be changed as the ARN only get the resolved at deployment time
-    // If the bucket is encrypted with a custom KMS key, attach a policy to the key
-    if (props.bucket.encryptionKey) {
-      if (props.key && props.bucket.encryptionKey.keyArn == props.key.keyArn) {
-        props.key.grantDecrypt(targetAccount);
-      }
-    } else {
-      throw new Error('The bucket is encrypted so S3CrossAccount should take a KMS key as parameter');
-    }
+    // If the bucket is encrypted with a custom KMS key, attach a policy to the key to grant encrypt and decrypt
+    if (props.bucket.encryptionKey)  props.bucket.encryptionKey.grantEncryptDecrypt(targetAccount);
   };
 }

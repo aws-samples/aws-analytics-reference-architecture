@@ -4,7 +4,7 @@
 /**
  * Tests S3CrossAccount
  *
- * @group unit/lakeformation/s3crossaccount
+ * @group unit/lakeformation/s3-cross-account
  */
 
 import { S3CrossAccount } from '../../src/s3-cross-account';
@@ -27,8 +27,7 @@ describe('S3CrossAccount test', () => {
   new S3CrossAccount(s3CrossAccountStack, 'MyS3CrossAccount', {
     bucket: myBucket,
     objectKey: 'test',
-    key: myKey,
-    accountID: accountId,
+    accountId: accountId,
   });
 
   const template = Template.fromStack(s3CrossAccountStack);
@@ -102,7 +101,12 @@ describe('S3CrossAccount test', () => {
         KeyPolicy: {
           Statement: Match.arrayWith([
             {
-              Action: 'kms:Decrypt',
+              Action: [
+                "kms:Decrypt",
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*"
+              ],
               Effect: 'Allow',
               Principal: {
                 AWS: Match.objectLike({

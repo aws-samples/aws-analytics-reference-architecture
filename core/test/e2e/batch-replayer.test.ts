@@ -9,6 +9,7 @@
 
 import { Bucket } from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
+import { RemovalPolicy } from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 
@@ -20,7 +21,10 @@ jest.setTimeout(500000);
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'BatchReplayerE2eTest');
 
-const sinkBucket = new Bucket(stack, 'SinkBucket');
+const sinkBucket = new Bucket(stack, 'SinkBucket',{
+  removalPolicy: RemovalPolicy.DESTROY,
+  autoDeleteObjects: true,
+});
 
 const batchReplayer = new BatchReplayer(stack, 'BatchReplay', {
   dataset: PreparedDataset.RETAIL_1_GB_STORE_SALE,

@@ -11,6 +11,7 @@ import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
 import { Stream } from '@aws-cdk/aws-kinesis';
 import { Bucket } from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
+import { RemovalPolicy } from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 
@@ -21,7 +22,10 @@ jest.setTimeout(100000);
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'DataLakeExporterE2eTest');
 
-const sinkBucket = new Bucket(stack, 'SinkBucket');
+const sinkBucket = new Bucket(stack, 'SinkBucket', {
+  removalPolicy: RemovalPolicy.DESTROY,
+  autoDeleteObjects: true,
+});
 const sourceGlueDatabase = new Database(stack, 'SourceDatabase', {
   databaseName: 'data_lake_exporter_test',
 });

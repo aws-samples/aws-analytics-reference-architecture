@@ -32,8 +32,7 @@ const myBucket = new Bucket(s3CrossAccountStack, 'MyBucket', {
 new S3CrossAccount(s3CrossAccountStack, 'MyS3CrossAccount', {
   bucket: myBucket,
   objectKey: 'test',
-  key: myKey,
-  accountID: Aws.ACCOUNT_ID,
+  accountId: Aws.ACCOUNT_ID,
 });
 
 Aspects.of(s3CrossAccountStack).add(new AwsSolutionsChecks());

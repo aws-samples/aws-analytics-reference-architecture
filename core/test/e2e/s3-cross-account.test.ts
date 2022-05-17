@@ -4,7 +4,7 @@
 /**
  * Tests DataLakeStorage
  *
- * @group integ/lake-formation/s3-cross-account
+ * @group integ/lakeformation/s3-cross-account
  */
 
 import { Key } from '@aws-cdk/aws-kms';
@@ -31,8 +31,7 @@ const myBucket = new Bucket(stack, 'MyBucket', {
 new S3CrossAccount(stack, 'MyS3CrossAccount', {
   bucket: myBucket,
   objectKey: 'test',
-  key: myKey,
-  accountID: cdk.Aws.ACCOUNT_ID,
+  accountId: cdk.Aws.ACCOUNT_ID,
 });
 
 new cdk.CfnOutput(stack, 'BucketPolicy', {

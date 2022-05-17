@@ -10,6 +10,7 @@
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { Bucket } from '@aws-cdk/aws-s3';
 import * as cdk from '@aws-cdk/core';
+import { RemovalPolicy } from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 
@@ -20,7 +21,10 @@ jest.setTimeout(300000);
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'SynchronousAthenaQueryE2eTest');
 
-const resultsBucket = new Bucket(stack, 'ResultsBucket');
+const resultsBucket = new Bucket(stack, 'ResultsBucket', {
+  removalPolicy: RemovalPolicy.DESTROY,
+  autoDeleteObjects: true,
+});
 
 const sourceBucket = Bucket.fromBucketName(stack, 'SourceBucket', `athena-examples-${cdk.Aws.REGION}`);
 
