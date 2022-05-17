@@ -1,10 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 /**
-* Tests DataLakeStorage
-*
-* @group integ/lakeformation/s3location
-*/
+ * Tests DataLakeStorage
+ *
+ * @group integ/lakeformation/s3location
+ */
 
 import { Key } from 'aws-cdk-lib/aws-kms';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -30,25 +30,26 @@ const s3Location = new LakeformationS3Location(stack, 'MyS3CrossAccount', {
   s3Location: {
     bucketName: myBucket.bucketName,
     objectKey: 'test',
-  }
+  },
 });
 
 new cdk.CfnOutput(stack, 'BucketPolicy', {
-  value: s3Location.dataAccessRole.assumeRolePolicy? 
-    s3Location.dataAccessRole.assumeRolePolicy.statementCount.toString() : '0',
+  value: s3Location.dataAccessRole.assumeRolePolicy
+    ? s3Location.dataAccessRole.assumeRolePolicy.statementCount.toString()
+    : '0',
   exportName: 'role',
 });
 
 new cdk.CfnOutput(stack, 'KeyPolicy', {
   value: myKey.keyId,
-  exportName: 'keyId',
+  exportName: `${stack.stackName}-keyId`,
 });
 
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // WHEN
     const deployResult = await deployStack(integTestApp, stack);
-    
+
     // THEN
     expect(deployResult.outputs.BucketPolicy).toContain('1');
   }, 9000000);

@@ -11,7 +11,7 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
 import { deployStack, destroyStack } from './utils';
 import { S3CrossAccount } from '../../src/s3-cross-account';
- 
+
 jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
@@ -21,9 +21,9 @@ const myKey = new Key(stack, 'MyKey', {
   removalPolicy: cdk.RemovalPolicy.DESTROY,
 });
 const myBucket = new Bucket(stack, 'MyBucket', {
-    encryptionKey: myKey,
-    removalPolicy: cdk.RemovalPolicy.DESTROY,
-    autoDeleteObjects: true,
+  encryptionKey: myKey,
+  removalPolicy: cdk.RemovalPolicy.DESTROY,
+  autoDeleteObjects: true,
 });
 
 new S3CrossAccount(stack, 'MyS3CrossAccount', {
@@ -40,7 +40,7 @@ new cdk.CfnOutput(stack, 'BucketPolicy', {
 
 new cdk.CfnOutput(stack, 'KeyPolicy', {
   value: myKey.keyId,
-  exportName: 'keyId',
+  exportName: `${stack.stackName}-keyId`,
 });
 
 describe('deploy succeed', () => {
