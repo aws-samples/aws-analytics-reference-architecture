@@ -95,5 +95,6 @@ export class S3CrossAccount extends Construct {
     } else {
       throw new Error('The bucket is encrypted so S3CrossAccount should take a KMS key as parameter');
     }
+
   };
 }

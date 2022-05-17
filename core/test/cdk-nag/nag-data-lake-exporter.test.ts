@@ -61,14 +61,20 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataLakeExporterStack,
-  'data-lake-exporter/testExporter/dataLakeExporterRole/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card used at the object level, to allow access to the bucket' }],
+  'data-lake-exporter/testStream/Resource',
+  [{ id: 'AwsSolutions-KDS3', reason: 'This is for demo and PoC purpose only, to reduce the cost encryption is not with CMK is not used' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataLakeExporterStack,
-  'data-lake-exporter/testStream/Resource',
-  [{ id: 'AwsSolutions-KDS3', reason: 'This is for demo and PoC purpose only, to reduce the cost encryption is not with CMK is not used' }],
+  'data-lake-exporter/testExporter/managedPolicyKinesisFirehose/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'wild card needed for the putting object on the given path' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataLakeExporterStack,
+  'data-lake-exporter/testExporter/dataLakeExporter',
+  [{ id: 'AwsSolutions-KDF1', reason: 'Kinesis Firehose does not support encryption when used with KDS integration' }],
 );
 
 test('No unsuppressed Warnings', () => {

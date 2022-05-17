@@ -39,12 +39,6 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/LogRetentionLambdaExcutionRoleSynchronousCrawlerStartFn/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card used for mutating log retention, log name is know only at runtime, cannot scope it down' }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  crawlerStartWaitStack,
   'synchronous-crawler/CrawlerStartWaitTest/LambdaExecutionRolePolicySynchronousCrawlerWaitFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card for log stream, log name generated at run time' }],
 );
@@ -55,28 +49,66 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
+
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/LambdaExecutionRolePolicySynchronousCrawlerCRP/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card for log stream, log name generated at run time' }],
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card needed for the proper execution it is inject by Provider CDK construct' }],
+);
+
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-onEvent/ServiceRole/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/LambdaExecutionRoleCRSynchronousCrawlerCRP/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-onEvent/ServiceRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Managed policy used by construct cannot change it' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/LambdaExecutionRoleCRSynchronousCrawlerCRP/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+  'synchronous-crawler/CrawlerStartWaitTest/LogRetentionLambdaExecutionRoleSynchronousCrawlerStartFn/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/SynchronousCrawlerCRP/waiter-state-machine/Role/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-onEvent/ServiceRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Managed policy used by construct cannot change it' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-onTimeout/ServiceRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Managed policy used by construct cannot change it' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-onTimeout/ServiceRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card needed for the proper execution it is inject by Provider CDK construct' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-isComplete/ServiceRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card needed for the proper execution it is inject by Provider CDK construct' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card needed for the proper execution it is inject by Provider CDK construct' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-isComplete/ServiceRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Managed policy used by construct cannot change it' }],
 );
 
 test('No unsuppressed Warnings', () => {

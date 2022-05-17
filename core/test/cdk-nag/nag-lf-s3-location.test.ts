@@ -23,26 +23,25 @@ new LakeformationS3Location(lfS3LocationStack, 'LfS3Location', {
     bucketName: 'test',
     objectKey: 'test',
   },
-})
+});
 
 Aspects.of(lfS3LocationStack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   lfS3LocationStack,
-  'data-lake-storage/S3Location/LFS3AccessRole/DefaultPolicy/Resource',
+  'LfS3LocationStack/LfS3Location/LFS3AccessRole/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The S3 location role needs access to all the objects under the prefix' }],
 );
-  
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(lfS3LocationStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);
   expect(warnings).toHaveLength(0);
 });
-  
+
 test('No unsuppressed Errors', () => {
   const errors = Annotations.fromStack(lfS3LocationStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(errors);
   expect(errors).toHaveLength(0);
 });
-  
-  
+

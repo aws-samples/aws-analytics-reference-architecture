@@ -17,7 +17,6 @@ import { SSOIdentityType } from '../../lib';
 import { EmrEksCluster } from '../../src/emr-eks-platform';
 import { NotebookPlatform, StudioAuthMode } from '../../src/notebook-platform';
 
-
 const mockApp = new App();
 const stack = new Stack(mockApp, 'eks-emr-studio');
 
@@ -67,6 +66,28 @@ notebookPlatform.addUser([{
   }],
 }]);
 
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/eks-emr-studio/engineSecurityGroup-platform7/Resource',
+  [{
+    id: 'AwsSolutions-EC23',
+    reason: 'SG allowing traffic only from its own CIDR range',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/s3-access-logs/Resource',
+  [{ id: 'AwsSolutions-S1', reason: 'Bucket used for consolidating access logs' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform-emr-eks-assets/Resource',
+  [{ id: 'AwsSolutions-S1', reason: 'Bucket does not need to have access logs activated' }],
+);
+
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
   'eks-emr-studio/awsNodeRole/Resource',
@@ -75,29 +96,44 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/ara-s3accesslogsBucket/Resource',
-  [{ id: 'AwsSolutions-S1', reason: 'S3 bucket used for access log' }],
+  'eks-emr-studio/data-platform/AsgTagProvider/CustomResourceProvider/framework-onEvent/ServiceRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Managed policy used by CDK construct cannot amend it' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform-emr-eks-assetsBucket/Resource',
-  [{
-    id: 'AwsSolutions-S1',
-    reason: 'access log not activated because the bucket only stores pod templates no data',
-  }],
+  'eks-emr-studio/data-platform/AsgTagProvider/CustomResourceProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Managed policy used by CDK construct cannot amend it' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/ara-s3accesslogsBucket/Resource',
-  [{ id: 'AwsSolutions-S1', reason: 'Bucket does not require access log, contains only EKS pod templates' }],
+  'eks-emr-studio/data-platform/AsgTagProvider/LogRetentionLambdaExecutionRoleEmrEksNodegroupAsgTagOnEventFn/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Policy set by Provider in CDK construct cannot amend it' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platformCluster/Autoscaler/Role/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'These are actions that are of type list and should have a wildcard' }],
+  '/eks-emr-studio/data-platform/ManagedEndpointProvider/LambdaExecutionRolePolicyEmrManagedEndpointProviderOnEvent/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'wild card mitigated by using tag based access control,  wild card used when not possible to restrict action' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  '/eks-emr-studio/data-platform/ManagedEndpointProvider/LogRetentionLambdaExecutionRolePolicyEmrManagedEndpointProviderOnEvent/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'wild card used as logs are not known until run time' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  '/eks-emr-studio/data-platform/ManagedEndpointProvider/LogRetentionLambdaExecutionRolePolicyEmrManagedEndpointProviderIsComplete/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'wild card used as logs are not known until run time' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  '/eks-emr-studio/data-platformCluster/Autoscaler/Role/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'wild card used for list and describe, other actions are mitigated using tag based access control' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
@@ -108,8 +144,50 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/ManagedEndpointProvider/lambdaExecutionRolePolicyara-EmrManagedEndpointProviderOnEvent/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Violation mitigated with tag based access control' }],
+  'eks-emr-studio/data-platformCluster/NodegroupsharedDriver-0/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupsharedDriver-1/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupsharedExecutor-0/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupsharedExecutor-1/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupnotebookDriver-0/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupnotebookDriver-1/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupnotebookExecutor-0/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupnotebookExecutor-1/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
@@ -214,43 +292,6 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/LogRetentionLambdaExcutionRoleEmrEksNodegroupAsgTagOnEventFn/DefaultPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'policy to change log retention cannot be scoped down further',
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/LambdaExecutionRolePolicyCustomResourceProvider/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Policy cannot be scoped down further, log group is created at runtime',
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  stack,
-  'eks-emr-studio/data-platform/ManagedEndpointProvider/logRetentionLambdaExecutionRolePolicyara-EmrManagedEndpointProviderOnEvent/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Policy cannot be scoped down further, log is created at runtime',
-  }],
-);
-
-
-NagSuppressions.addResourceSuppressionsByPath(
-  stack,
-  'eks-emr-studio/data-platform/ManagedEndpointProvider/logRetentionLambdaExecutionRolePolicyara-EmrManagedEndpointProviderIsComplete/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Policy cannot be scoped down further, log is created at runtime',
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  stack,
   'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/OnEventHandler/ServiceRole/Resource',
   [{
     id: 'AwsSolutions-IAM4',
@@ -333,15 +374,6 @@ NagSuppressions.addResourceSuppressionsByPath(
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
   'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/waiter-state-machine/Role/DefaultPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Cannot scope the policy further resource name generated at run time',
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/LambdaExecutionRoleCRCustomResourceProvider/DefaultPolicy/Resource',
   [{
     id: 'AwsSolutions-IAM5',
     reason: 'Cannot scope the policy further resource name generated at run time',
@@ -439,21 +471,6 @@ NagSuppressions.addResourceSuppressionsByPath(
     reason: 'Policy not relevant, it used for the cdk-nag test. The user will have to provide its own',
   }],
 );
-
-NagSuppressions.addResourceSuppressionsByPath(
-  stack,
-  'eks-emr-studio/eks-emr-studio/engineSecurityGroup/Resource',
-  [{
-    id: 'AwsSolutions-EC23',
-    reason: 'security group allow traffic coming from the VPC',
-  }],
-);
-
-test('No unsuppressed Warnings', () => {
-  const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
-  console.log(warnings);
-  expect(warnings).toHaveLength(0);
-});
 
 test('No unsuppressed Errors', () => {
   const errors = Annotations.fromStack(stack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
