@@ -7,9 +7,9 @@
  * @group unit/datalake/storage
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { DataLakeStorage } from '../../src/data-lake-storage';
-import '@aws-cdk/assert/jest';
+import { Template } from 'aws-cdk-lib/assertions';
 
 test('dataLakeStorage', () => {
 
@@ -25,10 +25,11 @@ test('dataLakeStorage', () => {
     transformArchiveDelay: 360,
   });
 
+  const template = Template.fromStack(dataLakeStorageStack);
   // Test if the stack has 3 S3 Buckets
-  expect(dataLakeStorageStack).toCountResources('AWS::S3::Bucket', 3);
+  template.resourceCountIs('AWS::S3::Bucket', 3);
 
-  expect(dataLakeStorageStack).toHaveResource('AWS::S3::Bucket', {
+  template.hasResourceProperties('AWS::S3::Bucket', {
     BucketName: {
       'Fn::Join': [
         '',
@@ -68,7 +69,7 @@ test('dataLakeStorage', () => {
     },
   });
 
-  expect(dataLakeStorageStack).toHaveResource('AWS::S3::Bucket', {
+  template.hasResourceProperties('AWS::S3::Bucket', {
     BucketName: {
       'Fn::Join': [
         '',
@@ -108,7 +109,7 @@ test('dataLakeStorage', () => {
     },
   });
 
-  expect(dataLakeStorageStack).toHaveResource('AWS::S3::Bucket', {
+  template.hasResourceProperties('AWS::S3::Bucket', {
     BucketName: {
       'Fn::Join': [
         '',

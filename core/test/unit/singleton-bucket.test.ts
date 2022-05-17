@@ -7,9 +7,9 @@
  * @group unit/signleton/bucket
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { SingletonBucket } from '../../src/singleton-bucket';
-import '@aws-cdk/assert/jest';
+import { Template } from 'aws-cdk-lib/assertions';
 
 test('SingleBucket', () => {
 
@@ -19,11 +19,12 @@ test('SingleBucket', () => {
   SingletonBucket.getOrCreate(singletonBucketStack, 'test');
   SingletonBucket.getOrCreate(singletonBucketStack, 'test');
 
+  const template = Template.fromStack(singletonBucketStack);
 
   // Test if LogBucket is a singleton
-  expect(singletonBucketStack).toCountResources('AWS::S3::Bucket', 1);
+  template.resourceCountIs('AWS::S3::Bucket', 1);
 
-  expect(singletonBucketStack).toHaveResource('AWS::S3::Bucket', {
+  template.hasResourceProperties('AWS::S3::Bucket', {
     BucketName: {
       'Fn::Join': [
         '',

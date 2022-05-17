@@ -1,13 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { IRole } from '@aws-cdk/aws-iam';
-import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { Runtime } from '@aws-cdk/aws-lambda';
-import { Construct, Duration } from '@aws-cdk/core';
-import { Provider } from '@aws-cdk/custom-resources';
+import { IRole } from 'aws-cdk-lib/aws-iam';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Duration } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { Provider } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { RetentionDays } from '@aws-cdk/aws-logs';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 
 /**

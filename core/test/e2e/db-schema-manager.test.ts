@@ -8,11 +8,10 @@
  */
 
 import * as path from 'path';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as redshift from '@aws-cdk/aws-redshift';
-import * as cdk from '@aws-cdk/core';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as redshift from '@aws-cdk/aws-redshift-alpha';
+import * as cdk from 'aws-cdk-lib';
+import { deployStack, destroyStack } from './utils';
 
 import { FlywayRunner } from '../../src/db-schema-manager';
 
@@ -51,18 +50,8 @@ new cdk.CfnOutput(stack, 'schemaVersion', {
 
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
-    // GIVEN
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
     // WHEN
-    const deployResult = await cloudFormation.deployStack({
-      stack: stackArtifact,
-    });
+    const deployResult = await deployStack(integTestApp, stack);
 
     // THEN
     expect(deployResult.outputs.schemaVersion).toEqual('3');
@@ -70,19 +59,10 @@ describe('deploy succeed', () => {
 });
 
 afterAll(async () => {
-  const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-    profile: process.env.AWS_PROFILE,
-  });
-  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
   let retryCount = 1;
   while (retryCount >= 0) {
     try {
-      await cloudFormation.destroyStack({
-        stack: stackArtifact,
-      });
+      await destroyStack(integTestApp, stack);
     } catch (e) {
       console.error(`Fail to delete stack retrying`);
       if(retryCount == 0) {

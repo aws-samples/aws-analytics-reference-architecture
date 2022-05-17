@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT-0
 
 import * as path from 'path';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as redshift from '@aws-cdk/aws-redshift';
-import * as cdk from '@aws-cdk/core';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as redshift from '@aws-cdk/aws-redshift-alpha';
+import * as cdk from 'aws-cdk-lib';
 
 import { FlywayRunner } from '.';
 

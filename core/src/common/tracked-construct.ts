@@ -1,11 +1,12 @@
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 export interface TrackedConstructProps {
   trackingCode: string;
 }
 
-export class TrackedConstruct extends cdk.Construct {
-  constructor(scope: cdk.Construct, id: string, props: TrackedConstructProps) {
+export class TrackedConstruct extends Construct {
+  constructor(scope: Construct, id: string, props: TrackedConstructProps) {
     super(scope, id);
 
     if (!scope.node.tryGetContext('@aws-analytics-reference-architecture/disableConstructsDeploymentTracking')) {

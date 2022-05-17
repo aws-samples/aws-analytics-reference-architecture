@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { BlockPublicAccess, Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
-import { Construct, Stack, Aws, RemovalPolicy } from '@aws-cdk/core';
+import { BlockPublicAccess, Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
+import { Stack, Aws, RemovalPolicy } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 /**
  * An Amazon S3 Bucket implementing the singleton pattern

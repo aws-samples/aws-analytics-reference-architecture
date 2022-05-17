@@ -1,4 +1,4 @@
-import { ManagedPolicy } from '@aws-cdk/aws-iam';
+import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 
 /**
  * The properties for defining a Managed Endpoint

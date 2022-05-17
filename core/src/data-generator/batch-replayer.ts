@@ -1,19 +1,20 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Aws, Construct, Duration } from "@aws-cdk/core";
-import { RetentionDays } from "@aws-cdk/aws-logs";
-import { LambdaInvoke } from "@aws-cdk/aws-stepfunctions-tasks";
-import { JsonPath, Map, StateMachine, TaskInput } from "@aws-cdk/aws-stepfunctions";
-// import * as lambda from "@aws-cdk/aws-lambda";
-import { SfnStateMachine } from "@aws-cdk/aws-events-targets";
-import { Rule, Schedule } from "@aws-cdk/aws-events";
-import { Policy, PolicyStatement } from "@aws-cdk/aws-iam";
+import { Aws, Duration } from "aws-cdk-lib";
+import { Construct } from 'constructs';
+import { RetentionDays } from "aws-cdk-lib/aws-logs";
+import { LambdaInvoke } from "aws-cdk-lib/aws-stepfunctions-tasks";
+import { JsonPath, Map, StateMachine, TaskInput } from "aws-cdk-lib/aws-stepfunctions";
+// import * as lambda from "aws-cdk-lib/aws-lambda";
+import { SfnStateMachine } from "aws-cdk-lib/aws-events-targets";
+import { Rule, Schedule } from "aws-cdk-lib/aws-events";
+import { Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
 // import path = require("path");
-import { Bucket } from "@aws-cdk/aws-s3";
+import { Bucket } from "aws-cdk-lib/aws-s3";
 import { PreparedDataset } from "../datasets/prepared-dataset";
 import { PreBundledFunction } from "../common/pre-bundled-function";
-import { LayerVersion, Runtime } from "@aws-cdk/aws-lambda";
+import { LayerVersion, Runtime } from "aws-cdk-lib/aws-lambda";
 
 export interface BatchReplayerProps {
   readonly dataset: PreparedDataset;

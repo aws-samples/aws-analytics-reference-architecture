@@ -7,6 +7,7 @@ const glob = require('glob');
 
 const { awscdk } = require('projen');
 
+const CDK_VERSION = '2.24.1';
 const project = new awscdk.AwsCdkConstructLibrary({
 
   authorName: 'Amazon Web Services',
@@ -22,7 +23,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.151.0',
+  cdkVersion: CDK_VERSION,
+  constructsVersion: '10.1.7',
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
@@ -40,52 +42,27 @@ const project = new awscdk.AwsCdkConstructLibrary({
   },
   //workflowContainerImage: 'jsii/superchain:1-buster-slim',
 
-  cdkDependencies: [
-    '@aws-cdk/assertions',
-    '@aws-cdk/aws-athena',
-    '@aws-cdk/aws-autoscaling',
-    '@aws-cdk/aws-ec2',
-    '@aws-cdk/aws-emrcontainers',
-    '@aws-cdk/aws-eks',
-    '@aws-cdk/aws-events',
-    '@aws-cdk/aws-events-targets',
-    '@aws-cdk/aws-glue',
-    '@aws-cdk/aws-iam',
-    '@aws-cdk/aws-kinesis',
-    '@aws-cdk/aws-kinesisfirehose',
-    '@aws-cdk/aws-kinesisfirehose-destinations',
-    '@aws-cdk/aws-lambda',
-    '@aws-cdk/aws-lambda-python',
-    '@aws-cdk/aws-logs',
-    '@aws-cdk/aws-redshift',
-    '@aws-cdk/aws-s3',
-    '@aws-cdk/aws-s3-assets',
-    '@aws-cdk/aws-s3-deployment',
-    '@aws-cdk/aws-secretsmanager',
-    '@aws-cdk/aws-stepfunctions',
-    '@aws-cdk/aws-stepfunctions-tasks',
-    '@aws-cdk/core',
-    '@aws-cdk/custom-resources',
-    '@aws-cdk/lambda-layer-awscli',
-    '@aws-cdk/aws-emr',
-    '@aws-cdk/aws-kms',
-    '@aws-cdk/aws-lakeformation'
-  ],
-
   deps: [
     '@exodus/schemasafe',
+    `@aws-cdk/aws-redshift-alpha@${CDK_VERSION}-alpha.0`,
+    `@aws-cdk/aws-glue-alpha@${CDK_VERSION}-alpha.0`,
   ],
 
   devDeps: [
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
-    'aws-cdk@1.151.0',
-    'cdk-assets@1.151.0',
+    'constructs',
+    'aws-cdk-lib',
+    `aws-cdk@${CDK_VERSION}`,
+    `cdk-assets@${CDK_VERSION}`,
+    `@aws-cdk/cx-api@${CDK_VERSION}`,
+    `@aws-cdk/cloudformation-diff@${CDK_VERSION}`,
     'jest-runner-groups',
     'promptly',
     'proxy-agent',
     'glob',
+    '@types/prettier@2.6.0',
   ],
 
   jestOptions: {

@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: MIT-0
 
 import * as path from 'path';
-import { Code, Function, FunctionProps } from '@aws-cdk/aws-lambda';
-import * as cdk from '@aws-cdk/core';
-
+import { Code, Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
+import { Construct } from 'constructs';
 /**
  * Extends existing FunctionProps as optional using `Partial`
  * (as we don't require `Code` prop)
@@ -26,7 +25,7 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
  * (as it's installed as a 3rd party library.) So we need to change reference based on __dirname.
  */
 export class PreBundledFunction extends Function {
-  constructor(scope: cdk.Construct, id: string, props: PreBundledFunctionProps) {
+  constructor(scope: Construct, id: string, props: PreBundledFunctionProps) {
 
     if (props.code) {
       throw new Error('Pass "codePath" prop instead of "code" . See CONTRIB_FAQ.md on how to create prebundled Lambda function.');

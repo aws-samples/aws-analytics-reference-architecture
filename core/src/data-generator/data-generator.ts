@@ -1,16 +1,17 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Rule, Schedule } from '@aws-cdk/aws-events';
-import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
-import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { Runtime } from '@aws-cdk/aws-lambda';
-import { RetentionDays } from '@aws-cdk/aws-logs';
-import { Bucket } from '@aws-cdk/aws-s3';
-import { StateMachine, IntegrationPattern, TaskInput, JsonPath } from '@aws-cdk/aws-stepfunctions';
-import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfunctions-tasks';
-import { Construct, Arn, Aws, Stack, Duration, ArnFormat } from '@aws-cdk/core';
-import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
+import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
+import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { StateMachine, IntegrationPattern, TaskInput, JsonPath } from 'aws-cdk-lib/aws-stepfunctions';
+import { LambdaInvoke, AthenaStartQueryExecution } from 'aws-cdk-lib/aws-stepfunctions-tasks';
+import { Arn, Aws, Stack, Duration, ArnFormat } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Dataset } from '../datasets/dataset';
 import { SingletonBucket } from '../singleton-bucket';

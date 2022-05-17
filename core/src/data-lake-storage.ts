@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Bucket, StorageClass, BucketEncryption } from '@aws-cdk/aws-s3';
-import { Construct, Aws, RemovalPolicy, Duration } from '@aws-cdk/core';
+import { Bucket, StorageClass, BucketEncryption } from 'aws-cdk-lib/aws-s3';
+import { Aws, RemovalPolicy, Duration } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 /**
  * Properties for the DataLakeStorage Construct
@@ -61,7 +62,7 @@ export interface DataLakeStorageProps {
  * 
  * Usage example:
  * ```typescript
- * import * as cdk from '@aws-cdk/core';
+ * import * as cdk from 'aws-cdk-lib';
  * import { DataLakeStorage } from 'aws-analytics-reference-architecture';
  * 
  * const exampleApp = new cdk.App();

@@ -7,13 +7,12 @@
  * @group unit/datalake/exporter
  */
 
-import { RetentionDays } from '@aws-cdk/aws-logs';
-import { Stack } from '@aws-cdk/core';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Stack } from 'aws-cdk-lib';
 import { DataLakeExporter } from '../../src/data-lake-exporter';
-import '@aws-cdk/assert/jest';
-import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
-import { SynthUtils } from '@aws-cdk/assert';
-import { Stream } from '@aws-cdk/aws-kinesis';
+import { Database, DataFormat, Table } from '@aws-cdk/aws-glue-alpha';
+import { Template } from 'aws-cdk-lib/assertions';
+import { Stream } from 'aws-cdk-lib/aws-kinesis';
 
 
 test('dataLakeExporter', () => {
@@ -47,18 +46,20 @@ test('dataLakeExporter', () => {
     sourceGlueTable: table,
   });
 
+  const template = Template.fromStack(dataLakeExporterStack);
+
   // TODO: add tests (refer to data-lake-storage.test.ts)
   // Test if the stack has S3 Buckets
-  expect(dataLakeExporterStack).toHaveResource('AWS::S3::Bucket');
+  template.hasResource('AWS::S3::Bucket', 1);
 
   // Test if stack has log group
-  expect(dataLakeExporterStack).toHaveResourceLike('AWS::Logs::LogGroup', {
+  template.hasResourceProperties('AWS::Logs::LogGroup', {
     LogGroupName: '/data-lake-exporter/',
     RetentionInDays: RetentionDays.ONE_DAY,
   });
 
   //Test stack for firehose stream
-  expect(dataLakeExporterStack).toHaveResourceLike('AWS::KinesisFirehose::DeliveryStream', {
+  template.hasResourceProperties('AWS::KinesisFirehose::DeliveryStream', {
     ExtendedS3DestinationConfiguration: {
       BufferingHints: {
         IntervalInSeconds: 900,
@@ -67,6 +68,5 @@ test('dataLakeExporter', () => {
     },
   });
 
-  expect(SynthUtils.toCloudFormation(dataLakeExporterStack)).toMatchSnapshot();
-
+  expect(template).toMatchSnapshot();
 });

@@ -1,14 +1,14 @@
 // // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // // SPDX-License-Identifier: MIT-0
 
-// import { ISecurityGroup, IVpc, Peer, Port, SecurityGroup, SubnetType } from '@aws-cdk/aws-ec2';
-// import { KubernetesVersion } from '@aws-cdk/aws-eks';
-// import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from '@aws-cdk/aws-emr';
-// import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-// import { IManagedPolicy, IRole, ManagedPolicy, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
-// import { Key } from '@aws-cdk/aws-kms';
-// import { Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
-// import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from '@aws-cdk/core';
+// import { ISecurityGroup, IVpc, Peer, Port, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
+// import { KubernetesVersion } from 'aws-cdk-lib/aws-eks';
+// import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from 'aws-cdk-lib/aws-emr';
+// import { CfnVirtualCluster } from 'aws-cdk-lib/aws-emrcontainers';
+// import { IManagedPolicy, IRole, ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+// import { Key } from 'aws-cdk-lib/aws-kms';
+// import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
+// import { Aws, CfnOutput, Construct, NestedStack, RemovalPolicy, Tags } from 'aws-cdk-lib';
 
 
 // import { EmrEksCluster } from '../emr-eks-platform/emr-eks-cluster';

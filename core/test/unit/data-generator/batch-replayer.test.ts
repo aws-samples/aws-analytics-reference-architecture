@@ -7,13 +7,12 @@
  * @group unit/other/data-generator/batch replayer
  */
 
-import { Stack } from "@aws-cdk/core";
+import { Stack } from "aws-cdk-lib";
 
 import { BatchReplayer } from "../../../src/data-generator/batch-replayer";
 import { PreparedDataset } from "../../../src/datasets";
-import "@aws-cdk/assert/jest";
-import { Bucket } from "@aws-cdk/aws-s3";
-import { Template } from "@aws-cdk/assertions";
+import { Bucket } from "aws-cdk-lib/aws-s3";
+import { Template } from "aws-cdk-lib/assertions";
 
 let testStack: Stack;
 let testSinkBucket: Bucket;

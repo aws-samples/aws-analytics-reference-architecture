@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Bucket } from '@aws-cdk/aws-s3';
-import { App, Stack } from '@aws-cdk/core';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { App, Stack } from 'aws-cdk-lib';
 import { BatchReplayer } from './data-generator/batch-replayer';
 import { PreparedDataset } from './datasets/prepared-dataset';
 

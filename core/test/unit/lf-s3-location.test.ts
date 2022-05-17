@@ -8,9 +8,8 @@
  */
 
 import { LakeformationS3Location } from '../../src/lf-s3-location';
-import '@aws-cdk/assert/jest';
-import { Stack } from '@aws-cdk/core';
-import { Match, Template } from '@aws-cdk/assertions';
+import { Stack } from 'aws-cdk-lib';
+import { Match, Template } from 'aws-cdk-lib/assertions';
 
 describe('LakeFormationS3Location test', () => {
 

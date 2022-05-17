@@ -1,11 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import * as lakeformation from '@aws-cdk/aws-lakeformation';
-import { Construct} from '@aws-cdk/core';
-import { Bucket } from '@aws-cdk/aws-s3';
-import { Location } from '@aws-cdk/aws-s3';
-import { PolicyStatement, Role, ServicePrincipal, } from '@aws-cdk/aws-iam';
+import * as lakeformation from 'aws-cdk-lib/aws-lakeformation';
+import { Construct } from 'constructs';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Location } from 'aws-cdk-lib/aws-s3';
+import { PolicyStatement, Role, ServicePrincipal, } from 'aws-cdk-lib/aws-iam';
 
 /**
 * The props for LF-S3-Location Construct.
@@ -34,7 +34,7 @@ export interface LakeFormationS3LocationProps {
  * 
  * Usage example:
  * ```typescript
- * import * as cdk from '@aws-cdk/core';
+ * import * as cdk from 'aws-cdk-lib';
  * import { LakeformationS3Location } from 'aws-analytics-reference-architecture';
  * 
  * const exampleApp = new cdk.App();

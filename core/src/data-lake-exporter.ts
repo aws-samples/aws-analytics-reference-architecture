@@ -1,10 +1,12 @@
-import { Database, Table } from '@aws-cdk/aws-glue';
-import { Role, ServicePrincipal, PolicyStatement } from '@aws-cdk/aws-iam';
-import { Stream } from '@aws-cdk/aws-kinesis';
-import { CfnDeliveryStream } from '@aws-cdk/aws-kinesisfirehose';
-import { LogGroup, RetentionDays, LogStream } from '@aws-cdk/aws-logs';
-import { Bucket, Location } from '@aws-cdk/aws-s3';
-import { Construct, Aws, RemovalPolicy, Stack } from '@aws-cdk/core';
+import { Database, Table } from '@aws-cdk/aws-glue-alpha';
+import { Role, ServicePrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Stream } from 'aws-cdk-lib/aws-kinesis';
+import { CfnDeliveryStream } from 'aws-cdk-lib/aws-kinesisfirehose';
+import { LogGroup, RetentionDays, LogStream } from 'aws-cdk-lib/aws-logs';
+import { Bucket, Location } from 'aws-cdk-lib/aws-s3';
+import { Aws, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+
 
 
 /**

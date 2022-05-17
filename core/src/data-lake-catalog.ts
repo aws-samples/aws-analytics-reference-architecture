@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Database } from '@aws-cdk/aws-glue';
-import { Construct } from '@aws-cdk/core';
+import { Database } from '@aws-cdk/aws-glue-alpha';
+import { Construct } from 'constructs';
 
 
 /**

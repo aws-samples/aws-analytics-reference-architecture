@@ -7,10 +7,9 @@
  * @group unit/other/emr-eks-cluster
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { EmrManagedEndpointProvider } from '../../../src/emr-eks-platform/emr-managed-endpoint';
-import '@aws-cdk/assert/jest';
-import { Template, Match} from '@aws-cdk/assertions';
+import { Template, Match} from 'aws-cdk-lib/assertions';
 
 
 describe ('ManagedEndpointProvider', () => {

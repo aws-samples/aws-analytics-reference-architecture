@@ -8,11 +8,10 @@
  */
 
 import { S3CrossAccount } from '../../src/s3-cross-account';
-import '@aws-cdk/assert/jest';
-import { Stack } from '@aws-cdk/core';
-import { Match, Template } from '@aws-cdk/assertions';
-import { Key } from '@aws-cdk/aws-kms';
-import { Bucket } from '@aws-cdk/aws-s3';
+import { Stack } from 'aws-cdk-lib';
+import { Match, Template } from 'aws-cdk-lib/assertions';
+import { Key } from 'aws-cdk-lib/aws-kms';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
  
 describe('S3CrossAccount test', () => {
  

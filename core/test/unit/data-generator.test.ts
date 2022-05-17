@@ -7,10 +7,9 @@
  * @group unit/other/data-generator
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { DataGenerator } from '../../src/data-generator';
 import { Dataset } from '../../src/datasets';
-import '@aws-cdk/assert/jest';
 
 const dataGeneratorStack = new Stack();
 // Instantiate a DataGenerator

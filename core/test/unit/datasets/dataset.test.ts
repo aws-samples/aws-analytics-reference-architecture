@@ -9,7 +9,6 @@
 
 import { DataGenerator } from '../../../src/data-generator';
 import { Dataset } from '../../../src/datasets';
-import '@aws-cdk/assert/jest';
 
 
 // Instantiate a custom Dataset

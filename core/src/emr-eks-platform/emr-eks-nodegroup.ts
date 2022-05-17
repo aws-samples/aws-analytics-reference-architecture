@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { InstanceType,  ISubnet } from '@aws-cdk/aws-ec2';
-import { NodegroupOptions, TaintEffect, CapacityType, NodegroupAmiType } from '@aws-cdk/aws-eks';
+import { InstanceType,  ISubnet } from 'aws-cdk-lib/aws-ec2';
+import { NodegroupOptions, TaintEffect, CapacityType, NodegroupAmiType } from 'aws-cdk-lib/aws-eks';
 
 /**
  * The Options for adding EmrEksNodegroup to an EmrEksCluster. Some of the Amazon EKS Nodegroup parameters are overriden:

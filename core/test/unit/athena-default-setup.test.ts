@@ -7,22 +7,22 @@
  * @group unit/athena/default-setup
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { AthenaDefaultSetup } from '../../src/athena-default-setup';
-import '@aws-cdk/assert/jest';
-
+import { Template } from 'aws-cdk-lib/assertions';
 
 test('Athena default setup create the result bucket', () => {
-
   const athenaDefaultSetupStack = new Stack();
   // Instantiate an AthenaDefaultSetup
   new AthenaDefaultSetup(athenaDefaultSetupStack, 'athenaDefault');
 
+  const template = Template.fromStack(athenaDefaultSetupStack);
+
   // Test if a bucket is created for results
-  expect(athenaDefaultSetupStack).toCountResources('AWS::S3::Bucket', 1);
+  template.hasResource('AWS::S3::Bucket', 1);
 
   // Test if the Amazon S3 Bucket for the result is correct
-  expect(athenaDefaultSetupStack).toHaveResource('AWS::S3::Bucket', {
+  template.hasResourceProperties('AWS::S3::Bucket', {
     BucketName: {
       'Fn::Join': [
         '',
@@ -37,7 +37,7 @@ test('Athena default setup create the result bucket', () => {
   });
 
   // Test if the Amazon Athena Workgroup is correct
-  expect(athenaDefaultSetupStack).toHaveResource('AWS::Athena::WorkGroup', {
+  template.hasResourceProperties('AWS::Athena::WorkGroup', {
     Name: 'default',
     WorkGroupConfiguration: {
       PublishCloudWatchMetricsEnabled: false,

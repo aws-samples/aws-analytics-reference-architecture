@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: MIT-0
 
 import { join } from 'path';
-import { SubnetType, VpcAttributes, Vpc, IVpc } from '@aws-cdk/aws-ec2';
-import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from '@aws-cdk/aws-eks';
-import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
-import { PolicyStatement, PolicyDocument, IManagedPolicy, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from '@aws-cdk/aws-iam';
-import { Bucket, Location } from '@aws-cdk/aws-s3';
-import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import { Construct, Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from '@aws-cdk/core';
+import { SubnetType, VpcAttributes, Vpc, IVpc } from 'aws-cdk-lib/aws-ec2';
+import { KubernetesVersion, Cluster, CapacityType, Nodegroup } from 'aws-cdk-lib/aws-eks';
+import { CfnVirtualCluster } from 'aws-cdk-lib/aws-emrcontainers';
+import { PolicyStatement, PolicyDocument, IManagedPolicy, Policy, Role, ManagedPolicy, FederatedPrincipal, CfnServiceLinkedRole } from 'aws-cdk-lib/aws-iam';
+import { Bucket, Location } from 'aws-cdk-lib/aws-s3';
+import { Construct } from 'constructs';
+import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
+import { Tags, Stack, Duration, CustomResource, Fn, CfnOutput } from 'aws-cdk-lib';
 import { SingletonBucket } from '../singleton-bucket';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { validateSchema } from './config-override-schema-validation';
@@ -24,7 +25,6 @@ import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as IamPolicyAutoscaler from './resources/k8s/iam-policy-autoscaler.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-
 
 /**
  * The properties for the EmrEksCluster Construct class.
