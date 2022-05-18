@@ -90,13 +90,13 @@
           "exec": "jsii --silence-warnings=reserved-word"
         },
         {
+          "exec": "npx projen gradle-build"
+        },
+        {
           "exec": "npx projen copy-resources"
         },
         {
           "exec": "npx projen pip-install"
-        },
-        {
-          "exec": "npx projen gradle-build"
         }
       ]
     },
@@ -180,7 +180,7 @@
       "description": "./gradlew shadowJar all folders in lib that has requirements.txt",
       "steps": [
         {
-          "exec": "cd lib/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null"
+          "exec": "cd src/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null"
         }
       ]
     },

@@ -185,7 +185,9 @@ export class FlywayRunner extends cdk.Construct {
         assetHash: (migrationFilesDeployment.node.findChild('Asset1') as Asset).assetHash,
       },
     });
-
+    for(const subnet of props.vpc.privateSubnets) {
+      flywayLambda.node.addDependency(subnet);
+    }
     flywayCustomResourceProvider.node.addDependency(migrationFilesDeployment);
   }
 }

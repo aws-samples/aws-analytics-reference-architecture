@@ -10,3 +10,6 @@ gradle-app.setting
 
 # Cache of project
 .gradletasknamecache
+
+
+flyway-all.jar
