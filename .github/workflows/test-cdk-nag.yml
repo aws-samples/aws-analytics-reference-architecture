@@ -25,4 +25,4 @@ jobs:
       - name: Build
         run: cd core && npx projen build
     container:
-      image: jsii/superchain
+      image: jsii/superchain:1-buster-slim-node14
