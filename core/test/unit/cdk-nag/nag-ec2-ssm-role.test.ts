@@ -4,7 +4,7 @@
 /**
  * Tests Ec2SsmRole
  *
- * @group best-practice/ec2-ssm-role
+ * @group unit/best-practice/ec2-ssm-role
  */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
@@ -12,7 +12,7 @@ import { ServicePrincipal } from '@aws-cdk/aws-iam';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { Ec2SsmRole } from '../../src/ec2-ssm-role';
+import { Ec2SsmRole } from '../../../src/ec2-ssm-role';
 
 const mockApp = new App();
 

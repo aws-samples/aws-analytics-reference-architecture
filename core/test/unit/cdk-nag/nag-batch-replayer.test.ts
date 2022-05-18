@@ -4,21 +4,20 @@
 /**
  * Tests BatchReplayer
  *
- * @group best-practice/batch-replayer
+ * @group unit/best-practice/batch-replayer
  */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { BatchReplayer } from '../../src';
-import { PreparedDataset } from '../../src';
+import { BatchReplayer, PreparedDataset } from '../../../src';
 
 const mockApp = new App();
 
 const batchReplayerStack = new Stack(mockApp, 'BatchReplayer');
 // Instantiate a DataGenerator
-const batchReplayer = new BatchReplayer(batchReplayerStack, "TestBatchReplayer", {
+const batchReplayer = new BatchReplayer(batchReplayerStack, 'TestBatchReplayer', {
   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
   frequency: 120,
   s3LocationSink: {
@@ -50,7 +49,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
   'BatchReplayer/TestBatchReplayer/LambdaExecutionRolePolicyWriteInBatchFn/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The IAM policy needs access to all objects in the sink location'}],
+  [{ id: 'AwsSolutions-IAM5', reason: 'The IAM policy needs access to all objects in the sink location' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
@@ -62,19 +61,19 @@ NagSuppressions.addResourceSuppressionsByPath(
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
   'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRolePolicyWriteInBatchFn/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The Lambda execution role for log retention needs * access'}],
+  [{ id: 'AwsSolutions-IAM5', reason: 'The Lambda execution role for log retention needs * access' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
   'BatchReplayer/TestBatchReplayer/BatchReplayStepFn/Resource',
-  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function doesn\'t need X-ray'}],
+  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function doesn\'t need X-ray' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
   'BatchReplayer/TestBatchReplayer/BatchReplayStepFn/Role/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The Step Function default policy is using *'}],
+  [{ id: 'AwsSolutions-IAM5', reason: 'The Step Function default policy is using *' }],
 );
 
 test('No unsuppressed Warnings', () => {

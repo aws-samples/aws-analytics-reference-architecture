@@ -119,8 +119,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
 });
 
-project.testTask.reset('jest --group=best-practice');
 project.testTask.reset('jest --group=unit');
+
 project.testTask.spawn('eslint');
 
 project.addTask('test:best-practice', {

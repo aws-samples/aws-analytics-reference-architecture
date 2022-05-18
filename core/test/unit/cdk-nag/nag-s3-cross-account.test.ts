@@ -4,7 +4,7 @@
 /**
  * Tests S3CrossAccount
  *
- * @group best-practice/s3-cross-account
+ * @group unit/best-practice/s3-cross-account
  */
 
 
@@ -14,7 +14,7 @@ import { Key } from '@aws-cdk/aws-kms';
 import { Bucket } from '@aws-cdk/aws-s3';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { S3CrossAccount } from '../../src/s3-cross-account';
+import { S3CrossAccount } from '../../../src/s3-cross-account';
 
 const mockApp = new App();
 

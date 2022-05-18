@@ -4,14 +4,14 @@
 /**
  * Tests SynchronousAthenaQuery
  *
- * @group best-practice/synchronous-athena-query
+ * @group unit/best-practice/synchronous-athena-query
  */
 
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { SynchronousAthenaQuery } from '../../src';
+import { SynchronousAthenaQuery } from '../../../src';
 // eslint-disable-next-line import/no-extraneous-dependencies
 
 const mockApp = new App();

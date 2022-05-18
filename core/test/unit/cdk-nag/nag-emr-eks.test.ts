@@ -4,7 +4,7 @@
 /**
  * Tests EmrEksCluster
  *
- * @group best-practice/emr-eks
+ * @group unit/best-practice/emr-eks
  */
 
 
@@ -13,7 +13,7 @@ import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Stack, Aspects } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { EmrEksCluster } from '../../src/emr-eks-platform';
+import { EmrEksCluster } from '../../../src/emr-eks-platform';
 //import { NotebookPlatform, StudioAuthMode } from '../notebook-platform/';
 
 

@@ -4,7 +4,7 @@
 /**
  * Tests AraBucket
  *
- * @group best-practice/ara-bucket
+ * @group unit/best-practice/ara-bucket
  */
 
 
@@ -12,7 +12,7 @@ import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { AraBucket } from '../../src/ara-bucket';
+import { AraBucket } from '../../../src/ara-bucket';
 
 const mockApp = new App();
 

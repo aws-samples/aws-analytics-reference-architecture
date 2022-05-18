@@ -4,7 +4,7 @@
 /**
  * Tests NotebookPlatform
  *
- * @group best-practice/notebook-platform
+ * @group unit/best-practice/notebook-platform
  */
 
 
@@ -13,9 +13,9 @@ import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
 import { App, Stack, Aspects, ArnFormat, Aws } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { SSOIdentityType } from '../../lib';
-import { EmrEksCluster } from '../../src/emr-eks-platform';
-import { NotebookPlatform, StudioAuthMode } from '../../src/notebook-platform';
+import { SSOIdentityType } from '../../../lib';
+import { EmrEksCluster } from '../../../src/emr-eks-platform';
+import { NotebookPlatform, StudioAuthMode } from '../../../src/notebook-platform';
 
 const mockApp = new App();
 const stack = new Stack(mockApp, 'eks-emr-studio');
