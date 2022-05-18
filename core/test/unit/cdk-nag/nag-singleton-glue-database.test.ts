@@ -4,14 +4,14 @@
 /**
  * Tests SingletonGlueDatabase
  *
- * @group best-practice/singleton-glue-database
+ * @group unit/best-practice/singleton-glue-database
  */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks } from 'cdk-nag';
-import { SingletonCfnLaunchTemplate } from '../../src/singleton-launch-template';
+import { SingletonCfnLaunchTemplate } from '../../../src/singleton-launch-template';
 
 const mockApp = new App();
 
@@ -21,17 +21,16 @@ const singletonLaunchTemplate = new Stack(mockApp, 'SingletonLaunchTemplate');
 SingletonCfnLaunchTemplate.getOrCreate(singletonLaunchTemplate, 'test', 'test');
 
 Aspects.of(singletonLaunchTemplate).add(new AwsSolutionsChecks());
-  
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(singletonLaunchTemplate).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);
   expect(warnings).toHaveLength(0);
 });
-  
+
 test('No unsuppressed Errors', () => {
   const errors = Annotations.fromStack(singletonLaunchTemplate).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(errors);
   expect(errors).toHaveLength(0);
 });
-  
-  
+

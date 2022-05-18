@@ -4,7 +4,7 @@
 /**
  * Tests DataLakeExporter
  *
- * @group best-practice/data-lake/exporter
+ * @group unit/best-practice/data-lake-exporter
  */
 
 
@@ -15,7 +15,7 @@ import { Bucket } from '@aws-cdk/aws-s3';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { DataLakeExporter } from '../../src/data-lake-exporter';
+import { DataLakeExporter } from '../../../src/data-lake-exporter';
 
 const mockApp = new App();
 

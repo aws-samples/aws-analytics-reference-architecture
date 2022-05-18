@@ -4,12 +4,12 @@
 /**
  * Tests SynchronousCrawler
  *
- * @group best-practice/synchronous-crawler
+ * @group unit/best-practice/synchronous-crawler
  */
 
 import { App, Aspects, Stack } from '@aws-cdk/core';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { SynchronousCrawler } from '../../src';
+import { SynchronousCrawler } from '../../../src';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import '@aws-cdk/assert/jest';
 import { Annotations, Match } from '@aws-cdk/assertions';

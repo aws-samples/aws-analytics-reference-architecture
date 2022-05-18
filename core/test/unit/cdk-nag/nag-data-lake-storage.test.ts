@@ -4,14 +4,14 @@
 /**
  * Tests DataLakeStorage
  *
- * @group best-practice/data-lake-storage
+ * @group unit/best-practice/data-lake-storage
  */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { DataLakeStorage } from '../../src/data-lake-storage';
+import { DataLakeStorage } from '../../../src/data-lake-storage';
 
 const mockApp = new App();
 

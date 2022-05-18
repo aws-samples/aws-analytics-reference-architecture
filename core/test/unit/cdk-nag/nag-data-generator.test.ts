@@ -4,16 +4,16 @@
 /**
  * Tests DataGenerator
  *
- //* @group best-practice/data-generator
+ //* @group unit/best-practice/data-generator
  */
 
 //import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, /*Aspects,*/ Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 //import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { DataGenerator } from '../../src';
+import { DataGenerator } from '../../../src';
 // eslint-disable-next-line no-duplicate-imports
-import { Dataset } from '../../src';
+import { Dataset } from '../../../src';
 
 const mockApp = new App();
 

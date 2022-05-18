@@ -219,7 +219,7 @@ export function createIAMUser(scope: Construct,
   iamRolePolicy: ManagedPolicy,
   identityName: string): string {
 
-  let userPassword: SecretValue = SecretValue.plainText(Utils.randomize(identityName));
+  let userPassword: SecretValue = SecretValue.unsafePlainText(Utils.randomize(identityName));
 
   new User(scope, 'user' + identityName.replace(/[^\w\s]/gi, ''), {
     userName: identityName,

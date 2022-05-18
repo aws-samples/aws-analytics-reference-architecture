@@ -225,6 +225,16 @@ Object {
               },
             },
             Object {
+              "Action": "kinesis:DescribeStream",
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "testStream8BCA7523",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
               "Action": Array [
                 "glue:BatchGetPartition",
                 "glue:GetPartition",

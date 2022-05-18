@@ -4,34 +4,33 @@
 /**
  * Tests DataLakeStorage
  *
- * @group best-practice/singleton-kms-key
+ * @group unit/best-practice/singleton-launch-template
  */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks } from 'cdk-nag';
-import { SingletonKey } from '../../src/singleton-kms-key';
+import { SingletonCfnLaunchTemplate } from '../../../src/singleton-launch-template';
 
 const mockApp = new App();
 
-const singletonKeyStack = new Stack(mockApp, 'SingletonKmsKeyStack');
+const singletonLaunchTemplate = new Stack(mockApp, 'SingletonLaunchTemplate');
 
 // Instantiate SingletonKey Construct
-SingletonKey.getOrCreate(singletonKeyStack, 'test');
+SingletonCfnLaunchTemplate.getOrCreate(singletonLaunchTemplate, 'test', 'test');
 
-Aspects.of(singletonKeyStack).add(new AwsSolutionsChecks());
-  
+Aspects.of(singletonLaunchTemplate).add(new AwsSolutionsChecks());
+
 test('No unsuppressed Warnings', () => {
-  const warnings = Annotations.fromStack(singletonKeyStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  const warnings = Annotations.fromStack(singletonLaunchTemplate).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);
   expect(warnings).toHaveLength(0);
 });
-  
+
 test('No unsuppressed Errors', () => {
-  const errors = Annotations.fromStack(singletonKeyStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  const errors = Annotations.fromStack(singletonLaunchTemplate).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(errors);
   expect(errors).toHaveLength(0);
 });
-  
-  
+

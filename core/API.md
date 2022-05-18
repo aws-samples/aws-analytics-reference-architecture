@@ -1212,16 +1212,19 @@ make it looks like just being generated. Then write the output to the `sinkBucke
 
 Usage example:
 ```typescript
+
+const myBucket = new Bucket(stack, "MyBucket")
+
 new BatchReplayer(stack, "WebSalesReplayer", {
-dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
-   s3LocationSink: {
-     bucketName: 'someBucket',
-     objectKey: 'somePrefix',
-   },
+   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
+   s3BucketSink: myBucket
+   s3ObjectKeySink: 'some-prefix',
    frequency: 120,
    outputFileMaxSizeInBytes: 10000000,
 });
 ```
+
+:warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.BatchReplayer.Initializer"></a>
 
@@ -1310,8 +1313,9 @@ Return whether the given object is a Construct.
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | Dataset used for replay. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.frequency">frequency</a></code> | <code>number</code> | Frequency (in Seconds) of the replaying. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.s3LocationSink">s3LocationSink</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Sink bucket where the batch replayer will put data in. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | Sink bucket where the batch replayer will put data in. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | Maximum file size for each output file. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | Sink object key where the batch replayer will put data in. |
 
 ---
 
@@ -1354,13 +1358,13 @@ for every given frequency and replay the data in that period
 
 ---
 
-##### `s3LocationSink`<sup>Required</sup> <a name="s3LocationSink" id="aws-analytics-reference-architecture.BatchReplayer.property.s3LocationSink"></a>
+##### `sinkBucket`<sup>Required</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket"></a>
 
 ```typescript
-public readonly s3LocationSink: Location;
+public readonly sinkBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* @aws-cdk/aws-s3.Bucket
 
 Sink bucket where the batch replayer will put data in.
 
@@ -1380,6 +1384,18 @@ If the output batch file is,
 larger than that, it will be splitted into multiple files that fit this size.
 
 Default to 100MB (max value)
+
+---
+
+##### `sinkObjectKey`<sup>Optional</sup> <a name="sinkObjectKey" id="aws-analytics-reference-architecture.BatchReplayer.property.sinkObjectKey"></a>
+
+```typescript
+public readonly sinkObjectKey: string;
+```
+
+- *Type:* string
+
+Sink object key where the batch replayer will put data in.
 
 ---
 
@@ -1819,6 +1835,7 @@ This construct is based on 3 Amazon S3 buckets configured with AWS best practice
   * S3 buckets for Raw/Cleaned/Transformed data,
   * data lifecycle optimization/transitioning to different Amazon S3 storage classes
   * server side buckets encryption managed by KMS customer key
+  * Default single KMS key
   * SSL communication enforcement
   * access logged to an S3 bucket
   * All public access blocked
@@ -3128,6 +3145,8 @@ public readonly iamRole: Role;
 
 This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
 
+If the location is in a different account, cross account access should be granted via the [S3CrossAccount]{@link S3CrossAccount} construct.
+
 This construct instantiate 2 objects:
 * An IAM role with read/write permissions to the S3 location and read access to the KMS key used to encypt the bucket
 * A CfnResource is based on an IAM role with 2 policies folowing the least privilege AWS best practices:
@@ -3148,11 +3167,11 @@ import { LakeformationS3Location } from 'aws-analytics-reference-architecture';
 const exampleApp = new cdk.App();
 const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
 
+const myBucket = new Bucket(stack, 'MyBucket')
+
 new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
-   s3Location:{
-     bucketName: 'my-bucket',
-     objectKey: 'my-prefix',
-   }
+   bucketName: myBucket,
+   objectKey: 'my-prefix',
 });
 ```
 
@@ -3464,11 +3483,12 @@ import { S3CrossAccount } from 'aws-analytics-reference-architecture';
 const exampleApp = new cdk.App();
 const stack = new cdk.Stack(exampleApp, 'S3CrossAccountStack');
 
+const myBucket = new Bucket(stack, 'MyBucket')
+
 new S3CrossAccount(stack, 'S3CrossAccountGrant', {
-   s3Location:{
-     bucketName: 'my-bucket',
-     objectKey: 'my-prefix',
-   }
+   bucket: myBucket,
+   objectKey: 'my-data',
+   accountId: '1234567891011',
 });
 ```
 
@@ -5491,9 +5511,10 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The [PreparedDataset]{@link PreparedDataset} used to replay data. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.s3LocationSink">s3LocationSink</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The S3 location sink where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | The S3 Bucket sink where the BatchReplayer writes data. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>number</code> | The frequency of the replay in seconds. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | The maximum file size in Bytes written by the BatchReplayer. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | The S3 object key sink where the BatchReplayer writes data. |
 
 ---
 
@@ -5509,15 +5530,17 @@ The [PreparedDataset]{@link PreparedDataset} used to replay data.
 
 ---
 
-##### `s3LocationSink`<sup>Required</sup> <a name="s3LocationSink" id="aws-analytics-reference-architecture.BatchReplayerProps.property.s3LocationSink"></a>
+##### `sinkBucket`<sup>Required</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket"></a>
 
 ```typescript
-public readonly s3LocationSink: Location;
+public readonly sinkBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* @aws-cdk/aws-s3.Bucket
 
-The S3 location sink where the BatchReplayer writes data.
+The S3 Bucket sink where the BatchReplayer writes data.
+
+:warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
 
 ---
 
@@ -5544,6 +5567,19 @@ public readonly outputFileMaxSizeInBytes: number;
 - *Default:* The BatchReplayer writes 100MB files maximum
 
 The maximum file size in Bytes written by the BatchReplayer.
+
+---
+
+##### `sinkObjectKey`<sup>Optional</sup> <a name="sinkObjectKey" id="aws-analytics-reference-architecture.BatchReplayerProps.property.sinkObjectKey"></a>
+
+```typescript
+public readonly sinkObjectKey: string;
+```
+
+- *Type:* string
+- *Default:* No object key is used and the BatchReplayer writes the dataset in s3://<BUCKET_NAME>/<TABLE_NAME>
+
+The S3 object key sink where the BatchReplayer writes data.
 
 ---
 
@@ -5636,24 +5672,25 @@ const dataLakeExporterProps: DataLakeExporterProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkLocation">sinkLocation</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Sink must be an Amazon S3 Location composed of a bucket and a key. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | Amazon S3 sink Bucket where the data lake exporter write data. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueDatabase">sourceGlueDatabase</a></code> | <code>@aws-cdk/aws-glue.Database</code> | Source AWS Glue Database containing the schema of the stream. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueTable">sourceGlueTable</a></code> | <code>@aws-cdk/aws-glue.Table</code> | Source AWS Glue Table containing the schema of the stream. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceKinesisDataStream">sourceKinesisDataStream</a></code> | <code>@aws-cdk/aws-kinesis.Stream</code> | Source must be an Amazon Kinesis Data Stream. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.deliveryInterval">deliveryInterval</a></code> | <code>number</code> | Delivery interval in seconds. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.deliverySize">deliverySize</a></code> | <code>number</code> | Maximum delivery size in MB. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | Amazon S3 sink object key where the data lake exporter write data. |
 
 ---
 
-##### `sinkLocation`<sup>Required</sup> <a name="sinkLocation" id="aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkLocation"></a>
+##### `sinkBucket`<sup>Required</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkBucket"></a>
 
 ```typescript
-public readonly sinkLocation: Location;
+public readonly sinkBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* @aws-cdk/aws-s3.Bucket
 
-Sink must be an Amazon S3 Location composed of a bucket and a key.
+Amazon S3 sink Bucket where the data lake exporter write data.
 
 ---
 
@@ -5720,6 +5757,19 @@ public readonly deliverySize: number;
 Maximum delivery size in MB.
 
 The frequency of the data delivery is defined by this maximum delivery size.
+
+---
+
+##### `sinkObjectKey`<sup>Optional</sup> <a name="sinkObjectKey" id="aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkObjectKey"></a>
+
+```typescript
+public readonly sinkObjectKey: string;
+```
+
+- *Type:* string
+- *Default:* The data is written at the bucket root
+
+Amazon S3 sink object key where the data lake exporter write data.
 
 ---
 
@@ -6659,19 +6709,33 @@ const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Location">s3Location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | S3 location to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket">s3Bucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | S3 Bucket to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3ObjectKey">s3ObjectKey</a></code> | <code>string</code> | S3 object key to be registered with Lakeformation. |
 
 ---
 
-##### `s3Location`<sup>Required</sup> <a name="s3Location" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Location"></a>
+##### `s3Bucket`<sup>Required</sup> <a name="s3Bucket" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket"></a>
 
 ```typescript
-public readonly s3Location: Location;
+public readonly s3Bucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* @aws-cdk/aws-s3.Bucket
 
-S3 location to be registered with Lakeformation.
+S3 Bucket to be registered with Lakeformation.
+
+---
+
+##### `s3ObjectKey`<sup>Optional</sup> <a name="s3ObjectKey" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3ObjectKey"></a>
+
+```typescript
+public readonly s3ObjectKey: string;
+```
+
+- *Type:* string
+- *Default:* The entire bucket is registered
+
+S3 object key to be registered with Lakeformation.
 
 ---
 
@@ -7023,17 +7087,16 @@ const s3CrossAccountProps: S3CrossAccountProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.accountID">accountID</a></code> | <code>string</code> | The account ID to grant on the S3 location. |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.bucket">bucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | The S3 Bucket object to grant cross account access. |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.key">key</a></code> | <code>@aws-cdk/aws-kms.Key</code> | The KMS Key used to encrypt the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.objectKey">objectKey</a></code> | <code>string</code> | The S3 object key to grant cross account access (S3 prefix without the bucket name). |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.accountId">accountId</a></code> | <code>string</code> | The account ID to grant on the S3 location. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.s3Bucket">s3Bucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | The S3 Bucket object to grant cross account access. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.s3ObjectKey">s3ObjectKey</a></code> | <code>string</code> | The S3 object key to grant cross account access (S3 prefix without the bucket name). |
 
 ---
 
-##### `accountID`<sup>Required</sup> <a name="accountID" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.accountID"></a>
+##### `accountId`<sup>Required</sup> <a name="accountId" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.accountId"></a>
 
 ```typescript
-public readonly accountID: string;
+public readonly accountId: string;
 ```
 
 - *Type:* string
@@ -7042,35 +7105,24 @@ The account ID to grant on the S3 location.
 
 ---
 
-##### `bucket`<sup>Required</sup> <a name="bucket" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.bucket"></a>
+##### `s3Bucket`<sup>Required</sup> <a name="s3Bucket" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.s3Bucket"></a>
 
 ```typescript
-public readonly bucket: Bucket;
+public readonly s3Bucket: Bucket;
 ```
 
 - *Type:* @aws-cdk/aws-s3.Bucket
 
 The S3 Bucket object to grant cross account access.
 
----
-
-##### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.key"></a>
-
-```typescript
-public readonly key: Key;
-```
-
-- *Type:* @aws-cdk/aws-kms.Key
-- *Default:* No resource based policy is created on any KMS key
-
-The KMS Key used to encrypt the bucket.
+This needs to be a Bucket object and not an IBucket because the construct modifies the Bucket policy
 
 ---
 
-##### `objectKey`<sup>Optional</sup> <a name="objectKey" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.objectKey"></a>
+##### `s3ObjectKey`<sup>Optional</sup> <a name="s3ObjectKey" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.s3ObjectKey"></a>
 
 ```typescript
-public readonly objectKey: string;
+public readonly s3ObjectKey: string;
 ```
 
 - *Type:* string

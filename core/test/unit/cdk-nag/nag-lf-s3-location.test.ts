@@ -4,7 +4,7 @@
 /**
  * Tests DataLakeStorage
  *
- * @group best-practice/lakeformation/s3-location
+ * @group unit/best-practice/lf-s3-location
  */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
@@ -12,7 +12,7 @@ import { Bucket } from '@aws-cdk/aws-s3';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { LakeformationS3Location } from '../../src/lf-s3-location';
+import { LakeformationS3Location } from '../../../src/lf-s3-location';
 
 const mockApp = new App();
 
