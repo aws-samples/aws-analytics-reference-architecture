@@ -3,7 +3,7 @@
 
 import * as path from 'path';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
-import { Code, Function, FunctionProps, ILayerVersion } from '@aws-cdk/aws-lambda';
+import { Code, Function, FunctionProps, ILayerVersion, Runtime } from '@aws-cdk/aws-lambda';
 import { Aws, Construct } from '@aws-cdk/core';
 import { PreBundledLayer } from './pre-bundled-layer';
 
@@ -20,16 +20,19 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps>{
 }
 
 /**
- * A Lambda function with prebundled dependencies
+ * A Lambda function with prebundled dependencies. 
  *
- * It changes of the code path by based on the environment that `cdk synth` is running on.
+ * It changes of the code path by based on the environment that `cdk synth` is running on. 
  *
  * This class is used together with a Projen custom task "copy-resources", and "pip-install".
  * The tasks will ensure that all Python and libraries files are available in "lib" folder,
- * with the same relative path
+ * with the same relative path. 
  *
  * When this construct is being run in JSII, this file will be in `node_modules` folder
  * (as it's installed as a 3rd party library.) So we need to change reference based on __dirname.
+ * 
+ * Additionally, the Lambda function is using a common Lambda layer with common dependencies when the runtime is Python. 
+ * Refer to [PreBundledLayer]{@link PreBundledLayer} construct for packaged Python dependencies. 
  *
  *  * Usage example:
  * ```typescript
@@ -137,16 +140,18 @@ export class PreBundledFunction extends Function {
         description: 'Role used by lambda to modify log retention',
         managedPolicies: [logRetentionLambdaExecutionRolePolicy],
         roleName: 'LogRetLambdaExec' + functionProps.functionName,
-      });
+    });
 
     functionProps.role = lambdaExecutionRole;
     functionProps.logRetentionRole = logRetentionLambdaExecutionRole;
 
-    functionProps.layers = [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')];
+    if (functionProps.runtime in [Runtime.PYTHON_3_6, Runtime.PYTHON_3_8, Runtime.PYTHON_3_7, Runtime.PYTHON_3_9]) {
+      functionProps.layers = [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')];
 
-    functionProps.lambdaLayers?.forEach((layer: ILayerVersion) => {
-      functionProps.layers.push(layer);
-    });
+      functionProps.lambdaLayers?.forEach((layer: ILayerVersion) => {
+        functionProps.layers.push(layer);
+      });
+    }
 
     //delete props that were added to force user input
     delete functionProps.codePath;

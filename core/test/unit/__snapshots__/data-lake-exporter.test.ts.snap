@@ -42,6 +42,9 @@ Object {
       "Type": "AWS::Glue::Database",
     },
     "testExporterdataLakeExporter51BD8EA9": Object {
+      "DependsOn": Array [
+        "testExporterdataLakeExporterRoleDefaultPolicy3EEE6D56",
+      ],
       "Properties": Object {
         "DeliveryStreamType": "KinesisStreamAsSource",
         "ExtendedS3DestinationConfiguration": Object {
@@ -225,16 +228,6 @@ Object {
               },
             },
             Object {
-              "Action": "kinesis:DescribeStream",
-              "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "testStream8BCA7523",
-                  "Arn",
-                ],
-              },
-            },
-            Object {
               "Action": Array [
                 "glue:BatchGetPartition",
                 "glue:GetPartition",
@@ -298,6 +291,82 @@ Object {
                         ],
                       },
                       "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "glue:GetTableVersions",
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":table/",
+                      Object {
+                        "Ref": "testDB74E9B281",
+                      },
+                      "/",
+                      Object {
+                        "Ref": "testTable12C06BD8",
+                      },
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":catalog",
+                    ],
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      "arn:",
+                      Object {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":glue:",
+                      Object {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      Object {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":database/",
+                      Object {
+                        "Ref": "testDB74E9B281",
+                      },
                     ],
                   ],
                 },
