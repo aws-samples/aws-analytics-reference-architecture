@@ -135,16 +135,29 @@ export class FlywayRunner extends cdk.Construct {
       destinationBucket: migrationFilesBucket,
     });
 
-    let flywayLambdaPolicy: PolicyStatement [] = [new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      resources: [
-        '*',
-      ],
-      actions: [
-        'cloudformation:DescribeStacks',
-        'cloudformation:DescribeStackResource',
-      ],
-    })];
+    let flywayLambdaPolicy: PolicyStatement [] = [
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [
+          '*',
+        ],
+        actions: [
+          'cloudformation:DescribeStacks',
+          'cloudformation:DescribeStackResource',
+        ],
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [
+          '*',
+        ],
+        actions: [
+          'ec2:CreateNetworkInterface',
+          'ec2:DescribeNetworkInterfaces',
+          'ec2:DeleteNetworkInterface'
+        ],
+      }),
+    ];
 
     const flywayLambda = new PreBundledFunction(this, 'runner', {
       codePath: path.join(__dirname.split('/').slice(-1)[0], './resources/flyway-lambda/flyway-all.jar'),
