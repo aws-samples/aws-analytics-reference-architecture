@@ -4,7 +4,7 @@
 /**
  * Tests S3CrossAccount
  *
- * @group unit/lakeformation/s3crossaccount
+ * @group unit/lakeformation/s3-cross-account
  */
 
 import { S3CrossAccount } from '../../src/s3-cross-account';
@@ -25,10 +25,9 @@ describe('S3CrossAccount test', () => {
   });
    
   new S3CrossAccount(s3CrossAccountStack, 'MyS3CrossAccount', {
-    bucket: myBucket,
-    objectKey: 'test',
-    key: myKey,
-    accountID: accountId,
+    s3Bucket: myBucket,
+    s3ObjectKey: 'test',
+    accountId: accountId,
   });
 
   const template = Template.fromStack(s3CrossAccountStack);
@@ -44,13 +43,12 @@ describe('S3CrossAccount test', () => {
           Statement: Match.arrayWith([
             {
               Action: [
-                's3:GetObject',
-                's3:PutObject',
-                's3:DeleteObject',
-                's3:ListBucketMultipartUploads',
-                's3:ListMultipartUploadParts',
-                's3:AbortMultipartUpload',
-                's3:ListBucket',
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject*",
+                "s3:Abort*"
               ],
               Effect: 'Allow',
               Principal: {
@@ -69,6 +67,12 @@ describe('S3CrossAccount test', () => {
               },
               Resource:Match.arrayEquals([
                 {
+                  "Fn::GetAtt": [
+                    Match.anyValue(),
+                    "Arn"
+                  ]
+                },
+                {
                   "Fn::Join": [
                     "",
                     [
@@ -80,12 +84,6 @@ describe('S3CrossAccount test', () => {
                       },
                       "/test/*"
                     ]
-                  ]
-                },
-                {
-                  "Fn::GetAtt": [
-                    Match.anyValue(),
-                    "Arn"
                   ]
                 }
               ])
@@ -102,7 +100,13 @@ describe('S3CrossAccount test', () => {
         KeyPolicy: {
           Statement: Match.arrayWith([
             {
-              Action: 'kms:Decrypt',
+              Action: [
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*"
+              ],
               Effect: 'Allow',
               Principal: {
                 AWS: Match.objectLike({
@@ -121,7 +125,7 @@ describe('S3CrossAccount test', () => {
               Resource: '*',
             },
           ])
-        }
+        },
       })
     );
   });

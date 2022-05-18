@@ -1,9 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
+
 /**
  * Tests DataLakeStorage
  *
- * @group integ/lakeformation/s3crossaccount
+ * @group integ/lakeformation/s3-cross-account
  */
 
 import { Key } from '@aws-cdk/aws-kms';
@@ -28,10 +29,9 @@ const myBucket = new Bucket(stack, 'MyBucket', {
 });
 
 new S3CrossAccount(stack, 'MyS3CrossAccount', {
-  bucket: myBucket,
-  objectKey: 'test',
-  key: myKey,
-  accountID: cdk.Aws.ACCOUNT_ID,
+  s3Bucket: myBucket,
+  s3ObjectKey: 'test',
+  accountId: cdk.Aws.ACCOUNT_ID,
 });
 
 new cdk.CfnOutput(stack, 'BucketPolicy', {
@@ -41,7 +41,7 @@ new cdk.CfnOutput(stack, 'BucketPolicy', {
 
 new cdk.CfnOutput(stack, 'KeyPolicy', {
   value: myKey.keyId,
-  exportName: 'keyId',
+  exportName: 's3CrossAccountKeyId',
 });
 
 describe('deploy succeed', () => {

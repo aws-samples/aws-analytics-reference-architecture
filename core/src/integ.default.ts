@@ -1,19 +1,26 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
+import { Key } from '@aws-cdk/aws-kms';
 import { Bucket } from '@aws-cdk/aws-s3';
-import { App, Stack } from '@aws-cdk/core';
+import { App, RemovalPolicy, Stack } from '@aws-cdk/core';
+// eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { BatchReplayer } from './data-generator/batch-replayer';
-import { PreparedDataset } from './datasets/prepared-dataset';
+import { PreparedDataset } from './datasets';
+
 
 const mockApp = new App();
-const testStack = new Stack(mockApp, 'DataReplayerTestStack');
+const stack = new Stack(mockApp, 'eks-emr-studio');
 
-const integTestBucket = new Bucket(testStack, "IntegTestBucket");
+const myKey = new Key(stack, 'MyKey', {
+  removalPolicy: RemovalPolicy.DESTROY,
+});
 
-new BatchReplayer(testStack, "CustomerIntegBatchReplayer", {
+const myBucket = new Bucket(stack, 'MyBucket', {
+  encryptionKey: myKey,
+  removalPolicy: RemovalPolicy.DESTROY,
+  autoDeleteObjects: true,
+});
+
+new BatchReplayer(stack, 'test', {
   dataset: PreparedDataset.RETAIL_1_GB_CUSTOMER,
-  frequency: 600, 
-  sinkBucket: integTestBucket,
-  outputFileMaxSizeInBytes: 20480,
+  sinkBucket: myBucket,
+  sinkObjectKey: 'test',
 });

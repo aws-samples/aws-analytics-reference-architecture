@@ -19,7 +19,7 @@ export interface EmrEksNodegroupOptions extends NodegroupOptions {
    */
   readonly mountNvme?: boolean;
   /**
-   * Configure the Amazon EKS NodeGroup in this subnet. Use this setting for resource dependencies like an Amazon RDS database. 
+   * Configure the Amazon EKS NodeGroup in this subnet. Use this setting for resource dependencies like an Amazon RDS database.
    * The subnet must include the availability zone information because the nodegroup is tagged with the AZ for the K8S Cluster Autoscaler.
    * @default - One NodeGroup is deployed per cluster AZ
    */
@@ -30,8 +30,9 @@ export interface EmrEksNodegroupOptions extends NodegroupOptions {
  * @summary EmrEksNodegroup containing the default Nodegroups
  */
 export class EmrEksNodegroup {
-  /**
-   * Default nodegroup configuration for Kubernetes applications required by EMR on EKS (e.g cert manager and cluster autoscaler)
+
+  /*
+   ** Default nodegroup configuration for Kubernetes applications required by EMR on EKS (e.g cert manager and cluster autoscaler)
    */
   public static readonly TOOLING_ALL: EmrEksNodegroupOptions = {
     nodegroupName: 'tooling',
@@ -42,7 +43,7 @@ export class EmrEksNodegroup {
   };
 
   /**
-   * Default nodegroup configuration for EMR on EKS critical workloads
+   * Default nodegroup configuration for EMR on EKS critical workloads (both drivers and executors)
    */
   public static readonly CRITICAL_ALL: EmrEksNodegroupOptions = {
     nodegroupName: 'critical',
@@ -52,7 +53,7 @@ export class EmrEksNodegroup {
     minSize: 0,
     maxSize: 100,
     labels: {
-      role: 'critical',
+      'role': 'critical',
       'node-lifecycle': 'on-demand',
     },
     taints: [
@@ -65,7 +66,7 @@ export class EmrEksNodegroup {
   };
 
   /**
-   * Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads
+   * Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (drivers only)
    */
   public static readonly SHARED_DRIVER: EmrEksNodegroupOptions = {
     nodegroupName: 'shared-driver',
@@ -79,7 +80,9 @@ export class EmrEksNodegroup {
       'node-lifecycle': 'on-demand',
     },
   };
-
+  /**
+   * Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (executors only)
+   */
   public static readonly SHARED_EXECUTOR: EmrEksNodegroupOptions = {
     nodegroupName: 'shared-executor',
     instanceTypes: [new InstanceType('m6g.8xlarge'), new InstanceType('m6gd.8xlarge')],
@@ -102,7 +105,7 @@ export class EmrEksNodegroup {
   };
 
   /**
-   * Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
+   * Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (executors only)
    */
   public static readonly NOTEBOOK_EXECUTOR: EmrEksNodegroupOptions = {
     nodegroupName: 'notebook-executor',
@@ -128,7 +131,9 @@ export class EmrEksNodegroup {
       },
     ],
   };
-
+  /**
+   * Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (drivers only)
+   */
   public static readonly NOTEBOOK_DRIVER: EmrEksNodegroupOptions = {
     nodegroupName: 'notebook-driver',
     instanceTypes: [new InstanceType('t3.large')],
@@ -147,7 +152,12 @@ export class EmrEksNodegroup {
       },
     ],
   };
-
+  /**
+   * Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS
+   * This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER}
+   * and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS 
+   * Managed Endpoint currently doesn't support Pod Template customization
+   */
   public static readonly NOTEBOOK_WITHOUT_PODTEMPLATE: EmrEksNodegroupOptions = {
     nodegroupName: 'notebook-without-pod-template',
     instanceTypes: [new InstanceType('t3.2xlarge'), new InstanceType('t3a.2xlarge')],

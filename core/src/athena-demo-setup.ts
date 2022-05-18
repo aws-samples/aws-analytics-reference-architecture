@@ -2,17 +2,18 @@
 // SPDX-License-Identifier: MIT-0
 
 import { CfnWorkGroup } from '@aws-cdk/aws-athena';
-import { Bucket } from '@aws-cdk/aws-s3';
-import { Construct } from '@aws-cdk/core';
-import { SingletonBucket } from './singleton-bucket';
+import {Bucket} from '@aws-cdk/aws-s3';
+import {Construct} from '@aws-cdk/core';
+import { AraBucket } from './ara-bucket';
 
 /**
- * AthenaDefaultSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box usage
+ * AthenaDemoSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box demo
  */
 
-export class AthenaDefaultSetup extends Construct {
+export class AthenaDemoSetup extends Construct {
 
   public readonly resultBucket: Bucket;
+  public readonly athenaWorkgroup: CfnWorkGroup;
 
   /**
    * Constructs a new instance of the AthenaDefaultSetup class
@@ -25,10 +26,13 @@ export class AthenaDefaultSetup extends Construct {
     super(scope, id);
 
     // Singleton Amazon S3 bucket for Amazon Athena Query logs
-    this.resultBucket = SingletonBucket.getOrCreate(this, 'log');
+    this.resultBucket = AraBucket.getOrCreate(this, {
+      bucketName: 'athena-logs',
+      serverAccessLogsPrefix: 'athena-logs-bucket',
+    });
 
-    new CfnWorkGroup(this, 'athenaDefaultWorkgroup', {
-      name: 'default',
+    this.athenaWorkgroup = new CfnWorkGroup(this, 'athenaDemoWorkgroup', {
+      name: 'demo',
       recursiveDeleteOption: true,
       workGroupConfiguration: {
         publishCloudWatchMetricsEnabled: false,

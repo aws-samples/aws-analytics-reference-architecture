@@ -26,7 +26,7 @@
     "monitoringConfiguration": {
         "persistentAppUI": "ENABLED",
         "cloudWatchMonitoringConfiguration": {
-            "logGroupName": "/emr-containers/notebook",
+            "logGroupName": "/aws/emr-containers/notebook",
             "logStreamNamePrefix": "default"
         }
     }

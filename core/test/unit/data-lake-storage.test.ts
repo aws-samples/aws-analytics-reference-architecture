@@ -10,8 +10,10 @@
 import { Stack } from '@aws-cdk/core';
 import { DataLakeStorage } from '../../src/data-lake-storage';
 import '@aws-cdk/assert/jest';
+import { Match, Template } from '@aws-cdk/assertions';
 
-test('dataLakeStorage', () => {
+describe('DataLakeStorage', () => {
+
 
   const dataLakeStorageStack = new Stack();
 
@@ -25,126 +27,184 @@ test('dataLakeStorage', () => {
     transformArchiveDelay: 360,
   });
 
-  // Test if the stack has 3 S3 Buckets
-  expect(dataLakeStorageStack).toCountResources('AWS::S3::Bucket', 3);
+  const template = Template.fromStack(dataLakeStorageStack);
 
-  expect(dataLakeStorageStack).toHaveResource('AWS::S3::Bucket', {
-    BucketName: {
-      'Fn::Join': [
-        '',
-        [
-          'ara-raw-',
-          {
-            Ref: 'AWS::AccountId',
-          },
-        ],
-      ],
-    },
-    BucketEncryption: {
-      ServerSideEncryptionConfiguration: [
-        {
-          ServerSideEncryptionByDefault: {
-            SSEAlgorithm: 'aws:kms',
-          },
-        },
-      ],
-    },
-    LifecycleConfiguration: {
-      Rules: [
-        {
-          Status: 'Enabled',
-          Transitions: [
-            {
-              StorageClass: 'STANDARD_IA',
-              TransitionInDays: 90,
-            },
-            {
-              StorageClass: 'GLACIER',
-              TransitionInDays: 180,
-            },
-          ],
-        },
-      ],
-    },
+  // Raw, Clean, Transform and AccessLog buckets
+  test('DataLakeStorage should provision 4 buckets', () => {
+    template.resourceCountIs('AWS::S3::Bucket', 4);
   });
 
-  expect(dataLakeStorageStack).toHaveResource('AWS::S3::Bucket', {
-    BucketName: {
-      'Fn::Join': [
-        '',
-        [
-          'ara-clean-',
-          {
-            Ref: 'AWS::AccountId',
-          },
-        ],
-      ],
-    },
-    BucketEncryption: {
-      ServerSideEncryptionConfiguration: [
-        {
-          ServerSideEncryptionByDefault: {
-            SSEAlgorithm: 'aws:kms',
-          },
+  test('DataLakeStorage should create the proper raw bucket', () => {
+    template.hasResourceProperties('AWS::S3::Bucket',
+      Match.objectLike({
+        BucketName: {
+          'Fn::Join': [
+            '',
+            [
+              'raw-',
+              {
+                Ref: 'AWS::AccountId',
+              },
+              '-',
+              {
+                Ref: 'AWS::Region',
+              },
+            ],
+          ],
         },
-      ],
-    },
-    LifecycleConfiguration: {
-      Rules: [
-        {
-          Status: 'Enabled',
-          Transitions: [
+        BucketEncryption: {
+          ServerSideEncryptionConfiguration: [
             {
-              StorageClass: 'STANDARD_IA',
-              TransitionInDays: 180,
-            },
-            {
-              StorageClass: 'GLACIER',
-              TransitionInDays: 360,
+              ServerSideEncryptionByDefault: {
+                SSEAlgorithm: 'aws:kms',
+              },
             },
           ],
         },
-      ],
-    },
+        LifecycleConfiguration: {
+          Rules: [
+            {
+              Status: 'Enabled',
+              Transitions: [
+                {
+                  StorageClass: 'STANDARD_IA',
+                  TransitionInDays: 90,
+                },
+                {
+                  StorageClass: 'GLACIER',
+                  TransitionInDays: 180,
+                },
+              ],
+            },
+          ],
+        },
+        PublicAccessBlockConfiguration: {
+          BlockPublicAcls: true,
+          BlockPublicPolicy: true,
+          IgnorePublicAcls: true,
+          RestrictPublicBuckets: true,
+        },
+        LoggingConfiguration: {
+          DestinationBucketName: Match.anyValue(),
+          LogFilePrefix: 'raw-bucket',
+        },
+      }),
+    );
   });
 
-  expect(dataLakeStorageStack).toHaveResource('AWS::S3::Bucket', {
-    BucketName: {
-      'Fn::Join': [
-        '',
-        [
-          'ara-transform-',
-          {
-            Ref: 'AWS::AccountId',
-          },
-        ],
-      ],
-    },
-    BucketEncryption: {
-      ServerSideEncryptionConfiguration: [
-        {
-          ServerSideEncryptionByDefault: {
-            SSEAlgorithm: 'aws:kms',
-          },
+  test('DataLakeStorage should create the proper clean bucket', () => {
+    template.hasResourceProperties('AWS::S3::Bucket',
+      Match.objectLike({
+        BucketName: {
+          'Fn::Join': [
+            '',
+            [
+              'clean-',
+              {
+                Ref: 'AWS::AccountId',
+              },
+              '-',
+              {
+                Ref: 'AWS::Region',
+              },
+            ],
+          ],
         },
-      ],
-    },
-    LifecycleConfiguration: {
-      Rules: [
-        {
-          Status: 'Enabled',
-          Transitions: [
+        BucketEncryption: {
+          ServerSideEncryptionConfiguration: [
             {
-              StorageClass: 'STANDARD_IA',
-              TransitionInDays: 180,
-            },
-            {
-              StorageClass: 'GLACIER',
-              TransitionInDays: 360,
+              ServerSideEncryptionByDefault: {
+                SSEAlgorithm: 'aws:kms',
+              },
             },
           ],
         },
-      ],
-    },
+        LifecycleConfiguration: {
+          Rules: [
+            {
+              Status: 'Enabled',
+              Transitions: [
+                {
+                  StorageClass: 'STANDARD_IA',
+                  TransitionInDays: 180,
+                },
+                {
+                  StorageClass: 'GLACIER',
+                  TransitionInDays: 360,
+                },
+              ],
+            },
+          ],
+        },
+        PublicAccessBlockConfiguration: {
+          BlockPublicAcls: true,
+          BlockPublicPolicy: true,
+          IgnorePublicAcls: true,
+          RestrictPublicBuckets: true,
+        },
+        LoggingConfiguration: {
+          DestinationBucketName: Match.anyValue(),
+          LogFilePrefix: 'clean-bucket',
+        },
+      }),
+    );
+  });
+
+  test('DataLakeStorage should create the proper transform bucket', () => {
+    template.hasResourceProperties('AWS::S3::Bucket',
+      Match.objectLike({
+        BucketName: {
+          'Fn::Join': [
+            '',
+            [
+              'transform-',
+              {
+                Ref: 'AWS::AccountId',
+              },
+              '-',
+              {
+                Ref: 'AWS::Region',
+              },
+            ],
+          ],
+        },
+        BucketEncryption: {
+          ServerSideEncryptionConfiguration: [
+            {
+              ServerSideEncryptionByDefault: {
+                SSEAlgorithm: 'aws:kms',
+              },
+            },
+          ],
+        },
+        LifecycleConfiguration: {
+          Rules: [
+            {
+              Status: 'Enabled',
+              Transitions: [
+                {
+                  StorageClass: 'STANDARD_IA',
+                  TransitionInDays: 180,
+                },
+                {
+                  StorageClass: 'GLACIER',
+                  TransitionInDays: 360,
+                },
+              ],
+            },
+          ],
+        },
+        PublicAccessBlockConfiguration: {
+          BlockPublicAcls: true,
+          BlockPublicPolicy: true,
+          IgnorePublicAcls: true,
+          RestrictPublicBuckets: true,
+        },
+        LoggingConfiguration: {
+          DestinationBucketName: Match.anyValue(),
+          LogFilePrefix: 'transform-bucket',
+        },
+      }),
+    );
   });
 });

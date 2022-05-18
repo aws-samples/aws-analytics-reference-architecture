@@ -4,7 +4,7 @@
 /**
  * Tests tracking construct
  *
- * @group unit/othrer/tracking-construct
+ * @group unit/tracking-construct
  */
 
 

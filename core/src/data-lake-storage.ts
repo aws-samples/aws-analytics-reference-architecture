@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Bucket, StorageClass, BucketEncryption } from '@aws-cdk/aws-s3';
-import { Construct, Aws, RemovalPolicy, Duration } from '@aws-cdk/core';
+import { Bucket, BucketEncryption, StorageClass } from '@aws-cdk/aws-s3';
+import { Construct, Duration } from '@aws-cdk/core';
+import { AraBucket } from './ara-bucket';
 
 /**
  * Properties for the DataLakeStorage Construct
@@ -49,24 +50,32 @@ export interface DataLakeStorageProps {
 
 /**
  * A CDK Construct that creates the storage layers of a data lake composed of Amazon S3 Buckets.
- * 
+ *
  * This construct is based on 3 Amazon S3 buckets configured with AWS best practices:
  *  * S3 buckets for Raw/Cleaned/Transformed data,
  *  * data lifecycle optimization/transitioning to different Amazon S3 storage classes
- *  * server side buckets encryption managed by KMS
- * 
+ *  * server side buckets encryption managed by KMS customer key
+ *  * Default single KMS key
+ *  * SSL communication enforcement
+ *  * access logged to an S3 bucket
+ *  * All public access blocked
+ *
  * By default the transitioning rules to Amazon S3 storage classes are configured as following:
  *  * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days
  *  * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived
- * 
+ *
+ * Objects and buckets are automatically deleted when the CDK application is detroyed.
+ *
+ * For custom requirements, consider using {@link AraBucket}.
+ *
  * Usage example:
  * ```typescript
  * import * as cdk from '@aws-cdk/core';
  * import { DataLakeStorage } from 'aws-analytics-reference-architecture';
- * 
+ *
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'DataLakeStorageStack');
- * 
+ *
  * new DataLakeStorage(stack, 'MyDataLakeStorage', {
  *  rawInfrequentAccessDelay: 90,
  *  rawArchiveDelay: 180,
@@ -144,7 +153,7 @@ export class DataLakeStorage extends Construct {
         } else {
           transformArchiveDelay = props.transformArchiveDelay;
         }
-      } 
+      }
     }
 
     // Prepare Amazon S3 Lifecycle Rules for raw data
@@ -160,17 +169,16 @@ export class DataLakeStorage extends Construct {
     ];
 
     // Create the raw data bucket with the raw transitions
-    this.rawBucket = new Bucket(this, 'RawBucket', {
-      bucketName: 'ara-raw-' + Aws.ACCOUNT_ID,
-      encryption: BucketEncryption.KMS_MANAGED,
-      enforceSSL: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
+    this.rawBucket = AraBucket.getOrCreate(this, {
+      encryption: BucketEncryption.KMS,
+      bucketName: 'raw',
       lifecycleRules: [
         {
           transitions: rawTransitions,
+          abortIncompleteMultipartUploadAfter: Duration.days(1),
         },
       ],
+      serverAccessLogsPrefix: 'raw-bucket',
     });
 
     // Prepare Amazon S3 Lifecycle Rules for clean data
@@ -190,17 +198,16 @@ export class DataLakeStorage extends Construct {
     }
 
     // Create the clean data bucket
-    this.cleanBucket = new Bucket(this, 'CleanBucket', {
-      bucketName: 'ara-clean-' + Aws.ACCOUNT_ID,
-      encryption: BucketEncryption.KMS_MANAGED,
-      enforceSSL: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
+    this.cleanBucket = AraBucket.getOrCreate(this, {
+      encryption: BucketEncryption.KMS,
+      bucketName: 'clean',
       lifecycleRules: [
         {
           transitions: cleanTransitions,
+          abortIncompleteMultipartUploadAfter: Duration.days(1),
         },
       ],
+      serverAccessLogsPrefix: 'clean-bucket',
     });
 
     // Prepare Amazon S3 Lifecycle Rules for clean data
@@ -220,17 +227,16 @@ export class DataLakeStorage extends Construct {
     }
 
     // Create the transform data bucket
-    this.transformBucket = new Bucket(this, 'TransformBucket', {
-      bucketName: 'ara-transform-' + Aws.ACCOUNT_ID,
-      encryption: BucketEncryption.KMS_MANAGED,
-      enforceSSL: true,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
+    this.transformBucket = AraBucket.getOrCreate(this, {
+      encryption: BucketEncryption.KMS,
+      bucketName: 'transform',
       lifecycleRules: [
         {
           transitions: transformTransitions,
+          abortIncompleteMultipartUploadAfter: Duration.days(1),
         },
       ],
+      serverAccessLogsPrefix: 'transform-bucket',
     });
   }
 }

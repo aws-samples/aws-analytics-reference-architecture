@@ -22,7 +22,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'analytics',
   ],
 
-  cdkVersion: '1.151.0',
+  cdkVersion: '1.155.0',
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
@@ -69,7 +69,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@aws-cdk/lambda-layer-awscli',
     '@aws-cdk/aws-emr',
     '@aws-cdk/aws-kms',
-    '@aws-cdk/aws-lakeformation'
+    '@aws-cdk/aws-lakeformation',
   ],
 
   deps: [
@@ -80,8 +80,9 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@types/js-yaml',
     '@types/jest',
     'esbuild',
-    'aws-cdk@1.151.0',
-    'cdk-assets@1.151.0',
+    'aws-cdk@1.155.0',
+    'cdk-nag@^1.0.0',
+    'cdk-assets@1.155.0',
     'jest-runner-groups',
     'promptly',
     'proxy-agent',
@@ -119,7 +120,12 @@ const project = new awscdk.AwsCdkConstructLibrary({
 });
 
 project.testTask.reset('jest --group=unit');
+
 project.testTask.spawn('eslint');
+
+project.addTask('test:best-practice', {
+  exec: 'jest --group=best-practice',
+});
 
 project.addTask('test:unit', {
   exec: 'jest --group=unit',
@@ -143,7 +149,7 @@ const testDeploy = project.addTask('test:deploy', {
 
 testDeploy.prependExec('npx projen build');
 
-project.packageTask.spawn(project.tasks.tryFind("package-all"));
+project.packageTask.spawn(project.tasks.tryFind('package-all'));
 
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',

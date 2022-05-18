@@ -11,6 +11,12 @@ import { retailStoreSaleCreate, retailStoreSaleGenerate } from './retail-store-s
 import { retailWarehouseCreate, retailWarehouseGenerate } from './retail-warehouse';
 import { retailWebSaleCreate, retailWebSaleGenerate } from './retail-web-sale';
 
+/**
+ * The properties of the Dataset class
+ *
+ * @deprecated replaced by [PreparedDataset]{@link PreparedDataset}
+ */
+
 export interface DatasetProps {
   /**
    * The minimum datetime value in the dataset used to calculate time offset
@@ -38,6 +44,9 @@ export interface DatasetProps {
 
 /**
  * Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+ *
+ * This is deprecated in favor of the [PreparedDataset]{@link PreparedDataset} class
+ * @deprecated replaced by [PreparedDataset]{@link PreparedDataset}
  */
 export class Dataset {
   /**

@@ -6,9 +6,11 @@ import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from '@aws-cdk/aws
 import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
 import { Effect, IManagedPolicy, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import { Key } from '@aws-cdk/aws-kms';
-import { BlockPublicAccess, Bucket, BucketEncryption } from '@aws-cdk/aws-s3';
+import { Bucket } from '@aws-cdk/aws-s3';
 import { Aws, CfnOutput, Construct, RemovalPolicy, Tags } from '@aws-cdk/core';
+import { AraBucket } from '../ara-bucket';
 import { EmrEksCluster } from '../emr-eks-platform';
+import { SingletonKey } from '../singleton-kms-key';
 import { Utils } from '../utils';
 import {
   createIAMFederatedRole,
@@ -105,9 +107,9 @@ export enum IdpRelayState {
  * * An EMR Studio User Role as defined here - The policy template which is leveraged is the Basic one from the Amazon EMR Studio documentation
  * * Multiple EMR on EKS Managed Endpoints, each for a user or a group of users
  * * An execution role to be passed to the Managed endpoint from a policy provided by the user
- * * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are: <br />
- *   - EMR Virtual Cluster - created above <br />
- *   - ManagedEndpoint <br />
+ * * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are:
+ *   * EMR Virtual Cluster - created above
+ *   * ManagedEndpoint
  *
  *
  * Usage example:
@@ -125,11 +127,11 @@ export enum IdpRelayState {
  *   studioAuthMode: StudioAuthMode.SSO,
  * });
  *
- *
+ * // If the S3 bucket is encrypted, add policy to the key for the role
  * const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
  *   statements: [
  *     new PolicyStatement({
- *       resources: ['*'],
+ *       resources: <BUCKET ARN(s)>,
  *       actions: ['s3:*'],
  *     }),
  *     new PolicyStatement({
@@ -153,7 +155,7 @@ export enum IdpRelayState {
  *   identityName: 'user1',
  *   identityType: SSOIdentityType.USER,
  *   notebookManagedEndpoints: [{
- *     emrOnEksVersion: 'emr-6.3.0-latest',
+ *     emrOnEksVersion: 'emr-6.4.0-latest',
  *     executionPolicy: policy1,
  *   }],
  * }]);
@@ -203,12 +205,7 @@ export class NotebookPlatform extends Construct {
     }
 
     //Create encryption key to use with cloudwatch loggroup and S3 bucket storing notebooks and
-    this.notebookPlatformEncryptionKey = new Key(
-      this,
-      'KMS-key-'+ Utils.stringSanitizer(props.studioName), {
-        enableKeyRotation: true,
-      },
-    );
+    this.notebookPlatformEncryptionKey = SingletonKey.getOrCreate(scope, 'DefaultKmsKey');
 
     this.emrVirtualClusterName = 'emr-vc-' + Utils.stringSanitizer(props.studioName);
     this.emrEks = props.emrEks;
@@ -250,12 +247,10 @@ export class NotebookPlatform extends Construct {
 
     //Create S3 bucket to store EMR Studio workspaces
     //Bucket is kept after destroying the construct
-    this.workspacesBucket = new Bucket(this, 'WorkspacesBucket' + props.studioName, {
-      bucketName: 'ara-workspaces-bucket-' + Aws.ACCOUNT_ID + '-' + Utils.stringSanitizer(props.studioName),
-      enforceSSL: true,
+    this.workspacesBucket = AraBucket.getOrCreate(this, {
+      bucketName: 'workspaces-bucket-' + Utils.stringSanitizer(props.studioName),
       encryptionKey: this.notebookPlatformEncryptionKey,
-      encryption: BucketEncryption.KMS,
-      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      serverAccessLogsPrefix: `${props.studioName}-workspace`,
     });
 
     this.notebookPlatformEncryptionKey.addToResourcePolicy(
@@ -367,7 +362,10 @@ export class NotebookPlatform extends Construct {
         //Check if the managedendpoint is already used in role which is created for a managed endpoint
         //if there is no managedendpointArn create a new managedendpoint
         //else get managedendpoint and push it to  @managedEndpointArns
-        if (!this.managedEndpointExecutionPolicyArnMapping.has(notebookManagedEndpoint.executionPolicy.managedPolicyName)) {
+        // eslint-disable-next-line max-len
+        let endpointName: string = notebookManagedEndpoint.managedEndpointName ? notebookManagedEndpoint.managedEndpointName : notebookManagedEndpoint.executionPolicy.managedPolicyName;
+
+        if (!this.managedEndpointExecutionPolicyArnMapping.has(endpointName)) {
 
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
@@ -379,7 +377,7 @@ export class NotebookPlatform extends Construct {
             this,
             `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.executionPolicy.managedPolicyName)}`,
             {
-              managedEndpointName: `${this.studioName}-${notebookManagedEndpoint.executionPolicy.managedPolicyName}`,
+              managedEndpointName: `${this.studioName}-${endpointName}`,
               virtualClusterId: this.emrVirtCluster.attrId,
               executionRole: this.emrEks.createExecutionRole(
                 this,
@@ -418,13 +416,12 @@ export class NotebookPlatform extends Construct {
           //This is to avoid the creation an endpoint with the same policy twice
           //Save resources and reduce the deployment time
           // TODO check the emr version is the same => to be fixed on a later commit need to solve adding a tuple to a JS map
-          this.managedEndpointExecutionPolicyArnMapping.set(notebookManagedEndpoint.executionPolicy.managedPolicyName, managedEndpoint.getAttString('arn'));
+          this.managedEndpointExecutionPolicyArnMapping.set(endpointName, managedEndpoint.getAttString('arn'));
 
           //Push the managedendpoint arn to be used in to build the policy to attach to it
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
-          let managedPolicyName = notebookManagedEndpoint.executionPolicy.managedPolicyName;
-          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(managedPolicyName));
+          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(endpointName));
         }
       });
 

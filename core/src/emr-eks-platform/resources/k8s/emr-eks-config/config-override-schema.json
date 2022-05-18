@@ -66,8 +66,7 @@
     }
   },
   "required": [
-    "applicationConfiguration",
-    "monitoringConfiguration"
+    "applicationConfiguration"
   ],
   "additionalProperties": false
 }

@@ -7,15 +7,16 @@ import { Construct, Stack } from '@aws-cdk/core';
 /**
  * SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
  * The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
+ * If you would like to scope down the permission you should create a new role with a scoped down policy
  * The Construct provides a getOrCreate method for SingletonInstantiation
  */
 
-export class SingletonGlueDefaultRole extends Construct {
+export class GlueDefaultRole extends Construct {
 
   public static getOrCreate(scope: Construct) {
     const stack = Stack.of(scope);
-    const id = 'glueDefaultRole';
-    return stack.node.tryFindChild(id) as SingletonGlueDefaultRole || new SingletonGlueDefaultRole(stack, id);
+    const id = 'GlueDefaultRole';
+    return stack.node.tryFindChild(id) as GlueDefaultRole || new GlueDefaultRole(stack, id);
   }
 
   public readonly iamRole: Role;
@@ -32,7 +33,7 @@ export class SingletonGlueDefaultRole extends Construct {
 
     const stack = Stack.of(this);
 
-    this.iamRole = new Role(this, 'glueDefaultRole', {
+    this.iamRole = new Role(this, 'GlueDefaultRole', {
       assumedBy: new ServicePrincipal('glue.amazonaws.com'),
       managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSGlueServiceRole')],
       inlinePolicies: {

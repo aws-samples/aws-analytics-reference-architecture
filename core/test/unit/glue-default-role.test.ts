@@ -2,30 +2,30 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests signleton glue default role
+ * Tests singleton glue default role
  *
- * @group unit/singleton/glue-default-role
+ * @group unit/glue-default-role
  */
 
 import * as assertCDK from '@aws-cdk/assert';
 import { Stack } from '@aws-cdk/core';
-import { SingletonGlueDefaultRole } from '../../src/singleton-glue-default-role';
+import { GlueDefaultRole } from '../../src/glue-default-role';
 import '@aws-cdk/assert/jest';
 
 test('SingletonGlueDefaultRole', () => {
 
-  const singletonGlueDefaultRoleStack = new Stack();
+  const glueDefaultRoleStack = new Stack();
 
   // Instantiate 2 SingletonGlueDefaultRole Constructs
-  SingletonGlueDefaultRole.getOrCreate(singletonGlueDefaultRoleStack);
-  SingletonGlueDefaultRole.getOrCreate(singletonGlueDefaultRoleStack);
+  GlueDefaultRole.getOrCreate(glueDefaultRoleStack);
+  GlueDefaultRole.getOrCreate(glueDefaultRoleStack);
 
 
   // Test if SingletonGlueDefaultRole is a singleton
-  expect(singletonGlueDefaultRoleStack).toCountResources('AWS::IAM::Role', 1);
+  expect(glueDefaultRoleStack).toCountResources('AWS::IAM::Role', 1);
 
   // Test the created Amazon IAM Role
-  expect(singletonGlueDefaultRoleStack).toHaveResource('AWS::IAM::Role', {
+  expect(glueDefaultRoleStack).toHaveResource('AWS::IAM::Role', {
     AssumeRolePolicyDocument: {
       Statement: [
         {

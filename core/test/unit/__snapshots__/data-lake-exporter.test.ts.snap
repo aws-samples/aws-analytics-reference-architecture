@@ -25,6 +25,11 @@ Object {
     },
   },
   "Resources": Object {
+    "Bucket83908E77": Object {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
+    },
     "testDB74E9B281": Object {
       "Properties": Object {
         "CatalogId": Object {
@@ -37,22 +42,16 @@ Object {
       "Type": "AWS::Glue::Database",
     },
     "testExporterdataLakeExporter51BD8EA9": Object {
+      "DependsOn": Array [
+        "testExporterdataLakeExporterRoleDefaultPolicy3EEE6D56",
+      ],
       "Properties": Object {
-        "DeliveryStreamEncryptionConfigurationInput": Object {
-          "KeyType": "AWS_OWNED_CMK",
-        },
         "DeliveryStreamType": "KinesisStreamAsSource",
         "ExtendedS3DestinationConfiguration": Object {
           "BucketARN": Object {
-            "Fn::Join": Array [
-              "",
-              Array [
-                "arn:",
-                Object {
-                  "Ref": "AWS::Partition",
-                },
-                ":s3:::test",
-              ],
+            "Fn::GetAtt": Array [
+              "Bucket83908E77",
+              "Arn",
             ],
           },
           "BufferingHints": Object {
@@ -112,7 +111,12 @@ Object {
           "S3BackupMode": "Disabled",
         },
         "KinesisStreamSourceConfiguration": Object {
-          "KinesisStreamARN": "",
+          "KinesisStreamARN": Object {
+            "Fn::GetAtt": Array [
+              "testStream8BCA7523",
+              "Arn",
+            ],
+          },
           "RoleARN": Object {
             "Fn::GetAtt": Array [
               "testExporterdataLakeExporterRole1BEE617B",
@@ -126,8 +130,8 @@ Object {
     "testExporterdataLakeExporterLogGroup610F71C7": Object {
       "DeletionPolicy": "Delete",
       "Properties": Object {
-        "LogGroupName": "/data-lake-exporter/",
-        "RetentionInDays": 1,
+        "LogGroupName": "/aws/data-lake-exporter/",
+        "RetentionInDays": 7,
       },
       "Type": "AWS::Logs::LogGroup",
       "UpdateReplacePolicy": "Delete",
@@ -144,6 +148,9 @@ Object {
       "UpdateReplacePolicy": "Delete",
     },
     "testExporterdataLakeExporterRole1BEE617B": Object {
+      "DependsOn": Array [
+        "testExportermanagedPolicyKinesisFirehoseE66FDFBA",
+      ],
       "Properties": Object {
         "AssumeRolePolicyDocument": Object {
           "Statement": Array [
@@ -157,19 +164,140 @@ Object {
           ],
           "Version": "2012-10-17",
         },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Ref": "testExportermanagedPolicyKinesisFirehoseE66FDFBA",
+          },
+        ],
       },
       "Type": "AWS::IAM::Role",
     },
     "testExporterdataLakeExporterRoleDefaultPolicy3EEE6D56": Object {
+      "DependsOn": Array [
+        "testExportermanagedPolicyKinesisFirehoseE66FDFBA",
+      ],
       "Properties": Object {
         "PolicyDocument": Object {
           "Statement": Array [
             Object {
               "Action": Array [
+                "s3:DeleteObject*",
+                "s3:PutObject*",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "Bucket83908E77",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "Bucket83908E77",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": Array [
+                "kinesis:DescribeStreamSummary",
+                "kinesis:GetRecords",
+                "kinesis:GetShardIterator",
+                "kinesis:ListShards",
+                "kinesis:SubscribeToShard",
+                "kinesis:DescribeStream",
+                "kinesis:ListStreams",
+              ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::GetAtt": Array [
+                  "testStream8BCA7523",
+                  "Arn",
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "glue:BatchGetPartition",
+                "glue:GetPartition",
+                "glue:GetPartitions",
                 "glue:GetTable",
+                "glue:GetTables",
                 "glue:GetTableVersion",
                 "glue:GetTableVersions",
               ],
+              "Effect": "Allow",
+              "Resource": Object {
+                "Fn::Join": Array [
+                  "",
+                  Array [
+                    "arn:",
+                    Object {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":glue:",
+                    Object {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    Object {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":table/",
+                    Object {
+                      "Ref": "testDB74E9B281",
+                    },
+                    "/",
+                    Object {
+                      "Ref": "testTable12C06BD8",
+                    },
+                  ],
+                ],
+              },
+            },
+            Object {
+              "Action": Array [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "testTableBucket030117E6",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Fn::Join": Array [
+                    "",
+                    Array [
+                      Object {
+                        "Fn::GetAtt": Array [
+                          "testTableBucket030117E6",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            Object {
+              "Action": "glue:GetTableVersions",
               "Effect": "Allow",
               "Resource": Array [
                 Object {
@@ -244,70 +372,24 @@ Object {
                 },
               ],
             },
-            Object {
-              "Action": Array [
-                "kinesis:DescribeStream",
-                "kinesis:GetShardIterator",
-                "kinesis:GetRecords",
-                "kinesis:ListShards",
-              ],
-              "Effect": "Allow",
-              "Resource": Object {
-                "Fn::GetAtt": Array [
-                  "testStream8BCA7523",
-                  "Arn",
-                ],
-              },
-            },
-            Object {
-              "Action": Array [
-                "s3:AbortMultipartUpload",
-                "s3:GetBucketLocation",
-                "s3:GetObject",
-                "s3:ListBucket",
-                "s3:ListBucketMultipartUploads",
-                "s3:PutObject",
-              ],
-              "Effect": "Allow",
-              "Resource": Array [
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      "arn:",
-                      Object {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":s3:::test/test",
-                    ],
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      "arn:",
-                      Object {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":s3:::test/test/*",
-                    ],
-                  ],
-                },
-                Object {
-                  "Fn::Join": Array [
-                    "",
-                    Array [
-                      "arn:",
-                      Object {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":s3:::test",
-                    ],
-                  ],
-                },
-              ],
-            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "testExporterdataLakeExporterRoleDefaultPolicy3EEE6D56",
+        "Roles": Array [
+          Object {
+            "Ref": "testExporterdataLakeExporterRole1BEE617B",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "testExportermanagedPolicyKinesisFirehoseE66FDFBA": Object {
+      "Properties": Object {
+        "Description": "",
+        "Path": "/",
+        "PolicyDocument": Object {
+          "Statement": Array [
             Object {
               "Action": "logs:PutLogEvents",
               "Effect": "Allow",
@@ -332,14 +414,8 @@ Object {
           ],
           "Version": "2012-10-17",
         },
-        "PolicyName": "testExporterdataLakeExporterRoleDefaultPolicy3EEE6D56",
-        "Roles": Array [
-          Object {
-            "Ref": "testExporterdataLakeExporterRole1BEE617B",
-          },
-        ],
       },
-      "Type": "AWS::IAM::Policy",
+      "Type": "AWS::IAM::ManagedPolicy",
     },
     "testStream8BCA7523": Object {
       "Properties": Object {

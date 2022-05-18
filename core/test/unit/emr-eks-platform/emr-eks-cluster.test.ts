@@ -4,7 +4,7 @@
 /**
  * Tests EMR on EKS cluster
  *
- * @group unit/other/emr-eks-cluster
+ * @group unit/emr-eks-platform/emr-eks-cluster
  */
 
  import * as assertCDK from '@aws-cdk/assert';
@@ -124,7 +124,7 @@
  
  test('EKS cluster should have the default Nodegroups', () => {
  
-   expect(emrEksClusterStack).toCountResources('AWS::EKS::Nodegroup', 13);
+   expect(emrEksClusterStack).toCountResources('AWS::EKS::Nodegroup', 11);
  
    expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
      AmiType: 'AL2_x86_64',
@@ -138,10 +138,11 @@
        MinSize: 1,
      },
      Tags: assertCDK.objectLike({
-       'k8s.io/cluster-autoscaler/data-platform': 'owned',
-       'k8s.io/cluster-autoscaler/enabled': 'true',
-       'k8s.io/cluster-autoscaler/node-template/label/role': 'tooling',
-     }),
+        'eks:cluster-name': 'data-platform',
+        'k8s.io/cluster-autoscaler/enabled': 'true',
+        'k8s.io/cluster-autoscaler/node-template/label/role': 'tooling',
+        'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'ON_DEMAND'
+      }),
    });
  
    expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
@@ -165,8 +166,9 @@
        },
      ],
      Tags: assertCDK.objectLike({
-       'k8s.io/cluster-autoscaler/data-platform': 'owned',
+       'eks:cluster-name': 'data-platform',
        'k8s.io/cluster-autoscaler/enabled': 'true',
+       'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'ON_DEMAND',
        'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'on-demand',
        'k8s.io/cluster-autoscaler/node-template/label/role': 'critical',
        'k8s.io/cluster-autoscaler/node-template/taint/role': 'critical:NO_SCHEDULE',
@@ -188,8 +190,9 @@
        MinSize: 0,
      },
      Tags: assertCDK.objectLike({
-       'k8s.io/cluster-autoscaler/data-platform': 'owned',
+       'eks:cluster-name': 'data-platform',
        'k8s.io/cluster-autoscaler/enabled': 'true',
+       'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'ON_DEMAND',
        'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'on-demand',
        'k8s.io/cluster-autoscaler/node-template/label/role': 'shared',
        'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'driver',
@@ -218,8 +221,9 @@
        },
      ],
      Tags: assertCDK.objectLike({
-       'k8s.io/cluster-autoscaler/data-platform': 'owned',
+       'eks:cluster-name': 'data-platform',
        'k8s.io/cluster-autoscaler/enabled': 'true',
+       'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'SPOT',
        'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'spot',
        'k8s.io/cluster-autoscaler/node-template/label/role': 'shared',
        'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'executor',
@@ -248,8 +252,9 @@
        MinSize: 0,
      },
      Tags: assertCDK.objectLike({
-      'k8s.io/cluster-autoscaler/data-platform': 'owned',
+      'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
+      'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'ON_DEMAND',
       'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'on-demand',
       'k8s.io/cluster-autoscaler/node-template/label/role': 'notebook',
       'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'driver',
@@ -285,8 +290,9 @@
         MinSize: 0,
       },
       Tags: assertCDK.objectLike({
-        'k8s.io/cluster-autoscaler/data-platform': 'owned',
+        'eks:cluster-name': 'data-platform',
         'k8s.io/cluster-autoscaler/enabled': 'true',
+        'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'SPOT',
         'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'spot',
         'k8s.io/cluster-autoscaler/node-template/label/role': 'notebook',
         'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'executor',

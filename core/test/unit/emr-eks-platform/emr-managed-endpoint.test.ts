@@ -4,36 +4,39 @@
 /**
  * Tests Amazon EMR Managed Endpoint custom resource provider 
  *
- * @group unit/other/emr-eks-cluster
+ * @group unit/emr-eks-platform/managed-endpoint-provider
  */
 
 import { Stack } from '@aws-cdk/core';
 import { EmrManagedEndpointProvider } from '../../../src/emr-eks-platform/emr-managed-endpoint';
 import '@aws-cdk/assert/jest';
 import { Template, Match} from '@aws-cdk/assertions';
+import { AraBucket } from '../../../src/ara-bucket';
 
 
 describe ('ManagedEndpointProvider', () => {
   const ManagedEndpointProviderStack = new Stack();
-  new EmrManagedEndpointProvider(ManagedEndpointProviderStack, 'test');
+
+  const assetBucket = AraBucket.getOrCreate(ManagedEndpointProviderStack, { bucketName: 'asset'});
+  new EmrManagedEndpointProvider(ManagedEndpointProviderStack, 'test', { assetBucket: assetBucket});
 
   const template = Template.fromStack(ManagedEndpointProviderStack);
 
   test('ManagedEndpointProvider contains the right number of resources', () => {
 
     // Test if ManagedEndpointProvider is a singleton
-    // It should only contain 5 AWS Lambda function (2 for onEvent and isComplete, 3 for the Provider framework)
-    template.resourceCountIs('AWS::Lambda::Function', 6);
-    // It should only contain 6 Amazon IAM Role (2 for onEvent and isComplete, 4 for the Provider framework)
-    template.resourceCountIs('AWS::IAM::Role', 7);
+    // It should only contain 7 AWS Lambda function (2 for onEvent and isComplete, 3 for the Provider framework, 2 for deleting bucket content with CDK)
+    template.resourceCountIs('AWS::Lambda::Function', 7);
+    // It should only contain 9 Amazon IAM Role (2 for onEvent and isComplete, 4 for the Provider framework, 3 for buckets)
+    template.resourceCountIs('AWS::IAM::Role', 9);
   });
 
   test('EmrManagedEndpointPorvider contains the right permissions', () => {
-    template.hasResourceProperties('AWS::IAM::Policy', 
+    template.hasResourceProperties('AWS::IAM::ManagedPolicy', 
       Match.objectLike({
         PolicyDocument: 
         {
-          Statement: Match.arrayEquals([
+          Statement: Match.arrayWith([
             {
               Action: [
                 's3:GetObject*',
@@ -41,25 +44,38 @@ describe ('ManagedEndpointProvider', () => {
                 's3:List*',
               ],
               Effect: 'Allow',
-              Resource: '*',
-            },
-            {
-              Action: [
-                'acm:ImportCertificate',
-                'acm:DescribeCertificate',
-              ],
-              Effect: 'Allow',
-              Resource: '*',
+              Resource: {
+                "Fn::GetAtt": [
+                  Match.anyValue(),
+                  "Arn"
+                ],
+              },
             },
             {
               Action: [
                 'emr-containers:DescribeManagedEndpoint',
-                'emr-containers:CreateManagedEndpoint',
                 'emr-containers:DeleteManagedEndpoint',
               ],
+              Condition: {
+                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } 
+              },
               Effect: 'Allow',
               Resource: '*',
             },
+            Match.objectLike({
+              Action: 'emr-containers:CreateManagedEndpoint',
+              Condition: { 
+                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' }
+              },
+              Effect: 'Allow',
+            }),
+            Match.objectLike({
+              Action: 'emr-containers:TagResource',
+              Condition: { 
+                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' }
+              },
+              Effect: 'Allow',
+            }),
             {
               Action: [
                 'ec2:CreateSecurityGroup',
@@ -69,11 +85,6 @@ describe ('ManagedEndpointProvider', () => {
                 'ec2:RevokeSecurityGroupEgress',
                 'ec2:RevokeSecurityGroupIngress',
               ],
-              Effect: 'Allow',
-              Resource: '*',
-            },
-            {
-              Action: 'kms:Decrypt',
               Effect: 'Allow',
               Resource: '*',
             },

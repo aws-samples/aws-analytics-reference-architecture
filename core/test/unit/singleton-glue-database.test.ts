@@ -4,7 +4,7 @@
 /**
  * Tests singleton glue database
  *
- * @group unit/other/singleton-glue-database
+ * @group unit/singleton-glue-database
  */
 
 import { Stack } from '@aws-cdk/core';

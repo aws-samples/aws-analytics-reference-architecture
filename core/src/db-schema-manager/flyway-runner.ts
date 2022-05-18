@@ -1,6 +1,10 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
 import * as path from 'path';
 import * as ec2 from '@aws-cdk/aws-ec2';
 import * as iam from '@aws-cdk/aws-iam';
+import { PolicyStatement } from '@aws-cdk/aws-iam';
 import * as lambda from '@aws-cdk/aws-lambda';
 import * as logs from '@aws-cdk/aws-logs';
 import * as redshift from '@aws-cdk/aws-redshift';
@@ -8,12 +12,13 @@ import * as s3 from '@aws-cdk/aws-s3';
 import { Asset } from '@aws-cdk/aws-s3-assets';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 import * as cdk from '@aws-cdk/core';
-import { CustomResource } from '@aws-cdk/core';
-import * as cr from '@aws-cdk/custom-resources';
+import { CustomResource, RemovalPolicy } from '@aws-cdk/core';
+import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
+//import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
- * Properties needed to run flyway migration scripts.
+ * The properties of the FlywayRunner construct, needed to run flyway migration scripts.
  */
 export interface FlywayRunnerProps {
   /**
@@ -40,27 +45,28 @@ export interface FlywayRunnerProps {
 
   /**
    * Period to keep the logs around.
-   * @default logs.RetentionDays.ONE_DAY (1 day)
+   * @default logs.RetentionDays.ONE_WEEK
    */
   readonly logRetention?: logs.RetentionDays;
 
   /**
    * A key-value map of string (encapsulated between `${` and `}`) to replace in the SQL files given.
-   * 
+   *
    * Example:
-   * 
+   *
    * * The SQL file:
-   * 
+   *
    *   ```sql
    *   SELECT * FROM ${TABLE_NAME};
    *   ```
    * * The replacement map:
-   * 
+   *
    *   ```typescript
    *   replaceDictionary = {
    *     TABLE_NAME: 'my_table'
    *   }
    *   ```
+   * @default - No replacement is done
    */
   readonly replaceDictionary?: { [key: string]: string };
 }
@@ -108,6 +114,12 @@ export interface FlywayRunnerProps {
 export class FlywayRunner extends cdk.Construct {
   public readonly runner: CustomResource;
 
+  /**
+   * Constructs a new instance of the FlywayRunner construct
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {FlywayRunnerProps} props the FlywayRunner [properties]{@link FlywayRunnerProps}
+   */
   constructor(scope: cdk.Construct, id: string, props: FlywayRunnerProps) {
     super(scope, id);
 
@@ -115,17 +127,45 @@ export class FlywayRunner extends cdk.Construct {
 
     const migrationFilesBucket = new s3.Bucket(this, 'migrationFilesBucket', {
       versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
     });
     const migrationFilesDeployment = new s3deploy.BucketDeployment(this, 'DeploySQLMigrationFiles', {
       sources: [sqlFilesAsset],
       destinationBucket: migrationFilesBucket,
     });
-    
+
+    let flywayLambdaPolicy: PolicyStatement [] = [
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [
+          '*',
+        ],
+        actions: [
+          'cloudformation:DescribeStacks',
+          'cloudformation:DescribeStackResource',
+        ],
+      }),
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        resources: [
+          '*',
+        ],
+        actions: [
+          'ec2:CreateNetworkInterface',
+          'ec2:DescribeNetworkInterfaces',
+          'ec2:DeleteNetworkInterface'
+        ],
+      }),
+    ];
+
     const flywayLambda = new PreBundledFunction(this, 'runner', {
       codePath: path.join(__dirname.split('/').slice(-1)[0], './resources/flyway-lambda/flyway-all.jar'),
+      name: 'flywayLambda',
+      lambdaPolicyStatements: flywayLambdaPolicy,
       handler: 'com.geekoosh.flyway.FlywayCustomResourceHandler::handleRequest',
       runtime: lambda.Runtime.JAVA_11,
-      logRetention: props.logRetention ?? logs.RetentionDays.ONE_DAY,
+      logRetention: props.logRetention ?? logs.RetentionDays.ONE_WEEK,
       memorySize: 2048,
       timeout: cdk.Duration.seconds(900),
       vpc: props.vpc,
@@ -135,18 +175,6 @@ export class FlywayRunner extends cdk.Construct {
         DB_CONNECTION_STRING: `jdbc:redshift://${props.cluster.clusterEndpoint.socketAddress}/${props.databaseName}`,
         DB_SECRET: props.cluster.secret!.secretFullArn!,
       },
-      initialPolicy: [
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          resources: [
-            '*',
-          ],
-          actions: [
-            'cloudformation:DescribeStacks',
-            'cloudformation:DescribeStackResource',
-          ],
-        }),
-      ],
     });
 
     // Allowing connection to the cluster
@@ -155,9 +183,9 @@ export class FlywayRunner extends cdk.Construct {
     props.cluster.secret?.grantRead(flywayLambda);
     migrationFilesBucket.grantRead(flywayLambda);
 
-    const flywayCustomResourceProvider = new cr.Provider(this, 'FlywayCustomResourceProvider', {
+    const flywayCustomResourceProvider = new Provider(this, 'FlywayCustomResourceProvider', {
       onEventHandler: flywayLambda,
-      logRetention: props.logRetention ?? logs.RetentionDays.ONE_DAY,
+      logRetention: props.logRetention ?? logs.RetentionDays.ONE_WEEK,
       securityGroups: props.cluster.connections.securityGroups,
       vpc: props.vpc,
     });

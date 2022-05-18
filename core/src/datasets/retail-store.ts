@@ -6,6 +6,14 @@ import { readSqlFile } from './read-sql-file';
 
 const SQL_FOLDER_PATH = join(__dirname, 'resources/retail-store');
 
+/**
+ * @deprecated Used by the DataGenerator construct but now replaced by the [BatchReplayer]{@link BatchReplayer}
+ */
+
 export const retailStoreCreate = readSqlFile(join(SQL_FOLDER_PATH, 'create.sql'));;
+
+/**
+ * @deprecated Used by the DataGenerator construct but now replaced by the [BatchReplayer]{@link BatchReplayer}
+ */
 
 export const retailStoreGenerate = readSqlFile(join(SQL_FOLDER_PATH, 'generate.sql'));;

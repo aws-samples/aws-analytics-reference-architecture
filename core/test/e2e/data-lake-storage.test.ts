@@ -1,9 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
+
 /**
  * Tests DataLakeStorage
  *
- * @group integ/data-lake/data-lake-storage
+ * @group integ/data-lake/storage
  */
 
 import * as cdk from '@aws-cdk/core';
@@ -38,33 +39,33 @@ describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    
+
     const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
       profile: process.env.AWS_PROFILE,
     });
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-    
+
     // WHEN
     const deployResult = await cloudFormation.deployStack({
       stack: stackArtifact,
     });
-    
+
     // THEN
-    expect(deployResult.outputs.rawBucketName).toContain('ara-raw-');
-    expect(deployResult.outputs.cleanBucketName).toContain('ara-clean-');
-    expect(deployResult.outputs.transformBucketName).toContain('ara-transform-');
+    expect(deployResult.outputs.rawBucketName).toContain('raw-');
+    expect(deployResult.outputs.cleanBucketName).toContain('clean-');
+    expect(deployResult.outputs.transformBucketName).toContain('transform-');
 
   }, 9000000);
 });
 
 afterAll(async () => {
   const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-  
+
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
     profile: process.env.AWS_PROFILE,
   });
   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-  
+
   await cloudFormation.destroyStack({
     stack: stackArtifact,
   });
