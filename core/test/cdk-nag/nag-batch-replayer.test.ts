@@ -4,10 +4,11 @@
 /**
  * Tests BatchReplayer
  *
- * @group best-practice/batch-replayer
+ * @group best-practice/data-generator/batch-replayer
  */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
+import { Bucket } from '@aws-cdk/aws-s3';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
@@ -17,14 +18,13 @@ import { PreparedDataset } from '../../src';
 const mockApp = new App();
 
 const batchReplayerStack = new Stack(mockApp, 'BatchReplayer');
+const sinkBucket = new Bucket(batchReplayerStack, 'SinkBucket');
 // Instantiate a DataGenerator
 const batchReplayer = new BatchReplayer(batchReplayerStack, "TestBatchReplayer", {
   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
   frequency: 120,
-  s3LocationSink: {
-    bucketName: 'test',
-    objectKey: 'test',
-  },
+  sinkBucket: sinkBucket ,
+  sinkObjectKey: 'test',
 });
 
 Aspects.of(batchReplayer).add(new AwsSolutionsChecks());

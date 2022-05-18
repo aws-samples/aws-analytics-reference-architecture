@@ -13,20 +13,21 @@ import { BatchReplayer } from "../../../src/data-generator/batch-replayer";
 import { PreparedDataset } from "../../../src/datasets";
 import "@aws-cdk/assert/jest";
 import { Template } from "@aws-cdk/assertions";
+import { Bucket } from "@aws-cdk/aws-s3";
 
 let testStack: Stack;
 let batchReplayer: BatchReplayer;
 let template: Template;
+let bucket: Bucket;
 
 beforeEach(() => {
   testStack = new Stack();
+  bucket = new Bucket(testStack, 'Bucket');
   batchReplayer = new BatchReplayer(testStack, "TestBatchReplayer", {
     dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
     frequency: 120,
-    s3LocationSink: {
-      bucketName: 'test',
-      objectKey: 'test',
-    },
+    sinkBucket: bucket,
+    sinkObjectKey: 'test'
   });
   template = Template.fromStack(testStack);
 });
@@ -38,10 +39,8 @@ test("BatchReplayer should use given frequency", () => {
 test("BatchReplayer should use default frequency", () => {
   const batchReplayerWithNoFreqProp = new BatchReplayer(testStack, "TestBatchReplayerWithNoFreqProp", {
     dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
-    s3LocationSink: {
-      bucketName: 'test',
-      objectKey: 'test',
-    },
+    sinkBucket: bucket,
+    sinkObjectKey: 'test',
   });
   expect(batchReplayerWithNoFreqProp.frequency).toBe(60);
 });
@@ -49,10 +48,9 @@ test("BatchReplayer should use default frequency", () => {
 test("BatchReplayer should use given max output file size", () => {
   const batchReplayerWithFilesizeProp = new BatchReplayer(testStack, "TestBatchReplayerWithNoFreqProp", {
     dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
-    s3LocationSink: {
-      bucketName: 'test',
-      objectKey: 'test',
-    },    outputFileMaxSizeInBytes: 20480,
+    sinkBucket: bucket,
+    sinkObjectKey: 'test',
+    outputFileMaxSizeInBytes: 20480,
   });
   expect(batchReplayerWithFilesizeProp.outputFileMaxSizeInBytes).toBe(20480);
 });
@@ -60,10 +58,8 @@ test("BatchReplayer should use given max output file size", () => {
 test("BatchReplayer should use default max output file size 100MB", () => {
   const batchReplayerWithNoFilesizeProp = new BatchReplayer(testStack, "TestBatchReplayerWithNoFreqProp", {
     dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
-    s3LocationSink: {
-      bucketName: 'test',
-      objectKey: 'test',
-    },
+    sinkBucket: bucket,
+    sinkObjectKey: 'test',
   });
   expect(batchReplayerWithNoFilesizeProp.outputFileMaxSizeInBytes).toBe(100 * 1024 * 1024);
 });

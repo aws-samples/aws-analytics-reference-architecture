@@ -46,10 +46,7 @@ const sourceGlueTable = new Table(stack, 'SourceTable', {
 const sourceKinesisStream = new Stream(stack, 'SourceStream');
 
 new DataLakeExporter(stack, 'DataLakeExporter', {
-  sinkLocation: {
-    bucketName: sinkBucket.bucketName,
-    objectKey: '',
-  },
+  sinkBucket: sinkBucket,
   sourceGlueDatabase: sourceGlueDatabase,
   sourceGlueTable: sourceGlueTable,
   sourceKinesisDataStream: sourceKinesisStream,

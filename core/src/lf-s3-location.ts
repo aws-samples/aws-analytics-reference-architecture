@@ -1,9 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
+import { Role, ServicePrincipal } from '@aws-cdk/aws-iam';
 import * as lakeformation from '@aws-cdk/aws-lakeformation';
-import { Bucket, Location } from '@aws-cdk/aws-s3';
+import { Bucket } from '@aws-cdk/aws-s3';
 import { Construct } from '@aws-cdk/core';
 
 /**
@@ -11,13 +11,19 @@ import { Construct } from '@aws-cdk/core';
 */
 export interface LakeFormationS3LocationProps {
   /**
-   * S3 location to be registered with Lakeformation
+   * S3 Bucket to be registered with Lakeformation
    */
-  readonly s3Location: Location;
+  readonly s3Bucket: Bucket;
+  /**
+   * S3 object key to be registered with Lakeformation
+   * @default - The entire bucket is registered
+   */
+  readonly s3ObjectKey?: string;
 }
 
 /**
- * This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
+ * This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access. 
+ * If the location is in a different account, cross account access should be granted via the [S3CrossAccount]{@link S3CrossAccount} construct.
  *
  * This construct instantiate 2 objects:
  * * An IAM role with read/write permissions to the S3 location and read access to the KMS key used to encypt the bucket
@@ -38,12 +44,12 @@ export interface LakeFormationS3LocationProps {
  *
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
- *
+ * 
+ * const myBucket = new Bucket(stack, 'MyBucket')
+ * 
  * new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
- *   s3Location:{
- *     bucketName: 'my-bucket',
- *     objectKey: 'my-prefix',
- *   }
+ *   bucketName: myBucket,
+ *   objectKey: 'my-prefix',
  * });
  * ```
  */
@@ -54,49 +60,49 @@ export class LakeformationS3Location extends Construct {
   constructor(scope: Construct, id: string, props: LakeFormationS3LocationProps) {
     super(scope, id);
 
-    // Create a bucket from the S3 location
-    const bucket = Bucket.fromBucketName(this, 'LocationBucket', props.s3Location.bucketName);
-
     // Create an Amazon IAM Role used by Lakeformation to register S3 location
     this.dataAccessRole = new Role(this, 'LFS3AccessRole', {
       assumedBy: new ServicePrincipal('lakeformation.amazonaws.com'),
     });
 
+    const objectKey = props.s3ObjectKey ? props.s3ObjectKey + '/*' : '*';
     // add policy to access S3 for Read and Write
-    this.dataAccessRole.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          bucket.arnForObjects(props.s3Location.objectKey) + '/*',
-          bucket.bucketArn,
-        ],
-        actions: [
-          's3:GetObject',
-          's3:PutObject',
-          's3:DeleteObject',
-          's3:ListBucketMultipartUploads',
-          's3:ListMultipartUploadParts',
-          's3:AbortMultipartUpload',
-          's3:ListBucket',
-        ],
-      }),
-    );
+    // this.dataAccessRole.addToPolicy(
+    //   new PolicyStatement({
+    //     resources: [
+    //       props.s3Bucket.arnForObjects(objectKey),
+    //       props.s3Bucket.bucketArn,
+    //     ],
+    //     actions: [
+    //       's3:GetObject',
+    //       's3:PutObject',
+    //       's3:DeleteObject',
+    //       's3:ListBucketMultipartUploads',
+    //       's3:ListMultipartUploadParts',
+    //       's3:AbortMultipartUpload',
+    //       's3:ListBucket',
+    //     ],
+    //   }),
+    // );
 
-    // add policy to access KMS key used for the bucket encryption
-    if (bucket.encryptionKey) {
-      this.dataAccessRole.addToPolicy(
-        new PolicyStatement({
-          resources: [
-            bucket.encryptionKey?.keyArn,
-          ],
-          actions: [
-            'kms:Decrypt',
-          ],
-        }),
-      );
-    }
+    // // add policy to access KMS key used for the bucket encryption
+    // if (bucket.encryptionKey) {
+    //   this.dataAccessRole.addToPolicy(
+    //     new PolicyStatement({
+    //       resources: [
+    //         bucket.encryptionKey?.keyArn,
+    //       ],
+    //       actions: [
+    //         'kms:Decrypt',
+    //       ],
+    //     }),
+    //   );
+    // }
+
+    props.s3Bucket.grantReadWrite(this.dataAccessRole, objectKey)
 
     new lakeformation.CfnResource(this, 'MyCfnResource', {
-      resourceArn: bucket.arnForObjects(props.s3Location.objectKey),
+      resourceArn: props.s3Bucket.arnForObjects(objectKey),
       useServiceLinkedRole: false,
       roleArn: this.dataAccessRole.roleArn,
     });

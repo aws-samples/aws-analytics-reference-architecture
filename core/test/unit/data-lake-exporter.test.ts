@@ -4,7 +4,7 @@
 /**
  * Tests Datalake Exporter
  *
- * @group unit/datalake/exporter
+ * @group unit/data-lake/exporter
  */
 
 import { RetentionDays } from '@aws-cdk/aws-logs';
@@ -14,6 +14,7 @@ import '@aws-cdk/assert/jest';
 import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
 import { SynthUtils } from '@aws-cdk/assert';
 import { Stream } from '@aws-cdk/aws-kinesis';
+import { Bucket } from '@aws-cdk/aws-s3';
 
 
 test('dataLakeExporter', () => {
@@ -35,13 +36,11 @@ test('dataLakeExporter', () => {
       },
     ],
   });
-
+  const bucket = new Bucket(dataLakeExporterStack, 'Bucket')
 
   new DataLakeExporter(dataLakeExporterStack, 'testExporter', {
-    sinkLocation: {
-      bucketName: 'test',
-      objectKey: 'test',
-    },
+    sinkBucket: bucket,
+    sinkObjectKey: 'test',
     sourceKinesisDataStream: stream,
     sourceGlueDatabase: db,
     sourceGlueTable: table,

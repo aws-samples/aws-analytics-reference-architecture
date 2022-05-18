@@ -29,8 +29,8 @@ const myBucket = new Bucket(stack, 'MyBucket', {
 });
 
 new S3CrossAccount(stack, 'MyS3CrossAccount', {
-  bucket: myBucket,
-  objectKey: 'test',
+  s3Bucket: myBucket,
+  s3ObjectKey: 'test',
   accountId: cdk.Aws.ACCOUNT_ID,
 });
 

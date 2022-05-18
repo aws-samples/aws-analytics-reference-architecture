@@ -4,7 +4,7 @@
 /**
 * Tests LakeformationS3Location
 *
-* @group integ/lake-formation/s3-location
+* @group integ/lakeformation/s3-location
 */
 
 import { Key } from '@aws-cdk/aws-kms';
@@ -28,11 +28,9 @@ const myBucket = new Bucket(stack, 'MyBucket', {
   autoDeleteObjects: true,
 });
 
-const s3Location = new LakeformationS3Location(stack, 'MyS3CrossAccount', {
-  s3Location: {
-    bucketName: myBucket.bucketName,
-    objectKey: 'test',
-  }
+const s3Location = new LakeformationS3Location(stack, 'S3Location', {
+  s3Bucket: myBucket,
+  s3ObjectKey: 'test',
 });
 
 new cdk.CfnOutput(stack, 'BucketPolicy', {

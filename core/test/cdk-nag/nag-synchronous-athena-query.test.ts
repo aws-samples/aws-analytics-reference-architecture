@@ -69,14 +69,38 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/providerRole/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-onTimeout/ServiceRole',
+  [{ id: 'AwsSolutions-IAM4', reason: 'CDK does not provide an interface to modify the AWS managed policy' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/providerManagedPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card is used for resource created at run time. This is created by CDK.' }],
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-onTimeout/ServiceRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card needed for the proper execution' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-isComplete/ServiceRole',
+  [{ id: 'AwsSolutions-IAM4', reason: 'CDK does not provide an intenface to modify the AWS managed policy' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-isComplete/ServiceRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card needed for the proper execution' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-onEvent/ServiceRole',
+  [{ id: 'AwsSolutions-IAM4', reason: 'CDK does not provide an intenface to modify the AWS managed policy' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card needed for the proper execution' }],
 );
 
 test('No unsuppressed Warnings', () => {

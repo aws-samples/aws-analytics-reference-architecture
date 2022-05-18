@@ -4,13 +4,14 @@
 /**
  * Tests DataLakeExporter
  *
- * @group best-practice/data-lake-exporter
+ * @group best-practice/data-lake/exporter
  */
 
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
 import { Stream } from '@aws-cdk/aws-kinesis';
+import { Bucket } from '@aws-cdk/aws-s3';
 import { App, Aspects, Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
@@ -36,13 +37,10 @@ const table = new Table(dataLakeExporterStack, 'testTable', {
     },
   ],
 });
-
+const bucket = new Bucket(dataLakeExporterStack, 'Bucket')
 
 new DataLakeExporter(dataLakeExporterStack, 'testExporter', {
-  sinkLocation: {
-    bucketName: 'test',
-    objectKey: 'test',
-  },
+  sinkBucket: bucket,
   sourceKinesisDataStream: stream,
   sourceGlueDatabase: db,
   sourceGlueTable: table,
@@ -61,14 +59,50 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataLakeExporterStack,
-  'data-lake-exporter/testExporter/dataLakeExporterRole/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Wild card used at the object level, to allow access to the bucket' }],
+  'data-lake-exporter/testStream/Resource',
+  [{ id: 'AwsSolutions-KDS3', reason: 'This is for demo and PoC purpose only, to reduce the cost encryption is not with CMK is not used' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataLakeExporterStack,
-  'data-lake-exporter/testStream/Resource',
-  [{ id: 'AwsSolutions-KDS3', reason: 'This is for demo and PoC purpose only, to reduce the cost encryption is not with CMK is not used' }],
+  'data-lake-exporter/testExporter/managedPolicyKinesisFirehose/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'wild card needed for the putting object on the given path' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataLakeExporterStack,
+  'data-lake-exporter/testExporter/dataLakeExporterRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Using grantRead and grantWrite methods on S3 Bucket, Kinesis Data Stream and Glue Table generate widlcard permissions' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataLakeExporterStack,
+  'data-lake-exporter/testExporter/dataLakeExporter',
+  [{ id: 'AwsSolutions-KDF1', reason: 'Kinesis Firehose does not support encryption when used with KDS integration' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataLakeExporterStack,
+  'data-lake-exporter/Bucket/Resource',
+  [{ id: 'AwsSolutions-S1', reason: 'The S3 Bucket is used for testing the Construct only' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataLakeExporterStack,
+  'data-lake-exporter/Bucket/Resource',
+  [{ id: 'AwsSolutions-S2', reason: 'The S3 Bucket is used for testing the Construct only' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataLakeExporterStack,
+  'data-lake-exporter/Bucket/Resource',
+  [{ id: 'AwsSolutions-S3', reason: 'The S3 Bucket is used for testing the Construct only' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataLakeExporterStack,
+  'data-lake-exporter/Bucket/Resource',
+  [{ id: 'AwsSolutions-S10', reason: 'The S3 Bucket is used for testing the Construct only' }],
 );
 
 test('No unsuppressed Warnings', () => {

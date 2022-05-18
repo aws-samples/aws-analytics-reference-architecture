@@ -4,23 +4,22 @@
 /**
  * Tests LakeformationS3Location
  *
- * @group unit/lakeformation/s3location
+ * @group unit/lakeformation/s3-location
  */
 
 import { LakeformationS3Location } from '../../src/lf-s3-location';
 import '@aws-cdk/assert/jest';
 import { Stack } from '@aws-cdk/core';
 import { Match, Template } from '@aws-cdk/assertions';
+import { Bucket } from '@aws-cdk/aws-s3';
 
 describe('LakeFormationS3Location test', () => {
 
   const lfS3Stack = new Stack();  
- 
-  new LakeformationS3Location(lfS3Stack, 'S3Location', { 
-     s3Location: {
-       bucketName: 'test',
-       objectKey: 'test',
-     }
+  const bucket = new Bucket(lfS3Stack, 'Bucket');
+  new LakeformationS3Location(lfS3Stack, 'S3Location', {
+    s3Bucket: bucket,
+    s3ObjectKey: 'test',
   });
   
   const template = Template.fromStack(lfS3Stack);
@@ -34,11 +33,8 @@ describe('LakeFormationS3Location test', () => {
           "Fn::Join": [
             "",
             [
-              "arn:",
-              {
-                "Ref": "AWS::Partition"
-              },
-              ":s3:::test/test"
+              Match.anyValue(),
+              "/test/*"
             ]
           ]
         }),
@@ -53,37 +49,21 @@ describe('LakeFormationS3Location test', () => {
           Statement: Match.arrayWith([
             {
               Action: [
-                's3:GetObject',
-                's3:PutObject',
-                's3:DeleteObject',
-                's3:ListBucketMultipartUploads',
-                's3:ListMultipartUploadParts',
-                's3:AbortMultipartUpload',
-                's3:ListBucket',
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject*",
+                "s3:Abort*"
               ],
               Effect: 'Allow',
-              Resource: Match.arrayEquals([
+              Resource: Match.arrayWith([
                 {
                   "Fn::Join": [
                     "",
                     [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition"
-                      },
-                      ":s3:::test/test/*"
-                    ]
-                  ]
-                },
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition"
-                      },
-                      ":s3:::test"
+                      Match.anyValue(),
+                      "/test/*"
                     ]
                   ]
                 }

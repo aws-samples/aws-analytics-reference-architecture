@@ -25,8 +25,8 @@ describe('S3CrossAccount test', () => {
   });
    
   new S3CrossAccount(s3CrossAccountStack, 'MyS3CrossAccount', {
-    bucket: myBucket,
-    objectKey: 'test',
+    s3Bucket: myBucket,
+    s3ObjectKey: 'test',
     accountId: accountId,
   });
 
@@ -43,13 +43,12 @@ describe('S3CrossAccount test', () => {
           Statement: Match.arrayWith([
             {
               Action: [
-                's3:GetObject',
-                's3:PutObject',
-                's3:DeleteObject',
-                's3:ListBucketMultipartUploads',
-                's3:ListMultipartUploadParts',
-                's3:AbortMultipartUpload',
-                's3:ListBucket',
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject*",
+                "s3:Abort*"
               ],
               Effect: 'Allow',
               Principal: {
@@ -68,6 +67,12 @@ describe('S3CrossAccount test', () => {
               },
               Resource:Match.arrayEquals([
                 {
+                  "Fn::GetAtt": [
+                    Match.anyValue(),
+                    "Arn"
+                  ]
+                },
+                {
                   "Fn::Join": [
                     "",
                     [
@@ -79,12 +84,6 @@ describe('S3CrossAccount test', () => {
                       },
                       "/test/*"
                     ]
-                  ]
-                },
-                {
-                  "Fn::GetAtt": [
-                    Match.anyValue(),
-                    "Arn"
                   ]
                 }
               ])
@@ -103,6 +102,7 @@ describe('S3CrossAccount test', () => {
             {
               Action: [
                 "kms:Decrypt",
+                "kms:DescribeKey",
                 "kms:Encrypt",
                 "kms:ReEncrypt*",
                 "kms:GenerateDataKey*"
@@ -125,7 +125,7 @@ describe('S3CrossAccount test', () => {
               Resource: '*',
             },
           ])
-        }
+        },
       })
     );
   });

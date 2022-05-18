@@ -171,7 +171,6 @@ export class SynchronousAthenaQuery extends Construct {
       queryInterval: Duration.seconds(10),
       totalTimeout: Duration.minutes(props.timeout || 1),
       logRetention: RetentionDays.ONE_WEEK,
-      //role: providerRole,
     });
 
     synchronousAthenaQueryCRP.node.addDependency(athenaQueryStartFn);

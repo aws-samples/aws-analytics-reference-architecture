@@ -6,7 +6,7 @@ import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
 import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { LayerVersion, Runtime } from '@aws-cdk/aws-lambda';
 import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
-import { Bucket, Location } from '@aws-cdk/aws-s3';
+import { Bucket } from '@aws-cdk/aws-s3';
 import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from '@aws-cdk/aws-stepfunctions';
 import { LambdaInvoke } from '@aws-cdk/aws-stepfunctions-tasks';
 import { Aws, Construct, Duration, RemovalPolicy } from '@aws-cdk/core';
@@ -28,9 +28,15 @@ export interface BatchReplayerProps {
    */
   readonly frequency?: number;
   /**
-   * The S3 location sink where the BatchReplayer writes data
+   * The S3 Bucket sink where the BatchReplayer writes data. 
+   * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
    */
-  readonly s3LocationSink: Location;
+  readonly sinkBucket: Bucket;
+  /**
+   * The S3 object key sink where the BatchReplayer writes data. 
+   * @default - No object key is used and the BatchReplayer writes the dataset in s3://<BUCKET_NAME>/<TABLE_NAME>
+   */
+  readonly sinkObjectKey?: string;
   /**
    * The maximum file size in Bytes written by the BatchReplayer
    * @default - The BatchReplayer writes 100MB files maximum
@@ -53,16 +59,19 @@ export interface BatchReplayerProps {
  * 
  * Usage example:
  * ```typescript
+ * 
+ * const myBucket = new Bucket(stack, "MyBucket")
+ * 
  * new BatchReplayer(stack, "WebSalesReplayer", {
- * dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
- *   s3LocationSink: {
- *     bucketName: 'someBucket',
- *     objectKey: 'somePrefix',
- *   },
+ *   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
+ *   s3BucketSink: myBucket
+ *   s3ObjectKeySink: 'some-prefix',
  *   frequency: 120,
  *   outputFileMaxSizeInBytes: 10000000,
  * });
  * ```
+ * 
+ * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
  */
 export class BatchReplayer extends Construct {
 
@@ -80,7 +89,12 @@ export class BatchReplayer extends Construct {
   /**
    * Sink bucket where the batch replayer will put data in
    */
-  public readonly s3LocationSink: Location;
+  public readonly sinkBucket: Bucket;
+
+  /**
+   * Sink object key where the batch replayer will put data in
+   */
+  public readonly sinkObjectKey?: string;
 
   /**
    * Maximum file size for each output file. If the output batch file is,
@@ -101,7 +115,8 @@ export class BatchReplayer extends Construct {
 
     this.dataset = props.dataset;
     this.frequency = props.frequency || 60;
-    this.s3LocationSink = props.s3LocationSink;
+    this.sinkBucket = props.sinkBucket;
+    this.sinkObjectKey = props.sinkObjectKey;
     this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
 
     const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python38:6`);
@@ -181,13 +196,11 @@ export class BatchReplayer extends Construct {
       lambdaPolicyStatements: writeInBatchFnPolicy,
     });
 
-    const sinkBucket = Bucket.fromBucketName(this, 'SinkBucket', props.s3LocationSink.bucketName);
     // grant permissions to write to the bucket and to use the KMS key
-    sinkBucket.grantPut(writeInBatchFn);
-    if (sinkBucket.encryptionKey) {
-      sinkBucket.encryptionKey.grantEncrypt(writeInBatchFn);
-    }
+    const putPattern = this.sinkObjectKey ? `${this.sinkObjectKey}/*` : undefined;
+    this.sinkBucket.grantWrite(writeInBatchFn,putPattern);
 
+    const sinkPath = this.sinkObjectKey ? `${this.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName; 
     const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
       lambdaFunction: writeInBatchFn,
       payload: TaskInput.fromObject({
@@ -203,7 +216,7 @@ export class BatchReplayer extends Construct {
         // For file processing
         dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
         dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
-        sinkPath: sinkBucket.s3UrlForObject(`${this.dataset.tableName}`),
+        sinkPath: this.sinkBucket.s3UrlForObject(sinkPath),
         outputFileMaxSizeInBytes: 20480,
       }),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times

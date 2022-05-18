@@ -4,7 +4,7 @@
 /**
 * Tests BatchReplayer
 *
-* @group integ/batch-replayer
+* @group integ/data-generator/batch-replayer
 */
 
 import { Bucket } from '@aws-cdk/aws-s3';
@@ -28,10 +28,7 @@ const sinkBucket = new Bucket(stack, 'SinkBucket',{
 
 const batchReplayer = new BatchReplayer(stack, 'BatchReplay', {
   dataset: PreparedDataset.RETAIL_1_GB_STORE_SALE,
-  s3LocationSink: {
-    bucketName: sinkBucket.bucketName,
-    objectKey: '',
-  },
+  sinkBucket: sinkBucket,
 });
 
 new cdk.CfnOutput(stack, 'DatasetName', {

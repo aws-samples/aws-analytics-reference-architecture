@@ -81,7 +81,6 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
     });
 
     this.provider = new Provider(this, 'CustomResourceProvider', {
-      //onEventFnName: 'EmrEksNodegroupAsgTagOnEventFn',
       onEventHandler: onEvent,
     });
   }

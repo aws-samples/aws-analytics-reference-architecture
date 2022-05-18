@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { PolicyStatement, AccountPrincipal } from '@aws-cdk/aws-iam';
+import { AccountPrincipal } from '@aws-cdk/aws-iam';
 import { Bucket } from '@aws-cdk/aws-s3';
 import { Construct } from '@aws-cdk/core';
 
@@ -14,13 +14,13 @@ export interface S3CrossAccountProps {
    * The S3 Bucket object to grant cross account access. 
    * This needs to be a Bucket object and not an IBucket because the construct modifies the Bucket policy
    */
-  readonly bucket: Bucket;
+  readonly s3Bucket: Bucket;
 
   /**
    * The S3 object key to grant cross account access (S3 prefix without the bucket name)
    * @default - Grant cross account for the entire bucket
    */
-  readonly objectKey?: string;
+  readonly s3ObjectKey?: string;
 
   /**
    * The account ID to grant on the S3 location
@@ -59,29 +59,32 @@ export class S3CrossAccount extends Construct {
     // Get the target account as a Principal
     const targetAccount = new AccountPrincipal(props.accountId);
 
-    // Get the bucket from the S3 location to attache a bucket policy
-    props.bucket.addToResourcePolicy(
-      new PolicyStatement({
-        principals: [
-          targetAccount,
-        ],
-        actions: [
-          's3:GetObject',
-          's3:PutObject',
-          's3:DeleteObject',
-          's3:ListBucketMultipartUploads',
-          's3:ListMultipartUploadParts',
-          's3:AbortMultipartUpload',
-          's3:ListBucket',
-        ],
-        resources: [
-          props.bucket.arnForObjects(props.objectKey || '') + '/*',
-          props.bucket.bucketArn,
-        ],
-      }),
-    );
+    // // Get the bucket from the S3 location to attache a bucket policy
+    // props.bucket.addToResourcePolicy(
+    //   new PolicyStatement({
+    //     principals: [
+    //       targetAccount,
+    //     ],
+    //     actions: [
+    //       's3:GetObject',
+    //       's3:PutObject',
+    //       's3:DeleteObject',
+    //       's3:ListBucketMultipartUploads',
+    //       's3:ListMultipartUploadParts',
+    //       's3:AbortMultipartUpload',
+    //       's3:ListBucket',
+    //     ],
+    //     resources: [
+    //       props.bucket.arnForObjects(props.objectKey || '') + '/*',
+    //       props.bucket.bucketArn,
+    //     ],
+    //   }),
+    // );
 
-    // If the bucket is encrypted with a custom KMS key, attach a policy to the key to grant encrypt and decrypt
-    if (props.bucket.encryptionKey)  props.bucket.encryptionKey.grantEncryptDecrypt(targetAccount);
+    // // If the bucket is encrypted with a custom KMS key, attach a policy to the key to grant encrypt and decrypt
+    // if (props.bucket.encryptionKey)  props.bucket.encryptionKey.grantEncryptDecrypt(targetAccount);
+    
+    const objectKey = props.s3ObjectKey ? props.s3ObjectKey + '/*' : '*';
+    props.s3Bucket.grantReadWrite(targetAccount, objectKey)
   };
 }

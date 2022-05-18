@@ -3,8 +3,8 @@ import { Role, ServicePrincipal, PolicyStatement, PolicyDocument, ManagedPolicy 
 import { Stream } from '@aws-cdk/aws-kinesis';
 import { CfnDeliveryStream } from '@aws-cdk/aws-kinesisfirehose';
 import { LogGroup, RetentionDays, LogStream } from '@aws-cdk/aws-logs';
-import { Bucket, Location } from '@aws-cdk/aws-s3';
-import { Construct, Aws, RemovalPolicy, Stack } from '@aws-cdk/core';
+import { Bucket } from '@aws-cdk/aws-s3';
+import { Construct, Aws, RemovalPolicy } from '@aws-cdk/core';
 
 
 /**
@@ -12,9 +12,14 @@ import { Construct, Aws, RemovalPolicy, Stack } from '@aws-cdk/core';
  */
 export interface DataLakeExporterProps {
   /**
-   * Sink must be an Amazon S3 Location composed of a bucket and a key.
+   * Amazon S3 sink Bucket where the data lake exporter write data.
    */
-  readonly sinkLocation: Location;
+  readonly sinkBucket: Bucket;
+  /**
+   * Amazon S3 sink object key where the data lake exporter write data. 
+   * @default - The data is written at the bucket root
+   */
+   readonly sinkObjectKey?: string;
   /**
    * Source must be an Amazon Kinesis Data Stream.
    */
@@ -62,10 +67,8 @@ export class DataLakeExporter extends Construct {
     if ( props.deliverySize || 128 > 128 ) { throw 'deliverySize cannot be more than 128MB';}
     if ( props.deliveryInterval || 900 > 900 ) { throw 'deliveryInterval cannot be more than 900s';}
 
-    const stack = Stack.of(this);
+    // const stack = Stack.of(this);
 
-    // Get the Bucket from Amazon S3 Location sink
-    const sinkBucket = Bucket.fromBucketName(this, 'sinkBucket', props.sinkLocation.bucketName);
 
     // Create log group for storing Amazon Kinesis Firehose logs.
     const logGroup = new LogGroup(this, 'dataLakeExporterLogGroup', {
@@ -83,61 +86,6 @@ export class DataLakeExporter extends Construct {
 
     const policyDocumentKinesisFirehose = new PolicyDocument({
       statements: [
-        new PolicyStatement({
-          resources: [
-            props.sourceGlueTable.tableArn,
-            props.sourceGlueDatabase.catalogArn,
-            props.sourceGlueDatabase.databaseArn,
-          ],
-          actions: [
-            'glue:GetTable',
-            'glue:GetTableVersion',
-            'glue:GetTableVersions',
-          ],
-        }),
-        new PolicyStatement({
-          resources: [
-            props.sourceKinesisDataStream.streamArn,
-          ],
-          actions: [
-            'kinesis:DescribeStream',
-            'kinesis:GetShardIterator',
-            'kinesis:GetRecords',
-            'kinesis:ListShards',
-          ],
-        }),
-        new PolicyStatement({
-          resources: [
-            stack.formatArn({
-              account: '',
-              region: '',
-              service: 's3',
-              resource: props.sinkLocation.bucketName,
-              resourceName: props.sinkLocation.objectKey,
-            }),
-            stack.formatArn({
-              account: '',
-              region: '',
-              service: 's3',
-              resource: props.sinkLocation.bucketName,
-              resourceName: `${props.sinkLocation.objectKey}/*`,
-            }),
-            stack.formatArn({
-              account: '',
-              region: '',
-              service: 's3',
-              resource: props.sinkLocation.bucketName,
-            }),
-          ],
-          actions: [
-            's3:AbortMultipartUpload',
-            's3:GetBucketLocation',
-            's3:GetObject',
-            's3:ListBucket',
-            's3:ListBucketMultipartUploads',
-            's3:PutObject',
-          ],
-        }),
         new PolicyStatement({
           resources: [
             `${logGroup.logGroupArn}:log-stream:${firehoseLogStream.logStreamName}`,
@@ -161,30 +109,15 @@ export class DataLakeExporter extends Construct {
 
     roleKinesisFirehose.node.addDependency(managedPolicyKinesisFirehose);
 
-    // TODO add policy for KMS managed?
-
-    /*     this.ingestionStream = new DeliveryStream(this, 'dataLakeExporter', {
-      sourceStream: props.sourceKinesisDataStream,
-      destinations: [new S3Bucket(sinkBucket,{
-        dataOutputPrefix: props.sinkLocation.objectKey,
-        errorOutputPrefix: `${props.sinkLocation.objectKey}-error`,
-        logGroup: logGroup,
-        compression: Compression.SNAPPY,
-        bufferingInterval: Duration.seconds(props.deliveryInterval || 900),
-        bufferingSize: Size.mebibytes(props.deliverySize || 128),
-      })],
-      encryption: StreamEncryption.AWS_OWNED,
-    }) */
+    props.sinkBucket.grantWrite(roleKinesisFirehose);
+    props.sourceKinesisDataStream.grantRead(roleKinesisFirehose);
+    props.sourceGlueTable.grantRead(roleKinesisFirehose);
 
     // Create the Delivery stream from Cfn because L2 Construct doesn't support conversion to parquet and custom partitioning
     this.cfnIngestionStream = new CfnDeliveryStream(this, 'dataLakeExporter', {
       deliveryStreamType: 'KinesisStreamAsSource',
-      // Encryption only allowed with direct put
-      /*deliveryStreamEncryptionConfigurationInput: {
-        keyType: 'AWS_OWNED_CMK',
-      },*/
       extendedS3DestinationConfiguration: {
-        bucketArn: sinkBucket.bucketArn,
+        bucketArn: props.sinkBucket.bucketArn,
         bufferingHints: {
           intervalInSeconds: props.deliveryInterval || 900,
           sizeInMBs: props.deliverySize || 128,
@@ -194,8 +127,8 @@ export class DataLakeExporter extends Construct {
           logStreamName: firehoseLogStream.logStreamName,
         },
         roleArn: roleKinesisFirehose.roleArn,
-        errorOutputPrefix: `${props.sinkLocation.objectKey}-error`,
-        prefix: props.sinkLocation.objectKey,
+        errorOutputPrefix: `${props.sinkObjectKey}-error`,
+        prefix: props.sinkObjectKey,
         compressionFormat: 'UNCOMPRESSED',
         s3BackupMode: 'Disabled',
         dataFormatConversionConfiguration: {

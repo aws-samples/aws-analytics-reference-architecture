@@ -4,7 +4,7 @@
 /**
  * Tests S3CrossAccount
  *
- * @group best-practice/s3-cross-account
+ * @group best-practice/lakeformation/s3-cross-account
  */
 
 
@@ -30,8 +30,8 @@ const myBucket = new Bucket(s3CrossAccountStack, 'MyBucket', {
 });
 
 new S3CrossAccount(s3CrossAccountStack, 'MyS3CrossAccount', {
-  bucket: myBucket,
-  objectKey: 'test',
+  s3Bucket: myBucket,
+  s3ObjectKey: 'test',
   accountId: Aws.ACCOUNT_ID,
 });
 

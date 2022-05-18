@@ -12,7 +12,7 @@ import * as s3 from '@aws-cdk/aws-s3';
 import { Asset } from '@aws-cdk/aws-s3-assets';
 import * as s3deploy from '@aws-cdk/aws-s3-deployment';
 import * as cdk from '@aws-cdk/core';
-import { CustomResource } from '@aws-cdk/core';
+import { CustomResource, RemovalPolicy } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 //import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
@@ -127,6 +127,8 @@ export class FlywayRunner extends cdk.Construct {
 
     const migrationFilesBucket = new s3.Bucket(this, 'migrationFilesBucket', {
       versioned: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
     });
     const migrationFilesDeployment = new s3deploy.BucketDeployment(this, 'DeploySQLMigrationFiles', {
       sources: [sqlFilesAsset],
