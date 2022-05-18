@@ -2,24 +2,24 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
-* Tests FlywayRunner
-*
-* @group unit/best-practice/flyway-runner
-*/
+ * Tests FlywayRunner
+ *
+ * @group unit/best-practice/flyway-runner
+ */
 
 import { Annotations, Match } from '@aws-cdk/assertions';
 import { App, /*Aspects,*/ Stack } from '@aws-cdk/core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 //import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-// import { FlywayRunner } from '../../../src/db-schema-manager/flyway-runner';
-// import * as path from 'path';
-// import * as ec2 from '@aws-cdk/aws-ec2';
-// import * as redshift from '@aws-cdk/aws-redshift';
+import { FlywayRunner } from '../../../src/db-schema-manager/flyway-runner';
+import * as path from 'path';
+import * as ec2 from '@aws-cdk/aws-ec2';
+import * as redshift from '@aws-cdk/aws-redshift';
 
 const mockApp = new App();
 
 const FlywayRunnerStack = new Stack(mockApp, 'FlywayRunnerStack');
-/*
+
 const vpc = new ec2.Vpc(FlywayRunnerStack, 'Vpc');
 
 const dbName = 'testdb';
@@ -37,7 +37,7 @@ new FlywayRunner(FlywayRunnerStack, 'testMigration', {
   vpc: vpc,
   databaseName: dbName,
   replaceDictionary: { TABLE_NAME: 'second_table' },
-});*/
+});
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(FlywayRunnerStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
