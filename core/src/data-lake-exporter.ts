@@ -109,10 +109,12 @@ export class DataLakeExporter extends Construct {
 
     roleKinesisFirehose.node.addDependency(managedPolicyKinesisFirehose);
 
-    props.sinkBucket.grantWrite(roleKinesisFirehose);
-    props.sourceKinesisDataStream.grantRead(roleKinesisFirehose);
-    props.sourceGlueTable.grantRead(roleKinesisFirehose);
+    const grantSink = props.sinkBucket.grantWrite(roleKinesisFirehose);
+    const grantSource = props.sourceKinesisDataStream.grantRead(roleKinesisFirehose);
+    const grantTable = props.sourceGlueTable.grantRead(roleKinesisFirehose);
+    const grantGlue = props.sourceGlueTable.grantToUnderlyingResources(roleKinesisFirehose, ['glue:GetTableVersions']);
 
+    
     // Create the Delivery stream from Cfn because L2 Construct doesn't support conversion to parquet and custom partitioning
     this.cfnIngestionStream = new CfnDeliveryStream(this, 'dataLakeExporter', {
       deliveryStreamType: 'KinesisStreamAsSource',
@@ -157,5 +159,12 @@ export class DataLakeExporter extends Construct {
         roleArn: roleKinesisFirehose.roleArn,
       },
     });
+
+    // Need to enforce a dependancy because the grant methods generate an IAM Policy without dependency on the Firehose
+    this.cfnIngestionStream.node.addDependency(grantSink);
+    this.cfnIngestionStream.node.addDependency(grantSource);
+    this.cfnIngestionStream.node.addDependency(grantTable);
+    this.cfnIngestionStream.node.addDependency(grantGlue);
+
   }
 }
