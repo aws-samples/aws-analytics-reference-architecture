@@ -154,13 +154,13 @@ export interface AraBucketProps{
 * The bucket name is postfixed with the AWS account ID and the AWS region.
 *
 * The bucket has the following default properties:
-*  * the encryption mode is KMS customer key
-*  * the encryption key is the default and unique KMS key for ARA
+*  * the encryption mode is KMS managed by AWS
+*  * if the encryption mode is KMS customer managed, the encryption key is a default and unique KMS key for ARA
 *  * the KMS key is used as a bucket key
 *  * the SSL is enforced
 *  * the objects are automatically deleted when the bucket is deleted
 *  * the access are logged in a default and unique S3 bucket for ARA if serverAccessLogsPrefix is provided
-*  * the access are not logger if serverAccessLogsPrefix is  not provided
+*  * the access are not logged if serverAccessLogsPrefix is  not provided
 *  * the public access is blocked and no bucket policy or object permission can grant public access
 *
 * All standard S3 Bucket properties can be provided to not use the defaults.
