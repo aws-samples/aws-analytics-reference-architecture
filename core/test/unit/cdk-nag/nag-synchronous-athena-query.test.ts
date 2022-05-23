@@ -8,8 +8,8 @@
  */
 
 
-import { Annotations, Match } from 'aws-cdk-lib/assertions';
 import { App, Aspects, Stack } from 'aws-cdk-lib';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { SynchronousAthenaQuery } from '../../../src';
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -101,6 +101,24 @@ NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
   'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card needed for the proper execution' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-onEvent/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-isComplete/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/customresourceprovider/framework-onTimeout/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
 );
 
 test('No unsuppressed Warnings', () => {

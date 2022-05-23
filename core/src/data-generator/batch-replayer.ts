@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -9,10 +10,9 @@ import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from 'aws-cdk-lib/aws-stepfunctions';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
-import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { PreparedDataset } from '../datasets/prepared-dataset';
-import { Construct } from 'constructs';
 
 /**
  * The properties for the BatchReplayer construct
@@ -29,12 +29,12 @@ export interface BatchReplayerProps {
    */
   readonly frequency?: number;
   /**
-   * The S3 Bucket sink where the BatchReplayer writes data. 
+   * The S3 Bucket sink where the BatchReplayer writes data.
    * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
    */
   readonly sinkBucket: Bucket;
   /**
-   * The S3 object key sink where the BatchReplayer writes data. 
+   * The S3 object key sink where the BatchReplayer writes data.
    * @default - No object key is used and the BatchReplayer writes the dataset in s3://<BUCKET_NAME>/<TABLE_NAME>
    */
   readonly sinkObjectKey?: string;
@@ -57,12 +57,12 @@ export interface BatchReplayerProps {
  * 2. resources/lambdas/write-in-batch
  * Take a file path, filter only records within given time range, adjust the the time with offset to
  * make it looks like just being generated. Then write the output to the `sinkBucket`
- * 
+ *
  * Usage example:
  * ```typescript
- * 
+ *
  * const myBucket = new Bucket(stack, "MyBucket")
- * 
+ *
  * new BatchReplayer(stack, "WebSalesReplayer", {
  *   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
  *   s3BucketSink: myBucket
@@ -71,7 +71,7 @@ export interface BatchReplayerProps {
  *   outputFileMaxSizeInBytes: 10000000,
  * });
  * ```
- * 
+ *
  * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
  */
 export class BatchReplayer extends Construct {
@@ -147,7 +147,7 @@ export class BatchReplayer extends Construct {
       name: 'FindFilePathsFn',
       memorySize: 1024,
       codePath: 'data-generator/resources/lambdas/find-file-paths',
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       handler: 'find-file-paths.handler',
       logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),
@@ -189,7 +189,7 @@ export class BatchReplayer extends Construct {
       name: 'WriteInBatchFn',
       memorySize: 1024 * 5,
       codePath: 'data-generator/resources/lambdas/write-in-batch',
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       handler: 'write-in-batch.handler',
       logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),
@@ -199,9 +199,9 @@ export class BatchReplayer extends Construct {
 
     // grant permissions to write to the bucket and to use the KMS key
     const putPattern = this.sinkObjectKey ? `${this.sinkObjectKey}/*` : undefined;
-    this.sinkBucket.grantWrite(writeInBatchFn,putPattern);
+    this.sinkBucket.grantWrite(writeInBatchFn, putPattern);
 
-    const sinkPath = this.sinkObjectKey ? `${this.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName; 
+    const sinkPath = this.sinkObjectKey ? `${this.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
     const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
       lambdaFunction: writeInBatchFn,
       payload: TaskInput.fromObject({

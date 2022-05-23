@@ -1583,7 +1583,7 @@ cdk-assets@2.25.0:
     mime "^2.6.0"
     yargs "^16.2.0"
 
-cdk-nag@^2.14.11:
+cdk-nag@^2.0.0:
   version "2.14.11"
   resolved "https://registry.yarnpkg.com/cdk-nag/-/cdk-nag-2.14.11.tgz#559ff9c241fce3d974923fb3fe7f59a8dd095573"
   integrity sha512-BIDQpOJQVObCBZyWBRH7OW4cN2NE/xiHwi1JsOb5x3Px6KzOzGl7RHva7NTPry7FvmylpQqtCSBM6TMHedi7Yw==
@@ -1803,10 +1803,10 @@ console-control-strings@^1.1.0:
   resolved "https://registry.yarnpkg.com/console-control-strings/-/console-control-strings-1.1.0.tgz#3d7cf4464db6446ea644bf4b39507f9851008e8e"
   integrity sha1-PXz0Rk22RG6mRL9LOVB/mFEAjo4=
 
-constructs@10.1.7:
-  version "10.1.7"
-  resolved "https://registry.yarnpkg.com/constructs/-/constructs-10.1.7.tgz#d96fbeedb8d091720f4d3347c955bd42593abaa2"
-  integrity sha512-U4zMM7Iqa81hzLSfof9IW9R7kUWSMdhzV2JS8lXGISRFXljZrd4qwzYxhSO/VMB+CS24Tt0/YYLyNxET+6/3Mg==
+constructs@10.1.15:
+  version "10.1.15"
+  resolved "https://registry.yarnpkg.com/constructs/-/constructs-10.1.15.tgz#b1e9ae3d2e96992ad4060a4581036f9a2f40811e"
+  integrity sha512-fvGJ3AXx4uf0W4PoDnHa7s6IwSGprGYO9lhTG0jlRMzUyW7QtKLUKaTMT0zK621tTiCuZnBk6m26x4AnVYqkNw==
 
 conventional-changelog-angular@^5.0.12:
   version "5.0.13"

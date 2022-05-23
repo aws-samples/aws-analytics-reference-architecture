@@ -113,7 +113,7 @@ export class SynchronousAthenaQuery extends Construct {
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
     const athenaQueryStartFn = new PreBundledFunction(this, 'AthenaQueryStartFn', {
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-athena-query/resources/lambdas',
       name: 'SynchronousAthenaCrStart',
       lambdaPolicyStatements: athenaQueryStartFnPolicy,
@@ -143,7 +143,7 @@ export class SynchronousAthenaQuery extends Construct {
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
     const athenaQueryWaitFn = new PreBundledFunction(this, 'AthenaQueryWaitFn', {
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-athena-query/resources/lambdas',
       name: 'SynchronousAthenaCrWait',
       lambdaPolicyStatements: athenaQueryWaitFnPolicy,

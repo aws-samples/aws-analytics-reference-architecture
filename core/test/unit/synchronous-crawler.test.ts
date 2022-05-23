@@ -8,8 +8,8 @@
  */
 
 import { Stack } from 'aws-cdk-lib';
-import { SynchronousCrawler } from '../../src/synchronous-crawler';
 import { Template } from 'aws-cdk-lib/assertions';
+import { SynchronousCrawler } from '../../src/synchronous-crawler';
 
 test('CrawlerStartWait', () => {
   const crawlerStartWaitStack = new Stack();
@@ -17,7 +17,7 @@ test('CrawlerStartWait', () => {
   new SynchronousCrawler(crawlerStartWaitStack, 'CrawlerStartWaitTest', {
     crawlerName: 'test-crawler',
   });
-  
+
   const template = Template.fromStack(crawlerStartWaitStack);
 
   template.resourceCountIs('AWS::IAM::Role', 8);

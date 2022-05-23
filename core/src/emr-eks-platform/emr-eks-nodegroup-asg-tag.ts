@@ -69,7 +69,7 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
 
     // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
     const onEvent = new PreBundledFunction(this, 'OnEvent', {
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       codePath: 'emr-eks-platform/resources/lambdas/nodegroup-asg-tag',
       handler: 'lambda.on_event',
       name: 'EmrEksNodegroupAsgTagOnEventFn',

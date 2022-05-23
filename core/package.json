@@ -58,8 +58,8 @@
     "aws-cdk": "2.25.0",
     "aws-cdk-lib": "2.25.0",
     "cdk-assets": "2.25.0",
-    "cdk-nag": "^2.14.11",
-    "constructs": "10.1.7",
+    "cdk-nag": "^2.0.0",
+    "constructs": "10.1.15",
     "esbuild": "^0.14.39",
     "eslint": "^8",
     "eslint-import-resolver-node": "^0.3.6",
@@ -86,7 +86,7 @@
     "@aws-cdk/aws-glue-alpha": "2.25.0-alpha.0",
     "@aws-cdk/aws-redshift-alpha": "2.25.0-alpha.0",
     "aws-cdk-lib": "2.25.0",
-    "constructs": "^10.1.7"
+    "constructs": "^10.1.15"
   },
   "dependencies": {
     "@aws-cdk/aws-glue-alpha": "2.25.0-alpha.0",

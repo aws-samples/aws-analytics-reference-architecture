@@ -110,7 +110,7 @@ export class EmrManagedEndpointProvider extends Construct {
     // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
     const onEvent = new PreBundledFunction(this, 'OnEvent', {
       codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       handler: 'lambda.on_event',
       name: 'EmrManagedEndpointProviderOnEvent',
       lambdaPolicyStatements: lambdaPolicy,
@@ -124,7 +124,7 @@ export class EmrManagedEndpointProvider extends Construct {
       handler: 'lambda.is_complete',
       name: 'EmrManagedEndpointProviderIsComplete',
       lambdaPolicyStatements: lambdaPolicy,
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(120),
     });
