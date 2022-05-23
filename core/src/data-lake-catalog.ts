@@ -42,15 +42,15 @@ export class DataLakeCatalog extends TrackedConstruct {
     super(scope, id, trackedConstructProps);
 
     this.rawDatabase = new Database(this, 'raw-database', {
-      databaseName: 'ara_raw',
+      databaseName: 'raw',
     });
 
     this.cleanDatabase = new Database(this, 'clean-database', {
-      databaseName: 'ara_clean',
+      databaseName: 'clean',
     });
 
     this.transformDatabase = new Database(this, 'transform-database', {
-      databaseName: 'ara_transform',
+      databaseName: 'transform',
     });
   }
 }

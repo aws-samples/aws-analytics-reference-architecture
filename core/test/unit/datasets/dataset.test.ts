@@ -4,7 +4,7 @@
 /**
  * Tests DataSet Generator
  *
- * @group unit/other/data-set-generator
+ * @group unit/dataset
  */
 
 import { DataGenerator } from '../../../src/data-generator';

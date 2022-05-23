@@ -4,7 +4,7 @@
 /**
  * Tests synchroneous crawler
  *
- * @group unit/other/synchroneous-crawler
+ * @group unit/synchronous-crawler
  */
 
 import { Stack } from '@aws-cdk/core';

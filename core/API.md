@@ -2,50 +2,71 @@
 
 ## Constructs <a name="Constructs" id="Constructs"></a>
 
-### AthenaDefaultSetup <a name="AthenaDefaultSetup" id="aws-analytics-reference-architecture.AthenaDefaultSetup"></a>
+### AraBucket <a name="AraBucket" id="aws-analytics-reference-architecture.AraBucket"></a>
 
-AthenaDefaultSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box usage.
+An Amazon S3 Bucket following best practices for the AWS Analytics Reference Architecture.
 
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.AthenaDefaultSetup.Initializer"></a>
+The bucket name is mandatory and is used as the CDK id.
+The bucket name is postfixed with the AWS account ID and the AWS region.
 
+The bucket has the following default properties:
+  * the encryption mode is KMS managed by AWS
+  * if the encryption mode is KMS customer managed, the encryption key is a default and unique KMS key for ARA
+  * the KMS key is used as a bucket key
+  * the SSL is enforced
+  * the objects are automatically deleted when the bucket is deleted
+  * the access are logged in a default and unique S3 bucket for ARA if serverAccessLogsPrefix is provided
+  * the access are not logged if serverAccessLogsPrefix is  not provided
+  * the public access is blocked and no bucket policy or object permission can grant public access
+
+All standard S3 Bucket properties can be provided to not use the defaults.
+Usage example:
 ```typescript
-import { AthenaDefaultSetup } from 'aws-analytics-reference-architecture'
+import * as cdk from '@aws-cdk/core';
+import { AraBucket } from 'aws-analytics-reference-architecture';
 
-new AthenaDefaultSetup(scope: Construct, id: string)
+const exampleApp = new cdk.App();
+const stack = new cdk.Stack(exampleApp, 'AraBucketStack');
+
+new AraBucket(stack, {
+  bucketName: 'test-bucket',
+  serverAccessLogsPrefix: 'test-bucket',
+});
 ```
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDefaultSetup.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDefaultSetup.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.AthenaDefaultSetup.Initializer.parameter.scope"></a>
-
-- *Type:* @aws-cdk/core.Construct
-
-the Scope of the CDK Construct.
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.AthenaDefaultSetup.Initializer.parameter.id"></a>
-
-- *Type:* string
-
-the ID of the CDK Construct.
-
----
 
 #### Methods <a name="Methods" id="Methods"></a>
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDefaultSetup.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.applyRemovalPolicy">applyRemovalPolicy</a></code> | Apply the given removal policy to this resource. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.addEventNotification">addEventNotification</a></code> | Adds a bucket notification event destination. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.addObjectCreatedNotification">addObjectCreatedNotification</a></code> | Subscribes a destination to receive notifications when an object is created in the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.addObjectRemovedNotification">addObjectRemovedNotification</a></code> | Subscribes a destination to receive notifications when an object is removed from the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.addToResourcePolicy">addToResourcePolicy</a></code> | Adds a statement to the resource policy for a principal (i.e. account/role/service) to perform actions on this bucket and/or its contents. Use `bucketArn` and `arnForObjects(keys)` to obtain ARNs for this bucket or objects. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.arnForObjects">arnForObjects</a></code> | Returns an ARN that represents all objects within the bucket that match the key pattern specified. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.grantDelete">grantDelete</a></code> | Grants s3:DeleteObject* permission to an IAM principal for objects in this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.grantPublicAccess">grantPublicAccess</a></code> | Allows unrestricted access to objects from this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.grantPut">grantPut</a></code> | Grants s3:PutObject* and s3:Abort* permissions for this bucket to an IAM principal. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.grantPutAcl">grantPutAcl</a></code> | Grant the given IAM identity permissions to modify the ACLs of objects in the given Bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.grantRead">grantRead</a></code> | Grant read permissions for this bucket and it's contents to an IAM principal (Role/Group/User). |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.grantReadWrite">grantReadWrite</a></code> | Grants read/write permissions for this bucket and it's contents to an IAM principal (Role/Group/User). |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.grantWrite">grantWrite</a></code> | Grant write permissions to this bucket to an IAM principal. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.onCloudTrailEvent">onCloudTrailEvent</a></code> | Define a CloudWatch event that triggers when something happens to this repository. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.onCloudTrailPutObject">onCloudTrailPutObject</a></code> | Defines an AWS CloudWatch event that triggers when an object is uploaded to the specified paths (keys) in this bucket using the PutObject API call. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.onCloudTrailWriteObject">onCloudTrailWriteObject</a></code> | Defines an AWS CloudWatch event that triggers when an object at the specified paths (keys) in this bucket are written to. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.s3UrlForObject">s3UrlForObject</a></code> | The S3 URL of an S3 object. For example:. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.transferAccelerationUrlForObject">transferAccelerationUrlForObject</a></code> | The https Transfer Acceleration URL of an S3 object. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.urlForObject">urlForObject</a></code> | The https URL of an S3 object. Specify `regional: false` at the options for non-regional URLs. For example:. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.virtualHostedUrlForObject">virtualHostedUrlForObject</a></code> | The virtual hosted-style URL of an S3 object. Specify `regional: false` at the options for non-regional URL. For example:. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.addCorsRule">addCorsRule</a></code> | Adds a cross-origin access configuration for objects in an Amazon S3 bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.addInventory">addInventory</a></code> | Add an inventory configuration. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.addLifecycleRule">addLifecycleRule</a></code> | Add a lifecycle rule to the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.addMetric">addMetric</a></code> | Adds a metrics configuration for the CloudWatch request metrics from the bucket. |
 
 ---
 
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.AthenaDefaultSetup.toString"></a>
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.AraBucket.toString"></a>
 
 ```typescript
 public toString(): string
@@ -53,27 +74,820 @@ public toString(): string
 
 Returns a string representation of this construct.
 
+##### `applyRemovalPolicy` <a name="applyRemovalPolicy" id="aws-analytics-reference-architecture.AraBucket.applyRemovalPolicy"></a>
+
+```typescript
+public applyRemovalPolicy(policy: RemovalPolicy): void
+```
+
+Apply the given removal policy to this resource.
+
+The Removal Policy controls what happens to this resource when it stops
+being managed by CloudFormation, either because you've removed it from the
+CDK application or because you've made a change that requires the resource
+to be replaced.
+
+The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
+account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
+
+###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.AraBucket.applyRemovalPolicy.parameter.policy"></a>
+
+- *Type:* @aws-cdk/core.RemovalPolicy
+
+---
+
+##### `addEventNotification` <a name="addEventNotification" id="aws-analytics-reference-architecture.AraBucket.addEventNotification"></a>
+
+```typescript
+public addEventNotification(event: EventType, dest: IBucketNotificationDestination, filters: NotificationKeyFilter): void
+```
+
+Adds a bucket notification event destination.
+
+> [https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html](https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
+
+*Example*
+
+```typescript
+   declare const myLambda: lambda.Function;
+   const bucket = new s3.Bucket(this, 'MyBucket');
+   bucket.addEventNotification(s3.EventType.OBJECT_CREATED, new s3n.LambdaDestination(myLambda), {prefix: 'home/myusername/*'});
+```
+
+
+###### `event`<sup>Required</sup> <a name="event" id="aws-analytics-reference-architecture.AraBucket.addEventNotification.parameter.event"></a>
+
+- *Type:* @aws-cdk/aws-s3.EventType
+
+The event to trigger the notification.
+
+---
+
+###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.AraBucket.addEventNotification.parameter.dest"></a>
+
+- *Type:* @aws-cdk/aws-s3.IBucketNotificationDestination
+
+The notification destination (Lambda, SNS Topic or SQS Queue).
+
+---
+
+###### `filters`<sup>Required</sup> <a name="filters" id="aws-analytics-reference-architecture.AraBucket.addEventNotification.parameter.filters"></a>
+
+- *Type:* @aws-cdk/aws-s3.NotificationKeyFilter
+
+S3 object key filter rules to determine which objects trigger this event.
+
+Each filter must include a `prefix` and/or `suffix`
+that will be matched against the s3 object key. Refer to the S3 Developer Guide
+for details about allowed filter rules.
+
+---
+
+##### `addObjectCreatedNotification` <a name="addObjectCreatedNotification" id="aws-analytics-reference-architecture.AraBucket.addObjectCreatedNotification"></a>
+
+```typescript
+public addObjectCreatedNotification(dest: IBucketNotificationDestination, filters: NotificationKeyFilter): void
+```
+
+Subscribes a destination to receive notifications when an object is created in the bucket.
+
+This is identical to calling
+`onEvent(EventType.OBJECT_CREATED)`.
+
+###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.AraBucket.addObjectCreatedNotification.parameter.dest"></a>
+
+- *Type:* @aws-cdk/aws-s3.IBucketNotificationDestination
+
+The notification destination (see onEvent).
+
+---
+
+###### `filters`<sup>Required</sup> <a name="filters" id="aws-analytics-reference-architecture.AraBucket.addObjectCreatedNotification.parameter.filters"></a>
+
+- *Type:* @aws-cdk/aws-s3.NotificationKeyFilter
+
+Filters (see onEvent).
+
+---
+
+##### `addObjectRemovedNotification` <a name="addObjectRemovedNotification" id="aws-analytics-reference-architecture.AraBucket.addObjectRemovedNotification"></a>
+
+```typescript
+public addObjectRemovedNotification(dest: IBucketNotificationDestination, filters: NotificationKeyFilter): void
+```
+
+Subscribes a destination to receive notifications when an object is removed from the bucket.
+
+This is identical to calling
+`onEvent(EventType.OBJECT_REMOVED)`.
+
+###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.AraBucket.addObjectRemovedNotification.parameter.dest"></a>
+
+- *Type:* @aws-cdk/aws-s3.IBucketNotificationDestination
+
+The notification destination (see onEvent).
+
+---
+
+###### `filters`<sup>Required</sup> <a name="filters" id="aws-analytics-reference-architecture.AraBucket.addObjectRemovedNotification.parameter.filters"></a>
+
+- *Type:* @aws-cdk/aws-s3.NotificationKeyFilter
+
+Filters (see onEvent).
+
+---
+
+##### `addToResourcePolicy` <a name="addToResourcePolicy" id="aws-analytics-reference-architecture.AraBucket.addToResourcePolicy"></a>
+
+```typescript
+public addToResourcePolicy(permission: PolicyStatement): AddToResourcePolicyResult
+```
+
+Adds a statement to the resource policy for a principal (i.e. account/role/service) to perform actions on this bucket and/or its contents. Use `bucketArn` and `arnForObjects(keys)` to obtain ARNs for this bucket or objects.
+
+Note that the policy statement may or may not be added to the policy.
+For example, when an `IBucket` is created from an existing bucket,
+it's not possible to tell whether the bucket already has a policy
+attached, let alone to re-use that policy to add more statements to it.
+So it's safest to do nothing in these cases.
+
+###### `permission`<sup>Required</sup> <a name="permission" id="aws-analytics-reference-architecture.AraBucket.addToResourcePolicy.parameter.permission"></a>
+
+- *Type:* @aws-cdk/aws-iam.PolicyStatement
+
+the policy statement to be added to the bucket's policy.
+
+---
+
+##### `arnForObjects` <a name="arnForObjects" id="aws-analytics-reference-architecture.AraBucket.arnForObjects"></a>
+
+```typescript
+public arnForObjects(keyPattern: string): string
+```
+
+Returns an ARN that represents all objects within the bucket that match the key pattern specified.
+
+To represent all keys, specify ``"*"``.
+
+If you need to specify a keyPattern with multiple components, concatenate them into a single string, e.g.:
+
+   arnForObjects(`home/${team}/${user}/*`)
+
+###### `keyPattern`<sup>Required</sup> <a name="keyPattern" id="aws-analytics-reference-architecture.AraBucket.arnForObjects.parameter.keyPattern"></a>
+
+- *Type:* string
+
+---
+
+##### `grantDelete` <a name="grantDelete" id="aws-analytics-reference-architecture.AraBucket.grantDelete"></a>
+
+```typescript
+public grantDelete(identity: IGrantable, objectsKeyPattern?: any): Grant
+```
+
+Grants s3:DeleteObject* permission to an IAM principal for objects in this bucket.
+
+###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantDelete.parameter.identity"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+The principal.
+
+---
+
+###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.AraBucket.grantDelete.parameter.objectsKeyPattern"></a>
+
+- *Type:* any
+
+Restrict the permission to a certain key pattern (default '*').
+
+---
+
+##### `grantPublicAccess` <a name="grantPublicAccess" id="aws-analytics-reference-architecture.AraBucket.grantPublicAccess"></a>
+
+```typescript
+public grantPublicAccess(allowedActions: string, keyPrefix?: string): Grant
+```
+
+Allows unrestricted access to objects from this bucket.
+
+IMPORTANT: This permission allows anyone to perform actions on S3 objects
+in this bucket, which is useful for when you configure your bucket as a
+website and want everyone to be able to read objects in the bucket without
+needing to authenticate.
+
+Without arguments, this method will grant read ("s3:GetObject") access to
+all objects ("*") in the bucket.
+
+The method returns the `iam.Grant` object, which can then be modified
+as needed. For example, you can add a condition that will restrict access only
+to an IPv4 range like this:
+
+     const grant = bucket.grantPublicAccess();
+     grant.resourceStatement!.addCondition(‘IpAddress’, { “aws:SourceIp”: “54.240.143.0/24” });
+
+Note that if this `IBucket` refers to an existing bucket, possibly not
+managed by CloudFormation, this method will have no effect, since it's
+impossible to modify the policy of an existing bucket.
+
+###### `allowedActions`<sup>Required</sup> <a name="allowedActions" id="aws-analytics-reference-architecture.AraBucket.grantPublicAccess.parameter.allowedActions"></a>
+
+- *Type:* string
+
+the set of S3 actions to allow.
+
+Default is "s3:GetObject".
+
+---
+
+###### `keyPrefix`<sup>Optional</sup> <a name="keyPrefix" id="aws-analytics-reference-architecture.AraBucket.grantPublicAccess.parameter.keyPrefix"></a>
+
+- *Type:* string
+
+the prefix of S3 object keys (e.g. `home/*`). Default is "*".
+
+---
+
+##### `grantPut` <a name="grantPut" id="aws-analytics-reference-architecture.AraBucket.grantPut"></a>
+
+```typescript
+public grantPut(identity: IGrantable, objectsKeyPattern?: any): Grant
+```
+
+Grants s3:PutObject* and s3:Abort* permissions for this bucket to an IAM principal.
+
+If encryption is used, permission to use the key to encrypt the contents
+of written files will also be granted to the same principal.
+
+###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantPut.parameter.identity"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+The principal.
+
+---
+
+###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.AraBucket.grantPut.parameter.objectsKeyPattern"></a>
+
+- *Type:* any
+
+Restrict the permission to a certain key pattern (default '*').
+
+---
+
+##### `grantPutAcl` <a name="grantPutAcl" id="aws-analytics-reference-architecture.AraBucket.grantPutAcl"></a>
+
+```typescript
+public grantPutAcl(identity: IGrantable, objectsKeyPattern?: string): Grant
+```
+
+Grant the given IAM identity permissions to modify the ACLs of objects in the given Bucket.
+
+If your application has the '@aws-cdk/aws-s3:grantWriteWithoutAcl' feature flag set,
+calling {@link grantWrite} or {@link grantReadWrite} no longer grants permissions to modify the ACLs of the objects;
+in this case, if you need to modify object ACLs, call this method explicitly.
+
+###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantPutAcl.parameter.identity"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.AraBucket.grantPutAcl.parameter.objectsKeyPattern"></a>
+
+- *Type:* string
+
+---
+
+##### `grantRead` <a name="grantRead" id="aws-analytics-reference-architecture.AraBucket.grantRead"></a>
+
+```typescript
+public grantRead(identity: IGrantable, objectsKeyPattern?: any): Grant
+```
+
+Grant read permissions for this bucket and it's contents to an IAM principal (Role/Group/User).
+
+If encryption is used, permission to use the key to decrypt the contents
+of the bucket will also be granted to the same principal.
+
+###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantRead.parameter.identity"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+The principal.
+
+---
+
+###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.AraBucket.grantRead.parameter.objectsKeyPattern"></a>
+
+- *Type:* any
+
+Restrict the permission to a certain key pattern (default '*').
+
+---
+
+##### `grantReadWrite` <a name="grantReadWrite" id="aws-analytics-reference-architecture.AraBucket.grantReadWrite"></a>
+
+```typescript
+public grantReadWrite(identity: IGrantable, objectsKeyPattern?: any): Grant
+```
+
+Grants read/write permissions for this bucket and it's contents to an IAM principal (Role/Group/User).
+
+If an encryption key is used, permission to use the key for
+encrypt/decrypt will also be granted.
+
+Before CDK version 1.85.0, this method granted the `s3:PutObject*` permission that included `s3:PutObjectAcl`,
+which could be used to grant read/write object access to IAM principals in other accounts.
+If you want to get rid of that behavior, update your CDK version to 1.85.0 or later,
+and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true`
+in the `context` key of your cdk.json file.
+If you've already updated, but still need the principal to have permissions to modify the ACLs,
+use the {@link grantPutAcl} method.
+
+###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantReadWrite.parameter.identity"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.AraBucket.grantReadWrite.parameter.objectsKeyPattern"></a>
+
+- *Type:* any
+
+---
+
+##### `grantWrite` <a name="grantWrite" id="aws-analytics-reference-architecture.AraBucket.grantWrite"></a>
+
+```typescript
+public grantWrite(identity: IGrantable, objectsKeyPattern?: any): Grant
+```
+
+Grant write permissions to this bucket to an IAM principal.
+
+If encryption is used, permission to use the key to encrypt the contents
+of written files will also be granted to the same principal.
+
+Before CDK version 1.85.0, this method granted the `s3:PutObject*` permission that included `s3:PutObjectAcl`,
+which could be used to grant read/write object access to IAM principals in other accounts.
+If you want to get rid of that behavior, update your CDK version to 1.85.0 or later,
+and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true`
+in the `context` key of your cdk.json file.
+If you've already updated, but still need the principal to have permissions to modify the ACLs,
+use the {@link grantPutAcl} method.
+
+###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantWrite.parameter.identity"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.AraBucket.grantWrite.parameter.objectsKeyPattern"></a>
+
+- *Type:* any
+
+---
+
+##### `onCloudTrailEvent` <a name="onCloudTrailEvent" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailEvent"></a>
+
+```typescript
+public onCloudTrailEvent(id: string, options?: OnCloudTrailBucketEventOptions): Rule
+```
+
+Define a CloudWatch event that triggers when something happens to this repository.
+
+Requires that there exists at least one CloudTrail Trail in your account
+that captures the event. This method will not create the Trail.
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailEvent.parameter.id"></a>
+
+- *Type:* string
+
+The id of the rule.
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailEvent.parameter.options"></a>
+
+- *Type:* @aws-cdk/aws-s3.OnCloudTrailBucketEventOptions
+
+Options for adding the rule.
+
+---
+
+##### `onCloudTrailPutObject` <a name="onCloudTrailPutObject" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailPutObject"></a>
+
+```typescript
+public onCloudTrailPutObject(id: string, options?: OnCloudTrailBucketEventOptions): Rule
+```
+
+Defines an AWS CloudWatch event that triggers when an object is uploaded to the specified paths (keys) in this bucket using the PutObject API call.
+
+Note that some tools like `aws s3 cp` will automatically use either
+PutObject or the multipart upload API depending on the file size,
+so using `onCloudTrailWriteObject` may be preferable.
+
+Requires that there exists at least one CloudTrail Trail in your account
+that captures the event. This method will not create the Trail.
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailPutObject.parameter.id"></a>
+
+- *Type:* string
+
+The id of the rule.
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailPutObject.parameter.options"></a>
+
+- *Type:* @aws-cdk/aws-s3.OnCloudTrailBucketEventOptions
+
+Options for adding the rule.
+
+---
+
+##### `onCloudTrailWriteObject` <a name="onCloudTrailWriteObject" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailWriteObject"></a>
+
+```typescript
+public onCloudTrailWriteObject(id: string, options?: OnCloudTrailBucketEventOptions): Rule
+```
+
+Defines an AWS CloudWatch event that triggers when an object at the specified paths (keys) in this bucket are written to.
+
+This includes
+the events PutObject, CopyObject, and CompleteMultipartUpload.
+
+Note that some tools like `aws s3 cp` will automatically use either
+PutObject or the multipart upload API depending on the file size,
+so using this method may be preferable to `onCloudTrailPutObject`.
+
+Requires that there exists at least one CloudTrail Trail in your account
+that captures the event. This method will not create the Trail.
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailWriteObject.parameter.id"></a>
+
+- *Type:* string
+
+The id of the rule.
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailWriteObject.parameter.options"></a>
+
+- *Type:* @aws-cdk/aws-s3.OnCloudTrailBucketEventOptions
+
+Options for adding the rule.
+
+---
+
+##### `s3UrlForObject` <a name="s3UrlForObject" id="aws-analytics-reference-architecture.AraBucket.s3UrlForObject"></a>
+
+```typescript
+public s3UrlForObject(key?: string): string
+```
+
+The S3 URL of an S3 object. For example:.
+
+`s3://onlybucket`
+- `s3://bucket/key`
+
+###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.AraBucket.s3UrlForObject.parameter.key"></a>
+
+- *Type:* string
+
+The S3 key of the object.
+
+If not specified, the S3 URL of the
+bucket is returned.
+
+---
+
+##### `transferAccelerationUrlForObject` <a name="transferAccelerationUrlForObject" id="aws-analytics-reference-architecture.AraBucket.transferAccelerationUrlForObject"></a>
+
+```typescript
+public transferAccelerationUrlForObject(key?: string, options?: TransferAccelerationUrlOptions): string
+```
+
+The https Transfer Acceleration URL of an S3 object.
+
+Specify `dualStack: true` at the options
+for dual-stack endpoint (connect to the bucket over IPv6). For example:
+
+- `https://bucket.s3-accelerate.amazonaws.com`
+- `https://bucket.s3-accelerate.amazonaws.com/key`
+
+###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.AraBucket.transferAccelerationUrlForObject.parameter.key"></a>
+
+- *Type:* string
+
+The S3 key of the object.
+
+If not specified, the URL of the
+bucket is returned.
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.transferAccelerationUrlForObject.parameter.options"></a>
+
+- *Type:* @aws-cdk/aws-s3.TransferAccelerationUrlOptions
+
+Options for generating URL.
+
+---
+
+##### `urlForObject` <a name="urlForObject" id="aws-analytics-reference-architecture.AraBucket.urlForObject"></a>
+
+```typescript
+public urlForObject(key?: string): string
+```
+
+The https URL of an S3 object. Specify `regional: false` at the options for non-regional URLs. For example:.
+
+`https://s3.us-west-1.amazonaws.com/onlybucket`
+- `https://s3.us-west-1.amazonaws.com/bucket/key`
+- `https://s3.cn-north-1.amazonaws.com.cn/china-bucket/mykey`
+
+###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.AraBucket.urlForObject.parameter.key"></a>
+
+- *Type:* string
+
+The S3 key of the object.
+
+If not specified, the URL of the
+bucket is returned.
+
+---
+
+##### `virtualHostedUrlForObject` <a name="virtualHostedUrlForObject" id="aws-analytics-reference-architecture.AraBucket.virtualHostedUrlForObject"></a>
+
+```typescript
+public virtualHostedUrlForObject(key?: string, options?: VirtualHostedStyleUrlOptions): string
+```
+
+The virtual hosted-style URL of an S3 object. Specify `regional: false` at the options for non-regional URL. For example:.
+
+`https://only-bucket.s3.us-west-1.amazonaws.com`
+- `https://bucket.s3.us-west-1.amazonaws.com/key`
+- `https://bucket.s3.amazonaws.com/key`
+- `https://china-bucket.s3.cn-north-1.amazonaws.com.cn/mykey`
+
+###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.AraBucket.virtualHostedUrlForObject.parameter.key"></a>
+
+- *Type:* string
+
+The S3 key of the object.
+
+If not specified, the URL of the
+bucket is returned.
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.virtualHostedUrlForObject.parameter.options"></a>
+
+- *Type:* @aws-cdk/aws-s3.VirtualHostedStyleUrlOptions
+
+Options for generating URL.
+
+---
+
+##### `addCorsRule` <a name="addCorsRule" id="aws-analytics-reference-architecture.AraBucket.addCorsRule"></a>
+
+```typescript
+public addCorsRule(rule: CorsRule): void
+```
+
+Adds a cross-origin access configuration for objects in an Amazon S3 bucket.
+
+###### `rule`<sup>Required</sup> <a name="rule" id="aws-analytics-reference-architecture.AraBucket.addCorsRule.parameter.rule"></a>
+
+- *Type:* @aws-cdk/aws-s3.CorsRule
+
+The CORS configuration rule to add.
+
+---
+
+##### `addInventory` <a name="addInventory" id="aws-analytics-reference-architecture.AraBucket.addInventory"></a>
+
+```typescript
+public addInventory(inventory: Inventory): void
+```
+
+Add an inventory configuration.
+
+###### `inventory`<sup>Required</sup> <a name="inventory" id="aws-analytics-reference-architecture.AraBucket.addInventory.parameter.inventory"></a>
+
+- *Type:* @aws-cdk/aws-s3.Inventory
+
+configuration to add.
+
+---
+
+##### `addLifecycleRule` <a name="addLifecycleRule" id="aws-analytics-reference-architecture.AraBucket.addLifecycleRule"></a>
+
+```typescript
+public addLifecycleRule(rule: LifecycleRule): void
+```
+
+Add a lifecycle rule to the bucket.
+
+###### `rule`<sup>Required</sup> <a name="rule" id="aws-analytics-reference-architecture.AraBucket.addLifecycleRule.parameter.rule"></a>
+
+- *Type:* @aws-cdk/aws-s3.LifecycleRule
+
+The rule to add.
+
+---
+
+##### `addMetric` <a name="addMetric" id="aws-analytics-reference-architecture.AraBucket.addMetric"></a>
+
+```typescript
+public addMetric(metric: BucketMetrics): void
+```
+
+Adds a metrics configuration for the CloudWatch request metrics from the bucket.
+
+###### `metric`<sup>Required</sup> <a name="metric" id="aws-analytics-reference-architecture.AraBucket.addMetric.parameter.metric"></a>
+
+- *Type:* @aws-cdk/aws-s3.BucketMetrics
+
+The metric configuration to add.
+
+---
+
 #### Static Functions <a name="Static Functions" id="Static Functions"></a>
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDefaultSetup.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketArn">fromBucketArn</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketAttributes">fromBucketAttributes</a></code> | Creates a Bucket construct that represents an external bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketName">fromBucketName</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.validateBucketName">validateBucketName</a></code> | Thrown an exception if the given bucket name is not valid. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.getOrCreate">getOrCreate</a></code> | Get the Amazon S3 Bucket from the AWS CDK Stack based on the provided name. |
 
 ---
 
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.AthenaDefaultSetup.isConstruct"></a>
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.AraBucket.isConstruct"></a>
 
 ```typescript
-import { AthenaDefaultSetup } from 'aws-analytics-reference-architecture'
+import { AraBucket } from 'aws-analytics-reference-architecture'
 
-AthenaDefaultSetup.isConstruct(x: any)
+AraBucket.isConstruct(x: any)
 ```
 
 Return whether the given object is a Construct.
 
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.AthenaDefaultSetup.isConstruct.parameter.x"></a>
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.AraBucket.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+---
+
+##### `isResource` <a name="isResource" id="aws-analytics-reference-architecture.AraBucket.isResource"></a>
+
+```typescript
+import { AraBucket } from 'aws-analytics-reference-architecture'
+
+AraBucket.isResource(construct: IConstruct)
+```
+
+Check whether the given construct is a Resource.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.AraBucket.isResource.parameter.construct"></a>
+
+- *Type:* @aws-cdk/core.IConstruct
+
+---
+
+##### `fromBucketArn` <a name="fromBucketArn" id="aws-analytics-reference-architecture.AraBucket.fromBucketArn"></a>
+
+```typescript
+import { AraBucket } from 'aws-analytics-reference-architecture'
+
+AraBucket.fromBucketArn(scope: Construct, id: string, bucketArn: string)
+```
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.AraBucket.fromBucketArn.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.AraBucket.fromBucketArn.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+###### `bucketArn`<sup>Required</sup> <a name="bucketArn" id="aws-analytics-reference-architecture.AraBucket.fromBucketArn.parameter.bucketArn"></a>
+
+- *Type:* string
+
+---
+
+##### `fromBucketAttributes` <a name="fromBucketAttributes" id="aws-analytics-reference-architecture.AraBucket.fromBucketAttributes"></a>
+
+```typescript
+import { AraBucket } from 'aws-analytics-reference-architecture'
+
+AraBucket.fromBucketAttributes(scope: Construct, id: string, attrs: BucketAttributes)
+```
+
+Creates a Bucket construct that represents an external bucket.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.AraBucket.fromBucketAttributes.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+The parent creating construct (usually `this`).
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.AraBucket.fromBucketAttributes.parameter.id"></a>
+
+- *Type:* string
+
+The construct's name.
+
+---
+
+###### `attrs`<sup>Required</sup> <a name="attrs" id="aws-analytics-reference-architecture.AraBucket.fromBucketAttributes.parameter.attrs"></a>
+
+- *Type:* @aws-cdk/aws-s3.BucketAttributes
+
+A `BucketAttributes` object.
+
+Can be obtained from a call to
+`bucket.export()` or manually created.
+
+---
+
+##### `fromBucketName` <a name="fromBucketName" id="aws-analytics-reference-architecture.AraBucket.fromBucketName"></a>
+
+```typescript
+import { AraBucket } from 'aws-analytics-reference-architecture'
+
+AraBucket.fromBucketName(scope: Construct, id: string, bucketName: string)
+```
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.AraBucket.fromBucketName.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.AraBucket.fromBucketName.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+###### `bucketName`<sup>Required</sup> <a name="bucketName" id="aws-analytics-reference-architecture.AraBucket.fromBucketName.parameter.bucketName"></a>
+
+- *Type:* string
+
+---
+
+##### `validateBucketName` <a name="validateBucketName" id="aws-analytics-reference-architecture.AraBucket.validateBucketName"></a>
+
+```typescript
+import { AraBucket } from 'aws-analytics-reference-architecture'
+
+AraBucket.validateBucketName(physicalName: string)
+```
+
+Thrown an exception if the given bucket name is not valid.
+
+###### `physicalName`<sup>Required</sup> <a name="physicalName" id="aws-analytics-reference-architecture.AraBucket.validateBucketName.parameter.physicalName"></a>
+
+- *Type:* string
+
+name of the bucket.
+
+---
+
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.AraBucket.getOrCreate"></a>
+
+```typescript
+import { AraBucket } from 'aws-analytics-reference-architecture'
+
+AraBucket.getOrCreate(scope: Construct, props: AraBucketProps)
+```
+
+Get the Amazon S3 Bucket from the AWS CDK Stack based on the provided name.
+
+If no bucket exists, it creates a new one based on the provided properties.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.AraBucket.getOrCreate.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+---
+
+###### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.AraBucket.getOrCreate.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.AraBucketProps">AraBucketProps</a>
 
 ---
 
@@ -81,12 +895,23 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDefaultSetup.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDefaultSetup.property.resultBucket">resultBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketArn">bucketArn</a></code> | <code>string</code> | The ARN of the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketDomainName">bucketDomainName</a></code> | <code>string</code> | The IPv4 DNS name of the specified bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketDualStackDomainName">bucketDualStackDomainName</a></code> | <code>string</code> | The IPv6 DNS name of the specified bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketName">bucketName</a></code> | <code>string</code> | The name of the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketRegionalDomainName">bucketRegionalDomainName</a></code> | <code>string</code> | The regional domain name of the specified bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketWebsiteDomainName">bucketWebsiteDomainName</a></code> | <code>string</code> | The Domain name of the static website. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketWebsiteUrl">bucketWebsiteUrl</a></code> | <code>string</code> | The URL of the static website. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.encryptionKey">encryptionKey</a></code> | <code>@aws-cdk/aws-kms.IKey</code> | Optional KMS encryption key associated with this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.isWebsite">isWebsite</a></code> | <code>boolean</code> | If this bucket has been configured for static website hosting. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.policy">policy</a></code> | <code>@aws-cdk/aws-s3.BucketPolicy</code> | The resource policy associated with this bucket. |
 
 ---
 
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.AthenaDefaultSetup.property.node"></a>
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.AraBucket.property.node"></a>
 
 ```typescript
 public readonly node: ConstructNode;
@@ -98,7 +923,269 @@ The construct tree node associated with this construct.
 
 ---
 
-##### `resultBucket`<sup>Required</sup> <a name="resultBucket" id="aws-analytics-reference-architecture.AthenaDefaultSetup.property.resultBucket"></a>
+##### `env`<sup>Required</sup> <a name="env" id="aws-analytics-reference-architecture.AraBucket.property.env"></a>
+
+```typescript
+public readonly env: ResourceEnvironment;
+```
+
+- *Type:* @aws-cdk/core.ResourceEnvironment
+
+The environment this resource belongs to.
+
+For resources that are created and managed by the CDK
+(generally, those created by creating new class instances like Role, Bucket, etc.),
+this is always the same as the environment of the stack they belong to;
+however, for imported resources
+(those obtained from static methods like fromRoleArn, fromBucketName, etc.),
+that might be different than the stack they were imported into.
+
+---
+
+##### `stack`<sup>Required</sup> <a name="stack" id="aws-analytics-reference-architecture.AraBucket.property.stack"></a>
+
+```typescript
+public readonly stack: Stack;
+```
+
+- *Type:* @aws-cdk/core.Stack
+
+The stack in which this resource is defined.
+
+---
+
+##### `bucketArn`<sup>Required</sup> <a name="bucketArn" id="aws-analytics-reference-architecture.AraBucket.property.bucketArn"></a>
+
+```typescript
+public readonly bucketArn: string;
+```
+
+- *Type:* string
+
+The ARN of the bucket.
+
+---
+
+##### `bucketDomainName`<sup>Required</sup> <a name="bucketDomainName" id="aws-analytics-reference-architecture.AraBucket.property.bucketDomainName"></a>
+
+```typescript
+public readonly bucketDomainName: string;
+```
+
+- *Type:* string
+
+The IPv4 DNS name of the specified bucket.
+
+---
+
+##### `bucketDualStackDomainName`<sup>Required</sup> <a name="bucketDualStackDomainName" id="aws-analytics-reference-architecture.AraBucket.property.bucketDualStackDomainName"></a>
+
+```typescript
+public readonly bucketDualStackDomainName: string;
+```
+
+- *Type:* string
+
+The IPv6 DNS name of the specified bucket.
+
+---
+
+##### `bucketName`<sup>Required</sup> <a name="bucketName" id="aws-analytics-reference-architecture.AraBucket.property.bucketName"></a>
+
+```typescript
+public readonly bucketName: string;
+```
+
+- *Type:* string
+
+The name of the bucket.
+
+---
+
+##### `bucketRegionalDomainName`<sup>Required</sup> <a name="bucketRegionalDomainName" id="aws-analytics-reference-architecture.AraBucket.property.bucketRegionalDomainName"></a>
+
+```typescript
+public readonly bucketRegionalDomainName: string;
+```
+
+- *Type:* string
+
+The regional domain name of the specified bucket.
+
+---
+
+##### `bucketWebsiteDomainName`<sup>Required</sup> <a name="bucketWebsiteDomainName" id="aws-analytics-reference-architecture.AraBucket.property.bucketWebsiteDomainName"></a>
+
+```typescript
+public readonly bucketWebsiteDomainName: string;
+```
+
+- *Type:* string
+
+The Domain name of the static website.
+
+---
+
+##### `bucketWebsiteUrl`<sup>Required</sup> <a name="bucketWebsiteUrl" id="aws-analytics-reference-architecture.AraBucket.property.bucketWebsiteUrl"></a>
+
+```typescript
+public readonly bucketWebsiteUrl: string;
+```
+
+- *Type:* string
+
+The URL of the static website.
+
+---
+
+##### `encryptionKey`<sup>Optional</sup> <a name="encryptionKey" id="aws-analytics-reference-architecture.AraBucket.property.encryptionKey"></a>
+
+```typescript
+public readonly encryptionKey: IKey;
+```
+
+- *Type:* @aws-cdk/aws-kms.IKey
+
+Optional KMS encryption key associated with this bucket.
+
+---
+
+##### `isWebsite`<sup>Optional</sup> <a name="isWebsite" id="aws-analytics-reference-architecture.AraBucket.property.isWebsite"></a>
+
+```typescript
+public readonly isWebsite: boolean;
+```
+
+- *Type:* boolean
+
+If this bucket has been configured for static website hosting.
+
+---
+
+##### `policy`<sup>Optional</sup> <a name="policy" id="aws-analytics-reference-architecture.AraBucket.property.policy"></a>
+
+```typescript
+public readonly policy: BucketPolicy;
+```
+
+- *Type:* @aws-cdk/aws-s3.BucketPolicy
+
+The resource policy associated with this bucket.
+
+If `autoCreatePolicy` is true, a `BucketPolicy` will be created upon the
+first call to addToResourcePolicy(s).
+
+---
+
+
+### AthenaDemoSetup <a name="AthenaDemoSetup" id="aws-analytics-reference-architecture.AthenaDemoSetup"></a>
+
+AthenaDemoSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box demo.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.AthenaDemoSetup.Initializer"></a>
+
+```typescript
+import { AthenaDemoSetup } from 'aws-analytics-reference-architecture'
+
+new AthenaDemoSetup(scope: Construct, id: string)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.AthenaDemoSetup.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.AthenaDemoSetup.isConstruct"></a>
+
+```typescript
+import { AthenaDemoSetup } from 'aws-analytics-reference-architecture'
+
+AthenaDemoSetup.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.AthenaDemoSetup.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.athenaWorkgroup">athenaWorkgroup</a></code> | <code>@aws-cdk/aws-athena.CfnWorkGroup</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.resultBucket">resultBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.AthenaDemoSetup.property.node"></a>
+
+```typescript
+public readonly node: ConstructNode;
+```
+
+- *Type:* @aws-cdk/core.ConstructNode
+
+The construct tree node associated with this construct.
+
+---
+
+##### `athenaWorkgroup`<sup>Required</sup> <a name="athenaWorkgroup" id="aws-analytics-reference-architecture.AthenaDemoSetup.property.athenaWorkgroup"></a>
+
+```typescript
+public readonly athenaWorkgroup: CfnWorkGroup;
+```
+
+- *Type:* @aws-cdk/aws-athena.CfnWorkGroup
+
+---
+
+##### `resultBucket`<sup>Required</sup> <a name="resultBucket" id="aws-analytics-reference-architecture.AthenaDemoSetup.property.resultBucket"></a>
 
 ```typescript
 public readonly resultBucket: Bucket;
@@ -123,6 +1210,22 @@ Read the manifest file and output a list of S3 file paths within that batch time
 Take a file path, filter only records within given time range, adjust the the time with offset to
 make it looks like just being generated. Then write the output to the `sinkBucket`
 
+Usage example:
+```typescript
+
+const myBucket = new Bucket(stack, "MyBucket")
+
+new BatchReplayer(stack, "WebSalesReplayer", {
+   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
+   s3BucketSink: myBucket
+   s3ObjectKeySink: 'some-prefix',
+   frequency: 120,
+   outputFileMaxSizeInBytes: 10000000,
+});
+```
+
+:warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
+
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.BatchReplayer.Initializer"></a>
 
 ```typescript
@@ -133,9 +1236,9 @@ new BatchReplayer(scope: Construct, id: string, props: BatchReplayerProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps">BatchReplayerProps</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps">BatchReplayerProps</a></code> | the BatchReplayer [properties]{@link BatchReplayerProps}. |
 
 ---
 
@@ -143,17 +1246,23 @@ new BatchReplayer(scope: Construct, id: string, props: BatchReplayerProps)
 
 - *Type:* @aws-cdk/core.Construct
 
+the Scope of the CDK Construct.
+
 ---
 
 ##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.id"></a>
 
 - *Type:* string
 
+the ID of the CDK Construct.
+
 ---
 
 ##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.props"></a>
 
 - *Type:* <a href="#aws-analytics-reference-architecture.BatchReplayerProps">BatchReplayerProps</a>
+
+the BatchReplayer [properties]{@link BatchReplayerProps}.
 
 ---
 
@@ -206,6 +1315,7 @@ Return whether the given object is a Construct.
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.frequency">frequency</a></code> | <code>number</code> | Frequency (in Seconds) of the replaying. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | Sink bucket where the batch replayer will put data in. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | Maximum file size for each output file. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | Sink object key where the batch replayer will put data in. |
 
 ---
 
@@ -277,12 +1387,26 @@ Default to 100MB (max value)
 
 ---
 
+##### `sinkObjectKey`<sup>Optional</sup> <a name="sinkObjectKey" id="aws-analytics-reference-architecture.BatchReplayer.property.sinkObjectKey"></a>
+
+```typescript
+public readonly sinkObjectKey: string;
+```
+
+- *Type:* string
+
+Sink object key where the batch replayer will put data in.
+
+---
+
 
 ### DataGenerator <a name="DataGenerator" id="aws-analytics-reference-architecture.DataGenerator"></a>
 
 DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime Target can be an Amazon S3 bucket or an Amazon Kinesis Data Stream.
 
 DataGenerator can use pre-defined or custom datasets available in the [Dataset]{@link Dataset} Class
+
+This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DataGenerator.Initializer"></a>
 
@@ -332,7 +1456,7 @@ the DataGenerator [properties]{@link DataGeneratorProps}.
 
 ---
 
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.DataGenerator.toString"></a>
+##### ~~`toString`~~ <a name="toString" id="aws-analytics-reference-architecture.DataGenerator.toString"></a>
 
 ```typescript
 public toString(): string
@@ -348,7 +1472,7 @@ Returns a string representation of this construct.
 
 ---
 
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.DataGenerator.isConstruct"></a>
+##### ~~`isConstruct`~~ <a name="isConstruct" id="aws-analytics-reference-architecture.DataGenerator.isConstruct"></a>
 
 ```typescript
 import { DataGenerator } from 'aws-analytics-reference-architecture'
@@ -375,7 +1499,9 @@ Return whether the given object is a Construct.
 
 ---
 
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataGenerator.property.node"></a>
+##### ~~`node`~~<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataGenerator.property.node"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly node: ConstructNode;
@@ -387,7 +1513,9 @@ The construct tree node associated with this construct.
 
 ---
 
-##### `dataset`<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGenerator.property.dataset"></a>
+##### ~~`dataset`~~<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGenerator.property.dataset"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly dataset: Dataset;
@@ -399,7 +1527,9 @@ Dataset used to generate data.
 
 ---
 
-##### `frequency`<sup>Required</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGenerator.property.frequency"></a>
+##### ~~`frequency`~~<sup>Required</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGenerator.property.frequency"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly frequency: number;
@@ -411,7 +1541,9 @@ Frequency (in Seconds) of the data generation.
 
 ---
 
-##### `sinkArn`<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGenerator.property.sinkArn"></a>
+##### ~~`sinkArn`~~<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGenerator.property.sinkArn"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly sinkArn: string;
@@ -431,7 +1563,9 @@ Sink Arn to receive the generated data.
 
 ---
 
-##### `DATA_GENERATOR_DATABASE`<sup>Required</sup> <a name="DATA_GENERATOR_DATABASE" id="aws-analytics-reference-architecture.DataGenerator.property.DATA_GENERATOR_DATABASE"></a>
+##### ~~`DATA_GENERATOR_DATABASE`~~<sup>Required</sup> <a name="DATA_GENERATOR_DATABASE" id="aws-analytics-reference-architecture.DataGenerator.property.DATA_GENERATOR_DATABASE"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly DATA_GENERATOR_DATABASE: string;
@@ -700,11 +1834,19 @@ A CDK Construct that creates the storage layers of a data lake composed of Amazo
 This construct is based on 3 Amazon S3 buckets configured with AWS best practices:
   * S3 buckets for Raw/Cleaned/Transformed data,
   * data lifecycle optimization/transitioning to different Amazon S3 storage classes
-  * server side buckets encryption managed by KMS
+  * server side buckets encryption managed by KMS customer key
+  * Default single KMS key
+  * SSL communication enforcement
+  * access logged to an S3 bucket
+  * All public access blocked
 
 By default the transitioning rules to Amazon S3 storage classes are configured as following:
   * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days
   * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived
+
+Objects and buckets are automatically deleted when the CDK application is detroyed.
+
+For custom requirements, consider using {@link AraBucket}.
 
 Usage example:
 ```typescript
@@ -1372,14 +2514,52 @@ it's assumed to be AWS::AccountId.
 
 ### EmrEksCluster <a name="EmrEksCluster" id="aws-analytics-reference-architecture.EmrEksCluster"></a>
 
-EmrEksCluster Construct packaging all the ressources required to run Amazon EMR on Amazon EKS.
+EmrEksCluster Construct packaging all the resources and configuration required to run Amazon EMR on EKS.
+
+It deploys:
+* An EKS cluster (VPC configuration can be customized) 
+* A tooling nodegroup to run tools including the Kubedashboard and the Cluster Autoscaler
+* Optionally multiple nodegroups (one per AZ) for critical/shared/notebook EMR workloads
+* Additional nodegroups can be configured
+
+The construct will upload on S3 the Pod templates required to run EMR jobs on the default nodegroups. 
+It will also parse and store the configuration of EMR on EKS jobs for each default nodegroup in object parameters
+
+Methods are available to add EMR Virtual Clusters to the EKS cluster and to create execution roles for the virtual clusters.
+
+Usage example:
+
+```typescript
+const emrEks: EmrEksCluster = EmrEksCluster.getOrCreate(stack, {
+   eksAdminRoleArn: <ROLE_ARN>,
+   eksClusterName: <CLUSTER_NAME>,
+});
+
+const virtualCluster = emrEks.addEmrVirtualCluster(stack, {
+   name: <Virtual_Cluster_Name>,
+   createNamespace: <TRUE OR FALSE>,
+   eksNamespace: <K8S_namespace>,
+});
+
+const role = emrEks.createExecutionRole(stack, 'ExecRole',{
+   policy: <POLICY>,
+})
+
+// EMR on EKS virtual cluster ID
+cdk.CfnOutput(self, 'VirtualClusterId',value = virtualCluster.attr_id)
+// Job config for each nodegroup
+cdk.CfnOutput(self, "CriticalConfig", value = emrEks.criticalDefaultConfig)
+cdk.CfnOutput(self, "SharedConfig", value = emrEks.sharedDefaultConfig)
+// Execution role arn
+cdk.CfnOutput(self,'ExecRoleArn', value = role.roleArn)
+```
 
 #### Methods <a name="Methods" id="Methods"></a>
 
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.toString">toString</a></code> | Returns a string representation of this construct. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup">addEmrEksNodegroup</a></code> | Add new Amazon EMR on EKS nodegroups to the cluster. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup">addEmrEksNodegroup</a></code> | Add new nodegroups to the cluster for Amazon EMR on EKS. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster">addEmrVirtualCluster</a></code> | Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint">addManagedEndpoint</a></code> | Creates a new Amazon EMR managed endpoint to be used with Amazon EMR Virtual Cluster . |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity">addNodegroupCapacity</a></code> | Add a new Amazon EKS Nodegroup to the cluster. |
@@ -1402,7 +2582,7 @@ Returns a string representation of this construct.
 public addEmrEksNodegroup(id: string, props: EmrEksNodegroupOptions): void
 ```
 
-Add new Amazon EMR on EKS nodegroups to the cluster.
+Add new nodegroups to the cluster for Amazon EMR on EKS.
 
 This method overrides Amazon EKS nodegroup options then create the nodegroup.
 If no subnet is provided, it creates one nodegroup per private subnet in the Amazon EKS Cluster.
@@ -1411,6 +2591,8 @@ If NVME local storage is used, the user_data is modified.
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup.parameter.id"></a>
 
 - *Type:* string
+
+the CDK ID of the resource.
 
 ---
 
@@ -1460,7 +2642,7 @@ CfnOutput can be customized.
 
 - *Type:* @aws-cdk/core.Construct
 
-of the stack where managed endpoint is deployed.
+the scope of the stack where managed endpoint is deployed.
 
 ---
 
@@ -1468,7 +2650,7 @@ of the stack where managed endpoint is deployed.
 
 - *Type:* string
 
-unique id for endpoint.
+the CDK id for endpoint.
 
 ---
 
@@ -1476,7 +2658,7 @@ unique id for endpoint.
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions">EmrManagedEndpointOptions</a>
 
-The EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint.
+the EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint.
 
 ---
 
@@ -1515,7 +2697,7 @@ public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy,
 
 Create and configure a new Amazon IAM Role usable as an execution role.
 
-This method links the makes the created role assumed by the Amazon EKS cluster Open ID Connect provider.
+This method makes the created role assumed by the Amazon EKS cluster Open ID Connect provider.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.scope"></a>
 
@@ -1561,6 +2743,8 @@ Upload podTemplates to the Amazon S3 location used by the cluster.
 
 - *Type:* string
 
+the unique ID of the CDK resource.
+
 ---
 
 ###### `filePath`<sup>Required</sup> <a name="filePath" id="aws-analytics-reference-architecture.EmrEksCluster.uploadPodTemplate.parameter.filePath"></a>
@@ -1576,7 +2760,7 @@ The local path of the yaml podTemplate files to upload.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.getOrCreate">getOrCreate</a></code> | Get an existing EmrEksCluster based on the cluster name property or create a new one. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.getOrCreate">getOrCreate</a></code> | Get an existing EmrEksCluster based on the cluster name property or create a new one only one EKS cluster can exist per stack. |
 
 ---
 
@@ -1604,17 +2788,21 @@ import { EmrEksCluster } from 'aws-analytics-reference-architecture'
 EmrEksCluster.getOrCreate(scope: Construct, props: EmrEksClusterProps)
 ```
 
-Get an existing EmrEksCluster based on the cluster name property or create a new one.
+Get an existing EmrEksCluster based on the cluster name property or create a new one only one EKS cluster can exist per stack.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.getOrCreate.parameter.scope"></a>
 
 - *Type:* @aws-cdk/core.Construct
+
+the CDK scope used to search or create the cluster.
 
 ---
 
 ###### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.EmrEksCluster.getOrCreate.parameter.props"></a>
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksClusterProps">EmrEksClusterProps</a>
+
+the EmrEksClusterProps [properties]{@link EmrEksClusterProps} if created.
 
 ---
 
@@ -1623,6 +2811,7 @@ Get an existing EmrEksCluster based on the cluster name property or create a new
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.assetBucket">assetBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig">criticalDefaultConfig</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster">eksCluster</a></code> | <code>@aws-cdk/aws-eks.Cluster</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig">notebookDefaultConfig</a></code> | <code>string</code> | *No description.* |
@@ -1640,6 +2829,16 @@ public readonly node: ConstructNode;
 - *Type:* @aws-cdk/core.ConstructNode
 
 The construct tree node associated with this construct.
+
+---
+
+##### `assetBucket`<sup>Required</sup> <a name="assetBucket" id="aws-analytics-reference-architecture.EmrEksCluster.property.assetBucket"></a>
+
+```typescript
+public readonly assetBucket: Bucket;
+```
+
+- *Type:* @aws-cdk/aws-s3.Bucket
 
 ---
 
@@ -1690,109 +2889,6 @@ public readonly sharedDefaultConfig: string;
 ```
 
 - *Type:* string
-
----
-
-
-### Example <a name="Example" id="aws-analytics-reference-architecture.Example"></a>
-
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.Example.Initializer"></a>
-
-```typescript
-import { Example } from 'aws-analytics-reference-architecture'
-
-new Example(scope: Construct, id: string, props: ExampleProps)
-```
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Example.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.Example.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.Example.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.ExampleProps">ExampleProps</a></code> | the ExampleProps properties. |
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.Example.Initializer.parameter.scope"></a>
-
-- *Type:* @aws-cdk/core.Construct
-
-the Scope of the CDK Construct.
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.Example.Initializer.parameter.id"></a>
-
-- *Type:* string
-
-the ID of the CDK Construct.
-
----
-
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.Example.Initializer.parameter.props"></a>
-
-- *Type:* <a href="#aws-analytics-reference-architecture.ExampleProps">ExampleProps</a>
-
-the ExampleProps properties.
-
----
-
-#### Methods <a name="Methods" id="Methods"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Example.toString">toString</a></code> | Returns a string representation of this construct. |
-
----
-
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.Example.toString"></a>
-
-```typescript
-public toString(): string
-```
-
-Returns a string representation of this construct.
-
-#### Static Functions <a name="Static Functions" id="Static Functions"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Example.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
-
----
-
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.Example.isConstruct"></a>
-
-```typescript
-import { Example } from 'aws-analytics-reference-architecture'
-
-Example.isConstruct(x: any)
-```
-
-Return whether the given object is a Construct.
-
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.Example.isConstruct.parameter.x"></a>
-
-- *Type:* any
-
----
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Example.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-
----
-
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.Example.property.node"></a>
-
-```typescript
-public readonly node: ConstructNode;
-```
-
-- *Type:* @aws-cdk/core.ConstructNode
-
-The construct tree node associated with this construct.
 
 ---
 
@@ -1848,9 +2944,9 @@ new FlywayRunner(scope: Construct, id: string, props: FlywayRunnerProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps">FlywayRunnerProps</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps">FlywayRunnerProps</a></code> | the FlywayRunner [properties]{@link FlywayRunnerProps}. |
 
 ---
 
@@ -1858,17 +2954,23 @@ new FlywayRunner(scope: Construct, id: string, props: FlywayRunnerProps)
 
 - *Type:* @aws-cdk/core.Construct
 
+the Scope of the CDK Construct.
+
 ---
 
 ##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.id"></a>
 
 - *Type:* string
 
+the ID of the CDK Construct.
+
 ---
 
 ##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.props"></a>
 
 - *Type:* <a href="#aws-analytics-reference-architecture.FlywayRunnerProps">FlywayRunnerProps</a>
+
+the FlywayRunner [properties]{@link FlywayRunnerProps}.
 
 ---
 
@@ -1944,12 +3046,109 @@ public readonly runner: CustomResource;
 ---
 
 
+### GlueDefaultRole <a name="GlueDefaultRole" id="aws-analytics-reference-architecture.GlueDefaultRole"></a>
+
+SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
+
+The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
+If you would like to scope down the permission you should create a new role with a scoped down policy
+The Construct provides a getOrCreate method for SingletonInstantiation
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.GlueDefaultRole.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate">getOrCreate</a></code> | *No description.* |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.GlueDefaultRole.isConstruct"></a>
+
+```typescript
+import { GlueDefaultRole } from 'aws-analytics-reference-architecture'
+
+GlueDefaultRole.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.GlueDefaultRole.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate"></a>
+
+```typescript
+import { GlueDefaultRole } from 'aws-analytics-reference-architecture'
+
+GlueDefaultRole.getOrCreate(scope: Construct)
+```
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole">iamRole</a></code> | <code>@aws-cdk/aws-iam.Role</code> | *No description.* |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.GlueDefaultRole.property.node"></a>
+
+```typescript
+public readonly node: ConstructNode;
+```
+
+- *Type:* @aws-cdk/core.ConstructNode
+
+The construct tree node associated with this construct.
+
+---
+
+##### `iamRole`<sup>Required</sup> <a name="iamRole" id="aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole"></a>
+
+```typescript
+public readonly iamRole: Role;
+```
+
+- *Type:* @aws-cdk/aws-iam.Role
+
+---
+
+
 ### LakeformationS3Location <a name="LakeformationS3Location" id="aws-analytics-reference-architecture.LakeformationS3Location"></a>
 
 This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
 
+If the location is in a different account, cross account access should be granted via the [S3CrossAccount]{@link S3CrossAccount} construct.
+
 This construct instantiate 2 objects:
-* An IAM role with read/write permissions to the S3 location and read access to the KMS key used to encypt the bucket 
+* An IAM role with read/write permissions to the S3 location and read access to the KMS key used to encypt the bucket
 * A CfnResource is based on an IAM role with 2 policies folowing the least privilege AWS best practices:
 * Policy 1 is for GetObject, PutObject, DeleteObject from S3 bucket
 * Policy 2 is to list S3 Buckets
@@ -1968,11 +3167,11 @@ import { LakeformationS3Location } from 'aws-analytics-reference-architecture';
 const exampleApp = new cdk.App();
 const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
 
+const myBucket = new Bucket(stack, 'MyBucket')
+
 new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
-   s3Location:{
-     bucketName: 'my-bucket',
-     objectKey: 'my-prefix',
-   }
+   bucketName: myBucket,
+   objectKey: 'my-prefix',
 });
 ```
 
@@ -2097,9 +3296,9 @@ Resources deployed:
 * An EMR Studio User Role as defined here - The policy template which is leveraged is the Basic one from the Amazon EMR Studio documentation
 * Multiple EMR on EKS Managed Endpoints, each for a user or a group of users
 * An execution role to be passed to the Managed endpoint from a policy provided by the user
-* Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are: <br />
-   - EMR Virtual Cluster - created above <br />
-   - ManagedEndpoint <br />
+* Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are:
+   * EMR Virtual Cluster - created above
+   * ManagedEndpoint
 
 
 Usage example:
@@ -2117,11 +3316,11 @@ const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {
    studioAuthMode: StudioAuthMode.SSO,
 });
 
-
+// If the S3 bucket is encrypted, add policy to the key for the role
 const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
    statements: [
      new PolicyStatement({
-       resources: ['*'],
+       resources: <BUCKET ARN(s)>,
        actions: ['s3:*'],
      }),
      new PolicyStatement({
@@ -2145,7 +3344,7 @@ notebookPlatform.addUser([{
    identityName: 'user1',
    identityType: SSOIdentityType.USER,
    notebookManagedEndpoints: [{
-     emrOnEksVersion: 'emr-6.3.0-latest',
+     emrOnEksVersion: 'emr-6.4.0-latest',
      executionPolicy: policy1,
    }],
 }]);
@@ -2275,7 +3474,7 @@ This CDK construct grants cross account permissions on an Amazon S3 location.
 It uses a bucket policy and an Amazon KMS Key policy if the bucket is encrypted with KMS.
 The cross account permission is granted to the entire account and not to a specific principal in this account.
 It's the responsibility of the target account to grant permissions to the relevant principals.
-  
+
 Usage example:
 ```typescript
 import * as cdk from '@aws-cdk/core';
@@ -2284,11 +3483,12 @@ import { S3CrossAccount } from 'aws-analytics-reference-architecture';
 const exampleApp = new cdk.App();
 const stack = new cdk.Stack(exampleApp, 'S3CrossAccountStack');
 
+const myBucket = new Bucket(stack, 'MyBucket')
+
 new S3CrossAccount(stack, 'S3CrossAccountGrant', {
-   s3Location:{
-     bucketName: 'my-bucket',
-     objectKey: 'my-prefix',
-   }
+   bucket: myBucket,
+   objectKey: 'my-data',
+   accountId: '1234567891011',
 });
 ```
 
@@ -2387,41 +3587,47 @@ The construct tree node associated with this construct.
 ---
 
 
-### SingletonBucket <a name="SingletonBucket" id="aws-analytics-reference-architecture.SingletonBucket"></a>
+### SingletonCfnLaunchTemplate <a name="SingletonCfnLaunchTemplate" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate"></a>
 
 An Amazon S3 Bucket implementing the singleton pattern.
 
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SingletonBucket.Initializer"></a>
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer"></a>
 
 ```typescript
-import { SingletonBucket } from 'aws-analytics-reference-architecture'
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
 
-new SingletonBucket(scope: Construct, id: string, props?: BucketProps)
+new SingletonCfnLaunchTemplate(scope: Construct, id: string, props?: CfnLaunchTemplateProps)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-s3.BucketProps</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | - scope in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.id">id</a></code> | <code>string</code> | - scoped id of the resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-ec2.CfnLaunchTemplateProps</code> | - resource properties. |
 
 ---
 
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonBucket.Initializer.parameter.scope"></a>
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.scope"></a>
 
-- *Type:* constructs.Construct
+- *Type:* @aws-cdk/core.Construct
+
+scope in which this resource is defined.
 
 ---
 
-##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.Initializer.parameter.id"></a>
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.id"></a>
 
 - *Type:* string
 
+scoped id of the resource.
+
 ---
 
-##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonBucket.Initializer.parameter.props"></a>
+##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props"></a>
 
-- *Type:* @aws-cdk/aws-s3.BucketProps
+- *Type:* @aws-cdk/aws-ec2.CfnLaunchTemplateProps
+
+resource properties.
 
 ---
 
@@ -2429,35 +3635,22 @@ new SingletonBucket(scope: Construct, id: string, props?: BucketProps)
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.toString">toString</a></code> | Returns a string representation of this construct. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.applyRemovalPolicy">applyRemovalPolicy</a></code> | Apply the given removal policy to this resource. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.addEventNotification">addEventNotification</a></code> | Adds a bucket notification event destination. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.addObjectCreatedNotification">addObjectCreatedNotification</a></code> | Subscribes a destination to receive notifications when an object is created in the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.addObjectRemovedNotification">addObjectRemovedNotification</a></code> | Subscribes a destination to receive notifications when an object is removed from the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.addToResourcePolicy">addToResourcePolicy</a></code> | Adds a statement to the resource policy for a principal (i.e. account/role/service) to perform actions on this bucket and/or its contents. Use `bucketArn` and `arnForObjects(keys)` to obtain ARNs for this bucket or objects. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.arnForObjects">arnForObjects</a></code> | Returns an ARN that represents all objects within the bucket that match the key pattern specified. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.grantDelete">grantDelete</a></code> | Grants s3:DeleteObject* permission to an IAM principal for objects in this bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.grantPublicAccess">grantPublicAccess</a></code> | Allows unrestricted access to objects from this bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.grantPut">grantPut</a></code> | Grants s3:PutObject* and s3:Abort* permissions for this bucket to an IAM principal. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.grantPutAcl">grantPutAcl</a></code> | Grant the given IAM identity permissions to modify the ACLs of objects in the given Bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.grantRead">grantRead</a></code> | Grant read permissions for this bucket and it's contents to an IAM principal (Role/Group/User). |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.grantReadWrite">grantReadWrite</a></code> | Grants read/write permissions for this bucket and it's contents to an IAM principal (Role/Group/User). |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.grantWrite">grantWrite</a></code> | Grant write permissions to this bucket to an IAM principal. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.onCloudTrailEvent">onCloudTrailEvent</a></code> | Define a CloudWatch event that triggers when something happens to this repository. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.onCloudTrailPutObject">onCloudTrailPutObject</a></code> | Defines an AWS CloudWatch event that triggers when an object is uploaded to the specified paths (keys) in this bucket using the PutObject API call. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.onCloudTrailWriteObject">onCloudTrailWriteObject</a></code> | Defines an AWS CloudWatch event that triggers when an object at the specified paths (keys) in this bucket are written to. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.s3UrlForObject">s3UrlForObject</a></code> | The S3 URL of an S3 object. For example:. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.transferAccelerationUrlForObject">transferAccelerationUrlForObject</a></code> | The https Transfer Acceleration URL of an S3 object. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.urlForObject">urlForObject</a></code> | The https URL of an S3 object. Specify `regional: false` at the options for non-regional URLs. For example:. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.virtualHostedUrlForObject">virtualHostedUrlForObject</a></code> | The virtual hosted-style URL of an S3 object. Specify `regional: false` at the options for non-regional URL. For example:. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.addCorsRule">addCorsRule</a></code> | Adds a cross-origin access configuration for objects in an Amazon S3 bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.addInventory">addInventory</a></code> | Add an inventory configuration. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.addLifecycleRule">addLifecycleRule</a></code> | Add a lifecycle rule to the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.addMetric">addMetric</a></code> | Adds a metrics configuration for the CloudWatch request metrics from the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.overrideLogicalId">overrideLogicalId</a></code> | Overrides the auto-generated logical ID with a specific ID. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDeletionOverride">addDeletionOverride</a></code> | Syntactic sugar for `addOverride(path, undefined)`. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn">addDependsOn</a></code> | Indicates that this resource depends on another resource and cannot be provisioned unless the other resource has been successfully provisioned. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addMetadata">addMetadata</a></code> | Add a value to the CloudFormation Resource Metadata. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addOverride">addOverride</a></code> | Adds an override to the synthesized CloudFormation resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyDeletionOverride">addPropertyDeletionOverride</a></code> | Adds an override that deletes the value of a property from the resource definition. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyOverride">addPropertyOverride</a></code> | Adds an override to a resource property. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy">applyRemovalPolicy</a></code> | Sets the deletion policy of the resource based on the removal policy specified. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getAtt">getAtt</a></code> | Returns a token for an runtime attribute of this resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getMetadata">getMetadata</a></code> | Retrieve a value value from the CloudFormation Resource Metadata. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.inspect">inspect</a></code> | Examines the CloudFormation resource and discloses attributes. |
 
 ---
 
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SingletonBucket.toString"></a>
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.toString"></a>
 
 ```typescript
 public toString(): string
@@ -2465,7 +3658,628 @@ public toString(): string
 
 Returns a string representation of this construct.
 
-##### `applyRemovalPolicy` <a name="applyRemovalPolicy" id="aws-analytics-reference-architecture.SingletonBucket.applyRemovalPolicy"></a>
+##### `overrideLogicalId` <a name="overrideLogicalId" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.overrideLogicalId"></a>
+
+```typescript
+public overrideLogicalId(newLogicalId: string): void
+```
+
+Overrides the auto-generated logical ID with a specific ID.
+
+###### `newLogicalId`<sup>Required</sup> <a name="newLogicalId" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.overrideLogicalId.parameter.newLogicalId"></a>
+
+- *Type:* string
+
+The new logical ID to use for this stack element.
+
+---
+
+##### `addDeletionOverride` <a name="addDeletionOverride" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDeletionOverride"></a>
+
+```typescript
+public addDeletionOverride(path: string): void
+```
+
+Syntactic sugar for `addOverride(path, undefined)`.
+
+###### `path`<sup>Required</sup> <a name="path" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDeletionOverride.parameter.path"></a>
+
+- *Type:* string
+
+The path of the value to delete.
+
+---
+
+##### `addDependsOn` <a name="addDependsOn" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn"></a>
+
+```typescript
+public addDependsOn(target: CfnResource): void
+```
+
+Indicates that this resource depends on another resource and cannot be provisioned unless the other resource has been successfully provisioned.
+
+This can be used for resources across stacks (or nested stack) boundaries
+and the dependency will automatically be transferred to the relevant scope.
+
+###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn.parameter.target"></a>
+
+- *Type:* @aws-cdk/core.CfnResource
+
+---
+
+##### `addMetadata` <a name="addMetadata" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addMetadata"></a>
+
+```typescript
+public addMetadata(key: string, value: any): void
+```
+
+Add a value to the CloudFormation Resource Metadata.
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html
+
+Note that this is a different set of metadata from CDK node metadata; this
+metadata ends up in the stack template under the resource, whereas CDK
+node metadata ends up in the Cloud Assembly.](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html
+
+Note that this is a different set of metadata from CDK node metadata; this
+metadata ends up in the stack template under the resource, whereas CDK
+node metadata ends up in the Cloud Assembly.)
+
+###### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addMetadata.parameter.key"></a>
+
+- *Type:* string
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addMetadata.parameter.value"></a>
+
+- *Type:* any
+
+---
+
+##### `addOverride` <a name="addOverride" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addOverride"></a>
+
+```typescript
+public addOverride(path: string, value: any): void
+```
+
+Adds an override to the synthesized CloudFormation resource.
+
+To add a
+property override, either use `addPropertyOverride` or prefix `path` with
+"Properties." (i.e. `Properties.TopicName`).
+
+If the override is nested, separate each nested level using a dot (.) in the path parameter.
+If there is an array as part of the nesting, specify the index in the path.
+
+To include a literal `.` in the property name, prefix with a `\`. In most
+programming languages you will need to write this as `"\\."` because the
+`\` itself will need to be escaped.
+
+For example,
+```typescript
+cfnResource.addOverride('Properties.GlobalSecondaryIndexes.0.Projection.NonKeyAttributes', ['myattribute']);
+cfnResource.addOverride('Properties.GlobalSecondaryIndexes.1.ProjectionType', 'INCLUDE');
+```
+would add the overrides
+```json
+"Properties": {
+   "GlobalSecondaryIndexes": [
+     {
+       "Projection": {
+         "NonKeyAttributes": [ "myattribute" ]
+         ...
+       }
+       ...
+     },
+     {
+       "ProjectionType": "INCLUDE"
+       ...
+     },
+   ]
+   ...
+}
+```
+
+The `value` argument to `addOverride` will not be processed or translated
+in any way. Pass raw JSON values in here with the correct capitalization
+for CloudFormation. If you pass CDK classes or structs, they will be
+rendered with lowercased key names, and CloudFormation will reject the
+template.
+
+###### `path`<sup>Required</sup> <a name="path" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addOverride.parameter.path"></a>
+
+- *Type:* string
+
+The path of the property, you can use dot notation to override values in complex types.
+
+Any intermdediate keys
+will be created as needed.
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addOverride.parameter.value"></a>
+
+- *Type:* any
+
+The value.
+
+Could be primitive or complex.
+
+---
+
+##### `addPropertyDeletionOverride` <a name="addPropertyDeletionOverride" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyDeletionOverride"></a>
+
+```typescript
+public addPropertyDeletionOverride(propertyPath: string): void
+```
+
+Adds an override that deletes the value of a property from the resource definition.
+
+###### `propertyPath`<sup>Required</sup> <a name="propertyPath" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyDeletionOverride.parameter.propertyPath"></a>
+
+- *Type:* string
+
+The path to the property.
+
+---
+
+##### `addPropertyOverride` <a name="addPropertyOverride" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyOverride"></a>
+
+```typescript
+public addPropertyOverride(propertyPath: string, value: any): void
+```
+
+Adds an override to a resource property.
+
+Syntactic sugar for `addOverride("Properties.<...>", value)`.
+
+###### `propertyPath`<sup>Required</sup> <a name="propertyPath" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyOverride.parameter.propertyPath"></a>
+
+- *Type:* string
+
+The path of the property.
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addPropertyOverride.parameter.value"></a>
+
+- *Type:* any
+
+The value.
+
+---
+
+##### `applyRemovalPolicy` <a name="applyRemovalPolicy" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy"></a>
+
+```typescript
+public applyRemovalPolicy(policy?: RemovalPolicy, options?: RemovalPolicyOptions): void
+```
+
+Sets the deletion policy of the resource based on the removal policy specified.
+
+The Removal Policy controls what happens to this resource when it stops
+being managed by CloudFormation, either because you've removed it from the
+CDK application or because you've made a change that requires the resource
+to be replaced.
+
+The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
+account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
+
+###### `policy`<sup>Optional</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy.parameter.policy"></a>
+
+- *Type:* @aws-cdk/core.RemovalPolicy
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy.parameter.options"></a>
+
+- *Type:* @aws-cdk/core.RemovalPolicyOptions
+
+---
+
+##### `getAtt` <a name="getAtt" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getAtt"></a>
+
+```typescript
+public getAtt(attributeName: string): Reference
+```
+
+Returns a token for an runtime attribute of this resource.
+
+Ideally, use generated attribute accessors (e.g. `resource.arn`), but this can be used for future compatibility
+in case there is no generated attribute.
+
+###### `attributeName`<sup>Required</sup> <a name="attributeName" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getAtt.parameter.attributeName"></a>
+
+- *Type:* string
+
+The name of the attribute.
+
+---
+
+##### `getMetadata` <a name="getMetadata" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getMetadata"></a>
+
+```typescript
+public getMetadata(key: string): any
+```
+
+Retrieve a value value from the CloudFormation Resource Metadata.
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html
+
+Note that this is a different set of metadata from CDK node metadata; this
+metadata ends up in the stack template under the resource, whereas CDK
+node metadata ends up in the Cloud Assembly.](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html
+
+Note that this is a different set of metadata from CDK node metadata; this
+metadata ends up in the stack template under the resource, whereas CDK
+node metadata ends up in the Cloud Assembly.)
+
+###### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getMetadata.parameter.key"></a>
+
+- *Type:* string
+
+---
+
+##### `inspect` <a name="inspect" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.inspect"></a>
+
+```typescript
+public inspect(inspector: TreeInspector): void
+```
+
+Examines the CloudFormation resource and discloses attributes.
+
+###### `inspector`<sup>Required</sup> <a name="inspector" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.inspect.parameter.inspector"></a>
+
+- *Type:* @aws-cdk/core.TreeInspector
+
+tree inspector to collect and process attributes.
+
+---
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnElement">isCfnElement</a></code> | Returns `true` if a construct is a stack element (i.e. part of the synthesized cloudformation template). |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource">isCfnResource</a></code> | Check whether the given construct is a CfnResource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate">getOrCreate</a></code> | *No description.* |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct"></a>
+
+```typescript
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
+
+SingletonCfnLaunchTemplate.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+##### `isCfnElement` <a name="isCfnElement" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnElement"></a>
+
+```typescript
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
+
+SingletonCfnLaunchTemplate.isCfnElement(x: any)
+```
+
+Returns `true` if a construct is a stack element (i.e. part of the synthesized cloudformation template).
+
+Uses duck-typing instead of `instanceof` to allow stack elements from different
+versions of this library to be included in the same stack.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnElement.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+##### `isCfnResource` <a name="isCfnResource" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource"></a>
+
+```typescript
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
+
+SingletonCfnLaunchTemplate.isCfnResource(construct: IConstruct)
+```
+
+Check whether the given construct is a CfnResource.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource.parameter.construct"></a>
+
+- *Type:* constructs.IConstruct
+
+---
+
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate"></a>
+
+```typescript
+import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
+
+SingletonCfnLaunchTemplate.getOrCreate(scope: Construct, name: string, data: string)
+```
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate.parameter.name"></a>
+
+- *Type:* string
+
+---
+
+###### `data`<sup>Required</sup> <a name="data" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate.parameter.data"></a>
+
+- *Type:* string
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.creationStack">creationStack</a></code> | <code>string[]</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.logicalId">logicalId</a></code> | <code>string</code> | The logical ID for this CloudFormation stack element. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this element is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.ref">ref</a></code> | <code>string</code> | Return a string that will be resolved to a CloudFormation `{ Ref }` for this element. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnOptions">cfnOptions</a></code> | <code>@aws-cdk/core.ICfnResourceOptions</code> | Options for this resource, such as condition, update policy etc. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnResourceType">cfnResourceType</a></code> | <code>string</code> | AWS resource type. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrDefaultVersionNumber">attrDefaultVersionNumber</a></code> | <code>string</code> | The default version of the launch template, such as 2. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrLatestVersionNumber">attrLatestVersionNumber</a></code> | <code>string</code> | The latest version of the launch template, such as `5` . |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData">launchTemplateData</a></code> | <code>@aws-cdk/core.IResolvable \| @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateDataProperty</code> | The information for the launch template. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateName">launchTemplateName</a></code> | <code>string</code> | A name for the launch template. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications">tagSpecifications</a></code> | <code>@aws-cdk/core.IResolvable \| @aws-cdk/core.IResolvable \| @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty[]</code> | The tags to apply to the launch template during creation. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.node"></a>
+
+```typescript
+public readonly node: ConstructNode;
+```
+
+- *Type:* @aws-cdk/core.ConstructNode
+
+The construct tree node associated with this construct.
+
+---
+
+##### `creationStack`<sup>Required</sup> <a name="creationStack" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.creationStack"></a>
+
+```typescript
+public readonly creationStack: string[];
+```
+
+- *Type:* string[]
+
+---
+
+##### `logicalId`<sup>Required</sup> <a name="logicalId" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.logicalId"></a>
+
+```typescript
+public readonly logicalId: string;
+```
+
+- *Type:* string
+
+The logical ID for this CloudFormation stack element.
+
+The logical ID of the element
+is calculated from the path of the resource node in the construct tree.
+
+To override this value, use `overrideLogicalId(newLogicalId)`.
+
+---
+
+##### `stack`<sup>Required</sup> <a name="stack" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.stack"></a>
+
+```typescript
+public readonly stack: Stack;
+```
+
+- *Type:* @aws-cdk/core.Stack
+
+The stack in which this element is defined.
+
+CfnElements must be defined within a stack scope (directly or indirectly).
+
+---
+
+##### `ref`<sup>Required</sup> <a name="ref" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.ref"></a>
+
+```typescript
+public readonly ref: string;
+```
+
+- *Type:* string
+
+Return a string that will be resolved to a CloudFormation `{ Ref }` for this element.
+
+If, by any chance, the intrinsic reference of a resource is not a string, you could
+coerce it to an IResolvable through `Lazy.any({ produce: resource.ref })`.
+
+---
+
+##### `cfnOptions`<sup>Required</sup> <a name="cfnOptions" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnOptions"></a>
+
+```typescript
+public readonly cfnOptions: ICfnResourceOptions;
+```
+
+- *Type:* @aws-cdk/core.ICfnResourceOptions
+
+Options for this resource, such as condition, update policy etc.
+
+---
+
+##### `cfnResourceType`<sup>Required</sup> <a name="cfnResourceType" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnResourceType"></a>
+
+```typescript
+public readonly cfnResourceType: string;
+```
+
+- *Type:* string
+
+AWS resource type.
+
+---
+
+##### `attrDefaultVersionNumber`<sup>Required</sup> <a name="attrDefaultVersionNumber" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrDefaultVersionNumber"></a>
+
+```typescript
+public readonly attrDefaultVersionNumber: string;
+```
+
+- *Type:* string
+
+The default version of the launch template, such as 2.
+
+The default version of a launch template cannot be specified in AWS CloudFormation . The default version can be set in the Amazon EC2 Console or by using the `modify-launch-template` AWS CLI command.
+
+---
+
+##### `attrLatestVersionNumber`<sup>Required</sup> <a name="attrLatestVersionNumber" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrLatestVersionNumber"></a>
+
+```typescript
+public readonly attrLatestVersionNumber: string;
+```
+
+- *Type:* string
+
+The latest version of the launch template, such as `5` .
+
+---
+
+##### `launchTemplateData`<sup>Optional</sup> <a name="launchTemplateData" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData"></a>
+
+```typescript
+public readonly launchTemplateData: IResolvable | LaunchTemplateDataProperty;
+```
+
+- *Type:* @aws-cdk/core.IResolvable | @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateDataProperty
+
+The information for the launch template.
+
+> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatedata](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatedata)
+
+---
+
+##### `launchTemplateName`<sup>Optional</sup> <a name="launchTemplateName" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateName"></a>
+
+```typescript
+public readonly launchTemplateName: string;
+```
+
+- *Type:* string
+
+A name for the launch template.
+
+> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatename](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatename)
+
+---
+
+##### `tagSpecifications`<sup>Optional</sup> <a name="tagSpecifications" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications"></a>
+
+```typescript
+public readonly tagSpecifications: IResolvable | IResolvable | LaunchTemplateTagSpecificationProperty[];
+```
+
+- *Type:* @aws-cdk/core.IResolvable | @aws-cdk/core.IResolvable | @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty[]
+
+The tags to apply to the launch template during creation.
+
+> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications)
+
+---
+
+#### Constants <a name="Constants" id="Constants"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.CFN_RESOURCE_TYPE_NAME">CFN_RESOURCE_TYPE_NAME</a></code> | <code>string</code> | The CloudFormation resource type name for this resource class. |
+
+---
+
+##### `CFN_RESOURCE_TYPE_NAME`<sup>Required</sup> <a name="CFN_RESOURCE_TYPE_NAME" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.CFN_RESOURCE_TYPE_NAME"></a>
+
+```typescript
+public readonly CFN_RESOURCE_TYPE_NAME: string;
+```
+
+- *Type:* string
+
+The CloudFormation resource type name for this resource class.
+
+---
+
+### SingletonGlueDatabase <a name="SingletonGlueDatabase" id="aws-analytics-reference-architecture.SingletonGlueDatabase"></a>
+
+An Amazon S3 Bucket implementing the singleton pattern.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer"></a>
+
+```typescript
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
+
+new SingletonGlueDatabase(scope: Construct, id: string, props: DatabaseProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-glue.DatabaseProps</code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.props"></a>
+
+- *Type:* @aws-cdk/aws-glue.DatabaseProps
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.applyRemovalPolicy">applyRemovalPolicy</a></code> | Apply the given removal policy to this resource. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SingletonGlueDatabase.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+##### `applyRemovalPolicy` <a name="applyRemovalPolicy" id="aws-analytics-reference-architecture.SingletonGlueDatabase.applyRemovalPolicy"></a>
 
 ```typescript
 public applyRemovalPolicy(policy: RemovalPolicy): void
@@ -2481,627 +4295,9 @@ to be replaced.
 The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
 account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 
-###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonBucket.applyRemovalPolicy.parameter.policy"></a>
+###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonGlueDatabase.applyRemovalPolicy.parameter.policy"></a>
 
 - *Type:* @aws-cdk/core.RemovalPolicy
-
----
-
-##### `addEventNotification` <a name="addEventNotification" id="aws-analytics-reference-architecture.SingletonBucket.addEventNotification"></a>
-
-```typescript
-public addEventNotification(event: EventType, dest: IBucketNotificationDestination, filters: NotificationKeyFilter): void
-```
-
-Adds a bucket notification event destination.
-
-> [https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html](https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html)
-
-*Example*
-
-```typescript
-   declare const myLambda: lambda.Function;
-   const bucket = new s3.Bucket(this, 'MyBucket');
-   bucket.addEventNotification(s3.EventType.OBJECT_CREATED, new s3n.LambdaDestination(myLambda), {prefix: 'home/myusername/*'});
-```
-
-
-###### `event`<sup>Required</sup> <a name="event" id="aws-analytics-reference-architecture.SingletonBucket.addEventNotification.parameter.event"></a>
-
-- *Type:* @aws-cdk/aws-s3.EventType
-
-The event to trigger the notification.
-
----
-
-###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.SingletonBucket.addEventNotification.parameter.dest"></a>
-
-- *Type:* @aws-cdk/aws-s3.IBucketNotificationDestination
-
-The notification destination (Lambda, SNS Topic or SQS Queue).
-
----
-
-###### `filters`<sup>Required</sup> <a name="filters" id="aws-analytics-reference-architecture.SingletonBucket.addEventNotification.parameter.filters"></a>
-
-- *Type:* @aws-cdk/aws-s3.NotificationKeyFilter
-
-S3 object key filter rules to determine which objects trigger this event.
-
-Each filter must include a `prefix` and/or `suffix`
-that will be matched against the s3 object key. Refer to the S3 Developer Guide
-for details about allowed filter rules.
-
----
-
-##### `addObjectCreatedNotification` <a name="addObjectCreatedNotification" id="aws-analytics-reference-architecture.SingletonBucket.addObjectCreatedNotification"></a>
-
-```typescript
-public addObjectCreatedNotification(dest: IBucketNotificationDestination, filters: NotificationKeyFilter): void
-```
-
-Subscribes a destination to receive notifications when an object is created in the bucket.
-
-This is identical to calling
-`onEvent(EventType.OBJECT_CREATED)`.
-
-###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.SingletonBucket.addObjectCreatedNotification.parameter.dest"></a>
-
-- *Type:* @aws-cdk/aws-s3.IBucketNotificationDestination
-
-The notification destination (see onEvent).
-
----
-
-###### `filters`<sup>Required</sup> <a name="filters" id="aws-analytics-reference-architecture.SingletonBucket.addObjectCreatedNotification.parameter.filters"></a>
-
-- *Type:* @aws-cdk/aws-s3.NotificationKeyFilter
-
-Filters (see onEvent).
-
----
-
-##### `addObjectRemovedNotification` <a name="addObjectRemovedNotification" id="aws-analytics-reference-architecture.SingletonBucket.addObjectRemovedNotification"></a>
-
-```typescript
-public addObjectRemovedNotification(dest: IBucketNotificationDestination, filters: NotificationKeyFilter): void
-```
-
-Subscribes a destination to receive notifications when an object is removed from the bucket.
-
-This is identical to calling
-`onEvent(EventType.OBJECT_REMOVED)`.
-
-###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.SingletonBucket.addObjectRemovedNotification.parameter.dest"></a>
-
-- *Type:* @aws-cdk/aws-s3.IBucketNotificationDestination
-
-The notification destination (see onEvent).
-
----
-
-###### `filters`<sup>Required</sup> <a name="filters" id="aws-analytics-reference-architecture.SingletonBucket.addObjectRemovedNotification.parameter.filters"></a>
-
-- *Type:* @aws-cdk/aws-s3.NotificationKeyFilter
-
-Filters (see onEvent).
-
----
-
-##### `addToResourcePolicy` <a name="addToResourcePolicy" id="aws-analytics-reference-architecture.SingletonBucket.addToResourcePolicy"></a>
-
-```typescript
-public addToResourcePolicy(permission: PolicyStatement): AddToResourcePolicyResult
-```
-
-Adds a statement to the resource policy for a principal (i.e. account/role/service) to perform actions on this bucket and/or its contents. Use `bucketArn` and `arnForObjects(keys)` to obtain ARNs for this bucket or objects.
-
-Note that the policy statement may or may not be added to the policy.
-For example, when an `IBucket` is created from an existing bucket,
-it's not possible to tell whether the bucket already has a policy
-attached, let alone to re-use that policy to add more statements to it.
-So it's safest to do nothing in these cases.
-
-###### `permission`<sup>Required</sup> <a name="permission" id="aws-analytics-reference-architecture.SingletonBucket.addToResourcePolicy.parameter.permission"></a>
-
-- *Type:* @aws-cdk/aws-iam.PolicyStatement
-
-the policy statement to be added to the bucket's policy.
-
----
-
-##### `arnForObjects` <a name="arnForObjects" id="aws-analytics-reference-architecture.SingletonBucket.arnForObjects"></a>
-
-```typescript
-public arnForObjects(keyPattern: string): string
-```
-
-Returns an ARN that represents all objects within the bucket that match the key pattern specified.
-
-To represent all keys, specify ``"*"``.
-
-If you need to specify a keyPattern with multiple components, concatenate them into a single string, e.g.:
-
-   arnForObjects(`home/${team}/${user}/*`)
-
-###### `keyPattern`<sup>Required</sup> <a name="keyPattern" id="aws-analytics-reference-architecture.SingletonBucket.arnForObjects.parameter.keyPattern"></a>
-
-- *Type:* string
-
----
-
-##### `grantDelete` <a name="grantDelete" id="aws-analytics-reference-architecture.SingletonBucket.grantDelete"></a>
-
-```typescript
-public grantDelete(identity: IGrantable, objectsKeyPattern?: any): Grant
-```
-
-Grants s3:DeleteObject* permission to an IAM principal for objects in this bucket.
-
-###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantDelete.parameter.identity"></a>
-
-- *Type:* @aws-cdk/aws-iam.IGrantable
-
-The principal.
-
----
-
-###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.SingletonBucket.grantDelete.parameter.objectsKeyPattern"></a>
-
-- *Type:* any
-
-Restrict the permission to a certain key pattern (default '*').
-
----
-
-##### `grantPublicAccess` <a name="grantPublicAccess" id="aws-analytics-reference-architecture.SingletonBucket.grantPublicAccess"></a>
-
-```typescript
-public grantPublicAccess(allowedActions: string, keyPrefix?: string): Grant
-```
-
-Allows unrestricted access to objects from this bucket.
-
-IMPORTANT: This permission allows anyone to perform actions on S3 objects
-in this bucket, which is useful for when you configure your bucket as a
-website and want everyone to be able to read objects in the bucket without
-needing to authenticate.
-
-Without arguments, this method will grant read ("s3:GetObject") access to
-all objects ("*") in the bucket.
-
-The method returns the `iam.Grant` object, which can then be modified
-as needed. For example, you can add a condition that will restrict access only
-to an IPv4 range like this:
-
-     const grant = bucket.grantPublicAccess();
-     grant.resourceStatement!.addCondition(‘IpAddress’, { “aws:SourceIp”: “54.240.143.0/24” });
-
-Note that if this `IBucket` refers to an existing bucket, possibly not
-managed by CloudFormation, this method will have no effect, since it's
-impossible to modify the policy of an existing bucket.
-
-###### `allowedActions`<sup>Required</sup> <a name="allowedActions" id="aws-analytics-reference-architecture.SingletonBucket.grantPublicAccess.parameter.allowedActions"></a>
-
-- *Type:* string
-
-the set of S3 actions to allow.
-
-Default is "s3:GetObject".
-
----
-
-###### `keyPrefix`<sup>Optional</sup> <a name="keyPrefix" id="aws-analytics-reference-architecture.SingletonBucket.grantPublicAccess.parameter.keyPrefix"></a>
-
-- *Type:* string
-
-the prefix of S3 object keys (e.g. `home/*`). Default is "*".
-
----
-
-##### `grantPut` <a name="grantPut" id="aws-analytics-reference-architecture.SingletonBucket.grantPut"></a>
-
-```typescript
-public grantPut(identity: IGrantable, objectsKeyPattern?: any): Grant
-```
-
-Grants s3:PutObject* and s3:Abort* permissions for this bucket to an IAM principal.
-
-If encryption is used, permission to use the key to encrypt the contents
-of written files will also be granted to the same principal.
-
-###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantPut.parameter.identity"></a>
-
-- *Type:* @aws-cdk/aws-iam.IGrantable
-
-The principal.
-
----
-
-###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.SingletonBucket.grantPut.parameter.objectsKeyPattern"></a>
-
-- *Type:* any
-
-Restrict the permission to a certain key pattern (default '*').
-
----
-
-##### `grantPutAcl` <a name="grantPutAcl" id="aws-analytics-reference-architecture.SingletonBucket.grantPutAcl"></a>
-
-```typescript
-public grantPutAcl(identity: IGrantable, objectsKeyPattern?: string): Grant
-```
-
-Grant the given IAM identity permissions to modify the ACLs of objects in the given Bucket.
-
-If your application has the '@aws-cdk/aws-s3:grantWriteWithoutAcl' feature flag set,
-calling {@link grantWrite} or {@link grantReadWrite} no longer grants permissions to modify the ACLs of the objects;
-in this case, if you need to modify object ACLs, call this method explicitly.
-
-###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantPutAcl.parameter.identity"></a>
-
-- *Type:* @aws-cdk/aws-iam.IGrantable
-
----
-
-###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.SingletonBucket.grantPutAcl.parameter.objectsKeyPattern"></a>
-
-- *Type:* string
-
----
-
-##### `grantRead` <a name="grantRead" id="aws-analytics-reference-architecture.SingletonBucket.grantRead"></a>
-
-```typescript
-public grantRead(identity: IGrantable, objectsKeyPattern?: any): Grant
-```
-
-Grant read permissions for this bucket and it's contents to an IAM principal (Role/Group/User).
-
-If encryption is used, permission to use the key to decrypt the contents
-of the bucket will also be granted to the same principal.
-
-###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantRead.parameter.identity"></a>
-
-- *Type:* @aws-cdk/aws-iam.IGrantable
-
-The principal.
-
----
-
-###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.SingletonBucket.grantRead.parameter.objectsKeyPattern"></a>
-
-- *Type:* any
-
-Restrict the permission to a certain key pattern (default '*').
-
----
-
-##### `grantReadWrite` <a name="grantReadWrite" id="aws-analytics-reference-architecture.SingletonBucket.grantReadWrite"></a>
-
-```typescript
-public grantReadWrite(identity: IGrantable, objectsKeyPattern?: any): Grant
-```
-
-Grants read/write permissions for this bucket and it's contents to an IAM principal (Role/Group/User).
-
-If an encryption key is used, permission to use the key for
-encrypt/decrypt will also be granted.
-
-Before CDK version 1.85.0, this method granted the `s3:PutObject*` permission that included `s3:PutObjectAcl`,
-which could be used to grant read/write object access to IAM principals in other accounts.
-If you want to get rid of that behavior, update your CDK version to 1.85.0 or later,
-and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true`
-in the `context` key of your cdk.json file.
-If you've already updated, but still need the principal to have permissions to modify the ACLs,
-use the {@link grantPutAcl} method.
-
-###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantReadWrite.parameter.identity"></a>
-
-- *Type:* @aws-cdk/aws-iam.IGrantable
-
----
-
-###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.SingletonBucket.grantReadWrite.parameter.objectsKeyPattern"></a>
-
-- *Type:* any
-
----
-
-##### `grantWrite` <a name="grantWrite" id="aws-analytics-reference-architecture.SingletonBucket.grantWrite"></a>
-
-```typescript
-public grantWrite(identity: IGrantable, objectsKeyPattern?: any): Grant
-```
-
-Grant write permissions to this bucket to an IAM principal.
-
-If encryption is used, permission to use the key to encrypt the contents
-of written files will also be granted to the same principal.
-
-Before CDK version 1.85.0, this method granted the `s3:PutObject*` permission that included `s3:PutObjectAcl`,
-which could be used to grant read/write object access to IAM principals in other accounts.
-If you want to get rid of that behavior, update your CDK version to 1.85.0 or later,
-and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true`
-in the `context` key of your cdk.json file.
-If you've already updated, but still need the principal to have permissions to modify the ACLs,
-use the {@link grantPutAcl} method.
-
-###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.SingletonBucket.grantWrite.parameter.identity"></a>
-
-- *Type:* @aws-cdk/aws-iam.IGrantable
-
----
-
-###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.SingletonBucket.grantWrite.parameter.objectsKeyPattern"></a>
-
-- *Type:* any
-
----
-
-##### `onCloudTrailEvent` <a name="onCloudTrailEvent" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailEvent"></a>
-
-```typescript
-public onCloudTrailEvent(id: string, options?: OnCloudTrailBucketEventOptions): Rule
-```
-
-Define a CloudWatch event that triggers when something happens to this repository.
-
-Requires that there exists at least one CloudTrail Trail in your account
-that captures the event. This method will not create the Trail.
-
-###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailEvent.parameter.id"></a>
-
-- *Type:* string
-
-The id of the rule.
-
----
-
-###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailEvent.parameter.options"></a>
-
-- *Type:* @aws-cdk/aws-s3.OnCloudTrailBucketEventOptions
-
-Options for adding the rule.
-
----
-
-##### `onCloudTrailPutObject` <a name="onCloudTrailPutObject" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailPutObject"></a>
-
-```typescript
-public onCloudTrailPutObject(id: string, options?: OnCloudTrailBucketEventOptions): Rule
-```
-
-Defines an AWS CloudWatch event that triggers when an object is uploaded to the specified paths (keys) in this bucket using the PutObject API call.
-
-Note that some tools like `aws s3 cp` will automatically use either
-PutObject or the multipart upload API depending on the file size,
-so using `onCloudTrailWriteObject` may be preferable.
-
-Requires that there exists at least one CloudTrail Trail in your account
-that captures the event. This method will not create the Trail.
-
-###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailPutObject.parameter.id"></a>
-
-- *Type:* string
-
-The id of the rule.
-
----
-
-###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailPutObject.parameter.options"></a>
-
-- *Type:* @aws-cdk/aws-s3.OnCloudTrailBucketEventOptions
-
-Options for adding the rule.
-
----
-
-##### `onCloudTrailWriteObject` <a name="onCloudTrailWriteObject" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailWriteObject"></a>
-
-```typescript
-public onCloudTrailWriteObject(id: string, options?: OnCloudTrailBucketEventOptions): Rule
-```
-
-Defines an AWS CloudWatch event that triggers when an object at the specified paths (keys) in this bucket are written to.
-
-This includes
-the events PutObject, CopyObject, and CompleteMultipartUpload.
-
-Note that some tools like `aws s3 cp` will automatically use either
-PutObject or the multipart upload API depending on the file size,
-so using this method may be preferable to `onCloudTrailPutObject`.
-
-Requires that there exists at least one CloudTrail Trail in your account
-that captures the event. This method will not create the Trail.
-
-###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailWriteObject.parameter.id"></a>
-
-- *Type:* string
-
-The id of the rule.
-
----
-
-###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonBucket.onCloudTrailWriteObject.parameter.options"></a>
-
-- *Type:* @aws-cdk/aws-s3.OnCloudTrailBucketEventOptions
-
-Options for adding the rule.
-
----
-
-##### `s3UrlForObject` <a name="s3UrlForObject" id="aws-analytics-reference-architecture.SingletonBucket.s3UrlForObject"></a>
-
-```typescript
-public s3UrlForObject(key?: string): string
-```
-
-The S3 URL of an S3 object. For example:.
-
-`s3://onlybucket`
-- `s3://bucket/key`
-
-###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonBucket.s3UrlForObject.parameter.key"></a>
-
-- *Type:* string
-
-The S3 key of the object.
-
-If not specified, the S3 URL of the
-bucket is returned.
-
----
-
-##### `transferAccelerationUrlForObject` <a name="transferAccelerationUrlForObject" id="aws-analytics-reference-architecture.SingletonBucket.transferAccelerationUrlForObject"></a>
-
-```typescript
-public transferAccelerationUrlForObject(key?: string, options?: TransferAccelerationUrlOptions): string
-```
-
-The https Transfer Acceleration URL of an S3 object.
-
-Specify `dualStack: true` at the options
-for dual-stack endpoint (connect to the bucket over IPv6). For example:
-
-- `https://bucket.s3-accelerate.amazonaws.com`
-- `https://bucket.s3-accelerate.amazonaws.com/key`
-
-###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonBucket.transferAccelerationUrlForObject.parameter.key"></a>
-
-- *Type:* string
-
-The S3 key of the object.
-
-If not specified, the URL of the
-bucket is returned.
-
----
-
-###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonBucket.transferAccelerationUrlForObject.parameter.options"></a>
-
-- *Type:* @aws-cdk/aws-s3.TransferAccelerationUrlOptions
-
-Options for generating URL.
-
----
-
-##### `urlForObject` <a name="urlForObject" id="aws-analytics-reference-architecture.SingletonBucket.urlForObject"></a>
-
-```typescript
-public urlForObject(key?: string): string
-```
-
-The https URL of an S3 object. Specify `regional: false` at the options for non-regional URLs. For example:.
-
-`https://s3.us-west-1.amazonaws.com/onlybucket`
-- `https://s3.us-west-1.amazonaws.com/bucket/key`
-- `https://s3.cn-north-1.amazonaws.com.cn/china-bucket/mykey`
-
-###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonBucket.urlForObject.parameter.key"></a>
-
-- *Type:* string
-
-The S3 key of the object.
-
-If not specified, the URL of the
-bucket is returned.
-
----
-
-##### `virtualHostedUrlForObject` <a name="virtualHostedUrlForObject" id="aws-analytics-reference-architecture.SingletonBucket.virtualHostedUrlForObject"></a>
-
-```typescript
-public virtualHostedUrlForObject(key?: string, options?: VirtualHostedStyleUrlOptions): string
-```
-
-The virtual hosted-style URL of an S3 object. Specify `regional: false` at the options for non-regional URL. For example:.
-
-`https://only-bucket.s3.us-west-1.amazonaws.com`
-- `https://bucket.s3.us-west-1.amazonaws.com/key`
-- `https://bucket.s3.amazonaws.com/key`
-- `https://china-bucket.s3.cn-north-1.amazonaws.com.cn/mykey`
-
-###### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonBucket.virtualHostedUrlForObject.parameter.key"></a>
-
-- *Type:* string
-
-The S3 key of the object.
-
-If not specified, the URL of the
-bucket is returned.
-
----
-
-###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonBucket.virtualHostedUrlForObject.parameter.options"></a>
-
-- *Type:* @aws-cdk/aws-s3.VirtualHostedStyleUrlOptions
-
-Options for generating URL.
-
----
-
-##### `addCorsRule` <a name="addCorsRule" id="aws-analytics-reference-architecture.SingletonBucket.addCorsRule"></a>
-
-```typescript
-public addCorsRule(rule: CorsRule): void
-```
-
-Adds a cross-origin access configuration for objects in an Amazon S3 bucket.
-
-###### `rule`<sup>Required</sup> <a name="rule" id="aws-analytics-reference-architecture.SingletonBucket.addCorsRule.parameter.rule"></a>
-
-- *Type:* @aws-cdk/aws-s3.CorsRule
-
-The CORS configuration rule to add.
-
----
-
-##### `addInventory` <a name="addInventory" id="aws-analytics-reference-architecture.SingletonBucket.addInventory"></a>
-
-```typescript
-public addInventory(inventory: Inventory): void
-```
-
-Add an inventory configuration.
-
-###### `inventory`<sup>Required</sup> <a name="inventory" id="aws-analytics-reference-architecture.SingletonBucket.addInventory.parameter.inventory"></a>
-
-- *Type:* @aws-cdk/aws-s3.Inventory
-
-configuration to add.
-
----
-
-##### `addLifecycleRule` <a name="addLifecycleRule" id="aws-analytics-reference-architecture.SingletonBucket.addLifecycleRule"></a>
-
-```typescript
-public addLifecycleRule(rule: LifecycleRule): void
-```
-
-Add a lifecycle rule to the bucket.
-
-###### `rule`<sup>Required</sup> <a name="rule" id="aws-analytics-reference-architecture.SingletonBucket.addLifecycleRule.parameter.rule"></a>
-
-- *Type:* @aws-cdk/aws-s3.LifecycleRule
-
-The rule to add.
-
----
-
-##### `addMetric` <a name="addMetric" id="aws-analytics-reference-architecture.SingletonBucket.addMetric"></a>
-
-```typescript
-public addMetric(metric: BucketMetrics): void
-```
-
-Adds a metrics configuration for the CloudWatch request metrics from the bucket.
-
-###### `metric`<sup>Required</sup> <a name="metric" id="aws-analytics-reference-architecture.SingletonBucket.addMetric.parameter.metric"></a>
-
-- *Type:* @aws-cdk/aws-s3.BucketMetrics
-
-The metric configuration to add.
 
 ---
 
@@ -3109,175 +4305,86 @@ The metric configuration to add.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.fromBucketArn">fromBucketArn</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.fromBucketAttributes">fromBucketAttributes</a></code> | Creates a Bucket construct that represents an external bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.fromBucketName">fromBucketName</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.validateBucketName">validateBucketName</a></code> | Thrown an exception if the given bucket name is not valid. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.getOrCreate">getOrCreate</a></code> | Get the Amazon S3 Bucket from the AWS CDK Stack based on the provided name. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn">fromDatabaseArn</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate">getOrCreate</a></code> | *No description.* |
 
 ---
 
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SingletonBucket.isConstruct"></a>
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct"></a>
 
 ```typescript
-import { SingletonBucket } from 'aws-analytics-reference-architecture'
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
 
-SingletonBucket.isConstruct(x: any)
+SingletonGlueDatabase.isConstruct(x: any)
 ```
 
 Return whether the given object is a Construct.
 
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonBucket.isConstruct.parameter.x"></a>
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct.parameter.x"></a>
 
 - *Type:* any
 
 ---
 
-##### `isResource` <a name="isResource" id="aws-analytics-reference-architecture.SingletonBucket.isResource"></a>
+##### `isResource` <a name="isResource" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isResource"></a>
 
 ```typescript
-import { SingletonBucket } from 'aws-analytics-reference-architecture'
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
 
-SingletonBucket.isResource(construct: IConstruct)
+SingletonGlueDatabase.isResource(construct: IConstruct)
 ```
 
 Check whether the given construct is a Resource.
 
-###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonBucket.isResource.parameter.construct"></a>
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isResource.parameter.construct"></a>
 
 - *Type:* @aws-cdk/core.IConstruct
 
 ---
 
-##### `fromBucketArn` <a name="fromBucketArn" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketArn"></a>
+##### `fromDatabaseArn` <a name="fromDatabaseArn" id="aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn"></a>
 
 ```typescript
-import { SingletonBucket } from 'aws-analytics-reference-architecture'
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
 
-SingletonBucket.fromBucketArn(scope: Construct, id: string, bucketArn: string)
+SingletonGlueDatabase.fromDatabaseArn(scope: Construct, id: string, databaseArn: string)
 ```
 
-###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketArn.parameter.scope"></a>
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn.parameter.scope"></a>
 
 - *Type:* constructs.Construct
 
 ---
 
-###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketArn.parameter.id"></a>
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn.parameter.id"></a>
 
 - *Type:* string
 
 ---
 
-###### `bucketArn`<sup>Required</sup> <a name="bucketArn" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketArn.parameter.bucketArn"></a>
+###### `databaseArn`<sup>Required</sup> <a name="databaseArn" id="aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn.parameter.databaseArn"></a>
 
 - *Type:* string
 
 ---
 
-##### `fromBucketAttributes` <a name="fromBucketAttributes" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketAttributes"></a>
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate"></a>
 
 ```typescript
-import { SingletonBucket } from 'aws-analytics-reference-architecture'
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
 
-SingletonBucket.fromBucketAttributes(scope: Construct, id: string, attrs: BucketAttributes)
+SingletonGlueDatabase.getOrCreate(scope: Construct, name: string)
 ```
 
-Creates a Bucket construct that represents an external bucket.
-
-###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketAttributes.parameter.scope"></a>
-
-- *Type:* constructs.Construct
-
-The parent creating construct (usually `this`).
-
----
-
-###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketAttributes.parameter.id"></a>
-
-- *Type:* string
-
-The construct's name.
-
----
-
-###### `attrs`<sup>Required</sup> <a name="attrs" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketAttributes.parameter.attrs"></a>
-
-- *Type:* @aws-cdk/aws-s3.BucketAttributes
-
-A `BucketAttributes` object.
-
-Can be obtained from a call to
-`bucket.export()` or manually created.
-
----
-
-##### `fromBucketName` <a name="fromBucketName" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketName"></a>
-
-```typescript
-import { SingletonBucket } from 'aws-analytics-reference-architecture'
-
-SingletonBucket.fromBucketName(scope: Construct, id: string, bucketName: string)
-```
-
-###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketName.parameter.scope"></a>
-
-- *Type:* constructs.Construct
-
----
-
-###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketName.parameter.id"></a>
-
-- *Type:* string
-
----
-
-###### `bucketName`<sup>Required</sup> <a name="bucketName" id="aws-analytics-reference-architecture.SingletonBucket.fromBucketName.parameter.bucketName"></a>
-
-- *Type:* string
-
----
-
-##### `validateBucketName` <a name="validateBucketName" id="aws-analytics-reference-architecture.SingletonBucket.validateBucketName"></a>
-
-```typescript
-import { SingletonBucket } from 'aws-analytics-reference-architecture'
-
-SingletonBucket.validateBucketName(physicalName: string)
-```
-
-Thrown an exception if the given bucket name is not valid.
-
-###### `physicalName`<sup>Required</sup> <a name="physicalName" id="aws-analytics-reference-architecture.SingletonBucket.validateBucketName.parameter.physicalName"></a>
-
-- *Type:* string
-
-name of the bucket.
-
----
-
-##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.SingletonBucket.getOrCreate"></a>
-
-```typescript
-import { SingletonBucket } from 'aws-analytics-reference-architecture'
-
-SingletonBucket.getOrCreate(scope: Construct, bucketName: string)
-```
-
-Get the Amazon S3 Bucket from the AWS CDK Stack based on the provided name.
-
-The method adds a prefix (ara-) and a suffix (-{ACCOUNT_ID}) to the provided name.
-If no bucket exists, it creates a new one.
-
-###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonBucket.getOrCreate.parameter.scope"></a>
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate.parameter.scope"></a>
 
 - *Type:* @aws-cdk/core.Construct
 
 ---
 
-###### `bucketName`<sup>Required</sup> <a name="bucketName" id="aws-analytics-reference-architecture.SingletonBucket.getOrCreate.parameter.bucketName"></a>
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate.parameter.name"></a>
 
 - *Type:* string
 
@@ -3287,23 +4394,18 @@ If no bucket exists, it creates a new one.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.bucketArn">bucketArn</a></code> | <code>string</code> | The ARN of the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.bucketDomainName">bucketDomainName</a></code> | <code>string</code> | The IPv4 DNS name of the specified bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.bucketDualStackDomainName">bucketDualStackDomainName</a></code> | <code>string</code> | The IPv6 DNS name of the specified bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.bucketName">bucketName</a></code> | <code>string</code> | The name of the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.bucketRegionalDomainName">bucketRegionalDomainName</a></code> | <code>string</code> | The regional domain name of the specified bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.bucketWebsiteDomainName">bucketWebsiteDomainName</a></code> | <code>string</code> | The Domain name of the static website. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.bucketWebsiteUrl">bucketWebsiteUrl</a></code> | <code>string</code> | The URL of the static website. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.encryptionKey">encryptionKey</a></code> | <code>@aws-cdk/aws-kms.IKey</code> | Optional KMS encryption key associated with this bucket. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.isWebsite">isWebsite</a></code> | <code>boolean</code> | If this bucket has been configured for static website hosting. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonBucket.property.policy">policy</a></code> | <code>@aws-cdk/aws-s3.BucketPolicy</code> | The resource policy associated with this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogArn">catalogArn</a></code> | <code>string</code> | ARN of the Glue catalog in which this database is stored. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogId">catalogId</a></code> | <code>string</code> | The catalog id of the database (usually, the AWS account id). |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.databaseArn">databaseArn</a></code> | <code>string</code> | ARN of this database. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.databaseName">databaseName</a></code> | <code>string</code> | Name of this database. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.locationUri">locationUri</a></code> | <code>string</code> | Location URI of this database. |
 
 ---
 
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonBucket.property.node"></a>
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.node"></a>
 
 ```typescript
 public readonly node: ConstructNode;
@@ -3315,7 +4417,7 @@ The construct tree node associated with this construct.
 
 ---
 
-##### `env`<sup>Required</sup> <a name="env" id="aws-analytics-reference-architecture.SingletonBucket.property.env"></a>
+##### `env`<sup>Required</sup> <a name="env" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.env"></a>
 
 ```typescript
 public readonly env: ResourceEnvironment;
@@ -3334,7 +4436,7 @@ that might be different than the stack they were imported into.
 
 ---
 
-##### `stack`<sup>Required</sup> <a name="stack" id="aws-analytics-reference-architecture.SingletonBucket.property.stack"></a>
+##### `stack`<sup>Required</sup> <a name="stack" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.stack"></a>
 
 ```typescript
 public readonly stack: Stack;
@@ -3346,146 +4448,122 @@ The stack in which this resource is defined.
 
 ---
 
-##### `bucketArn`<sup>Required</sup> <a name="bucketArn" id="aws-analytics-reference-architecture.SingletonBucket.property.bucketArn"></a>
+##### `catalogArn`<sup>Required</sup> <a name="catalogArn" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogArn"></a>
 
 ```typescript
-public readonly bucketArn: string;
+public readonly catalogArn: string;
 ```
 
 - *Type:* string
 
-The ARN of the bucket.
+ARN of the Glue catalog in which this database is stored.
 
 ---
 
-##### `bucketDomainName`<sup>Required</sup> <a name="bucketDomainName" id="aws-analytics-reference-architecture.SingletonBucket.property.bucketDomainName"></a>
+##### `catalogId`<sup>Required</sup> <a name="catalogId" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogId"></a>
 
 ```typescript
-public readonly bucketDomainName: string;
+public readonly catalogId: string;
 ```
 
 - *Type:* string
 
-The IPv4 DNS name of the specified bucket.
+The catalog id of the database (usually, the AWS account id).
 
 ---
 
-##### `bucketDualStackDomainName`<sup>Required</sup> <a name="bucketDualStackDomainName" id="aws-analytics-reference-architecture.SingletonBucket.property.bucketDualStackDomainName"></a>
+##### `databaseArn`<sup>Required</sup> <a name="databaseArn" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.databaseArn"></a>
 
 ```typescript
-public readonly bucketDualStackDomainName: string;
+public readonly databaseArn: string;
 ```
 
 - *Type:* string
 
-The IPv6 DNS name of the specified bucket.
+ARN of this database.
 
 ---
 
-##### `bucketName`<sup>Required</sup> <a name="bucketName" id="aws-analytics-reference-architecture.SingletonBucket.property.bucketName"></a>
+##### `databaseName`<sup>Required</sup> <a name="databaseName" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.databaseName"></a>
 
 ```typescript
-public readonly bucketName: string;
+public readonly databaseName: string;
 ```
 
 - *Type:* string
 
-The name of the bucket.
+Name of this database.
 
 ---
 
-##### `bucketRegionalDomainName`<sup>Required</sup> <a name="bucketRegionalDomainName" id="aws-analytics-reference-architecture.SingletonBucket.property.bucketRegionalDomainName"></a>
+##### `locationUri`<sup>Optional</sup> <a name="locationUri" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.locationUri"></a>
 
 ```typescript
-public readonly bucketRegionalDomainName: string;
+public readonly locationUri: string;
 ```
 
 - *Type:* string
 
-The regional domain name of the specified bucket.
+Location URI of this database.
 
 ---
 
-##### `bucketWebsiteDomainName`<sup>Required</sup> <a name="bucketWebsiteDomainName" id="aws-analytics-reference-architecture.SingletonBucket.property.bucketWebsiteDomainName"></a>
+
+### SingletonKey <a name="SingletonKey" id="aws-analytics-reference-architecture.SingletonKey"></a>
+
+An Amazon S3 Bucket implementing the singleton pattern.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SingletonKey.Initializer"></a>
 
 ```typescript
-public readonly bucketWebsiteDomainName: string;
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+new SingletonKey(scope: Construct, id: string, props?: KeyProps)
 ```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-kms.KeyProps</code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.id"></a>
 
 - *Type:* string
 
-The Domain name of the static website.
-
 ---
 
-##### `bucketWebsiteUrl`<sup>Required</sup> <a name="bucketWebsiteUrl" id="aws-analytics-reference-architecture.SingletonBucket.property.bucketWebsiteUrl"></a>
+##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.props"></a>
 
-```typescript
-public readonly bucketWebsiteUrl: string;
-```
-
-- *Type:* string
-
-The URL of the static website.
+- *Type:* @aws-cdk/aws-kms.KeyProps
 
 ---
-
-##### `encryptionKey`<sup>Optional</sup> <a name="encryptionKey" id="aws-analytics-reference-architecture.SingletonBucket.property.encryptionKey"></a>
-
-```typescript
-public readonly encryptionKey: IKey;
-```
-
-- *Type:* @aws-cdk/aws-kms.IKey
-
-Optional KMS encryption key associated with this bucket.
-
----
-
-##### `isWebsite`<sup>Optional</sup> <a name="isWebsite" id="aws-analytics-reference-architecture.SingletonBucket.property.isWebsite"></a>
-
-```typescript
-public readonly isWebsite: boolean;
-```
-
-- *Type:* boolean
-
-If this bucket has been configured for static website hosting.
-
----
-
-##### `policy`<sup>Optional</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonBucket.property.policy"></a>
-
-```typescript
-public readonly policy: BucketPolicy;
-```
-
-- *Type:* @aws-cdk/aws-s3.BucketPolicy
-
-The resource policy associated with this bucket.
-
-If `autoCreatePolicy` is true, a `BucketPolicy` will be created upon the
-first call to addToResourcePolicy(s).
-
----
-
-
-### SingletonGlueDefaultRole <a name="SingletonGlueDefaultRole" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole"></a>
-
-SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
-
-The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
-The Construct provides a getOrCreate method for SingletonInstantiation
 
 #### Methods <a name="Methods" id="Methods"></a>
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.applyRemovalPolicy">applyRemovalPolicy</a></code> | Apply the given removal policy to this resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.addAlias">addAlias</a></code> | Defines a new alias for the key. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.addToResourcePolicy">addToResourcePolicy</a></code> | Adds a statement to the KMS key resource policy. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grant">grant</a></code> | Grant the indicated permissions on this key to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantAdmin">grantAdmin</a></code> | Grant admins permissions using this key to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantDecrypt">grantDecrypt</a></code> | Grant decryption permissions using this key to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantEncrypt">grantEncrypt</a></code> | Grant encryption permissions using this key to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantEncryptDecrypt">grantEncryptDecrypt</a></code> | Grant encryption and decryption permissions using this key to the given principal. |
 
 ---
 
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.toString"></a>
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SingletonKey.toString"></a>
 
 ```typescript
 public toString(): string
@@ -3493,42 +4571,318 @@ public toString(): string
 
 Returns a string representation of this construct.
 
+##### `applyRemovalPolicy` <a name="applyRemovalPolicy" id="aws-analytics-reference-architecture.SingletonKey.applyRemovalPolicy"></a>
+
+```typescript
+public applyRemovalPolicy(policy: RemovalPolicy): void
+```
+
+Apply the given removal policy to this resource.
+
+The Removal Policy controls what happens to this resource when it stops
+being managed by CloudFormation, either because you've removed it from the
+CDK application or because you've made a change that requires the resource
+to be replaced.
+
+The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
+account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
+
+###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonKey.applyRemovalPolicy.parameter.policy"></a>
+
+- *Type:* @aws-cdk/core.RemovalPolicy
+
+---
+
+##### `addAlias` <a name="addAlias" id="aws-analytics-reference-architecture.SingletonKey.addAlias"></a>
+
+```typescript
+public addAlias(aliasName: string): Alias
+```
+
+Defines a new alias for the key.
+
+###### `aliasName`<sup>Required</sup> <a name="aliasName" id="aws-analytics-reference-architecture.SingletonKey.addAlias.parameter.aliasName"></a>
+
+- *Type:* string
+
+---
+
+##### `addToResourcePolicy` <a name="addToResourcePolicy" id="aws-analytics-reference-architecture.SingletonKey.addToResourcePolicy"></a>
+
+```typescript
+public addToResourcePolicy(statement: PolicyStatement, allowNoOp?: boolean): AddToResourcePolicyResult
+```
+
+Adds a statement to the KMS key resource policy.
+
+###### `statement`<sup>Required</sup> <a name="statement" id="aws-analytics-reference-architecture.SingletonKey.addToResourcePolicy.parameter.statement"></a>
+
+- *Type:* @aws-cdk/aws-iam.PolicyStatement
+
+The policy statement to add.
+
+---
+
+###### `allowNoOp`<sup>Optional</sup> <a name="allowNoOp" id="aws-analytics-reference-architecture.SingletonKey.addToResourcePolicy.parameter.allowNoOp"></a>
+
+- *Type:* boolean
+
+If this is set to `false` and there is no policy defined (i.e. external key), the operation will fail. Otherwise, it will no-op.
+
+---
+
+##### `grant` <a name="grant" id="aws-analytics-reference-architecture.SingletonKey.grant"></a>
+
+```typescript
+public grant(grantee: IGrantable, actions: string): Grant
+```
+
+Grant the indicated permissions on this key to the given principal.
+
+This modifies both the principal's policy as well as the resource policy,
+since the default CloudFormation setup for KMS keys is that the policy
+must not be empty and so default grants won't work.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grant.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+###### `actions`<sup>Required</sup> <a name="actions" id="aws-analytics-reference-architecture.SingletonKey.grant.parameter.actions"></a>
+
+- *Type:* string
+
+---
+
+##### `grantAdmin` <a name="grantAdmin" id="aws-analytics-reference-architecture.SingletonKey.grantAdmin"></a>
+
+```typescript
+public grantAdmin(grantee: IGrantable): Grant
+```
+
+Grant admins permissions using this key to the given principal.
+
+Key administrators have permissions to manage the key (e.g., change permissions, revoke), but do not have permissions
+to use the key in cryptographic operations (e.g., encrypt, decrypt).
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantAdmin.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+##### `grantDecrypt` <a name="grantDecrypt" id="aws-analytics-reference-architecture.SingletonKey.grantDecrypt"></a>
+
+```typescript
+public grantDecrypt(grantee: IGrantable): Grant
+```
+
+Grant decryption permissions using this key to the given principal.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantDecrypt.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+##### `grantEncrypt` <a name="grantEncrypt" id="aws-analytics-reference-architecture.SingletonKey.grantEncrypt"></a>
+
+```typescript
+public grantEncrypt(grantee: IGrantable): Grant
+```
+
+Grant encryption permissions using this key to the given principal.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantEncrypt.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
+##### `grantEncryptDecrypt` <a name="grantEncryptDecrypt" id="aws-analytics-reference-architecture.SingletonKey.grantEncryptDecrypt"></a>
+
+```typescript
+public grantEncryptDecrypt(grantee: IGrantable): Grant
+```
+
+Grant encryption and decryption permissions using this key to the given principal.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantEncryptDecrypt.parameter.grantee"></a>
+
+- *Type:* @aws-cdk/aws-iam.IGrantable
+
+---
+
 #### Static Functions <a name="Static Functions" id="Static Functions"></a>
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.getOrCreate">getOrCreate</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromCfnKey">fromCfnKey</a></code> | Create a mutable {@link IKey} based on a low-level {@link CfnKey}. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromKeyArn">fromKeyArn</a></code> | Import an externally defined KMS Key using its ARN. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromLookup">fromLookup</a></code> | Import an existing Key by querying the AWS environment this stack is deployed to. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.getOrCreate">getOrCreate</a></code> | Get the Amazon KMS Key the AWS CDK Stack based on the provided name. |
 
 ---
 
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.isConstruct"></a>
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SingletonKey.isConstruct"></a>
 
 ```typescript
-import { SingletonGlueDefaultRole } from 'aws-analytics-reference-architecture'
+import { SingletonKey } from 'aws-analytics-reference-architecture'
 
-SingletonGlueDefaultRole.isConstruct(x: any)
+SingletonKey.isConstruct(x: any)
 ```
 
 Return whether the given object is a Construct.
 
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.isConstruct.parameter.x"></a>
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonKey.isConstruct.parameter.x"></a>
 
 - *Type:* any
 
 ---
 
-##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.getOrCreate"></a>
+##### `isResource` <a name="isResource" id="aws-analytics-reference-architecture.SingletonKey.isResource"></a>
 
 ```typescript
-import { SingletonGlueDefaultRole } from 'aws-analytics-reference-architecture'
+import { SingletonKey } from 'aws-analytics-reference-architecture'
 
-SingletonGlueDefaultRole.getOrCreate(scope: Construct)
+SingletonKey.isResource(construct: IConstruct)
 ```
 
-###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.getOrCreate.parameter.scope"></a>
+Check whether the given construct is a Resource.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonKey.isResource.parameter.construct"></a>
+
+- *Type:* @aws-cdk/core.IConstruct
+
+---
+
+##### `fromCfnKey` <a name="fromCfnKey" id="aws-analytics-reference-architecture.SingletonKey.fromCfnKey"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.fromCfnKey(cfnKey: CfnKey)
+```
+
+Create a mutable {@link IKey} based on a low-level {@link CfnKey}.
+
+This is most useful when combined with the cloudformation-include module.
+This method is different than {@link fromKeyArn()} because the {@link IKey}
+returned from this method is mutable;
+meaning, calling any mutating methods on it,
+like {@link IKey.addToResourcePolicy()},
+will actually be reflected in the resulting template,
+as opposed to the object returned from {@link fromKeyArn()},
+on which calling those methods would have no effect.
+
+###### `cfnKey`<sup>Required</sup> <a name="cfnKey" id="aws-analytics-reference-architecture.SingletonKey.fromCfnKey.parameter.cfnKey"></a>
+
+- *Type:* @aws-cdk/aws-kms.CfnKey
+
+---
+
+##### `fromKeyArn` <a name="fromKeyArn" id="aws-analytics-reference-architecture.SingletonKey.fromKeyArn"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.fromKeyArn(scope: Construct, id: string, keyArn: string)
+```
+
+Import an externally defined KMS Key using its ARN.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonKey.fromKeyArn.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the construct that will "own" the imported key.
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonKey.fromKeyArn.parameter.id"></a>
+
+- *Type:* string
+
+the id of the imported key in the construct tree.
+
+---
+
+###### `keyArn`<sup>Required</sup> <a name="keyArn" id="aws-analytics-reference-architecture.SingletonKey.fromKeyArn.parameter.keyArn"></a>
+
+- *Type:* string
+
+the ARN of an existing KMS key.
+
+---
+
+##### `fromLookup` <a name="fromLookup" id="aws-analytics-reference-architecture.SingletonKey.fromLookup"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.fromLookup(scope: Construct, id: string, options: KeyLookupOptions)
+```
+
+Import an existing Key by querying the AWS environment this stack is deployed to.
+
+This function only needs to be used to use Keys not defined in your CDK
+application. If you are looking to share a Key between stacks, you can
+pass the `Key` object between stacks and use it as normal. In addition,
+it's not necessary to use this method if an interface accepts an `IKey`.
+In this case, `Alias.fromAliasName()` can be used which returns an alias
+that extends `IKey`.
+
+Calling this method will lead to a lookup when the CDK CLI is executed.
+You can therefore not use any values that will only be available at
+CloudFormation execution time (i.e., Tokens).
+
+The Key information will be cached in `cdk.context.json` and the same Key
+will be used on future runs. To refresh the lookup, you will have to
+evict the value from the cache using the `cdk context` command. See
+https://docs.aws.amazon.com/cdk/latest/guide/context.html for more information.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonKey.fromLookup.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SingletonKey.fromLookup.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+###### `options`<sup>Required</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonKey.fromLookup.parameter.options"></a>
+
+- *Type:* @aws-cdk/aws-kms.KeyLookupOptions
+
+---
+
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.SingletonKey.getOrCreate"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.getOrCreate(scope: Construct, keyName: string)
+```
+
+Get the Amazon KMS Key the AWS CDK Stack based on the provided name.
+
+If no key exists, it creates a new one.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonKey.getOrCreate.parameter.scope"></a>
 
 - *Type:* @aws-cdk/core.Construct
+
+---
+
+###### `keyName`<sup>Required</sup> <a name="keyName" id="aws-analytics-reference-architecture.SingletonKey.getOrCreate.parameter.keyName"></a>
+
+- *Type:* string
 
 ---
 
@@ -3536,12 +4890,15 @@ SingletonGlueDefaultRole.getOrCreate(scope: Construct)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.iamRole">iamRole</a></code> | <code>@aws-cdk/aws-iam.Role</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.keyArn">keyArn</a></code> | <code>string</code> | The ARN of the key. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.keyId">keyId</a></code> | <code>string</code> | The ID of the key (the part that looks something like: 1234abcd-12ab-34cd-56ef-1234567890ab). |
 
 ---
 
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.node"></a>
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonKey.property.node"></a>
 
 ```typescript
 public readonly node: ConstructNode;
@@ -3553,20 +4910,65 @@ The construct tree node associated with this construct.
 
 ---
 
-##### `iamRole`<sup>Required</sup> <a name="iamRole" id="aws-analytics-reference-architecture.SingletonGlueDefaultRole.property.iamRole"></a>
+##### `env`<sup>Required</sup> <a name="env" id="aws-analytics-reference-architecture.SingletonKey.property.env"></a>
 
 ```typescript
-public readonly iamRole: Role;
+public readonly env: ResourceEnvironment;
 ```
 
-- *Type:* @aws-cdk/aws-iam.Role
+- *Type:* @aws-cdk/core.ResourceEnvironment
+
+The environment this resource belongs to.
+
+For resources that are created and managed by the CDK
+(generally, those created by creating new class instances like Role, Bucket, etc.),
+this is always the same as the environment of the stack they belong to;
+however, for imported resources
+(those obtained from static methods like fromRoleArn, fromBucketName, etc.),
+that might be different than the stack they were imported into.
+
+---
+
+##### `stack`<sup>Required</sup> <a name="stack" id="aws-analytics-reference-architecture.SingletonKey.property.stack"></a>
+
+```typescript
+public readonly stack: Stack;
+```
+
+- *Type:* @aws-cdk/core.Stack
+
+The stack in which this resource is defined.
+
+---
+
+##### `keyArn`<sup>Required</sup> <a name="keyArn" id="aws-analytics-reference-architecture.SingletonKey.property.keyArn"></a>
+
+```typescript
+public readonly keyArn: string;
+```
+
+- *Type:* string
+
+The ARN of the key.
+
+---
+
+##### `keyId`<sup>Required</sup> <a name="keyId" id="aws-analytics-reference-architecture.SingletonKey.property.keyId"></a>
+
+```typescript
+public readonly keyId: string;
+```
+
+- *Type:* string
+
+The ID of the key (the part that looks something like: 1234abcd-12ab-34cd-56ef-1234567890ab).
 
 ---
 
 
 ### SynchronousAthenaQuery <a name="SynchronousAthenaQuery" id="aws-analytics-reference-architecture.SynchronousAthenaQuery"></a>
 
-SynchronousAthenaQuery Construct to execute an Amazon Athena query synchronously.
+Execute an Amazon Athena query synchronously during CDK deployment.
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SynchronousAthenaQuery.Initializer"></a>
 
@@ -3873,7 +5275,325 @@ The construct tree node associated with this construct.
 
 ## Structs <a name="Structs" id="Structs"></a>
 
+### AraBucketProps <a name="AraBucketProps" id="aws-analytics-reference-architecture.AraBucketProps"></a>
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.AraBucketProps.Initializer"></a>
+
+```typescript
+import { AraBucketProps } from 'aws-analytics-reference-architecture'
+
+const araBucketProps: AraBucketProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.bucketName">bucketName</a></code> | <code>string</code> | The Amazon S3 bucket name. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.accessControl">accessControl</a></code> | <code>@aws-cdk/aws-s3.BucketAccessControl</code> | Specifies a canned ACL that grants predefined permissions to the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.autoDeleteObjects">autoDeleteObjects</a></code> | <code>boolean</code> | Whether all objects should be automatically deleted when the bucket is removed from the stack or when the stack is deleted. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.blockPublicAccess">blockPublicAccess</a></code> | <code>@aws-cdk/aws-s3.BlockPublicAccess</code> | The block public access configuration of this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.bucketKeyEnabled">bucketKeyEnabled</a></code> | <code>boolean</code> | Specifies whether Amazon S3 should use an S3 Bucket Key with server-side encryption using KMS (SSE-KMS) for new objects in the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.cors">cors</a></code> | <code>@aws-cdk/aws-s3.CorsRule[]</code> | The CORS configuration of this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.encryption">encryption</a></code> | <code>@aws-cdk/aws-s3.BucketEncryption</code> | The encryption mode for the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.encryptionKey">encryptionKey</a></code> | <code>@aws-cdk/aws-kms.IKey</code> | The KMS key for the bucket encryption. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.enforceSSL">enforceSSL</a></code> | <code>boolean</code> | Enforces SSL for requests. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.intelligentTieringConfigurations">intelligentTieringConfigurations</a></code> | <code>@aws-cdk/aws-s3.IntelligentTieringConfiguration[]</code> | Inteligent Tiering Configurations. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.inventories">inventories</a></code> | <code>@aws-cdk/aws-s3.Inventory[]</code> | The inventory configuration of the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.lifecycleRules">lifecycleRules</a></code> | <code>@aws-cdk/aws-s3.LifecycleRule[]</code> | Rules that define how Amazon S3 manages objects during their lifetime. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.metrics">metrics</a></code> | <code>@aws-cdk/aws-s3.BucketMetrics[]</code> | The metrics configuration of this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.notificationsHandlerRole">notificationsHandlerRole</a></code> | <code>@aws-cdk/aws-iam.IRole</code> | The role to be used by the notifications handler. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.objectOwnership">objectOwnership</a></code> | <code>@aws-cdk/aws-s3.ObjectOwnership</code> | The objectOwnership of the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.publicReadAccess">publicReadAccess</a></code> | <code>boolean</code> | Grants public read access to all objects in the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.removalPolicy">removalPolicy</a></code> | <code>@aws-cdk/core.RemovalPolicy</code> | Policy to apply when the bucket is removed from this stack. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.serverAccessLogsBucket">serverAccessLogsBucket</a></code> | <code>@aws-cdk/aws-s3.IBucket</code> | Destination bucket for the server access logs. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.serverAccessLogsPrefix">serverAccessLogsPrefix</a></code> | <code>string</code> | The log file prefix to use for the bucket's access logs. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.transferAcceleration">transferAcceleration</a></code> | <code>boolean</code> | Whether this bucket should have transfer acceleration turned on or not. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.versioned">versioned</a></code> | <code>boolean</code> | Whether this bucket should have versioning turned on or not. |
+
+---
+
+##### `bucketName`<sup>Required</sup> <a name="bucketName" id="aws-analytics-reference-architecture.AraBucketProps.property.bucketName"></a>
+
+```typescript
+public readonly bucketName: string;
+```
+
+- *Type:* string
+
+The Amazon S3 bucket name.
+
+The bucket name is postfixed with the AWS account ID and the AWS region
+
+---
+
+##### `accessControl`<sup>Optional</sup> <a name="accessControl" id="aws-analytics-reference-architecture.AraBucketProps.property.accessControl"></a>
+
+```typescript
+public readonly accessControl: BucketAccessControl;
+```
+
+- *Type:* @aws-cdk/aws-s3.BucketAccessControl
+- *Default:* BucketAccessControl.PRIVATE
+
+Specifies a canned ACL that grants predefined permissions to the bucket.
+
+---
+
+##### `autoDeleteObjects`<sup>Optional</sup> <a name="autoDeleteObjects" id="aws-analytics-reference-architecture.AraBucketProps.property.autoDeleteObjects"></a>
+
+```typescript
+public readonly autoDeleteObjects: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+Whether all objects should be automatically deleted when the bucket is removed from the stack or when the stack is deleted.
+
+Requires the `removalPolicy` to be set to `RemovalPolicy.DESTROY`.
+
+---
+
+##### `blockPublicAccess`<sup>Optional</sup> <a name="blockPublicAccess" id="aws-analytics-reference-architecture.AraBucketProps.property.blockPublicAccess"></a>
+
+```typescript
+public readonly blockPublicAccess: BlockPublicAccess;
+```
+
+- *Type:* @aws-cdk/aws-s3.BlockPublicAccess
+- *Default:* Block all public access and no ACL or bucket policy can grant public access.
+
+The block public access configuration of this bucket.
+
+---
+
+##### `bucketKeyEnabled`<sup>Optional</sup> <a name="bucketKeyEnabled" id="aws-analytics-reference-architecture.AraBucketProps.property.bucketKeyEnabled"></a>
+
+```typescript
+public readonly bucketKeyEnabled: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+Specifies whether Amazon S3 should use an S3 Bucket Key with server-side encryption using KMS (SSE-KMS) for new objects in the bucket.
+
+---
+
+##### `cors`<sup>Optional</sup> <a name="cors" id="aws-analytics-reference-architecture.AraBucketProps.property.cors"></a>
+
+```typescript
+public readonly cors: CorsRule[];
+```
+
+- *Type:* @aws-cdk/aws-s3.CorsRule[]
+- *Default:* No CORS configuration.
+
+The CORS configuration of this bucket.
+
+---
+
+##### `encryption`<sup>Optional</sup> <a name="encryption" id="aws-analytics-reference-architecture.AraBucketProps.property.encryption"></a>
+
+```typescript
+public readonly encryption: BucketEncryption;
+```
+
+- *Type:* @aws-cdk/aws-s3.BucketEncryption
+- *Default:* Server side encryption with AWS managed key (SSE-KMS)
+
+The encryption mode for the bucket.
+
+---
+
+##### `encryptionKey`<sup>Optional</sup> <a name="encryptionKey" id="aws-analytics-reference-architecture.AraBucketProps.property.encryptionKey"></a>
+
+```typescript
+public readonly encryptionKey: IKey;
+```
+
+- *Type:* @aws-cdk/aws-kms.IKey
+- *Default:* if encryption is KMS, use a unique KMS key across the stack called `AraDefaultKmsKey`
+
+The KMS key for the bucket encryption.
+
+---
+
+##### `enforceSSL`<sup>Optional</sup> <a name="enforceSSL" id="aws-analytics-reference-architecture.AraBucketProps.property.enforceSSL"></a>
+
+```typescript
+public readonly enforceSSL: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+Enforces SSL for requests.
+
+---
+
+##### `intelligentTieringConfigurations`<sup>Optional</sup> <a name="intelligentTieringConfigurations" id="aws-analytics-reference-architecture.AraBucketProps.property.intelligentTieringConfigurations"></a>
+
+```typescript
+public readonly intelligentTieringConfigurations: IntelligentTieringConfiguration[];
+```
+
+- *Type:* @aws-cdk/aws-s3.IntelligentTieringConfiguration[]
+- *Default:* No Intelligent Tiiering Configurations.
+
+Inteligent Tiering Configurations.
+
+---
+
+##### `inventories`<sup>Optional</sup> <a name="inventories" id="aws-analytics-reference-architecture.AraBucketProps.property.inventories"></a>
+
+```typescript
+public readonly inventories: Inventory[];
+```
+
+- *Type:* @aws-cdk/aws-s3.Inventory[]
+- *Default:* No inventory configuration
+
+The inventory configuration of the bucket.
+
+---
+
+##### `lifecycleRules`<sup>Optional</sup> <a name="lifecycleRules" id="aws-analytics-reference-architecture.AraBucketProps.property.lifecycleRules"></a>
+
+```typescript
+public readonly lifecycleRules: LifecycleRule[];
+```
+
+- *Type:* @aws-cdk/aws-s3.LifecycleRule[]
+- *Default:* No lifecycle rules.
+
+Rules that define how Amazon S3 manages objects during their lifetime.
+
+---
+
+##### `metrics`<sup>Optional</sup> <a name="metrics" id="aws-analytics-reference-architecture.AraBucketProps.property.metrics"></a>
+
+```typescript
+public readonly metrics: BucketMetrics[];
+```
+
+- *Type:* @aws-cdk/aws-s3.BucketMetrics[]
+- *Default:* No metrics configuration.
+
+The metrics configuration of this bucket.
+
+---
+
+##### `notificationsHandlerRole`<sup>Optional</sup> <a name="notificationsHandlerRole" id="aws-analytics-reference-architecture.AraBucketProps.property.notificationsHandlerRole"></a>
+
+```typescript
+public readonly notificationsHandlerRole: IRole;
+```
+
+- *Type:* @aws-cdk/aws-iam.IRole
+- *Default:* a new role will be created.
+
+The role to be used by the notifications handler.
+
+---
+
+##### `objectOwnership`<sup>Optional</sup> <a name="objectOwnership" id="aws-analytics-reference-architecture.AraBucketProps.property.objectOwnership"></a>
+
+```typescript
+public readonly objectOwnership: ObjectOwnership;
+```
+
+- *Type:* @aws-cdk/aws-s3.ObjectOwnership
+- *Default:* No ObjectOwnership configuration, uploading account will own the object.
+
+The objectOwnership of the bucket.
+
+---
+
+##### `publicReadAccess`<sup>Optional</sup> <a name="publicReadAccess" id="aws-analytics-reference-architecture.AraBucketProps.property.publicReadAccess"></a>
+
+```typescript
+public readonly publicReadAccess: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+Grants public read access to all objects in the bucket.
+
+Similar to calling `bucket.grantPublicAccess()`
+
+---
+
+##### `removalPolicy`<sup>Optional</sup> <a name="removalPolicy" id="aws-analytics-reference-architecture.AraBucketProps.property.removalPolicy"></a>
+
+```typescript
+public readonly removalPolicy: RemovalPolicy;
+```
+
+- *Type:* @aws-cdk/core.RemovalPolicy
+- *Default:* destroy the bucket
+
+Policy to apply when the bucket is removed from this stack.
+
+---
+
+##### `serverAccessLogsBucket`<sup>Optional</sup> <a name="serverAccessLogsBucket" id="aws-analytics-reference-architecture.AraBucketProps.property.serverAccessLogsBucket"></a>
+
+```typescript
+public readonly serverAccessLogsBucket: IBucket;
+```
+
+- *Type:* @aws-cdk/aws-s3.IBucket
+- *Default:* if serverAccessLogsPrefix is defined, use a unique bucket across the stack called `s3-access-logs`
+
+Destination bucket for the server access logs.
+
+---
+
+##### `serverAccessLogsPrefix`<sup>Optional</sup> <a name="serverAccessLogsPrefix" id="aws-analytics-reference-architecture.AraBucketProps.property.serverAccessLogsPrefix"></a>
+
+```typescript
+public readonly serverAccessLogsPrefix: string;
+```
+
+- *Type:* string
+- *Default:* access are not logged
+
+The log file prefix to use for the bucket's access logs.
+
+---
+
+##### `transferAcceleration`<sup>Optional</sup> <a name="transferAcceleration" id="aws-analytics-reference-architecture.AraBucketProps.property.transferAcceleration"></a>
+
+```typescript
+public readonly transferAcceleration: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+Whether this bucket should have transfer acceleration turned on or not.
+
+---
+
+##### `versioned`<sup>Optional</sup> <a name="versioned" id="aws-analytics-reference-architecture.AraBucketProps.property.versioned"></a>
+
+```typescript
+public readonly versioned: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+Whether this bucket should have versioning turned on or not.
+
+---
+
 ### BatchReplayerProps <a name="BatchReplayerProps" id="aws-analytics-reference-architecture.BatchReplayerProps"></a>
+
+The properties for the BatchReplayer construct.
 
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.BatchReplayerProps.Initializer"></a>
 
@@ -3887,10 +5607,11 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>number</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The [PreparedDataset]{@link PreparedDataset} used to replay data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | The S3 Bucket sink where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>number</code> | The frequency of the replay in seconds. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | The maximum file size in Bytes written by the BatchReplayer. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | The S3 object key sink where the BatchReplayer writes data. |
 
 ---
 
@@ -3902,6 +5623,8 @@ public readonly dataset: PreparedDataset;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
 
+The [PreparedDataset]{@link PreparedDataset} used to replay data.
+
 ---
 
 ##### `sinkBucket`<sup>Required</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket"></a>
@@ -3912,6 +5635,10 @@ public readonly sinkBucket: Bucket;
 
 - *Type:* @aws-cdk/aws-s3.Bucket
 
+The S3 Bucket sink where the BatchReplayer writes data.
+
+:warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
+
 ---
 
 ##### `frequency`<sup>Optional</sup> <a name="frequency" id="aws-analytics-reference-architecture.BatchReplayerProps.property.frequency"></a>
@@ -3921,6 +5648,9 @@ public readonly frequency: number;
 ```
 
 - *Type:* number
+- *Default:* The BatchReplayer is triggered every 60 seconds
+
+The frequency of the replay in seconds.
 
 ---
 
@@ -3931,12 +5661,30 @@ public readonly outputFileMaxSizeInBytes: number;
 ```
 
 - *Type:* number
+- *Default:* The BatchReplayer writes 100MB files maximum
+
+The maximum file size in Bytes written by the BatchReplayer.
+
+---
+
+##### `sinkObjectKey`<sup>Optional</sup> <a name="sinkObjectKey" id="aws-analytics-reference-architecture.BatchReplayerProps.property.sinkObjectKey"></a>
+
+```typescript
+public readonly sinkObjectKey: string;
+```
+
+- *Type:* string
+- *Default:* No object key is used and the BatchReplayer writes the dataset in s3://<BUCKET_NAME>/<TABLE_NAME>
+
+The S3 object key sink where the BatchReplayer writes data.
 
 ---
 
 ### DataGeneratorProps <a name="DataGeneratorProps" id="aws-analytics-reference-architecture.DataGeneratorProps"></a>
 
 The properties for DataGenerator Construct.
+
+This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
 
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DataGeneratorProps.Initializer"></a>
 
@@ -3956,7 +5704,9 @@ const dataGeneratorProps: DataGeneratorProps = { ... }
 
 ---
 
-##### `dataset`<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGeneratorProps.property.dataset"></a>
+##### ~~`dataset`~~<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGeneratorProps.property.dataset"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly dataset: Dataset;
@@ -3970,7 +5720,9 @@ Use a pre-defined [Dataset]{@link Dataset} or create a [custom one]{@link Datase
 
 ---
 
-##### `sinkArn`<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGeneratorProps.property.sinkArn"></a>
+##### ~~`sinkArn`~~<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGeneratorProps.property.sinkArn"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly sinkArn: string;
@@ -3984,7 +5736,9 @@ Sink must be an Amazon S3 bucket.
 
 ---
 
-##### `frequency`<sup>Optional</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGeneratorProps.property.frequency"></a>
+##### ~~`frequency`~~<sup>Optional</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGeneratorProps.property.frequency"></a>
+
+- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
 
 ```typescript
 public readonly frequency: number;
@@ -4015,24 +5769,25 @@ const dataLakeExporterProps: DataLakeExporterProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkLocation">sinkLocation</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Sink must be an Amazon S3 Location composed of a bucket and a key. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | Amazon S3 sink Bucket where the data lake exporter write data. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueDatabase">sourceGlueDatabase</a></code> | <code>@aws-cdk/aws-glue.Database</code> | Source AWS Glue Database containing the schema of the stream. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueTable">sourceGlueTable</a></code> | <code>@aws-cdk/aws-glue.Table</code> | Source AWS Glue Table containing the schema of the stream. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceKinesisDataStream">sourceKinesisDataStream</a></code> | <code>@aws-cdk/aws-kinesis.Stream</code> | Source must be an Amazon Kinesis Data Stream. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.deliveryInterval">deliveryInterval</a></code> | <code>number</code> | Delivery interval in seconds. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.deliverySize">deliverySize</a></code> | <code>number</code> | Maximum delivery size in MB. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | Amazon S3 sink object key where the data lake exporter write data. |
 
 ---
 
-##### `sinkLocation`<sup>Required</sup> <a name="sinkLocation" id="aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkLocation"></a>
+##### `sinkBucket`<sup>Required</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkBucket"></a>
 
 ```typescript
-public readonly sinkLocation: Location;
+public readonly sinkBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* @aws-cdk/aws-s3.Bucket
 
-Sink must be an Amazon S3 Location composed of a bucket and a key.
+Amazon S3 sink Bucket where the data lake exporter write data.
 
 ---
 
@@ -4099,6 +5854,19 @@ public readonly deliverySize: number;
 Maximum delivery size in MB.
 
 The frequency of the data delivery is defined by this maximum delivery size.
+
+---
+
+##### `sinkObjectKey`<sup>Optional</sup> <a name="sinkObjectKey" id="aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkObjectKey"></a>
+
+```typescript
+public readonly sinkObjectKey: string;
+```
+
+- *Type:* string
+- *Default:* The data is written at the bucket root
+
+Amazon S3 sink object key where the data lake exporter write data.
 
 ---
 
@@ -4207,6 +5975,8 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 
 ### DatasetProps <a name="DatasetProps" id="aws-analytics-reference-architecture.DatasetProps"></a>
 
+The properties of the Dataset class.
+
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DatasetProps.Initializer"></a>
 
 ```typescript
@@ -4227,7 +5997,9 @@ const datasetProps: DatasetProps = { ... }
 
 ---
 
-##### `createSourceTable`<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.DatasetProps.property.createSourceTable"></a>
+##### ~~`createSourceTable`~~<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.DatasetProps.property.createSourceTable"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly createSourceTable: string;
@@ -4239,7 +6011,9 @@ The CREATE TABLE DDL command to create the source AWS Glue Table.
 
 ---
 
-##### `generateData`<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.DatasetProps.property.generateData"></a>
+##### ~~`generateData`~~<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.DatasetProps.property.generateData"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly generateData: string;
@@ -4251,7 +6025,9 @@ The SELECT query used to generate new data.
 
 ---
 
-##### `location`<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.DatasetProps.property.location"></a>
+##### ~~`location`~~<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.DatasetProps.property.location"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly location: Location;
@@ -4265,7 +6041,9 @@ It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
 
 ---
 
-##### `startDatetime`<sup>Required</sup> <a name="startDatetime" id="aws-analytics-reference-architecture.DatasetProps.property.startDatetime"></a>
+##### ~~`startDatetime`~~<sup>Required</sup> <a name="startDatetime" id="aws-analytics-reference-architecture.DatasetProps.property.startDatetime"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly startDatetime: string;
@@ -4277,7 +6055,9 @@ The minimum datetime value in the dataset used to calculate time offset.
 
 ---
 
-##### `createTargetTable`<sup>Optional</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.DatasetProps.property.createTargetTable"></a>
+##### ~~`createTargetTable`~~<sup>Optional</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.DatasetProps.property.createTargetTable"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly createTargetTable: string;
@@ -4307,6 +6087,7 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodeGroups">defaultNodeGroups</a></code> | <code>boolean</code> | If set to true construct will create default EKS nodegroups. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcAttributes">eksVpcAttributes</a></code> | <code>@aws-cdk/aws-ec2.VpcAttributes</code> | Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups">emrEksNodegroups</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup">EmrEksNodegroup</a>[]</code> | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}. |
@@ -4323,6 +6104,24 @@ public readonly eksAdminRoleArn: string;
 - *Type:* string
 
 Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
+
+---
+
+##### `defaultNodeGroups`<sup>Optional</sup> <a name="defaultNodeGroups" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodeGroups"></a>
+
+```typescript
+public readonly defaultNodeGroups: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+If set to true construct will create default EKS nodegroups.
+
+There are three types of Nodegroup:
+  * Nodegroup for critical jobs which use on-demand instances.
+  * Nodegroup using spot instances for jobs that are not critical and can be preempted if a spot instance is reclaimed
+  * Nodegroup to provide capacity for creating and running managed endpoints spark drivers and executors.
 
 ---
 
@@ -4371,7 +6170,7 @@ public readonly kubernetesVersion: KubernetesVersion;
 ```
 
 - *Type:* @aws-cdk/aws-eks.KubernetesVersion
-- *Default:* v1.20 version is used
+- *Default:* v1.21 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
 
@@ -4722,7 +6521,7 @@ public readonly subnet: ISubnet;
 
 Configure the Amazon EKS NodeGroup in this subnet.
 
-Use this setting for resource dependencies like an Amazon RDS database. 
+Use this setting for resource dependencies like an Amazon RDS database.
 The subnet must include the availability zone information because the nodegroup is tagged with the AZ for the K8S Cluster Autoscaler.
 
 ---
@@ -4743,7 +6542,7 @@ const emrManagedEndpointOptions: EmrManagedEndpointOptions = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.executionRole">executionRole</a></code> | <code>@aws-cdk/aws-iam.IRole</code> | The Amazon IAM role used as the execution role. |
+| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.executionRole">executionRole</a></code> | <code>@aws-cdk/aws-iam.IRole</code> | The Amazon IAM role used as the execution role, this role must provide access to all the AWS resource a user will interact with These can be S3, DynamoDB, Glue Catalog. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the EMR managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.virtualClusterId">virtualClusterId</a></code> | <code>string</code> | The Id of the Amazon EMR virtual cluster containing the managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>string</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint. |
@@ -4759,7 +6558,7 @@ public readonly executionRole: IRole;
 
 - *Type:* @aws-cdk/aws-iam.IRole
 
-The Amazon IAM role used as the execution role.
+The Amazon IAM role used as the execution role, this role must provide access to all the AWS resource a user will interact with These can be S3, DynamoDB, Glue Catalog.
 
 ---
 
@@ -4873,54 +6672,9 @@ name of the Amazon EKS namespace to be linked to the Amazon EMR virtual cluster.
 
 ---
 
-### ExampleProps <a name="ExampleProps" id="aws-analytics-reference-architecture.ExampleProps"></a>
-
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.ExampleProps.Initializer"></a>
-
-```typescript
-import { ExampleProps } from 'aws-analytics-reference-architecture'
-
-const exampleProps: ExampleProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.ExampleProps.property.name">name</a></code> | <code>string</code> | Name used to qualify the CfnOutput in the Stack. |
-| <code><a href="#aws-analytics-reference-architecture.ExampleProps.property.value">value</a></code> | <code>string</code> | Value used in the CfnOutput in the Stack. |
-
----
-
-##### `name`<sup>Optional</sup> <a name="name" id="aws-analytics-reference-architecture.ExampleProps.property.name"></a>
-
-```typescript
-public readonly name: string;
-```
-
-- *Type:* string
-- *Default:* Set to 'defaultMessage' if not provided
-
-Name used to qualify the CfnOutput in the Stack.
-
----
-
-##### `value`<sup>Optional</sup> <a name="value" id="aws-analytics-reference-architecture.ExampleProps.property.value"></a>
-
-```typescript
-public readonly value: string;
-```
-
-- *Type:* string
-- *Default:* Set to 'defaultValue!' if not provided
-
-Value used in the CfnOutput in the Stack.
-
----
-
 ### FlywayRunnerProps <a name="FlywayRunnerProps" id="aws-analytics-reference-architecture.FlywayRunnerProps"></a>
 
-Properties needed to run flyway migration scripts.
+The properties of the FlywayRunner construct, needed to run flyway migration scripts.
 
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.FlywayRunnerProps.Initializer"></a>
 
@@ -5002,7 +6756,7 @@ public readonly logRetention: RetentionDays;
 ```
 
 - *Type:* @aws-cdk/aws-logs.RetentionDays
-- *Default:* logs.RetentionDays.ONE_DAY (1 day)
+- *Default:* logs.RetentionDays.ONE_WEEK
 
 Period to keep the logs around.
 
@@ -5015,6 +6769,7 @@ public readonly replaceDictionary: {[ key: string ]: string};
 ```
 
 - *Type:* {[ key: string ]: string}
+- *Default:* No replacement is done
 
 A key-value map of string (encapsulated between `${` and `}`) to replace in the SQL files given.
 
@@ -5051,19 +6806,33 @@ const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Location">s3Location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | S3 location to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket">s3Bucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | S3 Bucket to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3ObjectKey">s3ObjectKey</a></code> | <code>string</code> | S3 object key to be registered with Lakeformation. |
 
 ---
 
-##### `s3Location`<sup>Required</sup> <a name="s3Location" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Location"></a>
+##### `s3Bucket`<sup>Required</sup> <a name="s3Bucket" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket"></a>
 
 ```typescript
-public readonly s3Location: Location;
+public readonly s3Bucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* @aws-cdk/aws-s3.Bucket
 
-S3 location to be registered with Lakeformation.
+S3 Bucket to be registered with Lakeformation.
+
+---
+
+##### `s3ObjectKey`<sup>Optional</sup> <a name="s3ObjectKey" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3ObjectKey"></a>
+
+```typescript
+public readonly s3ObjectKey: string;
+```
+
+- *Type:* string
+- *Default:* The entire bucket is registered
+
+S3 object key to be registered with Lakeformation.
 
 ---
 
@@ -5084,8 +6853,9 @@ const notebookManagedEndpointOptions: NotebookManagedEndpointOptions = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.executionPolicy">executionPolicy</a></code> | <code>@aws-cdk/aws-iam.ManagedPolicy</code> | The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>string</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json). |
+| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>any</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json). |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code>string</code> | The version of Amazon EMR to deploy. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name. |
 
 ---
 
@@ -5104,10 +6874,10 @@ The name of the policy to be used for the execution Role to pass to ManagedEndpo
 ##### `configurationOverrides`<sup>Optional</sup> <a name="configurationOverrides" id="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides"></a>
 
 ```typescript
-public readonly configurationOverrides: string;
+public readonly configurationOverrides: any;
 ```
 
-- *Type:* string
+- *Type:* any
 
 The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json).
 
@@ -5122,6 +6892,18 @@ public readonly emrOnEksVersion: string;
 - *Type:* string
 
 The version of Amazon EMR to deploy.
+
+---
+
+##### `managedEndpointName`<sup>Optional</sup> <a name="managedEndpointName" id="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName"></a>
+
+```typescript
+public readonly managedEndpointName: string;
+```
+
+- *Type:* string
+
+The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name.
 
 ---
 
@@ -5298,6 +7080,8 @@ Required Type of the identity either GROUP or USER, to be used when SSO is used 
 
 ### PreparedDatasetProps <a name="PreparedDatasetProps" id="aws-analytics-reference-architecture.PreparedDatasetProps"></a>
 
+The properties for the PreparedDataset class used by the BatchReplayer construct.
+
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.PreparedDatasetProps.Initializer"></a>
 
 ```typescript
@@ -5400,17 +7184,16 @@ const s3CrossAccountProps: S3CrossAccountProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.accountID">accountID</a></code> | <code>string</code> | The account ID to grant on the S3 location. |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.bucket">bucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | The S3 Bucket object to grant cross account access. |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.key">key</a></code> | <code>@aws-cdk/aws-kms.Key</code> | The KMS Key used to encrypt the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.objectKey">objectKey</a></code> | <code>string</code> | The S3 object key to grant cross account access (S3 prefix without the bucket name). |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.accountId">accountId</a></code> | <code>string</code> | The account ID to grant on the S3 location. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.s3Bucket">s3Bucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | The S3 Bucket object to grant cross account access. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.s3ObjectKey">s3ObjectKey</a></code> | <code>string</code> | The S3 object key to grant cross account access (S3 prefix without the bucket name). |
 
 ---
 
-##### `accountID`<sup>Required</sup> <a name="accountID" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.accountID"></a>
+##### `accountId`<sup>Required</sup> <a name="accountId" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.accountId"></a>
 
 ```typescript
-public readonly accountID: string;
+public readonly accountId: string;
 ```
 
 - *Type:* string
@@ -5419,35 +7202,24 @@ The account ID to grant on the S3 location.
 
 ---
 
-##### `bucket`<sup>Required</sup> <a name="bucket" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.bucket"></a>
+##### `s3Bucket`<sup>Required</sup> <a name="s3Bucket" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.s3Bucket"></a>
 
 ```typescript
-public readonly bucket: Bucket;
+public readonly s3Bucket: Bucket;
 ```
 
 - *Type:* @aws-cdk/aws-s3.Bucket
 
 The S3 Bucket object to grant cross account access.
 
----
-
-##### `key`<sup>Optional</sup> <a name="key" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.key"></a>
-
-```typescript
-public readonly key: Key;
-```
-
-- *Type:* @aws-cdk/aws-kms.Key
-- *Default:* No resource based policy is created on any KMS key
-
-The KMS Key used to encrypt the bucket.
+This needs to be a Bucket object and not an IBucket because the construct modifies the Bucket policy
 
 ---
 
-##### `objectKey`<sup>Optional</sup> <a name="objectKey" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.objectKey"></a>
+##### `s3ObjectKey`<sup>Optional</sup> <a name="s3ObjectKey" id="aws-analytics-reference-architecture.S3CrossAccountProps.property.s3ObjectKey"></a>
 
 ```typescript
-public readonly objectKey: string;
+public readonly s3ObjectKey: string;
 ```
 
 - *Type:* string
@@ -5459,7 +7231,7 @@ The S3 object key to grant cross account access (S3 prefix without the bucket na
 
 ### SynchronousAthenaQueryProps <a name="SynchronousAthenaQueryProps" id="aws-analytics-reference-architecture.SynchronousAthenaQueryProps"></a>
 
-The properties for SynchronousAthenaQuery Construct.
+The properties for the SynchronousAthenaQuery construct.
 
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.SynchronousAthenaQueryProps.Initializer"></a>
 
@@ -5610,6 +7382,8 @@ public readonly trackingCode: string;
 
 Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
 
+This is deprecated in favor of the [PreparedDataset]{@link PreparedDataset} class
+
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.Dataset.Initializer"></a>
 
 ```typescript
@@ -5642,7 +7416,7 @@ the DatasetProps.
 
 ---
 
-##### `parseCreateSourceQuery` <a name="parseCreateSourceQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery"></a>
+##### ~~`parseCreateSourceQuery`~~ <a name="parseCreateSourceQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery"></a>
 
 ```typescript
 public parseCreateSourceQuery(database: string, table: string, bucket: string, key: string): string
@@ -5682,7 +7456,7 @@ the key to parse.
 
 ---
 
-##### `parseCreateTargetQuery` <a name="parseCreateTargetQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery"></a>
+##### ~~`parseCreateTargetQuery`~~ <a name="parseCreateTargetQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery"></a>
 
 ```typescript
 public parseCreateTargetQuery(database: string, table: string, bucket: string, key: string): string
@@ -5722,7 +7496,7 @@ the key to parse.
 
 ---
 
-##### `parseGenerateQuery` <a name="parseGenerateQuery" id="aws-analytics-reference-architecture.Dataset.parseGenerateQuery"></a>
+##### ~~`parseGenerateQuery`~~ <a name="parseGenerateQuery" id="aws-analytics-reference-architecture.Dataset.parseGenerateQuery"></a>
 
 ```typescript
 public parseGenerateQuery(database: string, sourceTable: string, targetTable: string): string
@@ -5768,7 +7542,9 @@ the target table name to parse.
 
 ---
 
-##### `createSourceTable`<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.Dataset.property.createSourceTable"></a>
+##### ~~`createSourceTable`~~<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.Dataset.property.createSourceTable"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly createSourceTable: string;
@@ -5780,7 +7556,9 @@ The CREATE TABLE DDL command to create the source AWS Glue Table.
 
 ---
 
-##### `createTargetTable`<sup>Required</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.Dataset.property.createTargetTable"></a>
+##### ~~`createTargetTable`~~<sup>Required</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.Dataset.property.createTargetTable"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly createTargetTable: string;
@@ -5792,7 +7570,9 @@ The CREATE TABLE DDL command to create the target AWS Glue Table.
 
 ---
 
-##### `generateData`<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.Dataset.property.generateData"></a>
+##### ~~`generateData`~~<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.Dataset.property.generateData"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly generateData: string;
@@ -5804,7 +7584,9 @@ The SELECT query used to generate new data.
 
 ---
 
-##### `location`<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.Dataset.property.location"></a>
+##### ~~`location`~~<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.Dataset.property.location"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly location: Location;
@@ -5816,7 +7598,9 @@ The Amazon S3 Location of the source dataset.
 
 ---
 
-##### `offset`<sup>Required</sup> <a name="offset" id="aws-analytics-reference-architecture.Dataset.property.offset"></a>
+##### ~~`offset`~~<sup>Required</sup> <a name="offset" id="aws-analytics-reference-architecture.Dataset.property.offset"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly offset: number;
@@ -5828,7 +7612,9 @@ The offset of the Dataset (difference between min datetime and now) in Seconds.
 
 ---
 
-##### `tableName`<sup>Required</sup> <a name="tableName" id="aws-analytics-reference-architecture.Dataset.property.tableName"></a>
+##### ~~`tableName`~~<sup>Required</sup> <a name="tableName" id="aws-analytics-reference-architecture.Dataset.property.tableName"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly tableName: string;
@@ -5856,7 +7642,9 @@ The name of the SQL table extracted from path.
 
 ---
 
-##### `DATASETS_BUCKET`<sup>Required</sup> <a name="DATASETS_BUCKET" id="aws-analytics-reference-architecture.Dataset.property.DATASETS_BUCKET"></a>
+##### ~~`DATASETS_BUCKET`~~<sup>Required</sup> <a name="DATASETS_BUCKET" id="aws-analytics-reference-architecture.Dataset.property.DATASETS_BUCKET"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly DATASETS_BUCKET: string;
@@ -5868,7 +7656,9 @@ The bucket name of the AWS Analytics Reference Architecture datasets.
 
 ---
 
-##### `RETAIL_100GB_CUSTOMER`<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER"></a>
+##### ~~`RETAIL_100GB_CUSTOMER`~~<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_CUSTOMER: Dataset;
@@ -5880,7 +7670,9 @@ The customer dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_CUSTOMER_ADDRESS`<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER_ADDRESS" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER_ADDRESS"></a>
+##### ~~`RETAIL_100GB_CUSTOMER_ADDRESS`~~<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER_ADDRESS" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER_ADDRESS"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_CUSTOMER_ADDRESS: Dataset;
@@ -5892,7 +7684,9 @@ The customer address dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_ITEM`<sup>Required</sup> <a name="RETAIL_100GB_ITEM" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_ITEM"></a>
+##### ~~`RETAIL_100GB_ITEM`~~<sup>Required</sup> <a name="RETAIL_100GB_ITEM" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_ITEM"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_ITEM: Dataset;
@@ -5904,7 +7698,9 @@ The item dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_PROMO`<sup>Required</sup> <a name="RETAIL_100GB_PROMO" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_PROMO"></a>
+##### ~~`RETAIL_100GB_PROMO`~~<sup>Required</sup> <a name="RETAIL_100GB_PROMO" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_PROMO"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_PROMO: Dataset;
@@ -5916,7 +7712,9 @@ The promotion dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_STORE`<sup>Required</sup> <a name="RETAIL_100GB_STORE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE"></a>
+##### ~~`RETAIL_100GB_STORE`~~<sup>Required</sup> <a name="RETAIL_100GB_STORE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_STORE: Dataset;
@@ -5928,7 +7726,9 @@ The store dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_STORE_SALE`<sup>Required</sup> <a name="RETAIL_100GB_STORE_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE_SALE"></a>
+##### ~~`RETAIL_100GB_STORE_SALE`~~<sup>Required</sup> <a name="RETAIL_100GB_STORE_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE_SALE"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_STORE_SALE: Dataset;
@@ -5940,7 +7740,9 @@ The store sale dataset part of 100GB retail datasets.
 
 ---
 
-##### `RETAIL_100GB_WAREHOUSE`<sup>Required</sup> <a name="RETAIL_100GB_WAREHOUSE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WAREHOUSE"></a>
+##### ~~`RETAIL_100GB_WAREHOUSE`~~<sup>Required</sup> <a name="RETAIL_100GB_WAREHOUSE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WAREHOUSE"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_WAREHOUSE: Dataset;
@@ -5952,7 +7754,9 @@ The warehouse dataset part 100GB of retail datasets.
 
 ---
 
-##### `RETAIL_100GB_WEB_SALE`<sup>Required</sup> <a name="RETAIL_100GB_WEB_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WEB_SALE"></a>
+##### ~~`RETAIL_100GB_WEB_SALE`~~<sup>Required</sup> <a name="RETAIL_100GB_WEB_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WEB_SALE"></a>
+
+- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
 
 ```typescript
 public readonly RETAIL_100GB_WEB_SALE: Dataset;
@@ -5986,13 +7790,13 @@ new EmrEksNodegroup()
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.CRITICAL_ALL">CRITICAL_ALL</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS critical workloads. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_DRIVER">NOTEBOOK_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_EXECUTOR">NOTEBOOK_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_WITHOUT_PODTEMPLATE">NOTEBOOK_WITHOUT_PODTEMPLATE</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER">SHARED_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_EXECUTOR">SHARED_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.TOOLING_ALL">TOOLING_ALL</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for Kubernetes applications required by EMR on EKS (e.g cert manager and cluster autoscaler). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.CRITICAL_ALL">CRITICAL_ALL</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS critical workloads (both drivers and executors). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_DRIVER">NOTEBOOK_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (drivers only). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_EXECUTOR">NOTEBOOK_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (executors only). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_WITHOUT_PODTEMPLATE">NOTEBOOK_WITHOUT_PODTEMPLATE</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER} and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS  Managed Endpoint currently doesn't support Pod Template customization. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER">SHARED_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (drivers only). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_EXECUTOR">SHARED_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (executors only). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.TOOLING_ALL">TOOLING_ALL</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
 
 ---
 
@@ -6004,7 +7808,7 @@ public readonly CRITICAL_ALL: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
-Default nodegroup configuration for EMR on EKS critical workloads.
+Default nodegroup configuration for EMR on EKS critical workloads (both drivers and executors).
 
 ---
 
@@ -6016,6 +7820,8 @@ public readonly NOTEBOOK_DRIVER: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
+Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (drivers only).
+
 ---
 
 ##### `NOTEBOOK_EXECUTOR`<sup>Required</sup> <a name="NOTEBOOK_EXECUTOR" id="aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_EXECUTOR"></a>
@@ -6026,7 +7832,7 @@ public readonly NOTEBOOK_EXECUTOR: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
-Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS.
+Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (executors only).
 
 ---
 
@@ -6038,6 +7844,8 @@ public readonly NOTEBOOK_WITHOUT_PODTEMPLATE: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
+Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER} and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS  Managed Endpoint currently doesn't support Pod Template customization.
+
 ---
 
 ##### `SHARED_DRIVER`<sup>Required</sup> <a name="SHARED_DRIVER" id="aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER"></a>
@@ -6048,7 +7856,7 @@ public readonly SHARED_DRIVER: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
-Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads.
+Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (drivers only).
 
 ---
 
@@ -6060,6 +7868,8 @@ public readonly SHARED_EXECUTOR: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
+Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (executors only).
+
 ---
 
 ##### `TOOLING_ALL`<sup>Required</sup> <a name="TOOLING_ALL" id="aws-analytics-reference-architecture.EmrEksNodegroup.property.TOOLING_ALL"></a>
@@ -6070,19 +7880,21 @@ public readonly TOOLING_ALL: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
-Default nodegroup configuration for Kubernetes applications required by EMR on EKS (e.g cert manager and cluster autoscaler).
-
 ---
 
 ### PreparedDataset <a name="PreparedDataset" id="aws-analytics-reference-architecture.PreparedDataset"></a>
 
 PreparedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
 
-PreparedDataset has following properties:
+PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets
 
-1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range. 
+A PreparedDataset has following properties:
+
+1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range.
 There is no constraint on how long the timestamp range can be. But each file must not be larger than 100MB.
+Creating new PreparedDataset requires to find the right balance between number of partitions and the amount of data read by each BatchReplayer (micro-)batch
 The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions.
+
 Here is an example:
 
 |- time_range_start=16000000000
@@ -6215,7 +8027,7 @@ public readonly startDateTime: string;
 
 Start datetime replaying this dataset.
 
-Your data set may start from 1 Jan 2020 
+Your data set may start from 1 Jan 2020
 But you can specify this to 1 Feb 2020 to omit the first month data.
 
 ---

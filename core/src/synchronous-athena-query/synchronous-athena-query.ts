@@ -8,9 +8,8 @@ import { Bucket, Location } from '@aws-cdk/aws-s3';
 import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-
 /**
- * The properties for SynchronousAthenaQuery Construct.
+ * The properties for the SynchronousAthenaQuery construct.
  */
 export interface SynchronousAthenaQueryProps {
   /**
@@ -34,7 +33,7 @@ export interface SynchronousAthenaQueryProps {
 }
 
 /**
- * SynchronousAthenaQuery Construct to execute an Amazon Athena query synchronously
+ * Execute an Amazon Athena query synchronously during CDK deployment
  */
 
 export class SynchronousAthenaQuery extends Construct {
@@ -44,7 +43,6 @@ export class SynchronousAthenaQuery extends Construct {
   * @param {Construct} scope the Scope of the CDK Construct
   * @param {string} id the ID of the CDK Construct
   * @param {SynchronousAthenaQueryProps} props the CrawlerStartWait [properties]{@link SynchronousAthenaQueryProps}
-  * @access public
   */
 
   constructor(scope: Construct, id: string, props: SynchronousAthenaQueryProps) {
@@ -52,22 +50,15 @@ export class SynchronousAthenaQuery extends Construct {
 
     const stack = Stack.of(this);
 
-    // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
-    const athenaQueryStartFn = new PreBundledFunction(this, 'athenaQueryStartFn', {
-      runtime: Runtime.PYTHON_3_8,
-      codePath: 'synchronous-athena-query/resources/lambdas',
-      handler: 'lambda.on_event',
-      logRetention: RetentionDays.ONE_DAY,
-      timeout: Duration.seconds(20),
-    });
+    let athenaQueryStartFnPolicy: PolicyStatement [] = [];
 
     // Add permissions from the Amazon IAM Policy Statements
     props.executionRoleStatements?.forEach( (element) => {
-      athenaQueryStartFn.addToRolePolicy(element);
+      athenaQueryStartFnPolicy.push(element);
     });
 
-    // Add permissions to the Function fro starting the query
-    athenaQueryStartFn.addToRolePolicy(new PolicyStatement({
+    // Add permissions to the Function for starting the query
+    athenaQueryStartFnPolicy.push(new PolicyStatement({
       resources: [
         stack.formatArn({
           region: Aws.REGION,
@@ -83,7 +74,7 @@ export class SynchronousAthenaQuery extends Construct {
     }));
 
     // add permissions to the Function to store result in the result path
-    athenaQueryStartFn.addToRolePolicy(new PolicyStatement({
+    athenaQueryStartFnPolicy.push(new PolicyStatement({
       resources: [
         stack.formatArn({
           region: '',
@@ -118,17 +109,22 @@ export class SynchronousAthenaQuery extends Construct {
       ],
     }));
 
-    // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
-    const athenaQueryWaitFn = new PreBundledFunction(this, 'athenaQueryStartWaitFn', {
+
+    // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
+    const athenaQueryStartFn = new PreBundledFunction(this, 'AthenaQueryStartFn', {
       runtime: Runtime.PYTHON_3_8,
       codePath: 'synchronous-athena-query/resources/lambdas',
-      handler: 'lambda.is_complete',
-      logRetention: RetentionDays.ONE_DAY,
+      name: 'SynchronousAthenaCrStart',
+      lambdaPolicyStatements: athenaQueryStartFnPolicy,
+      handler: 'lambda.on_event',
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(20),
     });
 
+    let athenaQueryWaitFnPolicy: PolicyStatement [] = [];
+
     // Add permissions to the Function
-    athenaQueryWaitFn.addToRolePolicy(new PolicyStatement({
+    athenaQueryWaitFnPolicy.push(new PolicyStatement({
       resources: [
         stack.formatArn({
           region: Aws.REGION,
@@ -144,24 +140,53 @@ export class SynchronousAthenaQuery extends Construct {
       ],
     }));
 
+    // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
+    const athenaQueryWaitFn = new PreBundledFunction(this, 'AthenaQueryWaitFn', {
+      runtime: Runtime.PYTHON_3_8,
+      codePath: 'synchronous-athena-query/resources/lambdas',
+      name: 'SynchronousAthenaCrWait',
+      lambdaPolicyStatements: athenaQueryWaitFnPolicy,
+      handler: 'lambda.is_complete',
+      logRetention: RetentionDays.ONE_WEEK,
+      timeout: Duration.seconds(20),
+    });
+
+    /*const providerManagedPolicy = new ManagedPolicy(this, 'providerManagedPolicy', {
+      statements: [new PolicyStatement({
+        actions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents'],
+        resources: [`arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:*`],
+        effect: Effect.ALLOW,
+      })],
+    });
+
+    const providerRole = new Role(this, 'providerRole', {
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+      managedPolicies: [providerManagedPolicy],
+    });*/
+
     // Create an AWS CDK Custom Resource Provider for starting the source crawler and waiting for completion
-    const synchronousAthenaQueryCRP = new Provider(this, 'synchronousAthenaQueryCRP', {
+    const synchronousAthenaQueryCRP = new Provider(this, 'customresourceprovider', {
       onEventHandler: athenaQueryStartFn,
       isCompleteHandler: athenaQueryWaitFn,
       queryInterval: Duration.seconds(10),
       totalTimeout: Duration.minutes(props.timeout || 1),
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
     });
 
-    const resultPathBucket = Bucket.fromBucketName(this, 'resultPathBucket', props.resultPath.bucketName);
+    synchronousAthenaQueryCRP.node.addDependency(athenaQueryStartFn);
+    synchronousAthenaQueryCRP.node.addDependency(athenaQueryWaitFn);
+
+    const resultPathBucket = Bucket.fromBucketName(this, 'ResultPathBucket', props.resultPath.bucketName);
 
     // Create an AWS CDK Custom Resource for starting the source crawler and waiting for completion
-    new CustomResource(this, 'synchronousAthenaQueryCR', {
+    const myCR = new CustomResource(this, 'SynchronousAthenaQueryCR', {
       serviceToken: synchronousAthenaQueryCRP.serviceToken,
       properties: {
         Statement: props.statement,
         ResultPath: resultPathBucket.s3UrlForObject(props.resultPath.objectKey),
       },
     });
+
+    myCR.node.addDependency(synchronousAthenaQueryCRP);
   }
 }

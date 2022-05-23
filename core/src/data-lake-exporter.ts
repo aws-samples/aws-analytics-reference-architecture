@@ -1,22 +1,26 @@
 import { Database, Table } from '@aws-cdk/aws-glue';
-import { Role, ServicePrincipal, PolicyStatement } from '@aws-cdk/aws-iam';
+import { Role, ServicePrincipal, PolicyStatement, PolicyDocument, ManagedPolicy } from '@aws-cdk/aws-iam';
 import { Stream } from '@aws-cdk/aws-kinesis';
 import { CfnDeliveryStream } from '@aws-cdk/aws-kinesisfirehose';
 import { LogGroup, RetentionDays, LogStream } from '@aws-cdk/aws-logs';
-import { Bucket, Location } from '@aws-cdk/aws-s3';
-import { Construct, Aws, RemovalPolicy, Stack } from '@aws-cdk/core';
+import { Bucket } from '@aws-cdk/aws-s3';
+import { Construct, Aws, RemovalPolicy } from '@aws-cdk/core';
 import { ContextOptions } from './common/context-options';
 import { TrackedConstruct, TrackedConstructProps } from './common/tracked-construct';
-
 
 /**
  * The properties for DataLakeExporter Construct.
  */
 export interface DataLakeExporterProps {
   /**
-   * Sink must be an Amazon S3 Location composed of a bucket and a key.
+   * Amazon S3 sink Bucket where the data lake exporter write data.
    */
-  readonly sinkLocation: Location;
+  readonly sinkBucket: Bucket;
+  /**
+   * Amazon S3 sink object key where the data lake exporter write data.
+   * @default - The data is written at the bucket root
+   */
+  readonly sinkObjectKey?: string;
   /**
    * Source must be an Amazon Kinesis Data Stream.
    */
@@ -68,16 +72,14 @@ export class DataLakeExporter extends TrackedConstruct {
     if ( props.deliverySize || 128 > 128 ) { throw 'deliverySize cannot be more than 128MB';}
     if ( props.deliveryInterval || 900 > 900 ) { throw 'deliveryInterval cannot be more than 900s';}
 
-    const stack = Stack.of(this);
+    // const stack = Stack.of(this);
 
-    // Get the Bucket from Amazon S3 Location sink
-    const sinkBucket = Bucket.fromBucketName(this, 'sinkBucket', props.sinkLocation.bucketName);
 
     // Create log group for storing Amazon Kinesis Firehose logs.
     const logGroup = new LogGroup(this, 'dataLakeExporterLogGroup', {
-      logGroupName: '/data-lake-exporter/',
+      logGroupName: '/aws/data-lake-exporter/',
       removalPolicy: RemovalPolicy.DESTROY,
-      retention: RetentionDays.ONE_DAY,
+      retention: RetentionDays.ONE_WEEK,
     });
 
     // Create the Kinesis Firehose log stream.
@@ -87,113 +89,42 @@ export class DataLakeExporter extends TrackedConstruct {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    // Create an Amazon IAM Role used by Amazon Kinesis Firehose delivery stream
-    const role = new Role(this, 'dataLakeExporterRole', {
-      assumedBy: new ServicePrincipal('firehose.amazonaws.com'),
+    const policyDocumentKinesisFirehose = new PolicyDocument({
+      statements: [
+        new PolicyStatement({
+          resources: [
+            `${logGroup.logGroupArn}:log-stream:${firehoseLogStream.logStreamName}`,
+          ],
+          actions: [
+            'logs:PutLogEvents',
+          ],
+        }),
+      ],
     });
 
-    // add policy to access AWS Glue Database and Table for format conversion
-    role.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          props.sourceGlueTable.tableArn,
-          props.sourceGlueDatabase.catalogArn,
-          props.sourceGlueDatabase.databaseArn,
-        ],
-        actions: [
-          'glue:GetTable',
-          'glue:GetTableVersion',
-          'glue:GetTableVersions',
-        ],
-      }),
-    );
+    const managedPolicyKinesisFirehose = new ManagedPolicy(this, 'managedPolicyKinesisFirehose', {
+      document: policyDocumentKinesisFirehose,
+    });
 
-    // add policy to access source stream
-    role.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          props.sourceKinesisDataStream.streamArn,
-        ],
-        actions: [
-          'kinesis:DescribeStream',
-          'kinesis:GetShardIterator',
-          'kinesis:GetRecords',
-          'kinesis:ListShards',
-        ],
-      }),
-    );
+    // Create an Amazon IAM Role used by Amazon Kinesis Firehose delivery stream
+    const roleKinesisFirehose = new Role(this, 'dataLakeExporterRole', {
+      assumedBy: new ServicePrincipal('firehose.amazonaws.com'),
+      managedPolicies: [managedPolicyKinesisFirehose],
+    });
 
-    // add policy to write data in Amazon S3 Location
-    role.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          stack.formatArn({
-            account: '',
-            region: '',
-            service: 's3',
-            resource: props.sinkLocation.bucketName,
-            resourceName: props.sinkLocation.objectKey,
-          }),
-          stack.formatArn({
-            account: '',
-            region: '',
-            service: 's3',
-            resource: props.sinkLocation.bucketName,
-            resourceName: `${props.sinkLocation.objectKey}/*`,
-          }),
-          stack.formatArn({
-            account: '',
-            region: '',
-            service: 's3',
-            resource: props.sinkLocation.bucketName,
-          }),
-        ],
-        actions: [
-          's3:AbortMultipartUpload',
-          's3:GetBucketLocation',
-          's3:GetObject',
-          's3:ListBucket',
-          's3:ListBucketMultipartUploads',
-          's3:PutObject',
-        ],
-      }),
-    );
+    roleKinesisFirehose.node.addDependency(managedPolicyKinesisFirehose);
 
-    // add policy to write logs to CloudWatch logs
-    role.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          `${logGroup.logGroupArn}:log-stream:${firehoseLogStream.logStreamName}`,
-        ],
-        actions: [
-          'logs:PutLogEvents',
-        ],
-      }),
-    );
+    const grantSink = props.sinkBucket.grantWrite(roleKinesisFirehose);
+    const grantSource = props.sourceKinesisDataStream.grantRead(roleKinesisFirehose);
+    const grantTable = props.sourceGlueTable.grantRead(roleKinesisFirehose);
+    const grantGlue = props.sourceGlueTable.grantToUnderlyingResources(roleKinesisFirehose, ['glue:GetTableVersions']);
 
-    // TODO add policy for KMS managed?
-
-    /*     this.ingestionStream = new DeliveryStream(this, 'dataLakeExporter', {
-      sourceStream: props.sourceKinesisDataStream,
-      destinations: [new S3Bucket(sinkBucket,{
-        dataOutputPrefix: props.sinkLocation.objectKey,
-        errorOutputPrefix: `${props.sinkLocation.objectKey}-error`,
-        logGroup: logGroup,
-        compression: Compression.SNAPPY,
-        bufferingInterval: Duration.seconds(props.deliveryInterval || 900),
-        bufferingSize: Size.mebibytes(props.deliverySize || 128),
-      })],
-      encryption: StreamEncryption.AWS_OWNED,
-    }) */
 
     // Create the Delivery stream from Cfn because L2 Construct doesn't support conversion to parquet and custom partitioning
     this.cfnIngestionStream = new CfnDeliveryStream(this, 'dataLakeExporter', {
       deliveryStreamType: 'KinesisStreamAsSource',
-      deliveryStreamEncryptionConfigurationInput: {
-        keyType: 'AWS_OWNED_CMK',
-      },
       extendedS3DestinationConfiguration: {
-        bucketArn: sinkBucket.bucketArn,
+        bucketArn: props.sinkBucket.bucketArn,
         bufferingHints: {
           intervalInSeconds: props.deliveryInterval || 900,
           sizeInMBs: props.deliverySize || 128,
@@ -202,9 +133,9 @@ export class DataLakeExporter extends TrackedConstruct {
           logGroupName: logGroup.logGroupName,
           logStreamName: firehoseLogStream.logStreamName,
         },
-        roleArn: role.roleArn,
-        errorOutputPrefix: `${props.sinkLocation.objectKey}-error`,
-        prefix: props.sinkLocation.objectKey,
+        roleArn: roleKinesisFirehose.roleArn,
+        errorOutputPrefix: `${props.sinkObjectKey}-error`,
+        prefix: props.sinkObjectKey,
         compressionFormat: 'UNCOMPRESSED',
         s3BackupMode: 'Disabled',
         dataFormatConversionConfiguration: {
@@ -220,7 +151,7 @@ export class DataLakeExporter extends TrackedConstruct {
             },
           },
           schemaConfiguration: {
-            roleArn: role.roleArn,
+            roleArn: roleKinesisFirehose.roleArn,
             catalogId: Aws.ACCOUNT_ID,
             region: Aws.REGION,
             databaseName: props.sourceGlueDatabase.databaseName,
@@ -229,9 +160,16 @@ export class DataLakeExporter extends TrackedConstruct {
         },
       },
       kinesisStreamSourceConfiguration: {
-        kinesisStreamArn: '',
-        roleArn: role.roleArn,
+        kinesisStreamArn: props.sourceKinesisDataStream.streamArn,
+        roleArn: roleKinesisFirehose.roleArn,
       },
     });
+
+    // Need to enforce a dependancy because the grant methods generate an IAM Policy without dependency on the Firehose
+    this.cfnIngestionStream.node.addDependency(grantSink);
+    this.cfnIngestionStream.node.addDependency(grantSource);
+    this.cfnIngestionStream.node.addDependency(grantTable);
+    this.cfnIngestionStream.node.addDependency(grantGlue);
+
   }
 }

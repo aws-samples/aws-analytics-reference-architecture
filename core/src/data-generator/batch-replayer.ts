@@ -1,26 +1,48 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-// import * as lambda from "@aws-cdk/aws-lambda";
 import { Rule, Schedule } from '@aws-cdk/aws-events';
 import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
-import { Policy, PolicyStatement } from '@aws-cdk/aws-iam';
-// import path = require("path");
+import { PolicyStatement } from '@aws-cdk/aws-iam';
 import { LayerVersion, Runtime } from '@aws-cdk/aws-lambda';
-import { RetentionDays } from '@aws-cdk/aws-logs';
+import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
 import { Bucket } from '@aws-cdk/aws-s3';
-import { JsonPath, Map, StateMachine, TaskInput } from '@aws-cdk/aws-stepfunctions';
+import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from '@aws-cdk/aws-stepfunctions';
 import { LambdaInvoke } from '@aws-cdk/aws-stepfunctions-tasks';
-import { Aws, Construct, Duration } from '@aws-cdk/core';
+import { Aws, Construct, Duration, RemovalPolicy } from '@aws-cdk/core';
 import { ContextOptions } from '../common/context-options';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 import { PreparedDataset } from '../datasets/prepared-dataset';
 
+/**
+ * The properties for the BatchReplayer construct
+ */
 export interface BatchReplayerProps {
+
+  /**
+   * The [PreparedDataset]{@link PreparedDataset} used to replay data
+   */
   readonly dataset: PreparedDataset;
+  /**
+   * The frequency of the replay in seconds
+   * @default - The BatchReplayer is triggered every 60 seconds
+   */
   readonly frequency?: number;
+  /**
+   * The S3 Bucket sink where the BatchReplayer writes data.
+   * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
+   */
   readonly sinkBucket: Bucket;
+  /**
+   * The S3 object key sink where the BatchReplayer writes data.
+   * @default - No object key is used and the BatchReplayer writes the dataset in s3://<BUCKET_NAME>/<TABLE_NAME>
+   */
+  readonly sinkObjectKey?: string;
+  /**
+   * The maximum file size in Bytes written by the BatchReplayer
+   * @default - The BatchReplayer writes 100MB files maximum
+   */
   readonly outputFileMaxSizeInBytes?: number;
 }
 
@@ -36,6 +58,22 @@ export interface BatchReplayerProps {
  * 2. resources/lambdas/write-in-batch
  * Take a file path, filter only records within given time range, adjust the the time with offset to
  * make it looks like just being generated. Then write the output to the `sinkBucket`
+ *
+ * Usage example:
+ * ```typescript
+ *
+ * const myBucket = new Bucket(stack, "MyBucket")
+ *
+ * new BatchReplayer(stack, "WebSalesReplayer", {
+ *   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
+ *   s3BucketSink: myBucket
+ *   s3ObjectKeySink: 'some-prefix',
+ *   frequency: 120,
+ *   outputFileMaxSizeInBytes: 10000000,
+ * });
+ * ```
+ *
+ * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
  */
 export class BatchReplayer extends TrackedConstruct {
 
@@ -56,6 +94,11 @@ export class BatchReplayer extends TrackedConstruct {
   public readonly sinkBucket: Bucket;
 
   /**
+   * Sink object key where the batch replayer will put data in
+   */
+  public readonly sinkObjectKey?: string;
+
+  /**
    * Maximum file size for each output file. If the output batch file is,
    * larger than that, it will be splitted into multiple files that fit this size.
    *
@@ -63,6 +106,12 @@ export class BatchReplayer extends TrackedConstruct {
    */
   public readonly outputFileMaxSizeInBytes?: number;
 
+  /**
+   * Constructs a new instance of the BatchReplayer construct
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {BatchReplayerProps} props the BatchReplayer [properties]{@link BatchReplayerProps}
+   */
   constructor(scope: Construct, id: string, props: BatchReplayerProps) {
 
     const trackedConstructProps : TrackedConstructProps = {
@@ -74,6 +123,7 @@ export class BatchReplayer extends TrackedConstruct {
     this.dataset = props.dataset;
     this.frequency = props.frequency || 60;
     this.sinkBucket = props.sinkBucket;
+    this.sinkObjectKey = props.sinkObjectKey;
     this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
 
     const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python38:6`);
@@ -82,38 +132,36 @@ export class BatchReplayer extends TrackedConstruct {
     const manifestObjectKey = this.dataset.manifestLocation.objectKey;
     const dataBucketName = this.dataset.location.bucketName;
     const dataObjectKey = this.dataset.location.objectKey;
+
+    const findFilePathsFnPolicy = [
+      new PolicyStatement({
+        actions: [
+          's3:GetObject',
+          's3:ListBucket',
+        ],
+        resources: [
+          `arn:aws:s3:::${dataBucketName}/${dataObjectKey}/*`,
+          `arn:aws:s3:::${dataBucketName}`,
+        ],
+      }),
+    ];
+
     /**
      * Find all paths within the time range from the manifest file
      */
     const findFilePathsFn = new PreBundledFunction(this, 'FindFilePath', {
+      name: 'FindFilePathsFn',
       memorySize: 1024,
       codePath: 'data-generator/resources/lambdas/find-file-paths',
       runtime: Runtime.PYTHON_3_8,
       handler: 'find-file-paths.handler',
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),
-      layers: [dataWranglerLayer],
+      lambdaLayers: [dataWranglerLayer],
+      lambdaPolicyStatements: findFilePathsFnPolicy,
     });
 
-    // Grant access to read S3
-    findFilePathsFn.role?.attachInlinePolicy(
-      new Policy(this, 'read-manifest-file-policy', {
-        statements: [
-          new PolicyStatement({
-            actions: [
-              's3:GetObject',
-              's3:ListBucket',
-            ],
-            resources: [
-              `arn:aws:s3:::${manifestBucketName}/${manifestObjectKey}`,
-              `arn:aws:s3:::${manifestBucketName}`,
-            ],
-          }),
-        ],
-      }),
-    );
-
-    const findFilePathsFnTask = new LambdaInvoke(this, 'findFilePathFnTask', {
+    const findFilePathsFnTask = new LambdaInvoke(this, 'FindFilePathFnTask', {
       lambdaFunction: findFilePathsFn,
       payload: TaskInput.fromObject({
         frequency: this.frequency,
@@ -127,39 +175,40 @@ export class BatchReplayer extends TrackedConstruct {
       outputPath: '$.Payload',
     });
 
+    const writeInBatchFnPolicy = [
+      new PolicyStatement({
+        actions: [
+          's3:GetObject',
+          's3:ListBucket',
+        ],
+        resources: [
+          `arn:aws:s3:::${dataBucketName}/${dataObjectKey}/*`,
+          `arn:aws:s3:::${dataBucketName}`,
+        ],
+      }),
+    ];
+
     /**
      * Rewrite data
      */
     const writeInBatchFn = new PreBundledFunction(this, 'WriteInBatch', {
-      memorySize: 3008,
+      name: 'WriteInBatchFn',
+      memorySize: 1024 * 5,
       codePath: 'data-generator/resources/lambdas/write-in-batch',
       runtime: Runtime.PYTHON_3_8,
       handler: 'write-in-batch.handler',
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),
-      layers: [dataWranglerLayer],
+      lambdaLayers: [dataWranglerLayer],
+      lambdaPolicyStatements: writeInBatchFnPolicy,
     });
 
-    // Grant access to all s3 file in the dataset bucket
-    writeInBatchFn.role?.attachInlinePolicy(
-      new Policy(this, 'read-dataset-buckets-policy', {
-        statements: [
-          new PolicyStatement({
-            actions: [
-              's3:GetObject',
-              's3:ListBucket',
-            ],
-            resources: [
-              `arn:aws:s3:::${dataBucketName}/${dataObjectKey}/*`,
-              `arn:aws:s3:::${dataBucketName}`,
-            ],
-          }),
-        ],
-      }),
-    );
-    this.sinkBucket.grantPut(writeInBatchFn);
+    // grant permissions to write to the bucket and to use the KMS key
+    const putPattern = this.sinkObjectKey ? `${this.sinkObjectKey}/*` : undefined;
+    this.sinkBucket.grantWrite(writeInBatchFn, putPattern);
 
-    const writeInBatchFnTask = new LambdaInvoke(this, 'writeInBatchFnTask', {
+    const sinkPath = this.sinkObjectKey ? `${this.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
+    const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
       lambdaFunction: writeInBatchFn,
       payload: TaskInput.fromObject({
         // Array from the last step to be mapped
@@ -174,7 +223,7 @@ export class BatchReplayer extends TrackedConstruct {
         // For file processing
         dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
         dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
-        sinkPath: this.sinkBucket.s3UrlForObject(`${this.dataset.tableName}`),
+        sinkPath: this.sinkBucket.s3UrlForObject(sinkPath),
         outputFileMaxSizeInBytes: 20480,
       }),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
@@ -182,10 +231,8 @@ export class BatchReplayer extends TrackedConstruct {
       outputPath: '$.Payload',
     });
 
-    /**
-     * Use "Map" step to write each filePath parallelly
-     */
-    const writeInBatchMapTask = new Map(this, 'writeInBatchMapTask', {
+    // Use "Map" step to write each filePath parallelly
+    const writeInBatchMapTask = new Map(this, 'WriteInBatchMapTask', {
       itemsPath: JsonPath.stringAt('$.filePaths'),
       parameters: {
         index: JsonPath.stringAt('$$.Map.Item.Index'),
@@ -194,15 +241,21 @@ export class BatchReplayer extends TrackedConstruct {
     });
     writeInBatchMapTask.iterator(writeInBatchFnTask);
 
-    /**
-     * Overarching Step Function StateMachine
-     */
-    const batchReplayStepFn = new StateMachine(this, 'batchReplayStepFn', {
+    // Overarching Step Function StateMachine
+    const batchReplayStepFn = new StateMachine(this, 'BatchReplayStepFn', {
       definition: findFilePathsFnTask.next(writeInBatchMapTask),
       timeout: Duration.minutes(20),
+      logs: {
+        destination: new LogGroup(this, 'LogGroup', {
+          retention: RetentionDays.ONE_WEEK,
+          logGroupName: `/aws/batch-replayer/${this.dataset.tableName}`,
+          removalPolicy: RemovalPolicy.DESTROY,
+        }),
+        level: LogLevel.ALL,
+      },
     });
 
-    new Rule(this, 'batchReplayStepFnTrigger', {
+    new Rule(this, 'BatchReplayStepFnTrigger', {
       schedule: Schedule.cron({ minute: `0/${Math.ceil(this.frequency/60)}` }),
       targets: [new SfnStateMachine(batchReplayStepFn, {})],
     });

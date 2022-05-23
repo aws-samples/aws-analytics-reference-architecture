@@ -2,14 +2,14 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests data-generator
+ * Tests DataGenerator
  *
- * @group unit/other/data-generator
+ * @group unit/data-generator/data-generator
  */
 
 import { Stack } from '@aws-cdk/core';
-import { DataGenerator } from '../../src/data-generator';
-import { Dataset } from '../../src/datasets';
+import { DataGenerator } from '../../../src/data-generator';
+import { Dataset } from '../../../src/datasets';
 import '@aws-cdk/assert/jest';
 
 const dataGeneratorStack = new Stack();

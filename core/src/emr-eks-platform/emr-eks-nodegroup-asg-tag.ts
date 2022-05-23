@@ -7,14 +7,17 @@ import { RetentionDays } from '@aws-cdk/aws-logs';
 import { Construct, Duration } from '@aws-cdk/core';
 import { Provider } from '@aws-cdk/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
+//import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 
 /**
 * The properties for the EmrEksNodegroupAsgTagsProvider Construct class.
+ * @private
 */
 export interface EmrEksNodegroupAsgTagProviderProps {
   /**
    * The name of the EKS cluster
+   * @private
    */
   readonly eksClusterName: string;
 }
@@ -41,6 +44,7 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
   constructor(scope: Construct, id: string, props: EmrEksNodegroupAsgTagProviderProps) {
     super(scope, id);
 
+    //The policy allowing asg Tag custom resource call autoscaling api
     const lambdaPolicy = [
       new PolicyStatement({
         resources: ['*'],
@@ -67,9 +71,10 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
       runtime: Runtime.PYTHON_3_8,
       codePath: 'emr-eks-platform/resources/lambdas/nodegroup-asg-tag',
       handler: 'lambda.on_event',
-      logRetention: RetentionDays.ONE_DAY,
+      name: 'EmrEksNodegroupAsgTagOnEventFn',
+      lambdaPolicyStatements: lambdaPolicy,
+      logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(45),
-      initialPolicy: lambdaPolicy,
       environment: {
         EKS_CLUSTER_NAME: props.eksClusterName,
       },

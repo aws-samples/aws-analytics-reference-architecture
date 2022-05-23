@@ -4,11 +4,11 @@
 /**
  * Test example
  *
- * @group unit/other/test-example
+ * @group unit/test-example
  */
 
 import { Stack } from '@aws-cdk/core';
-import { Example } from '../../src';
+import { Example } from '../../src/example';
 import '@aws-cdk/assert/jest';
 
 test('example construct', () => {

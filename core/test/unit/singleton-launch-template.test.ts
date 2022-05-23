@@ -4,7 +4,7 @@
 /**
  * Tests singleton launch template
  *
- * @group unit/singleton/launch-template
+ * @group unit/singleton-launch-template
  */
 
 import { Stack } from '@aws-cdk/core';

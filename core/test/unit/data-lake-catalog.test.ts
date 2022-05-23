@@ -23,21 +23,21 @@ test('DataLakeCatalog', () => {
   // Test if the Databases names are expected
   expect(dataLakeCatalogStack).toHaveResource('AWS::Glue::Database', {
     DatabaseInput: {
-      Name: 'ara_raw',
+      Name: 'raw',
     },
   });
 
   // Test if the Databases names are expected
   expect(dataLakeCatalogStack).toHaveResource('AWS::Glue::Database', {
     DatabaseInput: {
-      Name: 'ara_clean',
+      Name: 'clean',
     },
   });
 
   // Test if the Databases names are expected
   expect(dataLakeCatalogStack).toHaveResource('AWS::Glue::Database', {
     DatabaseInput: {
-      Name: 'ara_transform',
+      Name: 'transform',
     },
   });
 });

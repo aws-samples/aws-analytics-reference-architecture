@@ -1,79 +1,57 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-/**
-* Tests DataLakeStorage
-*
-* @group integ/lakeformation/s3location
-*/
 
-import { Key } from '@aws-cdk/aws-kms';
-import { Bucket } from '@aws-cdk/aws-s3';
+/**
+ * Tests Ec2SssmRole
+ *
+ * @group integ/ec2-ssm-role
+ */
+
+import { ServicePrincipal } from '@aws-cdk/aws-iam';
 import * as cdk from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
-import { LakeformationS3Location } from '../../src/lf-s3-location';
+
+import { Ec2SsmRole } from '../../src/ec2-ssm-role';
 
 jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'LakeformationS3LocationE2eTest');
+const stack = new cdk.Stack(integTestApp, 'Ec2SsmRoleE2eTest');
 
-const myKey = new Key(stack, 'MyKey', {
-  removalPolicy: cdk.RemovalPolicy.DESTROY,
-});
-const myBucket = new Bucket(stack, 'MyBucket', {
-  encryptionKey: myKey,
-  removalPolicy: cdk.RemovalPolicy.DESTROY,
-  autoDeleteObjects: true,
-});
-
-const s3Location = new LakeformationS3Location(stack, 'MyS3CrossAccount', {
-  s3Location: {
-    bucketName: myBucket.bucketName,
-    objectKey: 'test',
-  }
-});
-
-new cdk.CfnOutput(stack, 'BucketPolicy', {
-  value: s3Location.dataAccessRole.assumeRolePolicy? 
-    s3Location.dataAccessRole.assumeRolePolicy.statementCount.toString() : '0',
-  exportName: 'role',
-});
-
-new cdk.CfnOutput(stack, 'KeyPolicy', {
-  value: myKey.keyId,
-  exportName: 'keyId',
+new Ec2SsmRole(stack, 'Ec2SsmRole', {
+  assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
 });
 
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    
+
     const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
       profile: process.env.AWS_PROFILE,
     });
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-    
+
     // WHEN
-    const deployResult = await cloudFormation.deployStack({
+    /*const deployResult = */await cloudFormation.deployStack({
       stack: stackArtifact,
     });
-    
+
     // THEN
-    expect(deployResult.outputs.BucketPolicy).toContain('1');
+    expect(true);
+
   }, 9000000);
 });
 
 afterAll(async () => {
   const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-  
+
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
     profile: process.env.AWS_PROFILE,
   });
-  
   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-  
+
   await cloudFormation.destroyStack({
     stack: stackArtifact,
   });

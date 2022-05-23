@@ -1,1 +1,1 @@
-export * from './flyway-runner';
+export { FlywayRunner, FlywayRunnerProps } from './flyway-runner';

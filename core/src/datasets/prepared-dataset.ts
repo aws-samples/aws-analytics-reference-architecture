@@ -1,7 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Location } from "@aws-cdk/aws-s3";
+import { Location } from '@aws-cdk/aws-s3';
+
+/**
+ * The properties for the PreparedDataset class used by the BatchReplayer construct
+ */
 
 export interface PreparedDatasetProps {
   /**
@@ -36,59 +40,62 @@ export interface PreparedDatasetProps {
 
 /**
  * PreparedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
- * 
- * PreparedDataset has following properties:
- * 
- * 1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range. 
+ * PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets
+ *
+ * A PreparedDataset has following properties:
+ *
+ * 1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range.
  * There is no constraint on how long the timestamp range can be. But each file must not be larger than 100MB.
+ * Creating new PreparedDataset requires to find the right balance between number of partitions and the amount of data read by each BatchReplayer (micro-)batch
  * The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions.
+ *
  * Here is an example:
- * 
+ *
  * |- time_range_start=16000000000
- * 
+ *
  *    |- file1.csv 100MB
- * 
+ *
  *    |- file2.csv 50MB
- * 
+ *
  * |- time_range_start=16000000300 // 5 minute range (300 sec)
- * 
+ *
  *    |- file1.csv 1MB
- * 
+ *
  * |- time_range_start=16000000600
- * 
+ *
  *    |- file1.csv 100MB
- * 
+ *
  *    |- file2.csv 100MB
- * 
+ *
  *    |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB
- * 
+ *
  * 2. It has a manifest CSV file with two columns: start and path. Start is the timestamp
- * 
+ *
  * start        , path
- * 
+ *
  * 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file1.csv
- * 
+ *
  * 16000000000  , s3://<path>/<to>/<folder>/time_range_start=16000000000/file2.csv
- * 
+ *
  * 16000000300  , s3://<path>/<to>/<folder>/time_range_start=16000000300/file1.csv
- * 
+ *
  * 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file1.csv
- * 
+ *
  * 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv
- * 
+ *
  * 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
  */
 export class PreparedDataset {
   /**
-   * The bucket name of the AWS Analytics Reference Architecture datasets. Bucket is public and 
+   * The bucket name of the AWS Analytics Reference Architecture datasets. Bucket is public and
    */
   public static readonly DATASETS_BUCKET =
-    "aws-analytics-reference-architecture";
+    'aws-analytics-reference-architecture';
 
   /**
    * The web sale dataset part of 1GB retail datasets.
    * The time range is one week from min(sale_datetime) to max(sale_datetime)
-   * 
+   *
    * | Column name           | Column type | Example                  |
    * |-----------------------|-------------|--------------------------|
    * | item_id               | bigint      | 3935                     |
@@ -123,21 +130,21 @@ export class PreparedDataset {
   public static readonly RETAIL_1_GB_WEB_SALE = new PreparedDataset({
     location: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/web-sale",
+      objectKey: 'datasets/prepared/retail/1GB/web-sale',
     },
-    startDatetime: "2021-01-01T00:00:00.000Z",
+    startDatetime: '2021-01-01T00:00:00.000Z',
     manifestLocation: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/web-sale-manifest.csv",
+      objectKey: 'datasets/prepared/retail/1GB/web-sale-manifest.csv',
     },
-    dateTimeColumnToFilter: "sale_datetime",
-    dateTimeColumnsToAdjust: ["sale_datetime"],
+    dateTimeColumnToFilter: 'sale_datetime',
+    dateTimeColumnsToAdjust: ['sale_datetime'],
   });
 
   /**
    * The store sale dataset part of 1GB retail datasets.
    * The time range is one week from min(sale_datetime) to max(sale_datetime)
-   * 
+   *
    * | Column name        | Column type | Example                  |
    * |--------------------|-------------|--------------------------|
    * | item_id            | bigint      | 3935                     |
@@ -159,27 +166,27 @@ export class PreparedDataset {
    * | store_id           | string      | AAAAAAAABAAAAAAA         |
    * | promo_id           | string      | AAAAAAAAEEAAAAAA         |
    * | sale_datetime      | string      | 2021-01-04T22:20:04.144Z |
-   * 
+   *
    * The BatchReplayer adds two columns ingestion_start and ingestion_end
    */
   public static readonly RETAIL_1_GB_STORE_SALE = new PreparedDataset({
     location: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/store-sale",
+      objectKey: 'datasets/prepared/retail/1GB/store-sale',
     },
-    startDatetime: "2021-01-01T00:00:00.000Z",
+    startDatetime: '2021-01-01T00:00:00.000Z',
     manifestLocation: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/store-sale-manifest.csv",
+      objectKey: 'datasets/prepared/retail/1GB/store-sale-manifest.csv',
     },
-    dateTimeColumnToFilter: "sale_datetime",
-    dateTimeColumnsToAdjust: ["sale_datetime"],
+    dateTimeColumnToFilter: 'sale_datetime',
+    dateTimeColumnsToAdjust: ['sale_datetime'],
   });
 
   /**
    * The customer dataset part of 1GB retail datasets.
    * The time range is one week from min(customer_datetime) to max(customer_datetime)
-   * 
+   *
    * | Column name       	| Column type 	| Example                    	|
    * |-------------------	|-------------	|----------------------------	|
    * | customer_id       	| string      	| AAAAAAAAHCLFOHAA           	|
@@ -200,28 +207,28 @@ export class PreparedDataset {
    * | upper_bound       	| bigint      	| 180000                     	|
    * | address_id        	| string      	| AAAAAAAALAFINEAA           	|
    * | customer_datetime 	| string      	| 2021-01-19T08:07:47.140Z   	|
-   * 
+   *
    * The BatchReplayer adds two columns ingestion_start and ingestion_end
    */
   public static readonly RETAIL_1_GB_CUSTOMER = new PreparedDataset({
     location: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/customer",
+      objectKey: 'datasets/prepared/retail/1GB/customer',
     },
-    startDatetime: "2021-01-01T00:00:00.000Z",
+    startDatetime: '2021-01-01T00:00:00.000Z',
     manifestLocation: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/customer-manifest.csv",
+      objectKey: 'datasets/prepared/retail/1GB/customer-manifest.csv',
     },
-    dateTimeColumnToFilter: "customer_datetime",
-    dateTimeColumnsToAdjust: ["customer_datetime"],
+    dateTimeColumnToFilter: 'customer_datetime',
+    dateTimeColumnsToAdjust: ['customer_datetime'],
   });
 
   /**
-   * The customer address dataset part of 1GB retail datasets. 
+   * The customer address dataset part of 1GB retail datasets.
    * It can be joined with customer dataset on address_id column.
    * The time range is one week from min(address_datetime) to max(address_datetime)
-   * 
+   *
    * | Column name      | Column type | Example                  |
    * |------------------|-------------|--------------------------|
    * | address_id       | string      | AAAAAAAAINDKAAAA         |
@@ -234,28 +241,28 @@ export class PreparedDataset {
    * | location_type    | string      | apartment                |
    * | street           | string      | 390 Pine South Boulevard |
    * | address_datetime | string      | 2021-01-03T02:25:52.826Z |
-   * 
+   *
    * The BatchReplayer adds two columns ingestion_start and ingestion_end
-   * 
+   *
    */
   public static readonly RETAIL_1_GB_CUSTOMER_ADDRESS = new PreparedDataset({
     location: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/customer-address",
+      objectKey: 'datasets/prepared/retail/1GB/customer-address',
     },
-    startDatetime: "2021-01-01T00:00:00.000Z",
+    startDatetime: '2021-01-01T00:00:00.000Z',
     manifestLocation: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/customer-address-manifest.csv",
+      objectKey: 'datasets/prepared/retail/1GB/customer-address-manifest.csv',
     },
-    dateTimeColumnToFilter: "address_datetime",
-    dateTimeColumnsToAdjust: ["address_datetime"],
+    dateTimeColumnToFilter: 'address_datetime',
+    dateTimeColumnsToAdjust: ['address_datetime'],
   });
 
   /**
    * The item dataset part of 1GB retail datasets
    * The time range is one week from min(item_datetime) to max(item_datetime)
-   * 
+   *
    * | Column name   | Column type | Example                                        |
    * |---------------|-------------|------------------------------------------------|
    * |       item_id |      bigint |                                          15018 |
@@ -276,21 +283,21 @@ export class PreparedDataset {
   public static readonly RETAIL_1_GB_ITEM = new PreparedDataset({
     location: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/item",
+      objectKey: 'datasets/prepared/retail/1GB/item',
     },
-    startDatetime: "2021-01-01T00:00:00.000Z",
+    startDatetime: '2021-01-01T00:00:00.000Z',
     manifestLocation: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/item-manifest.csv",
+      objectKey: 'datasets/prepared/retail/1GB/item-manifest.csv',
     },
-    dateTimeColumnToFilter: "item_datetime",
-    dateTimeColumnsToAdjust: ["item_datetime"],
+    dateTimeColumnToFilter: 'item_datetime',
+    dateTimeColumnsToAdjust: ['item_datetime'],
   });
 
   /**
    * The promo dataset part of 1GB retail datasets
    * The time range is one week from min(promo_datetime) to max(promo_datetime)
-   * 
+   *
    * | Column name     | Column type | Example                  |
    * |-----------------|-------------|--------------------------|
    * |        promo_id |      string |         AAAAAAAAHIAAAAAA |
@@ -301,27 +308,27 @@ export class PreparedDataset {
    * |  start_datetime |      string | 2021-01-01 00:00:35.890Z |
    * |    end_datetime |      string | 2021-01-02 13:16:09.785Z |
    * |  promo_datetime |      string | 2021-01-01 00:00:16.104Z |
-   * 
+   *
    * The BatchReplayer adds two columns ingestion_start and ingestion_end
    */
   public static readonly RETAIL_1_GB_PROMO = new PreparedDataset({
     location: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/promo",
+      objectKey: 'datasets/prepared/retail/1GB/promo',
     },
-    startDatetime: "2021-01-01T00:00:00.000Z",
+    startDatetime: '2021-01-01T00:00:00.000Z',
     manifestLocation: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/promo-manifest.csv",
+      objectKey: 'datasets/prepared/retail/1GB/promo-manifest.csv',
     },
-    dateTimeColumnToFilter: "promo_datetime",
-    dateTimeColumnsToAdjust: ["promo_datetime"],
+    dateTimeColumnToFilter: 'promo_datetime',
+    dateTimeColumnsToAdjust: ['promo_datetime'],
   });
 
   /**
    * The store dataset part of 1GB retail datasets
    * The time range is one week from min(store_datetime) to max(store_datetime)
-   * 
+   *
    * | Column name      | Column type | Example                  |
    * |------------------|-------------|--------------------------|
    * |         store_id |      string |         AAAAAAAAKAAAAAAA |
@@ -341,27 +348,27 @@ export class PreparedDataset {
    * |   tax_percentage |      double |                      0.0 |
    * |           street |      string |            71 Cedar Blvd |
    * |   store_datetime |      string | 2021-01-01T00:00:00.017Z |
-   * 
+   *
    * The BatchReplayer adds two columns ingestion_start and ingestion_end
    */
   public static readonly RETAIL_1_GB_STORE = new PreparedDataset({
     location: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/store",
+      objectKey: 'datasets/prepared/retail/1GB/store',
     },
-    startDatetime: "2021-01-01T00:00:00.000Z",
+    startDatetime: '2021-01-01T00:00:00.000Z',
     manifestLocation: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/store-manifest.csv",
+      objectKey: 'datasets/prepared/retail/1GB/store-manifest.csv',
     },
-    dateTimeColumnToFilter: "store_datetime",
-    dateTimeColumnsToAdjust: ["store_datetime"],
+    dateTimeColumnToFilter: 'store_datetime',
+    dateTimeColumnsToAdjust: ['store_datetime'],
   });
 
   /**
    * The store dataset part of 1GB retail datasets
    * The time range is one week from min(warehouse_datetime) to max(warehouse_datetime)
-   * 
+   *
    * | Column name        | Column type | Example                  |
    * |--------------------|-------------|--------------------------|
    * |       warehouse_id |      string |         AAAAAAAAEAAAAAAA |
@@ -374,20 +381,20 @@ export class PreparedDataset {
    * |            country |      string |            United States |
    * |         gmt_offset |      double |                     -5.0 |
    * | warehouse_datetime |      string | 2021-01-01T00:00:00.123Z |
-   * 
+   *
    */
   public static readonly RETAIL_1_GB_WAREHOUSE = new PreparedDataset({
     location: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/warehouse",
+      objectKey: 'datasets/prepared/retail/1GB/warehouse',
     },
-    startDatetime: "2021-01-01T00:00:00.000Z",
+    startDatetime: '2021-01-01T00:00:00.000Z',
     manifestLocation: {
       bucketName: PreparedDataset.DATASETS_BUCKET,
-      objectKey: "datasets/prepared/retail/1GB/warehouse-manifest.csv",
+      objectKey: 'datasets/prepared/retail/1GB/warehouse-manifest.csv',
     },
-    dateTimeColumnToFilter: "warehouse_datetime",
-    dateTimeColumnsToAdjust: ["warehouse_datetime"],
+    dateTimeColumnToFilter: 'warehouse_datetime',
+    dateTimeColumnsToAdjust: ['warehouse_datetime'],
   });
 
   /**
@@ -402,7 +409,7 @@ export class PreparedDataset {
   }
 
   /**
-   * Start datetime replaying this dataset. Your data set may start from 1 Jan 2020 
+   * Start datetime replaying this dataset. Your data set may start from 1 Jan 2020
    * But you can specify this to 1 Feb 2020 to omit the first month data.
    */
   readonly startDateTime: string;
@@ -430,7 +437,7 @@ export class PreparedDataset {
   /**
    * Datetime column for filtering data
    */
-   readonly dateTimeColumnToFilter: string;
+  readonly dateTimeColumnToFilter: string;
 
   /**
    * Array of column names with datetime to adjust
@@ -457,8 +464,8 @@ export class PreparedDataset {
    * @access private
    */
   private sqlTable() {
-    const parsedPrefix = this.location.objectKey.split("/");
+    const parsedPrefix = this.location.objectKey.split('/');
     const re = /\-/gi;
-    return parsedPrefix[parsedPrefix.length - 1].replace(re, "_");
+    return parsedPrefix[parsedPrefix.length - 1].replace(re, '_');
   }
 }
