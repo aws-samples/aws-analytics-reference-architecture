@@ -1,5 +1,5 @@
 import { App, Stack } from 'aws-cdk-lib';
-import * as cxapi from 'aws-cdk-lib/cx-api';
+import * as cxapi from '@aws-cdk/cx-api';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { DeployStackResult } from 'aws-cdk/lib/api/deploy-stack';
