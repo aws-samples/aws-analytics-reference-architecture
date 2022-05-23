@@ -4,12 +4,12 @@
 /**
  * Tests singleton glue database
  *
- * @group unit/singleton-glue-database
+ * @group unit/other/singleton-glue-database
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { SingletonGlueDatabase } from '../../src/singleton-glue-database';
-import '@aws-cdk/assert/jest';
+import { Template } from 'aws-cdk-lib/assertions';
 
 test('SingleBucket', () => {
 
@@ -19,11 +19,12 @@ test('SingleBucket', () => {
   SingletonGlueDatabase.getOrCreate(singletonGlueDatabaseStack, 'test');
   SingletonGlueDatabase.getOrCreate(singletonGlueDatabaseStack, 'test');
 
+  const template = Template.fromStack(singletonGlueDatabaseStack);
 
   // Test if LogBucket is a singleton
-  expect(singletonGlueDatabaseStack).toCountResources('AWS::Glue::Database', 1);
+  template.resourceCountIs('AWS::Glue::Database', 1);
 
-  expect(singletonGlueDatabaseStack).toHaveResource('AWS::Glue::Database', {
+  template.hasResourceProperties('AWS::Glue::Database', {
     CatalogId: {
       Ref: 'AWS::AccountId',
     },

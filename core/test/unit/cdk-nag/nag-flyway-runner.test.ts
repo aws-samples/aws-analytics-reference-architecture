@@ -7,14 +7,14 @@
  * @group unit/best-practice/flyway-runner
  */
 
-import { Annotations, Match } from '@aws-cdk/assertions';
-import { App, /*Aspects,*/ Stack } from '@aws-cdk/core';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
+import { App, /*Aspects,*/ Stack } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies
 //import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { FlywayRunner } from '../../../src/db-schema-manager/flyway-runner';
 import * as path from 'path';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as redshift from '@aws-cdk/aws-redshift';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as redshift from '@aws-cdk/aws-redshift-alpha';
 
 const mockApp = new App();
 

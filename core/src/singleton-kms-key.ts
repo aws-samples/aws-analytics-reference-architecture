@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Key } from '@aws-cdk/aws-kms';
-import { Construct, RemovalPolicy, Stack } from '@aws-cdk/core';
+import { Key } from 'aws-cdk-lib/aws-kms';
+import { RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 /**
  * An Amazon S3 Bucket implementing the singleton pattern

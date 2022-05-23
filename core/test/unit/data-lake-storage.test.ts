@@ -7,10 +7,10 @@
  * @group unit/datalake/storage
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { DataLakeStorage } from '../../src/data-lake-storage';
-import '@aws-cdk/assert/jest';
-import { Match, Template } from '@aws-cdk/assertions';
+
+import { Match, Template } from 'aws-cdk-lib/assertions';
 
 describe('DataLakeStorage', () => {
 

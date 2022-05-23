@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { ManagedPolicy } from '@aws-cdk/aws-iam';
+import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 
 /**
  * The properties for defining a Managed Endpoint

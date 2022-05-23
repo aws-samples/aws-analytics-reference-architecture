@@ -7,8 +7,8 @@
  * @group unit/best-practice/singleton-launch-template
  */
 
-import { Annotations, Match } from '@aws-cdk/assertions';
-import { App, Aspects, Stack } from '@aws-cdk/core';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
+import { App, Aspects, Stack } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks } from 'cdk-nag';
 import { SingletonCfnLaunchTemplate } from '../../../src/singleton-launch-template';

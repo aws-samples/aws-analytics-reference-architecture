@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { join } from 'path';
-import { FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes } from '@aws-cdk/aws-ec2';
+import { FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes } from 'aws-cdk-lib/aws-ec2';
 import {
   CapacityType,
   Cluster,
@@ -10,8 +10,8 @@ import {
   KubernetesManifest,
   KubernetesVersion,
   Nodegroup,
-} from '@aws-cdk/aws-eks';
-import { CfnVirtualCluster } from '@aws-cdk/aws-emrcontainers';
+} from 'aws-cdk-lib/aws-eks';
+import { CfnVirtualCluster } from 'aws-cdk-lib/aws-emrcontainers';
 import {
   CfnServiceLinkedRole,
   Effect,
@@ -23,11 +23,11 @@ import {
   PolicyStatement,
   Role,
   ServicePrincipal,
-} from '@aws-cdk/aws-iam';
-import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
-import { Bucket, BucketEncryption, Location } from '@aws-cdk/aws-s3';
-import { BucketDeployment, Source } from '@aws-cdk/aws-s3-deployment';
-import { Aws, CfnOutput, Construct, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy } from '@aws-cdk/core';
+} from 'aws-cdk-lib/aws-iam';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Bucket, BucketEncryption, Location } from 'aws-cdk-lib/aws-s3';
+import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
+import { Aws, CfnOutput, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy } from 'aws-cdk-lib';
 import { AraBucket } from '../ara-bucket';
 import { SingletonKey } from '../singleton-kms-key';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
@@ -43,7 +43,7 @@ import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-
+import { Construct } from 'constructs';
 
 /**
  * The properties for the EmrEksCluster Construct class.

@@ -8,10 +8,10 @@
  */
 
 import { LakeformationS3Location } from '../../src/lf-s3-location';
-import '@aws-cdk/assert/jest';
-import { Stack } from '@aws-cdk/core';
-import { Match, Template } from '@aws-cdk/assertions';
-import { Bucket } from '@aws-cdk/aws-s3';
+
+import { Stack } from 'aws-cdk-lib';
+import { Match, Template } from 'aws-cdk-lib/assertions';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 
 describe('LakeFormationS3Location test', () => {
 
@@ -53,7 +53,11 @@ describe('LakeFormationS3Location test', () => {
                 "s3:GetBucket*",
                 "s3:List*",
                 "s3:DeleteObject*",
-                "s3:PutObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
                 "s3:Abort*"
               ],
               Effect: 'Allow',

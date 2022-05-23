@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT-0
 
 import * as path from 'path';
-import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
-import { Code, Function, FunctionProps, ILayerVersion, Runtime } from '@aws-cdk/aws-lambda';
-import { Aws, Construct } from '@aws-cdk/core';
+import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Code, Function, FunctionProps, ILayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Aws } from 'aws-cdk-lib';
 import { PreBundledLayer } from './pre-bundled-layer';
+import { Construct } from 'constructs';
 
 /**
  * The properties for the PreBundledFunction construct.

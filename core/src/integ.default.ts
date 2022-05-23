@@ -1,6 +1,6 @@
-import { Key } from '@aws-cdk/aws-kms';
-import { Bucket } from '@aws-cdk/aws-s3';
-import { App, RemovalPolicy, Stack } from '@aws-cdk/core';
+import { Key } from 'aws-cdk-lib/aws-kms';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { App, RemovalPolicy, Stack } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { BatchReplayer } from './data-generator/batch-replayer';
 import { PreparedDataset } from './datasets';

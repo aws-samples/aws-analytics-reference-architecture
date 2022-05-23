@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: MIT-0
 
 import * as path from 'path';
-import {Code, LayerVersion, LayerVersionProps, Runtime} from '@aws-cdk/aws-lambda';
-import * as cdk from '@aws-cdk/core';
-import { Construct, Stack } from '@aws-cdk/core';
+import {Code, LayerVersion, LayerVersionProps, Runtime} from 'aws-cdk-lib/aws-lambda';
+import { Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 /**
  * The properties for the PreBundledLayer construct. 
@@ -76,7 +76,7 @@ export class PreBundledLayer extends LayerVersion {
    * @param {string} id the ID of the CDK Construct
    * @param {PreBundledFunctionProps} props the PreBundledFunction [properties]{@link PreBundledFunctionProps}
    */
-  constructor(scope: cdk.Construct, id: string, props: PreBundledLayerProps) {
+  constructor(scope: Construct, id: string, props: PreBundledLayerProps) {
 
     if (props.code) {
       throw new Error('Pass "codePath" prop instead of "code" . See CONTRIB_FAQ.md on how to create prebundled Lambda function.');

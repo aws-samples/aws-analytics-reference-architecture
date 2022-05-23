@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { IRole } from '@aws-cdk/aws-iam';
-import { IKey } from '@aws-cdk/aws-kms';
+import { IRole } from 'aws-cdk-lib/aws-iam';
+import { IKey } from 'aws-cdk-lib/aws-kms';
 import {
   BlockPublicAccess,
   Bucket,
@@ -15,8 +15,9 @@ import {
   Inventory,
   LifecycleRule,
   ObjectOwnership,
-} from '@aws-cdk/aws-s3';
-import { Aws, Construct, Duration, RemovalPolicy, Stack } from '@aws-cdk/core';
+} from 'aws-cdk-lib/aws-s3';
+import { Aws, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 import { SingletonKey } from './singleton-kms-key';
 
 export interface AraBucketProps{
@@ -166,7 +167,7 @@ export interface AraBucketProps{
 * All standard S3 Bucket properties can be provided to not use the defaults.
 * Usage example:
 * ```typescript
-* import * as cdk from '@aws-cdk/core';
+* import * as cdk from 'aws-cdk-lib';
 * import { AraBucket } from 'aws-analytics-reference-architecture';
 *
 * const exampleApp = new cdk.App();

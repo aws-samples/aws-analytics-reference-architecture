@@ -8,8 +8,8 @@
  */
 
 
-import { Annotations, Match } from '@aws-cdk/assertions';
-import { App, Aspects, Stack } from '@aws-cdk/core';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
+import { App, Aspects, Stack } from 'aws-cdk-lib';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { SynchronousAthenaQuery } from '../../../src';
 // eslint-disable-next-line import/no-extraneous-dependencies

@@ -7,11 +7,11 @@
  * @group integ/synchronous-crawler
  */
 
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
-import { CfnCrawler, Database } from '@aws-cdk/aws-glue';
-import { ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
+import { CfnCrawler, Database } from '@aws-cdk/aws-glue-alpha';
+import { ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 import { SynchronousCrawler } from '../../src/synchronous-crawler';
 

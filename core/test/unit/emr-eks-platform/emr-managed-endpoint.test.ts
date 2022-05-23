@@ -7,10 +7,10 @@
  * @group unit/emr-eks-platform/managed-endpoint-provider
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { EmrManagedEndpointProvider } from '../../../src/emr-eks-platform/emr-managed-endpoint';
-import '@aws-cdk/assert/jest';
-import { Template, Match} from '@aws-cdk/assertions';
+
+import { Template, Match} from 'aws-cdk-lib/assertions';
 import { AraBucket } from '../../../src/ara-bucket';
 
 

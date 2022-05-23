@@ -7,10 +7,10 @@
  * @group unit/athena-demo-setup
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { AthenaDemoSetup } from '../../src/athena-demo-setup';
-import '@aws-cdk/assert/jest';
-import { Match, Template } from '@aws-cdk/assertions';
+
+import { Match, Template } from 'aws-cdk-lib/assertions';
 
 
 describe ('AthenaDemoSetup', () => {

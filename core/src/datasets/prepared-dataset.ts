@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Location } from '@aws-cdk/aws-s3';
+import { Location } from 'aws-cdk-lib/aws-s3';
 
 /**
  * The properties for the PreparedDataset class used by the BatchReplayer construct

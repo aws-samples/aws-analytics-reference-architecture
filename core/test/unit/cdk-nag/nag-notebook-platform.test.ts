@@ -8,9 +8,9 @@
  */
 
 
-import { Annotations, Match } from '@aws-cdk/assertions';
-import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
-import { App, Stack, Aspects, ArnFormat, Aws } from '@aws-cdk/core';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
+import { ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { App, Stack, Aspects, ArnFormat, Aws } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { SSOIdentityType } from '../../../lib';

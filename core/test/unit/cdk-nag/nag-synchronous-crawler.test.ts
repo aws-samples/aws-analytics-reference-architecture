@@ -7,12 +7,12 @@
  * @group unit/best-practice/synchronous-crawler
  */
 
-import { App, Aspects, Stack } from '@aws-cdk/core';
+import { App, Aspects, Stack } from 'aws-cdk-lib';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { SynchronousCrawler } from '../../../src';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import '@aws-cdk/assert/jest';
-import { Annotations, Match } from '@aws-cdk/assertions';
+
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
 
 const mockApp = new App();
 

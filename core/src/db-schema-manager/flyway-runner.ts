@@ -2,19 +2,20 @@
 // SPDX-License-Identifier: MIT-0
 
 import * as path from 'path';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as iam from '@aws-cdk/aws-iam';
-import { PolicyStatement } from '@aws-cdk/aws-iam';
-import * as lambda from '@aws-cdk/aws-lambda';
-import * as logs from '@aws-cdk/aws-logs';
-import * as redshift from '@aws-cdk/aws-redshift';
-import * as s3 from '@aws-cdk/aws-s3';
-import { Asset } from '@aws-cdk/aws-s3-assets';
-import * as s3deploy from '@aws-cdk/aws-s3-deployment';
-import * as cdk from '@aws-cdk/core';
-import { CustomResource, RemovalPolicy } from '@aws-cdk/core';
-import { Provider } from '@aws-cdk/custom-resources';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as logs from 'aws-cdk-lib/aws-logs';
+import * as redshift from '@aws-cdk/aws-redshift-alpha';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import { Asset } from 'aws-cdk-lib/aws-s3-assets';
+import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
+import * as cdk from 'aws-cdk-lib';
+import { CustomResource, RemovalPolicy } from 'aws-cdk-lib';
+import { Provider } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
+import { Construct } from 'constructs';
 //import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
@@ -82,9 +83,9 @@ export interface FlywayRunnerProps {
  * *This example assume that migration SQL files are located in `resources/sql` of the cdk project.*
  * ```typescript
  * import * as path from 'path';
- * import * as ec2 from '@aws-cdk/aws-ec2';
- * import * as redshift from '@aws-cdk/aws-redshift';
- * import * as cdk from '@aws-cdk/core';
+ * import * as ec2 from 'aws-cdk-lib/aws-ec2';
+ * import * as redshift from '@aws-cdk/aws-redshift-alpha';
+ * import * as cdk from 'aws-cdk-lib';
  *
  * import { FlywayRunner } from 'aws-analytics-reference-architecture';
  *
@@ -111,7 +112,7 @@ export interface FlywayRunnerProps {
  * });
  * ```
  */
-export class FlywayRunner extends cdk.Construct {
+export class FlywayRunner extends Construct {
   public readonly runner: CustomResource;
 
   /**
@@ -120,7 +121,7 @@ export class FlywayRunner extends cdk.Construct {
    * @param {string} id the ID of the CDK Construct
    * @param {FlywayRunnerProps} props the FlywayRunner [properties]{@link FlywayRunnerProps}
    */
-  constructor(scope: cdk.Construct, id: string, props: FlywayRunnerProps) {
+  constructor(scope: Construct, id: string, props: FlywayRunnerProps) {
     super(scope, id);
 
     const sqlFilesAsset = s3deploy.Source.asset(props.migrationScriptsFolderAbsolutePath);

@@ -7,8 +7,8 @@
  * @group integ/ec2-ssm-role
  */
 
-import { ServicePrincipal } from '@aws-cdk/aws-iam';
-import * as cdk from '@aws-cdk/core';
+import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import * as cdk from 'aws-cdk-lib';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 

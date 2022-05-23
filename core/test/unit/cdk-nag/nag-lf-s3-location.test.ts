@@ -7,9 +7,9 @@
  * @group unit/best-practice/lf-s3-location
  */
 
-import { Annotations, Match } from '@aws-cdk/assertions';
-import { Bucket } from '@aws-cdk/aws-s3';
-import { App, Aspects, Stack } from '@aws-cdk/core';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { App, Aspects, Stack } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { LakeformationS3Location } from '../../../src/lf-s3-location';
