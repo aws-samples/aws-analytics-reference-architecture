@@ -22,7 +22,7 @@ export interface LakeFormationS3LocationProps {
 }
 
 /**
- * This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access. 
+ * This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
  * If the location is in a different account, cross account access should be granted via the [S3CrossAccount]{@link S3CrossAccount} construct.
  *
  * This construct instantiate 2 objects:
@@ -44,9 +44,9 @@ export interface LakeFormationS3LocationProps {
  *
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
- * 
+ *
  * const myBucket = new Bucket(stack, 'MyBucket')
- * 
+ *
  * new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
  *   bucketName: myBucket,
  *   objectKey: 'my-prefix',
@@ -99,7 +99,7 @@ export class LakeformationS3Location extends Construct {
     //   );
     // }
 
-    props.s3Bucket.grantReadWrite(this.dataAccessRole, objectKey)
+    props.s3Bucket.grantReadWrite(this.dataAccessRole, objectKey);
 
     new lakeformation.CfnResource(this, 'MyCfnResource', {
       resourceArn: props.s3Bucket.arnForObjects(objectKey),

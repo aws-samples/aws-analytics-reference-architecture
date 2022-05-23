@@ -155,7 +155,7 @@ export class FlywayRunner extends Construct {
         actions: [
           'ec2:CreateNetworkInterface',
           'ec2:DescribeNetworkInterfaces',
-          'ec2:DeleteNetworkInterface'
+          'ec2:DeleteNetworkInterface',
         ],
       }),
     ];
@@ -199,7 +199,7 @@ export class FlywayRunner extends Construct {
         assetHash: (migrationFilesDeployment.node.findChild('Asset1') as Asset).assetHash,
       },
     });
-    for(const subnet of props.vpc.privateSubnets) {
+    for (const subnet of props.vpc.privateSubnets) {
       flywayLambda.node.addDependency(subnet);
     }
     flywayCustomResourceProvider.node.addDependency(migrationFilesDeployment);

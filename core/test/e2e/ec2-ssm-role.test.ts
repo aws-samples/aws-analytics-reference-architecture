@@ -27,17 +27,17 @@ describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    
+
     const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
       profile: process.env.AWS_PROFILE,
     });
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-    
+
     // WHEN
     /*const deployResult = */await cloudFormation.deployStack({
       stack: stackArtifact,
     });
-    
+
     // THEN
     expect(true);
 
@@ -46,12 +46,12 @@ describe('deploy succeed', () => {
 
 afterAll(async () => {
   const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-  
+
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
     profile: process.env.AWS_PROFILE,
   });
   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-  
+
   await cloudFormation.destroyStack({
     stack: stackArtifact,
   });

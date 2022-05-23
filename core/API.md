@@ -2645,12 +2645,12 @@ it's assumed to be AWS::AccountId.
 EmrEksCluster Construct packaging all the resources and configuration required to run Amazon EMR on EKS.
 
 It deploys:
-* An EKS cluster (VPC configuration can be customized) 
+* An EKS cluster (VPC configuration can be customized)
 * A tooling nodegroup to run tools including the Kubedashboard and the Cluster Autoscaler
 * Optionally multiple nodegroups (one per AZ) for critical/shared/notebook EMR workloads
 * Additional nodegroups can be configured
 
-The construct will upload on S3 the Pod templates required to run EMR jobs on the default nodegroups. 
+The construct will upload on S3 the Pod templates required to run EMR jobs on the default nodegroups.
 It will also parse and store the configuration of EMR on EKS jobs for each default nodegroup in object parameters
 
 Methods are available to add EMR Virtual Clusters to the EKS cluster and to create execution roles for the virtual clusters.
@@ -5480,6 +5480,113 @@ The tree node.
 ---
 
 
+### TrackedConstruct <a name="TrackedConstruct" id="aws-analytics-reference-architecture.TrackedConstruct"></a>
+
+A type of CDK Construct that is tracked via a unique code in Stack labels.
+
+It is  used to measure the number of deployments and so the impact of the Analytics Reference Architecture.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.TrackedConstruct.Initializer"></a>
+
+```typescript
+import { TrackedConstruct } from 'aws-analytics-reference-architecture'
+
+new TrackedConstruct(scope: Construct, id: string, props: TrackedConstructProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.TrackedConstructProps">TrackedConstructProps</a></code> | the TrackedConstruct [properties]{@link TrackedConstructProps}. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.scope"></a>
+
+- *Type:* @aws-cdk/core.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.TrackedConstructProps">TrackedConstructProps</a>
+
+the TrackedConstruct [properties]{@link TrackedConstructProps}.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.TrackedConstruct.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.TrackedConstruct.isConstruct"></a>
+
+```typescript
+import { TrackedConstruct } from 'aws-analytics-reference-architecture'
+
+TrackedConstruct.isConstruct(x: any)
+```
+
+Return whether the given object is a Construct.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.TrackedConstruct.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.TrackedConstruct.property.node"></a>
+
+```typescript
+public readonly node: ConstructNode;
+```
+
+- *Type:* @aws-cdk/core.ConstructNode
+
+The construct tree node associated with this construct.
+
+---
+
+
 ## Structs <a name="Structs" id="Structs"></a>
 
 ### AraBucketProps <a name="AraBucketProps" id="aws-analytics-reference-architecture.AraBucketProps"></a>
@@ -7535,6 +7642,38 @@ The timeout in seconds to wait for the Crawler success.
 
 ---
 
+### TrackedConstructProps <a name="TrackedConstructProps" id="aws-analytics-reference-architecture.TrackedConstructProps"></a>
+
+The properties for the TrackedConstructProps construct.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.TrackedConstructProps.Initializer"></a>
+
+```typescript
+import { TrackedConstructProps } from 'aws-analytics-reference-architecture'
+
+const trackedConstructProps: TrackedConstructProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstructProps.property.trackingCode">trackingCode</a></code> | <code>string</code> | Unique code used to measure the number of the CloudFormation deployments. |
+
+---
+
+##### `trackingCode`<sup>Required</sup> <a name="trackingCode" id="aws-analytics-reference-architecture.TrackedConstructProps.property.trackingCode"></a>
+
+```typescript
+public readonly trackingCode: string;
+```
+
+- *Type:* string
+
+Unique code used to measure the number of the CloudFormation deployments.
+
+---
+
 ## Classes <a name="Classes" id="Classes"></a>
 
 ### Dataset <a name="Dataset" id="aws-analytics-reference-architecture.Dataset"></a>
@@ -7952,7 +8091,7 @@ new EmrEksNodegroup()
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.CRITICAL_ALL">CRITICAL_ALL</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS critical workloads (both drivers and executors). |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_DRIVER">NOTEBOOK_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (drivers only). |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_EXECUTOR">NOTEBOOK_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS (executors only). |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_WITHOUT_PODTEMPLATE">NOTEBOOK_WITHOUT_PODTEMPLATE</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER} and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS  Managed Endpoint currently doesn't support Pod Template customization. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.NOTEBOOK_WITHOUT_PODTEMPLATE">NOTEBOOK_WITHOUT_PODTEMPLATE</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER} and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS Managed Endpoint currently doesn't support Pod Template customization. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_DRIVER">SHARED_DRIVER</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (drivers only). |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.SHARED_EXECUTOR">SHARED_EXECUTOR</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (executors only). |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup.property.TOOLING_ALL">TOOLING_ALL</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a></code> | *No description.* |
@@ -8003,7 +8142,7 @@ public readonly NOTEBOOK_WITHOUT_PODTEMPLATE: EmrEksNodegroupOptions;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions">EmrEksNodegroupOptions</a>
 
-Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER} and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS  Managed Endpoint currently doesn't support Pod Template customization.
+Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER} and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS Managed Endpoint currently doesn't support Pod Template customization.
 
 ---
 

@@ -3,6 +3,8 @@
 
 import { Database } from '@aws-cdk/aws-glue-alpha';
 import { Construct } from 'constructs';
+import { ContextOptions } from './common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from './common/tracked-construct';
 
 
 /**
@@ -10,7 +12,7 @@ import { Construct } from 'constructs';
  *  Databases for Raw/Cleaned/Transformed data,
  */
 
-export class DataLakeCatalog extends Construct {
+export class DataLakeCatalog extends TrackedConstruct {
 
   /**
      * AWS Glue Database for Raw data
@@ -33,7 +35,11 @@ export class DataLakeCatalog extends Construct {
      */
 
   constructor(scope: Construct, id: string) {
-    super(scope, id);
+    const trackedConstructProps : TrackedConstructProps = {
+      trackingCode: ContextOptions.DATA_LAKE_ID,
+    };
+
+    super(scope, id, trackedConstructProps);
 
     this.rawDatabase = new Database(this, 'raw-database', {
       databaseName: 'raw',

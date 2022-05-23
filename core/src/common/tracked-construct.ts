@@ -10,11 +10,11 @@ export interface TrackedConstructProps {
   /**
    * Unique code used to measure the number of the CloudFormation deployments
    */
-  trackingCode: string;
+  readonly trackingCode: string;
 }
 
 /**
- * A type of CDK Construct that is tracked via a unique code in Stack labels. 
+ * A type of CDK Construct that is tracked via a unique code in Stack labels.
  * It is  used to measure the number of deployments and so the impact of the Analytics Reference Architecture.
  */
 export class TrackedConstruct extends Construct {

@@ -6,6 +6,8 @@ import { LogGroup, RetentionDays, LogStream } from 'aws-cdk-lib/aws-logs';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Aws, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { ContextOptions } from './common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from './common/tracked-construct';
 
 
 /**
@@ -17,10 +19,10 @@ export interface DataLakeExporterProps {
    */
   readonly sinkBucket: Bucket;
   /**
-   * Amazon S3 sink object key where the data lake exporter write data. 
+   * Amazon S3 sink object key where the data lake exporter write data.
    * @default - The data is written at the bucket root
    */
-   readonly sinkObjectKey?: string;
+  readonly sinkObjectKey?: string;
   /**
    * Source must be an Amazon Kinesis Data Stream.
    */
@@ -51,7 +53,7 @@ export interface DataLakeExporterProps {
  * Source can be an Amazon Kinesis Data Stream.
  * Target can be an Amazon S3 bucket.
  */
-export class DataLakeExporter extends Construct {
+export class DataLakeExporter extends TrackedConstruct {
 
   /**
    * Constructs a new instance of the DataLakeExporter class
@@ -63,7 +65,11 @@ export class DataLakeExporter extends Construct {
   public readonly cfnIngestionStream: CfnDeliveryStream;
 
   constructor(scope: Construct, id: string, props: DataLakeExporterProps) {
-    super(scope, id);
+    const trackedConstructProps : TrackedConstructProps = {
+      trackingCode: ContextOptions.DATA_LAKE_ID,
+    };
+
+    super(scope, id, trackedConstructProps);
 
     if ( props.deliverySize || 128 > 128 ) { throw 'deliverySize cannot be more than 128MB';}
     if ( props.deliveryInterval || 900 > 900 ) { throw 'deliveryInterval cannot be more than 900s';}
@@ -115,7 +121,7 @@ export class DataLakeExporter extends Construct {
     const grantTable = props.sourceGlueTable.grantRead(roleKinesisFirehose);
     const grantGlue = props.sourceGlueTable.grantToUnderlyingResources(roleKinesisFirehose, ['glue:GetTableVersions']);
 
-    
+
     // Create the Delivery stream from Cfn because L2 Construct doesn't support conversion to parquet and custom partitioning
     this.cfnIngestionStream = new CfnDeliveryStream(this, 'dataLakeExporter', {
       deliveryStreamType: 'KinesisStreamAsSource',
