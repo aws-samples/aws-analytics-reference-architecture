@@ -7,11 +7,11 @@
  * @group unit/ara-bucket
  */
 
-import {Stack} from '@aws-cdk/core';
-import {AraBucket} from '../../src/ara-bucket';
+import { Stack } from '@aws-cdk/core';
+import { AraBucket } from '../../src/ara-bucket';
 import '@aws-cdk/assert/jest';
-import {Match, Template} from '@aws-cdk/assertions';
-import {BucketEncryption} from "@aws-cdk/aws-s3";
+import { Match, Template } from '@aws-cdk/assertions';
+import { BucketEncryption } from '@aws-cdk/aws-s3';
 
 describe ('AraBucket', () => {
   const AraBucketStack = new Stack();

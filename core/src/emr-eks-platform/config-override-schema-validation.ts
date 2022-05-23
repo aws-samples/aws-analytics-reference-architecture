@@ -4,8 +4,8 @@
 import { validator } from '@exodus/schemasafe';
 
 /**
- * Helper function used to validate the schema of the custom configuration provided when 
- * creating an EMR on EKS Managed Endpoint 
+ * Helper function used to validate the schema of the custom configuration provided when
+ * creating an EMR on EKS Managed Endpoint
  * @param overrideConfigSchema The validation schema
  * @param overrideConfigData The JSON configuration to validate
  */

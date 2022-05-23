@@ -155,7 +155,7 @@ export class EmrEksNodegroup {
   /**
    * Default nodegroup configuration for EMR Studio notebooks used with EMR on EKS
    * This nodegroup is replacing [NOTEBOOK_DRIVER]{@link EmrEksNodegroup.NOTEBOOK_DRIVER}
-   * and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS 
+   * and [NOTEBOOK_EXECUTOR]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR} because EMR on EKS
    * Managed Endpoint currently doesn't support Pod Template customization
    */
   public static readonly NOTEBOOK_WITHOUT_PODTEMPLATE: EmrEksNodegroupOptions = {

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT-0
 
 import { CfnWorkGroup } from '@aws-cdk/aws-athena';
-import {Bucket} from '@aws-cdk/aws-s3';
-import {Construct} from '@aws-cdk/core';
+import { Bucket } from '@aws-cdk/aws-s3';
+import { Construct } from '@aws-cdk/core';
 import { AraBucket } from './ara-bucket';
 
 /**

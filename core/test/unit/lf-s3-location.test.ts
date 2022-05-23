@@ -9,19 +9,19 @@
 
 import { LakeformationS3Location } from '../../src/lf-s3-location';
 import '@aws-cdk/assert/jest';
-import { Stack } from '@aws-cdk/core';
 import { Match, Template } from '@aws-cdk/assertions';
 import { Bucket } from '@aws-cdk/aws-s3';
+import { Stack } from '@aws-cdk/core';
 
 describe('LakeFormationS3Location test', () => {
 
-  const lfS3Stack = new Stack();  
+  const lfS3Stack = new Stack();
   const bucket = new Bucket(lfS3Stack, 'Bucket');
   new LakeformationS3Location(lfS3Stack, 'S3Location', {
     s3Bucket: bucket,
     s3ObjectKey: 'test',
   });
-  
+
   const template = Template.fromStack(lfS3Stack);
 
   test('S3Location should create the proper Lake Formation CfnResource', () => {
@@ -30,66 +30,66 @@ describe('LakeFormationS3Location test', () => {
         UseServiceLinkedRole: false,
         RoleArn: Match.anyValue(),
         ResourceArn: Match.objectLike({
-          "Fn::Join": [
-            "",
+          'Fn::Join': [
+            '',
             [
               Match.anyValue(),
-              "/test/*"
-            ]
-          ]
+              '/test/*',
+            ],
+          ],
         }),
-      })
+      }),
     );
   });
 
   test('S3Location should create the proper IAM role', () => {
-    template.hasResourceProperties('AWS::IAM::Policy', 
+    template.hasResourceProperties('AWS::IAM::Policy',
       Match.objectLike({
         PolicyDocument: {
           Statement: Match.arrayWith([
             {
               Action: [
-                "s3:GetObject*",
-                "s3:GetBucket*",
-                "s3:List*",
-                "s3:DeleteObject*",
-                "s3:PutObject*",
-                "s3:Abort*"
+                's3:GetObject*',
+                's3:GetBucket*',
+                's3:List*',
+                's3:DeleteObject*',
+                's3:PutObject*',
+                's3:Abort*',
               ],
               Effect: 'Allow',
               Resource: Match.arrayWith([
                 {
-                  "Fn::Join": [
-                    "",
+                  'Fn::Join': [
+                    '',
                     [
                       Match.anyValue(),
-                      "/test/*"
-                    ]
-                  ]
-                }
-              ])
+                      '/test/*',
+                    ],
+                  ],
+                },
+              ]),
             },
-          ])
-        }
-      })
+          ]),
+        },
+      }),
     );
   });
 
   test('S3Location should create the proper IAM role', () => {
-    template.hasResourceProperties('AWS::IAM::Role', 
+    template.hasResourceProperties('AWS::IAM::Role',
       Match.objectLike({
         AssumeRolePolicyDocument: {
           Statement: Match.arrayWith([
             {
-              Action: "sts:AssumeRole",
-              Effect: "Allow",
+              Action: 'sts:AssumeRole',
+              Effect: 'Allow',
               Principal: {
-                Service: "lakeformation.amazonaws.com"
+                Service: 'lakeformation.amazonaws.com',
               },
-            }
-          ])
-        }
-      })
+            },
+          ]),
+        },
+      }),
     );
   });
 });

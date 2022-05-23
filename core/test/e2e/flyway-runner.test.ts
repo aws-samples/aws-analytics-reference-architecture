@@ -84,8 +84,8 @@ afterAll(async () => {
         stack: stackArtifact,
       });
     } catch (e) {
-      console.error(`Fail to delete stack retrying`);
-      if(retryCount == 0) {
+      console.error('Fail to delete stack retrying');
+      if (retryCount == 0) {
         throw e;
       }
     }

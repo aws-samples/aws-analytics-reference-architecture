@@ -11,7 +11,7 @@ import { Construct } from '@aws-cdk/core';
 export interface S3CrossAccountProps {
 
   /**
-   * The S3 Bucket object to grant cross account access. 
+   * The S3 Bucket object to grant cross account access.
    * This needs to be a Bucket object and not an IBucket because the construct modifies the Bucket policy
    */
   readonly s3Bucket: Bucket;
@@ -43,7 +43,7 @@ export interface S3CrossAccountProps {
  * const stack = new cdk.Stack(exampleApp, 'S3CrossAccountStack');
  *
  * const myBucket = new Bucket(stack, 'MyBucket')
- * 
+ *
  * new S3CrossAccount(stack, 'S3CrossAccountGrant', {
  *   bucket: myBucket,
  *   objectKey: 'my-data',
@@ -83,8 +83,8 @@ export class S3CrossAccount extends Construct {
 
     // // If the bucket is encrypted with a custom KMS key, attach a policy to the key to grant encrypt and decrypt
     // if (props.bucket.encryptionKey)  props.bucket.encryptionKey.grantEncryptDecrypt(targetAccount);
-    
+
     const objectKey = props.s3ObjectKey ? props.s3ObjectKey + '/*' : '*';
-    props.s3Bucket.grantReadWrite(targetAccount, objectKey)
+    props.s3Bucket.grantReadWrite(targetAccount, objectKey);
   };
 }

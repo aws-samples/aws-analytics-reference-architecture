@@ -21,6 +21,8 @@ import {
   createUserSessionPolicy,
 } from './notebook-platform-helpers';
 import { NotebookUserOptions } from './notebook-user';
+import { ContextOptions } from '../common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 
 
 /**
@@ -162,7 +164,7 @@ export enum IdpRelayState {
  *
  * ```
  */
-export class NotebookPlatform extends Construct {
+export class NotebookPlatform extends TrackedConstruct {
   private static readonly STUDIO_PRINCIPAL: string = 'elasticmapreduce.amazonaws.com';
   private readonly studioId: string;
   private readonly workSpaceSecurityGroup: SecurityGroup;
@@ -192,7 +194,12 @@ export class NotebookPlatform extends Construct {
    */
 
   constructor(scope: Construct, id: string, props: NotebookPlatformProps) {
-    super(scope, id);
+
+    const trackedConstructProps : TrackedConstructProps = {
+      trackingCode: ContextOptions.DATA_ENG_PLATFORM_ID,
+    };
+
+    super(scope, id, trackedConstructProps);
 
     this.studioServicePolicy = [];
     this.studioUserPolicy = [];

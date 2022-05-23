@@ -43,6 +43,8 @@ import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
+import { ContextOptions } from '../common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 
 
 /**
@@ -91,18 +93,18 @@ export interface EmrEksClusterProps {
 }
 
 /**
- * EmrEksCluster Construct packaging all the resources and configuration required to run Amazon EMR on EKS. 
+ * EmrEksCluster Construct packaging all the resources and configuration required to run Amazon EMR on EKS.
  * It deploys:
- * * An EKS cluster (VPC configuration can be customized) 
+ * * An EKS cluster (VPC configuration can be customized)
  * * A tooling nodegroup to run tools including the Kubedashboard and the Cluster Autoscaler
  * * Optionally multiple nodegroups (one per AZ) for critical/shared/notebook EMR workloads
  * * Additional nodegroups can be configured
- * 
- * The construct will upload on S3 the Pod templates required to run EMR jobs on the default nodegroups. 
+ *
+ * The construct will upload on S3 the Pod templates required to run EMR jobs on the default nodegroups.
  * It will also parse and store the configuration of EMR on EKS jobs for each default nodegroup in object parameters
- * 
+ *
  * Methods are available to add EMR Virtual Clusters to the EKS cluster and to create execution roles for the virtual clusters.
- * 
+ *
  * Usage example:
  *
  * ```typescript
@@ -116,11 +118,11 @@ export interface EmrEksClusterProps {
  *   createNamespace: <TRUE OR FALSE>,
  *   eksNamespace: <K8S_namespace>,
  * });
- * 
+ *
  * const role = emrEks.createExecutionRole(stack, 'ExecRole',{
  *   policy: <POLICY>,
  * })
- * 
+ *
  * // EMR on EKS virtual cluster ID
  * cdk.CfnOutput(self, 'VirtualClusterId',value = virtualCluster.attr_id)
  * // Job config for each nodegroup
@@ -131,7 +133,7 @@ export interface EmrEksClusterProps {
  * ```
  *
  */
-export class EmrEksCluster extends Construct {
+export class EmrEksCluster extends TrackedConstruct {
 
   /**
    * Get an existing EmrEksCluster based on the cluster name property or create a new one
@@ -181,7 +183,12 @@ export class EmrEksCluster extends Construct {
    * @access private
    */
   private constructor(scope: Construct, id: string, props: EmrEksClusterProps) {
-    super(scope, id);
+
+    const trackedConstructProps : TrackedConstructProps = {
+      trackingCode: ContextOptions.EMR_EKS_TRACKING_ID,
+    };
+
+    super(scope, id, trackedConstructProps);
 
     this.clusterName = props.eksClusterName ?? EmrEksCluster.DEFAULT_CLUSTER_NAME;
     //Define EKS cluster logging

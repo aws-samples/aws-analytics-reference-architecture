@@ -22,7 +22,7 @@ const sinkBucket = new Bucket(batchReplayerStack, 'SinkBucket');
 const batchReplayer = new BatchReplayer(batchReplayerStack, 'TestBatchReplayer', {
   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
   frequency: 120,
-  sinkBucket: sinkBucket ,
+  sinkBucket: sinkBucket,
   sinkObjectKey: 'test',
 });
 

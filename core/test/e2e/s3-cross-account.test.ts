@@ -13,7 +13,7 @@ import * as cdk from '@aws-cdk/core';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 import { S3CrossAccount } from '../../src/s3-cross-account';
- 
+
 jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
@@ -23,9 +23,9 @@ const myKey = new Key(stack, 'MyKey', {
   removalPolicy: cdk.RemovalPolicy.DESTROY,
 });
 const myBucket = new Bucket(stack, 'MyBucket', {
-    encryptionKey: myKey,
-    removalPolicy: cdk.RemovalPolicy.DESTROY,
-    autoDeleteObjects: true,
+  encryptionKey: myKey,
+  removalPolicy: cdk.RemovalPolicy.DESTROY,
+  autoDeleteObjects: true,
 });
 
 new S3CrossAccount(stack, 'MyS3CrossAccount', {
@@ -48,12 +48,12 @@ describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    
+
     const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
       profile: process.env.AWS_PROFILE,
     });
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-    
+
     // WHEN
     const deployResult = await cloudFormation.deployStack({
       stack: stackArtifact,

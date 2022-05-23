@@ -34,7 +34,7 @@ const s3Location = new LakeformationS3Location(stack, 'S3Location', {
 });
 
 new cdk.CfnOutput(stack, 'BucketPolicy', {
-  value: s3Location.dataAccessRole.assumeRolePolicy? 
+  value: s3Location.dataAccessRole.assumeRolePolicy?
     s3Location.dataAccessRole.assumeRolePolicy.statementCount.toString() : '0',
   exportName: 'role',
 });
@@ -48,17 +48,17 @@ describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-    
+
     const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
       profile: process.env.AWS_PROFILE,
     });
     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-    
+
     // WHEN
     const deployResult = await cloudFormation.deployStack({
       stack: stackArtifact,
     });
-    
+
     // THEN
     expect(deployResult.outputs.BucketPolicy).toContain('1');
   }, 9000000);
@@ -66,13 +66,13 @@ describe('deploy succeed', () => {
 
 afterAll(async () => {
   const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-  
+
   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
     profile: process.env.AWS_PROFILE,
   });
-  
+
   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-  
+
   await cloudFormation.destroyStack({
     stack: stackArtifact,
   });

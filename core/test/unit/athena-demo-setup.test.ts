@@ -27,7 +27,7 @@ describe ('AthenaDemoSetup', () => {
     template.resourceCountIs('AWS::S3::Bucket', 2);
 
     // Test if the Amazon S3 Bucket for the result is correct
-    template.hasResourceProperties('AWS::S3::Bucket', 
+    template.hasResourceProperties('AWS::S3::Bucket',
       Match.objectLike({
         BucketName: {
           'Fn::Join': [
@@ -43,15 +43,15 @@ describe ('AthenaDemoSetup', () => {
               },
             ],
           ],
-        }
-      })
+        },
+      }),
     );
   });
 
   test('Athena Demo Setup creates the proper Athena workgroup', () => {
 
     // Test if the Amazon Athena Workgroup is correct
-    template.hasResourceProperties('AWS::Athena::WorkGroup', 
+    template.hasResourceProperties('AWS::Athena::WorkGroup',
       Match.objectLike({
         Name: 'demo',
         WorkGroupConfiguration: {
@@ -71,7 +71,7 @@ describe ('AthenaDemoSetup', () => {
             },
           },
         },
-      })
+      }),
     );
   });
 });
