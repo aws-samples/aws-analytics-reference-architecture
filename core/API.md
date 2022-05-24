@@ -5496,7 +5496,7 @@ new TrackedConstruct(scope: Construct, id: string, props: TrackedConstructProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.TrackedConstructProps">TrackedConstructProps</a></code> | the TrackedConstruct [properties]{@link TrackedConstructProps}. |
 
@@ -5504,7 +5504,7 @@ new TrackedConstruct(scope: Construct, id: string, props: TrackedConstructProps)
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -5546,7 +5546,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -5558,11 +5558,27 @@ import { TrackedConstruct } from 'aws-analytics-reference-architecture'
 TrackedConstruct.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.TrackedConstruct.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -5570,19 +5586,19 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.TrackedConstruct.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 

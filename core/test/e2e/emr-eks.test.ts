@@ -34,7 +34,7 @@ describe('deploy succeed', () => {
     // THEN
     expect(deployResult.outputs.emrEksAdminRole).toEqual('arn:aws:iam::123445678912:role/gromav');
 
-  }, 90000000);
+  }, 9000000);
 });
 
 afterAll(async () => {

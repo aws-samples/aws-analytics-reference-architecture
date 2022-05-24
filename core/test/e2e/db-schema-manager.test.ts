@@ -4,7 +4,7 @@
 /**
  * Tests FlywayRunner
  *
- * @group skipinteg/redshift/flyway-runner
+ * @group integ/redshift/flyway-runner
  */
 
 import * as path from 'path';
