@@ -7,8 +7,8 @@
  */
 
 import * as cdk from 'aws-cdk-lib';
+import { DataLakeStorage } from '../../src';
 import { deployStack, destroyStack } from './utils';
-import { DataLakeStorage } from '../../src/data-lake-storage';
 
 jest.setTimeout(100000);
 // GIVEN
@@ -38,9 +38,9 @@ describe('deploy succeed', () => {
     const deployResult = await deployStack(integTestApp, stack);
     
     // THEN
-    expect(deployResult.outputs.rawBucketName).toContain('ara-raw-');
-    expect(deployResult.outputs.cleanBucketName).toContain('ara-clean-');
-    expect(deployResult.outputs.transformBucketName).toContain('ara-transform-');
+    expect(deployResult.outputs.rawBucketName).toContain('raw-');
+    expect(deployResult.outputs.cleanBucketName).toContain('clean-');
+    expect(deployResult.outputs.transformBucketName).toContain('transform-');
 
   }, 9000000);
 });

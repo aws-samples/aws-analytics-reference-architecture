@@ -92,7 +92,7 @@
     "@aws-cdk/aws-glue-alpha": "2.25.0-alpha.0",
     "@aws-cdk/aws-redshift-alpha": "2.25.0-alpha.0",
     "@exodus/schemasafe": "^1.0.0-rc.6",
-    "aws-sdk": "^2.1140.0",
+    "aws-sdk": "^2.1141.0",
     "js-yaml": "^4.1.0",
     "uuid": "^8.3.2"
   },

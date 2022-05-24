@@ -4,7 +4,7 @@
 /**
  * Tests ec2 ssm role
  *
- * @group unit/other/ec2-ssm-role
+ * @group unit/ec2-ssm-role
  */
 
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';

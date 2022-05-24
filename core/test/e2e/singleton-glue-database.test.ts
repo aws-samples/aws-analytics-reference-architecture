@@ -8,9 +8,8 @@
  */
 
  import * as cdk from 'aws-cdk-lib';
- import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
- import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
- 
+ import { deployStack, destroyStack } from './utils';
+
  import { SingletonGlueDatabase } from '../../src/singleton-glue-database';
  
  jest.setTimeout(100000);
@@ -28,17 +27,7 @@
  describe('deploy succeed', () => {
    it('can be deploy succcessfully', async () => {
      // GIVEN
-     const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-     
-     const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-       profile: process.env.AWS_PROFILE,
-     });
-     const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-     
-     // WHEN
-     const deployResult = await cloudFormation.deployStack({
-       stack: stackArtifact,
-     });
+     const deployResult = await deployStack(integTestApp, stack);
      
      // THEN
      expect(deployResult.outputs.SingletonGlueDatabaseName).toContain('singleton_database_test');
@@ -47,15 +36,6 @@
  });
  
  afterAll(async () => {
-   const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-   
-   const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-     profile: process.env.AWS_PROFILE,
-   });
-   const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-   
-   await cloudFormation.destroyStack({
-     stack: stackArtifact,
-   });
+  await destroyStack(integTestApp, stack);
  });
  

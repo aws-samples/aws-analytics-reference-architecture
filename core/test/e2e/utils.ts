@@ -15,15 +15,27 @@ export const deployStack = async (app: App, stack: Stack, quiet?: boolean): Prom
   });
 };
 
-export const destroyStack = async (app: App, stack: Stack, quiet?: boolean): Promise<void> => {
+export const destroyStack = async (app: App, stack: Stack, quiet?: boolean, retryCount?: number): Promise<void> => {
   const stackArtifact = getStackArtifact(app, stack);
 
   const cloudFormation = await createCloudFormationDeployments();
 
-  await cloudFormation.destroyStack({
-    stack: stackArtifact,
-    quiet: quiet ? quiet : true,
-  });
+  retryCount = retryCount || 0;
+  while (retryCount >= 0) {
+    try {
+      await cloudFormation.destroyStack({
+        stack: stackArtifact,
+        quiet: quiet ? quiet : true,
+      });
+    } catch (e) {
+      console.error(`Fail to delete stack retrying`);
+      if(retryCount == 0) {
+        throw e;
+      }
+    }
+    retryCount--;
+  }
+
 };
 
 const getStackArtifact = (app: App, stack: Stack): cxapi.CloudFormationStackArtifact => {

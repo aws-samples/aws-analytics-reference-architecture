@@ -4,7 +4,7 @@
 /**
  * Test example
  *
- * @group unit/other/test-example
+ * @group unit/test-example
  */
 
 import { Stack } from 'aws-cdk-lib';

@@ -4,7 +4,7 @@
 /**
  * Tests FlywayRunner
  *
- * @group integ/redshift/flyway-runner
+ * @group skipinteg/redshift/flyway-runner
  */
 
 import * as path from 'path';
@@ -59,16 +59,5 @@ describe('deploy succeed', () => {
 });
 
 afterAll(async () => {
-  let retryCount = 1;
-  while (retryCount >= 0) {
-    try {
-      await destroyStack(integTestApp, stack);
-    } catch (e) {
-      console.error(`Fail to delete stack retrying`);
-      if(retryCount == 0) {
-        throw e;
-      }
-    }
-    retryCount--;
-  }
+  await destroyStack(integTestApp, stack);
 }, 9000000);

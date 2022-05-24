@@ -27,10 +27,9 @@ const myBucket = new Bucket(stack, 'MyBucket', {
 });
 
 new S3CrossAccount(stack, 'MyS3CrossAccount', {
-  bucket: myBucket,
-  objectKey: 'test',
-  key: myKey,
-  accountID: cdk.Aws.ACCOUNT_ID,
+  s3Bucket: myBucket,
+  s3ObjectKey: 'test',
+  accountId: cdk.Aws.ACCOUNT_ID,
 });
 
 new cdk.CfnOutput(stack, 'BucketPolicy', {
