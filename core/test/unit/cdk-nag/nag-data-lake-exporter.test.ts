@@ -37,7 +37,7 @@ const table = new Table(dataLakeExporterStack, 'testTable', {
     },
   ],
 });
-const bucket = new Bucket(dataLakeExporterStack, 'Bucket')
+const bucket = new Bucket(dataLakeExporterStack, 'Bucket');
 
 new DataLakeExporter(dataLakeExporterStack, 'testExporter', {
   sinkBucket: bucket,

@@ -7,7 +7,7 @@ import { Stack } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 /**
- * The properties for the PreBundledLayer construct. 
+ * The properties for the PreBundledLayer construct.
  * It extends existing LayerProps as optional using `Partial` (as we don't require `Code` prop)
  */
 export interface PreBundledLayerProps extends Partial<LayerVersionProps>{
@@ -16,10 +16,10 @@ export interface PreBundledLayerProps extends Partial<LayerVersionProps>{
 
 /**
  * A Layer with prebundled dependencies that can be reused accross multiple [PreBundledFunction]{@link PreBundledFunction} resources.
- * This layer reduces the total size of the Analytics Reference Architecture library by factorizing common dependencies in one shared layer. 
- * 
+ * This layer reduces the total size of the Analytics Reference Architecture library by factorizing common dependencies in one shared layer.
+ *
  * Do not include packages in your Lambda function `requirements.txt` if they are already part of the PreBundledLayer.
- * 
+ *
  * Here is the list of bundled dependencies:
  * * astroid==2.4.2
  * * autopep8==1.6.0

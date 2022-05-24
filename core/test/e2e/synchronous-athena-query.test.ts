@@ -14,7 +14,7 @@ import { RemovalPolicy } from 'aws-cdk-lib';
 import { deployStack, destroyStack } from './utils';
 
 import { SynchronousAthenaQuery } from '../../src/synchronous-athena-query';
- 
+
 jest.setTimeout(300000);
 // GIVEN
 const integTestApp = new cdk.App();
@@ -66,7 +66,7 @@ const synchronousAthenaQuery = new SynchronousAthenaQuery(stack, 'SynchronousAth
       resources: [
         sourceBucket.arnForObjects('elb/plaintext/*'),
         sourceBucket.bucketArn,
-      ],  
+      ],
       actions: [
         's3:GetObject',
         's3:ListBucket',

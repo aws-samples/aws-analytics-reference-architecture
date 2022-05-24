@@ -20,7 +20,7 @@ jest.setTimeout(500000);
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'BatchReplayerE2eTest');
 
-const sinkBucket = new Bucket(stack, 'SinkBucket',{
+const sinkBucket = new Bucket(stack, 'SinkBucket', {
   removalPolicy: RemovalPolicy.DESTROY,
   autoDeleteObjects: true,
 });

@@ -33,7 +33,7 @@ const s3Location = new LakeformationS3Location(stack, 'S3Location', {
 });
 
 new cdk.CfnOutput(stack, 'BucketPolicy', {
-  value: s3Location.dataAccessRole.assumeRolePolicy? 
+  value: s3Location.dataAccessRole.assumeRolePolicy?
     s3Location.dataAccessRole.assumeRolePolicy.statementCount.toString() : '0',
   exportName: 'role',
 });

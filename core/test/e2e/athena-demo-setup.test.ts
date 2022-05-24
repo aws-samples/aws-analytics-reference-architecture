@@ -35,8 +35,8 @@ describe('deploy succeed', () => {
 
     
     // THEN
-    expect(deployResult.outputs.AthenaWorkgroupName).toEqual(`demo`);
-    expect(deployResult.outputs.ResultsBucketName).toContain(`athena-logs`);    
+    expect(deployResult.outputs.AthenaWorkgroupName).toEqual('demo');
+    expect(deployResult.outputs.ResultsBucketName).toContain('athena-logs');
 
   }, 9000000);
 });

@@ -24,6 +24,7 @@ Object {
       ],
     },
   },
+  "Description": "undefined (uksb-1sljh1bja)",
   "Parameters": Object {
     "BootstrapVersion": Object {
       "Default": "/cdk-bootstrap/hnb659fds/version",
