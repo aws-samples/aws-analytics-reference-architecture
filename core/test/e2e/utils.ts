@@ -20,7 +20,7 @@ export const destroyStack = async (app: App, stack: Stack, quiet?: boolean, retr
 
   const cloudFormation = await createCloudFormationDeployments();
 
-  retryCount = retryCount || 0;
+  retryCount = retryCount || 1;
   while (retryCount >= 0) {
     try {
       await cloudFormation.destroyStack({
