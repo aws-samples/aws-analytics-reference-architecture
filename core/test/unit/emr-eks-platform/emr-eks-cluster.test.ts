@@ -124,7 +124,7 @@ test('EKS should have a helm chart for deploying the Kubernetes Dashboard', () =
 
 test('EKS cluster should have the default Nodegroups', () => {
 
-  expect(emrEksClusterStack).toCountResources('AWS::EKS::Nodegroup', 11);
+  expect(emrEksClusterStack).toCountResources('AWS::EKS::Nodegroup', 13);
 
   expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
     AmiType: 'AL2_x86_64',
