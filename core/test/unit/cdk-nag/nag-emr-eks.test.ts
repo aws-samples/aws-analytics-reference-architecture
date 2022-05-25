@@ -23,7 +23,7 @@ const stack = new Stack(mockApp, 'eks-emr-studio');
 Aspects.of(mockApp).add(new AwsSolutionsChecks());
 
 EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
+  eksAdminRoleArn: 'arn:aws:iam::123445678912:role/myRole',
 });
 
 NagSuppressions.addResourceSuppressionsByPath(
@@ -403,6 +403,17 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupnotebookWithoutPodTemplate-1/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupnotebookWithoutPodTemplate-0/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
