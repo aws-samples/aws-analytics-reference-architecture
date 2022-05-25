@@ -403,6 +403,18 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupnotebookWithoutPodTemplate-0/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platformCluster/NodegroupnotebookWithoutPodTemplate-1/NodeGroupRole/Resource',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Nodegroups are using AWS Managed Policies' }],
+);
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);
