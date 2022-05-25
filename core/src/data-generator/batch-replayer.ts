@@ -120,7 +120,7 @@ export class BatchReplayer extends Construct {
     this.sinkObjectKey = props.sinkObjectKey;
     this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
 
-    const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python38:6`);
+    const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python39:1`);
 
     const manifestBucketName = this.dataset.manifestLocation.bucketName;
     const manifestObjectKey = this.dataset.manifestLocation.objectKey;
