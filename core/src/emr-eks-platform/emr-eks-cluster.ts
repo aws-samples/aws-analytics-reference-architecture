@@ -154,7 +154,7 @@ export class EmrEksCluster extends TrackedConstruct {
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-  private static readonly EMR_VERSIONS = ['emr-6.5.0-latest', 'emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
+  private static readonly EMR_VERSIONS = ['emr-6.6.0-latest', 'emr-6.5.0-latest', 'emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
   private static readonly DEFAULT_EMR_VERSION = 'emr-6.4.0-latest';
   private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
   private static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
@@ -408,6 +408,7 @@ export class EmrEksCluster extends TrackedConstruct {
       // Add a nodegroup for notebooks
       this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
       this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+      this.addEmrEksNodegroup('notebookWithoutPodTemplate', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
     }
     // Create an Amazon S3 Bucket for default podTemplate assets
     this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${this.clusterName.toLowerCase()}-emr-eks-assets`, encryption: BucketEncryption.KMS_MANAGED });
@@ -452,7 +453,7 @@ export class EmrEksCluster extends TrackedConstruct {
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the notebook default config
     // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-driver.yaml`);
     // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-executor.yaml`);
-    this.notebookDefaultConfig = JSON.stringify(NotebookDefaultConfig);
+    this.notebookDefaultConfig = JSON.parse(JSON.stringify(NotebookDefaultConfig));
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the critical default config
     CriticalDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/critical-driver.yaml`);

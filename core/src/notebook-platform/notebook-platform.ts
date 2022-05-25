@@ -165,6 +165,7 @@ export enum IdpRelayState {
  * ```
  */
 export class NotebookPlatform extends TrackedConstruct {
+  private static readonly DEFAULT_EMR_VERSION = 'emr-6.6.0-latest';
   private static readonly STUDIO_PRINCIPAL: string = 'elasticmapreduce.amazonaws.com';
   private readonly studioId: string;
   private readonly workSpaceSecurityGroup: SecurityGroup;
@@ -391,7 +392,7 @@ export class NotebookPlatform extends TrackedConstruct {
                 `${user.identityName}${index}`,
                 notebookManagedEndpoint.executionPolicy,
               ),
-              emrOnEksVersion: emrOnEksVersion ? emrOnEksVersion : undefined,
+              emrOnEksVersion: emrOnEksVersion ? emrOnEksVersion : NotebookPlatform.DEFAULT_EMR_VERSION,
               configurationOverrides: configOverride ? configOverride : undefined,
             },
 
