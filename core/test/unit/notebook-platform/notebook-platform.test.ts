@@ -7,8 +7,6 @@
  * @group unit/notebook-data-platform
  */
 
-//TODO REDO this unit test to support the new way of deploying notebooks with nested stacks
-
 import * as assertCDK from '@aws-cdk/assert';
 import { ManagedPolicy, PolicyDocument, PolicyStatement } from '@aws-cdk/aws-iam';
 import { Stack } from '@aws-cdk/core';
