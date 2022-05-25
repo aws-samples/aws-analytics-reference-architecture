@@ -383,7 +383,6 @@ export class EmrEksCluster extends TrackedConstruct {
     // Create a role to be used as instance profile for nodegroups
     this.ec2InstanceNodeGroupRole = new Role(this, 'ec2InstanceNodeGroupRole', {
       assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
-      roleName: 'ara-ec2-instance-role',
     });
 
     //attach policies to the role to be used by the nodegroups
