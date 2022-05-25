@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Database } from '@aws-cdk/aws-glue';
-import { Construct, Stack } from '@aws-cdk/core';
+import { Database } from '@aws-cdk/aws-glue-alpha';
+import { Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 /**
  * An Amazon S3 Bucket implementing the singleton pattern

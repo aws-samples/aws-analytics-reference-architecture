@@ -1,12 +1,13 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { Runtime } from '@aws-cdk/aws-lambda';
-import { RetentionDays } from '@aws-cdk/aws-logs';
-import { Construct, Duration } from '@aws-cdk/core';
-import { Provider } from '@aws-cdk/custom-resources';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Duration } from 'aws-cdk-lib';
+import { Provider } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
+import { Construct } from 'constructs';
 //import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 
@@ -68,7 +69,7 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
 
     // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
     const onEvent = new PreBundledFunction(this, 'OnEvent', {
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       codePath: 'emr-eks-platform/resources/lambdas/nodegroup-asg-tag',
       handler: 'lambda.on_event',
       name: 'EmrEksNodegroupAsgTagOnEventFn',

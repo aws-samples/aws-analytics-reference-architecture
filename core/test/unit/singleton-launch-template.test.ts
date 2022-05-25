@@ -4,12 +4,12 @@
 /**
  * Tests singleton launch template
  *
- * @group unit/singleton-launch-template
+ * @group unit/singleton/launch-template
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { SingletonCfnLaunchTemplate } from '../../src/singleton-launch-template';
-import '@aws-cdk/assert/jest';
+import { Template } from 'aws-cdk-lib/assertions';
 
 test('SingletonCfnLaunchTemplate', () => {
 
@@ -19,11 +19,12 @@ test('SingletonCfnLaunchTemplate', () => {
   SingletonCfnLaunchTemplate.getOrCreate(singletonCfnLaunchTemplateStack, 'testName', 'testData');
   SingletonCfnLaunchTemplate.getOrCreate(singletonCfnLaunchTemplateStack, 'testName', 'testData');
 
+  const template = Template.fromStack(singletonCfnLaunchTemplateStack);
 
   // Test if LogBucket is a singleton
-  expect(singletonCfnLaunchTemplateStack).toCountResources('AWS::EC2::LaunchTemplate', 1);
+  template.resourceCountIs('AWS::EC2::LaunchTemplate', 1);
 
-  expect(singletonCfnLaunchTemplateStack).toHaveResource('AWS::EC2::LaunchTemplate', {
+  template.hasResourceProperties('AWS::EC2::LaunchTemplate', {
     LaunchTemplateName: 'testName',
     LaunchTemplateData: {
       UserData: 'testData',

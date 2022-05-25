@@ -1,19 +1,17 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-
 /**
  * Tests DataLakeStorage
  *
- * @group integ/lakeformation/s3-cross-account
+ * @group integ/lakeformation/s3crossaccount
  */
 
-import { Key } from '@aws-cdk/aws-kms';
-import { Bucket } from '@aws-cdk/aws-s3';
-import * as cdk from '@aws-cdk/core';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
+import { Key } from 'aws-cdk-lib/aws-kms';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import * as cdk from 'aws-cdk-lib';
+import { deployStack, destroyStack } from './utils';
 import { S3CrossAccount } from '../../src/s3-cross-account';
-
+ 
 jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
@@ -23,9 +21,9 @@ const myKey = new Key(stack, 'MyKey', {
   removalPolicy: cdk.RemovalPolicy.DESTROY,
 });
 const myBucket = new Bucket(stack, 'MyBucket', {
-  encryptionKey: myKey,
-  removalPolicy: cdk.RemovalPolicy.DESTROY,
-  autoDeleteObjects: true,
+    encryptionKey: myKey,
+    removalPolicy: cdk.RemovalPolicy.DESTROY,
+    autoDeleteObjects: true,
 });
 
 new S3CrossAccount(stack, 'MyS3CrossAccount', {
@@ -41,23 +39,13 @@ new cdk.CfnOutput(stack, 'BucketPolicy', {
 
 new cdk.CfnOutput(stack, 'KeyPolicy', {
   value: myKey.keyId,
-  exportName: 's3CrossAccountKeyId',
+  exportName: 'keyId',
 });
 
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
-    // GIVEN
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
     // WHEN
-    const deployResult = await cloudFormation.deployStack({
-      stack: stackArtifact,
-    });
+    const deployResult = await deployStack(integTestApp, stack);
 
     // THEN
     expect(deployResult.outputs.BucketPolicy).toContain('2');
@@ -65,15 +53,5 @@ describe('deploy succeed', () => {
 });
 
 afterAll(async () => {
-  const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-    profile: process.env.AWS_PROFILE,
-  });
-
-  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-  await cloudFormation.destroyStack({
-    stack: stackArtifact,
-  });
+  await destroyStack(integTestApp, stack);
 });

@@ -7,10 +7,9 @@
  * @group unit/glue-default-role
  */
 
-import * as assertCDK from '@aws-cdk/assert';
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { GlueDefaultRole } from '../../src/glue-default-role';
-import '@aws-cdk/assert/jest';
+import { Template, Match } from 'aws-cdk-lib/assertions';
 
 test('SingletonGlueDefaultRole', () => {
 
@@ -20,12 +19,13 @@ test('SingletonGlueDefaultRole', () => {
   GlueDefaultRole.getOrCreate(glueDefaultRoleStack);
   GlueDefaultRole.getOrCreate(glueDefaultRoleStack);
 
+  const template = Template.fromStack(glueDefaultRoleStack);
 
   // Test if SingletonGlueDefaultRole is a singleton
-  expect(glueDefaultRoleStack).toCountResources('AWS::IAM::Role', 1);
+  template.resourceCountIs('AWS::IAM::Role', 1);
 
   // Test the created Amazon IAM Role
-  expect(glueDefaultRoleStack).toHaveResource('AWS::IAM::Role', {
+  template.hasResourceProperties('AWS::IAM::Role', {
     AssumeRolePolicyDocument: {
       Statement: [
         {
@@ -54,9 +54,9 @@ test('SingletonGlueDefaultRole', () => {
     ],
     Policies: [
       {
-        PolicyDocument: assertCDK.objectLike({
-          Statement: assertCDK.arrayWith(
-            {
+        PolicyDocument: Match.objectLike({
+          Statement: Match.arrayWith(
+            [{
               Action: [
                 's3:ListBucket',
                 's3:*Object*',
@@ -82,7 +82,7 @@ test('SingletonGlueDefaultRole', () => {
               Action: 'lakeformation:GetDataAccess',
               Effect: 'Allow',
               Resource: '*',
-            }),
+            }]),
         }),
         PolicyName: 'DataAccess',
       },

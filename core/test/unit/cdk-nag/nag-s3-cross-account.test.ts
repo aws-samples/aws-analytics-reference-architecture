@@ -8,10 +8,10 @@
  */
 
 
-import { Annotations, Match } from '@aws-cdk/assertions';
-import { App, Aspects, Stack, RemovalPolicy, Aws } from '@aws-cdk/core';
-import { Key } from '@aws-cdk/aws-kms';
-import { Bucket } from '@aws-cdk/aws-s3';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
+import { App, Aspects, Stack, RemovalPolicy, Aws } from 'aws-cdk-lib';
+import { Key } from 'aws-cdk-lib/aws-kms';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { S3CrossAccount } from '../../../src/s3-cross-account';

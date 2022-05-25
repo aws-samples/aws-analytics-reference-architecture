@@ -1,9 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { CfnWorkGroup } from '@aws-cdk/aws-athena';
-import { Bucket } from '@aws-cdk/aws-s3';
-import { Construct } from '@aws-cdk/core';
+import { CfnWorkGroup } from 'aws-cdk-lib/aws-athena';
+import {Bucket} from 'aws-cdk-lib/aws-s3';
+import { Construct } from 'constructs';
 import { AraBucket } from './ara-bucket';
 
 /**

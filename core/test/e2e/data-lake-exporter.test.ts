@@ -7,13 +7,12 @@
  * @group integ/data-lake/exporter
  */
 
-import { Database, DataFormat, Table } from '@aws-cdk/aws-glue';
-import { Stream } from '@aws-cdk/aws-kinesis';
-import { Bucket } from '@aws-cdk/aws-s3';
-import * as cdk from '@aws-cdk/core';
-import { RemovalPolicy } from '@aws-cdk/core';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
+import { Database, DataFormat, Table } from '@aws-cdk/aws-glue-alpha';
+import { Stream } from 'aws-cdk-lib/aws-kinesis';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import * as cdk from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
+import { deployStack, destroyStack } from './utils';
 
 import { DataLakeExporter } from '../../src/data-lake-exporter';
 
@@ -55,18 +54,7 @@ new DataLakeExporter(stack, 'DataLakeExporter', {
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-    // WHEN
-    /*const deployResult = */await cloudFormation.deployStack({
-      stack: stackArtifact,
-      rollback: false,
-    });
+    await deployStack(integTestApp, stack);
 
     // THEN
     expect(true);
@@ -75,14 +63,5 @@ describe('deploy succeed', () => {
 });
 
 afterAll(async () => {
-  const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-    profile: process.env.AWS_PROFILE,
-  });
-  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-  await cloudFormation.destroyStack({
-    stack: stackArtifact,
-  });
+  await destroyStack(integTestApp, stack);
 });
