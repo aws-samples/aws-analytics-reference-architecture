@@ -1,23 +1,23 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Rule, Schedule } from '@aws-cdk/aws-events';
-import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
-import { PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
-import { Runtime } from '@aws-cdk/aws-lambda';
-import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
-import { Bucket } from '@aws-cdk/aws-s3';
-import { StateMachine, IntegrationPattern, TaskInput, JsonPath, LogLevel } from '@aws-cdk/aws-stepfunctions';
-import { LambdaInvoke, AthenaStartQueryExecution } from '@aws-cdk/aws-stepfunctions-tasks';
-import { Construct, Arn, Aws, Stack, Duration, ArnFormat, RemovalPolicy } from '@aws-cdk/core';
-import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from '@aws-cdk/custom-resources';
+import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
+import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
+import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { StateMachine, IntegrationPattern, TaskInput, JsonPath, LogLevel } from 'aws-cdk-lib/aws-stepfunctions';
+import { LambdaInvoke, AthenaStartQueryExecution } from 'aws-cdk-lib/aws-stepfunctions-tasks';
+import { Arn, Aws, Stack, Duration, ArnFormat, RemovalPolicy } from 'aws-cdk-lib';
+import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Dataset } from '../datasets/dataset';
 import { AraBucket } from '../ara-bucket';
 import { SingletonGlueDatabase } from '../singleton-glue-database';
 import { SingletonKey } from '../singleton-kms-key';
 import { SynchronousAthenaQuery } from '../synchronous-athena-query';
-
+import { Construct } from 'constructs';
 
 /**
  * The properties for DataGenerator Construct.

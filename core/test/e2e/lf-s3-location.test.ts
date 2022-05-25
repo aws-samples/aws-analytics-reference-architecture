@@ -7,11 +7,10 @@
 * @group integ/lakeformation/s3-location
 */
 
-import { Key } from '@aws-cdk/aws-kms';
-import { Bucket } from '@aws-cdk/aws-s3';
-import * as cdk from '@aws-cdk/core';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
+import { Key } from 'aws-cdk-lib/aws-kms';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import * as cdk from 'aws-cdk-lib';
+import { deployStack, destroyStack } from './utils';
 import { LakeformationS3Location } from '../../src/lf-s3-location';
 
 jest.setTimeout(100000);
@@ -47,33 +46,13 @@ new cdk.CfnOutput(stack, 'KeyPolicy', {
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-    // WHEN
-    const deployResult = await cloudFormation.deployStack({
-      stack: stackArtifact,
-    });
-
+    const deployResult = await deployStack(integTestApp, stack);
+    
     // THEN
     expect(deployResult.outputs.BucketPolicy).toContain('1');
   }, 9000000);
 });
 
 afterAll(async () => {
-  const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-    profile: process.env.AWS_PROFILE,
-  });
-
-  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-  await cloudFormation.destroyStack({
-    stack: stackArtifact,
-  });
+  await destroyStack(integTestApp, stack);
 });

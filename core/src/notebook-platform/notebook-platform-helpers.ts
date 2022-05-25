@@ -11,8 +11,9 @@ import {
   PolicyStatement,
   Role,
   User,
-} from '@aws-cdk/aws-iam';
-import { Aws, Construct, SecretValue } from '@aws-cdk/core';
+} from 'aws-cdk-lib/aws-iam';
+import { Aws, SecretValue } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 import { Utils } from '../utils';
 import { NotebookUserOptions } from './notebook-user';
 

@@ -1,18 +1,17 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Rule, Schedule } from '@aws-cdk/aws-events';
-import { SfnStateMachine } from '@aws-cdk/aws-events-targets';
-import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { LayerVersion, Runtime } from '@aws-cdk/aws-lambda';
-import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
-import { Bucket } from '@aws-cdk/aws-s3';
-import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from '@aws-cdk/aws-stepfunctions';
-import { LambdaInvoke } from '@aws-cdk/aws-stepfunctions-tasks';
-import { Aws, Construct, Duration, RemovalPolicy } from '@aws-cdk/core';
-import { ContextOptions } from '../common/context-options';
+import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
+import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from 'aws-cdk-lib/aws-stepfunctions';
+import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
+import { Construct } from 'constructs';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 import { PreparedDataset } from '../datasets/prepared-dataset';
 
 /**
@@ -75,7 +74,7 @@ export interface BatchReplayerProps {
  *
  * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
  */
-export class BatchReplayer extends TrackedConstruct {
+export class BatchReplayer extends Construct {
 
   /**
    * Dataset used for replay
@@ -113,12 +112,7 @@ export class BatchReplayer extends TrackedConstruct {
    * @param {BatchReplayerProps} props the BatchReplayer [properties]{@link BatchReplayerProps}
    */
   constructor(scope: Construct, id: string, props: BatchReplayerProps) {
-
-    const trackedConstructProps : TrackedConstructProps = {
-      trackingCode: ContextOptions.DATA_GENERATOR,
-    };
-
-    super(scope, id, trackedConstructProps);
+    super(scope, id);
 
     this.dataset = props.dataset;
     this.frequency = props.frequency || 60;
@@ -126,7 +120,7 @@ export class BatchReplayer extends TrackedConstruct {
     this.sinkObjectKey = props.sinkObjectKey;
     this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
 
-    const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python38:6`);
+    const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python39:1`);
 
     const manifestBucketName = this.dataset.manifestLocation.bucketName;
     const manifestObjectKey = this.dataset.manifestLocation.objectKey;
@@ -153,7 +147,7 @@ export class BatchReplayer extends TrackedConstruct {
       name: 'FindFilePathsFn',
       memorySize: 1024,
       codePath: 'data-generator/resources/lambdas/find-file-paths',
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       handler: 'find-file-paths.handler',
       logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),
@@ -195,7 +189,7 @@ export class BatchReplayer extends TrackedConstruct {
       name: 'WriteInBatchFn',
       memorySize: 1024 * 5,
       codePath: 'data-generator/resources/lambdas/write-in-batch',
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       handler: 'write-in-batch.handler',
       logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),

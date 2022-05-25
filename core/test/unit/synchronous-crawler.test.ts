@@ -4,12 +4,12 @@
 /**
  * Tests synchroneous crawler
  *
- * @group unit/synchronous-crawler
+ * @group unit/other/synchroneous-crawler
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
 import { SynchronousCrawler } from '../../src/synchronous-crawler';
-import '@aws-cdk/assert/jest';
 
 test('CrawlerStartWait', () => {
   const crawlerStartWaitStack = new Stack();
@@ -18,10 +18,12 @@ test('CrawlerStartWait', () => {
     crawlerName: 'test-crawler',
   });
 
-  expect(crawlerStartWaitStack).toHaveResource('AWS::IAM::Role');
+  const template = Template.fromStack(crawlerStartWaitStack);
 
-  expect(crawlerStartWaitStack).toCountResources('AWS::Lambda::Function', 6);
+  template.resourceCountIs('AWS::IAM::Role', 8);
 
-  expect(crawlerStartWaitStack).toHaveResource('AWS::CloudFormation::CustomResource');
+  template.resourceCountIs('AWS::Lambda::Function', 6);
+
+  template.resourceCountIs('AWS::CloudFormation::CustomResource', 1);
 
 });

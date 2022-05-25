@@ -7,9 +7,9 @@
  * @group unit/best-practice/ec2-ssm-role
  */
 
-import { Annotations, Match } from '@aws-cdk/assertions';
-import { ServicePrincipal } from '@aws-cdk/aws-iam';
-import { App, Aspects, Stack } from '@aws-cdk/core';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
+import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { App, Aspects, Stack } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { Ec2SsmRole } from '../../../src/ec2-ssm-role';

@@ -7,12 +7,12 @@
  * @group unit/best-practice/synchronous-crawler
  */
 
-import { App, Aspects, Stack } from '@aws-cdk/core';
+import { App, Aspects, Stack } from 'aws-cdk-lib';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { SynchronousCrawler } from '../../../src';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import '@aws-cdk/assert/jest';
-import { Annotations, Match } from '@aws-cdk/assertions';
+
 
 const mockApp = new App();
 
@@ -109,6 +109,24 @@ NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
   'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-isComplete/ServiceRole/Resource',
   [{ id: 'AwsSolutions-IAM4', reason: 'Managed policy used by construct cannot change it' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-isComplete/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-onTimeout/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/synchronousCrawlerCRP/framework-onEvent/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
 );
 
 test('No unsuppressed Warnings', () => {

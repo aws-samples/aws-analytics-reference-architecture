@@ -7,9 +7,8 @@
  * @group integ/emr-eks-cluster
  */
 
-import * as cdk from '@aws-cdk/core';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
+import * as cdk from 'aws-cdk-lib';
+import { deployStack, destroyStack } from './utils';
 
 import { EmrEksCluster } from '../../src/emr-eks-platform';
 
@@ -30,18 +29,8 @@ new cdk.CfnOutput(stack, 'EmrEksAdminRoleOutput', {
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-    // WHEN
-    const deployResult = await cloudFormation.deployStack({
-      stack: stackArtifact,
-    });
-
+    const deployResult = await deployStack(integTestApp, stack);
+    
     // THEN
     expect(deployResult.outputs.emrEksAdminRole).toEqual('arn:aws:iam::123445678912:role/gromav');
 
@@ -49,14 +38,5 @@ describe('deploy succeed', () => {
 });
 
 afterAll(async () => {
-  const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-    profile: process.env.AWS_PROFILE,
-  });
-  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-  await cloudFormation.destroyStack({
-    stack: stackArtifact,
-  });
-});
+  await destroyStack(integTestApp, stack);
+}, 9000000);

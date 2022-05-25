@@ -2,23 +2,23 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests Amazon EMR Managed Endpoint custom resource provider
+ * Tests Amazon EMR Managed Endpoint custom resource provider 
  *
  * @group unit/emr-eks-platform/managed-endpoint-provider
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { EmrManagedEndpointProvider } from '../../../src/emr-eks-platform/emr-managed-endpoint';
-import '@aws-cdk/assert/jest';
-import { Template, Match } from '@aws-cdk/assertions';
+
+import { Template, Match} from 'aws-cdk-lib/assertions';
 import { AraBucket } from '../../../src/ara-bucket';
 
 
 describe ('ManagedEndpointProvider', () => {
   const ManagedEndpointProviderStack = new Stack();
 
-  const assetBucket = AraBucket.getOrCreate(ManagedEndpointProviderStack, { bucketName: 'asset' });
-  new EmrManagedEndpointProvider(ManagedEndpointProviderStack, 'test', { assetBucket: assetBucket });
+  const assetBucket = AraBucket.getOrCreate(ManagedEndpointProviderStack, { bucketName: 'asset'});
+  new EmrManagedEndpointProvider(ManagedEndpointProviderStack, 'test', { assetBucket: assetBucket});
 
   const template = Template.fromStack(ManagedEndpointProviderStack);
 
@@ -32,9 +32,9 @@ describe ('ManagedEndpointProvider', () => {
   });
 
   test('EmrManagedEndpointPorvider contains the right permissions', () => {
-    template.hasResourceProperties('AWS::IAM::ManagedPolicy',
+    template.hasResourceProperties('AWS::IAM::ManagedPolicy', 
       Match.objectLike({
-        PolicyDocument:
+        PolicyDocument: 
         {
           Statement: Match.arrayWith([
             {
@@ -45,9 +45,9 @@ describe ('ManagedEndpointProvider', () => {
               ],
               Effect: 'Allow',
               Resource: {
-                'Fn::GetAtt': [
+                "Fn::GetAtt": [
                   Match.anyValue(),
-                  'Arn',
+                  "Arn"
                 ],
               },
             },
@@ -57,22 +57,22 @@ describe ('ManagedEndpointProvider', () => {
                 'emr-containers:DeleteManagedEndpoint',
               ],
               Condition: {
-                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' },
+                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } 
               },
               Effect: 'Allow',
               Resource: '*',
             },
             Match.objectLike({
               Action: 'emr-containers:CreateManagedEndpoint',
-              Condition: {
-                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' },
+              Condition: { 
+                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' }
               },
               Effect: 'Allow',
             }),
             Match.objectLike({
               Action: 'emr-containers:TagResource',
-              Condition: {
-                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' },
+              Condition: { 
+                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' }
               },
               Effect: 'Allow',
             }),

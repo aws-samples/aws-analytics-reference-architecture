@@ -1,12 +1,13 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { Runtime } from '@aws-cdk/aws-lambda';
-import { RetentionDays } from '@aws-cdk/aws-logs';
-import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Aws, CustomResource, Duration, Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { Provider } from '@aws-cdk/custom-resources';
+import { Provider } from 'aws-cdk-lib/custom-resources';
 //import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
@@ -63,7 +64,7 @@ export class SynchronousCrawler extends Construct {
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start crawler
     const crawlerStartFn = new PreBundledFunction(this, 'crawlerStartFn', {
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-crawler/resources/lambdas',
       name: 'SynchronousCrawlerStartFn',
       lambdaPolicyStatements: lambdaCRPolicy,
@@ -74,7 +75,7 @@ export class SynchronousCrawler extends Construct {
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for crawler completion
     const crawlerWaitFn = new PreBundledFunction(this, 'crawlerWaitFn', {
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-crawler/resources/lambdas',
       name: 'SynchronousCrawlerWaitFn',
       lambdaPolicyStatements: lambdaCRPolicy,

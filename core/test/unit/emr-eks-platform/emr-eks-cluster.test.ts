@@ -7,13 +7,11 @@
  * @group unit/emr-eks-platform/emr-eks-cluster
  */
 
-import * as assertCDK from '@aws-cdk/assert';
-import '@aws-cdk/assert/jest';
-import { TaintEffect } from '@aws-cdk/aws-eks';
-import { ManagedPolicy, PolicyDocument, PolicyStatement } from '@aws-cdk/aws-iam';
-import { Stack } from '@aws-cdk/core';
+import { ManagedPolicy, PolicyDocument, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Stack } from 'aws-cdk-lib';
 import { EmrEksCluster } from '../../../src/emr-eks-platform/emr-eks-cluster';
-
+import { TaintEffect } from 'aws-cdk-lib/aws-eks';
+import { Template, Match } from 'aws-cdk-lib/assertions';
 
 const emrEksClusterStack = new Stack();
 const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, {
@@ -24,82 +22,79 @@ cluster.addEmrVirtualCluster(emrEksClusterStack, {
 });
 const policy = new ManagedPolicy(emrEksClusterStack, 'testPolicy', {
   document: new PolicyDocument({
-    statements: [new PolicyStatement({
-      resources: ['*'],
-      actions: ['s3:*'],
-    })],
+    statements: [
+      new PolicyStatement({
+        resources: ['*'],
+        actions: ['s3:*'],
+      }),
+    ],
   }),
 });
 cluster.createExecutionRole(emrEksClusterStack, 'test', policy);
+const template = Template.fromStack(emrEksClusterStack);
 
 test('EKS cluster created with correct version and name', () => {
   // THEN
-  expect(emrEksClusterStack).toCountResources('Custom::AWSCDK-EKS-Cluster', 1);
+  template.resourceCountIs('Custom::AWSCDK-EKS-Cluster', 1);
 
-  assertCDK.expect(emrEksClusterStack).to(
-    assertCDK.haveResource('Custom::AWSCDK-EKS-Cluster', {
-      Config: assertCDK.objectLike({
-        version: '1.21',
-        name: 'data-platform',
-      }),
+  template.hasResourceProperties('Custom::AWSCDK-EKS-Cluster', {
+    Config: Match.objectLike({
+      version: '1.21',
+      name: 'data-platform',
     }),
-  );
+  });
 });
 
 test('EKS VPC should be tagged', () => {
   // THEN
-  assertCDK.expect(emrEksClusterStack).to(
-    assertCDK.haveResource('AWS::EC2::VPC', {
-      Tags: assertCDK.arrayWith(
-        assertCDK.objectLike({
-          Key: 'for-use-with-amazon-emr-managed-policies',
-          Value: 'true',
-        }),
-      ),
-    }),
-  );
+  template.hasResourceProperties('AWS::EC2::VPC', {
+    Tags: Match.arrayWith([
+      Match.objectLike({
+        Key: 'for-use-with-amazon-emr-managed-policies',
+        Value: 'true',
+      }),
+    ]),
+  });
 });
 
 test('EKS should have at least 1 private subnet with tags', () => {
   // THEN
-  assertCDK.expect(emrEksClusterStack).to(
-    assertCDK.haveResource('AWS::EC2::Subnet', {
-      Tags: assertCDK.arrayWith(
-        assertCDK.objectLike({
-          Key: 'aws-cdk:subnet-type',
-          Value: 'Private',
-        }),
-        assertCDK.objectLike({
-          Key: 'for-use-with-amazon-emr-managed-policies',
-          Value: 'true',
-        }),
-      ),
-    }),
-  );
+  template.hasResourceProperties('AWS::EC2::Subnet', {
+    Tags: Match.arrayWith([
+      Match.objectLike({
+        Key: 'aws-cdk:subnet-type',
+        Value: 'Private',
+      }),
+      Match.objectLike({
+        Key: 'for-use-with-amazon-emr-managed-policies',
+        Value: 'true',
+      }),
+    ]),
+  });
 });
 
 test('EKS should have a helm chart for deploying the cluster autoscaler', () => {
-  expect(emrEksClusterStack).toHaveResource('Custom::AWSCDK-EKS-HelmChart', {
+  template.hasResourceProperties('Custom::AWSCDK-EKS-HelmChart', {
     Chart: 'cluster-autoscaler',
     Repository: 'https://kubernetes.github.io/autoscaler',
     Namespace: 'kube-system',
     Values: {
       'Fn::Join': [
         '',
-        assertCDK.arrayWith(
-          '{\"cloudProvider\":\"aws\",\"awsRegion\":\"',
+        Match.arrayWith([
+          '{"cloudProvider":"aws","awsRegion":"',
           {
             Ref: 'AWS::Region',
           },
-          '\",\"autoDiscovery\":{\"clusterName\":\"data-platform\"},\"rbac\":{\"serviceAccount\":{\"name\":\"cluster-autoscaler\",\"create\":false}},\"extraArgs\":{\"skip-nodes-with-local-storage\":false,\"scan-interval\":\"5s\",\"expander\":\"least-waste\",\"balance-similar-node-groups\":true,\"skip-nodes-with-system-pods\":false}}',
-        ),
+          '","autoDiscovery":{"clusterName":"data-platform"},"rbac":{"serviceAccount":{"name":"cluster-autoscaler","create":false}},"extraArgs":{"skip-nodes-with-local-storage":false,"scan-interval":"5s","expander":"least-waste","balance-similar-node-groups":true,"skip-nodes-with-system-pods":false}}',
+        ]),
       ],
     },
   });
 });
 
 test('EKS should have a helm chart for deploying the cert manager', () => {
-  expect(emrEksClusterStack).toHaveResource('Custom::AWSCDK-EKS-HelmChart', {
+  template.hasResourceProperties('Custom::AWSCDK-EKS-HelmChart', {
     Chart: 'cert-manager',
     Repository: 'https://charts.jetstack.io',
     Namespace: 'cert-manager',
@@ -107,7 +102,7 @@ test('EKS should have a helm chart for deploying the cert manager', () => {
 });
 
 test('EKS should have a helm chart for deploying the AWS load balancer controller', () => {
-  expect(emrEksClusterStack).toHaveResource('Custom::AWSCDK-EKS-HelmChart', {
+  template.hasResourceProperties('Custom::AWSCDK-EKS-HelmChart', {
     Chart: 'aws-load-balancer-controller',
     Repository: 'https://aws.github.io/eks-charts',
     Namespace: 'kube-system',
@@ -116,17 +111,16 @@ test('EKS should have a helm chart for deploying the AWS load balancer controlle
 });
 
 test('EKS should have a helm chart for deploying the Kubernetes Dashboard', () => {
-  expect(emrEksClusterStack).toHaveResource('Custom::AWSCDK-EKS-HelmChart', {
+  template.hasResourceProperties('Custom::AWSCDK-EKS-HelmChart', {
     Chart: 'kubernetes-dashboard',
     Repository: 'https://kubernetes.github.io/dashboard/',
   });
 });
 
 test('EKS cluster should have the default Nodegroups', () => {
+  template.resourceCountIs('AWS::EKS::Nodegroup', 11);
 
-  expect(emrEksClusterStack).toCountResources('AWS::EKS::Nodegroup', 11);
-
-  expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
+  template.hasResourceProperties('AWS::EKS::Nodegroup', {
     AmiType: 'AL2_x86_64',
     InstanceTypes: ['t3.medium'],
     Labels: {
@@ -137,7 +131,7 @@ test('EKS cluster should have the default Nodegroups', () => {
       MaxSize: 10,
       MinSize: 1,
     },
-    Tags: assertCDK.objectLike({
+    Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
       'k8s.io/cluster-autoscaler/node-template/label/role': 'tooling',
@@ -145,12 +139,12 @@ test('EKS cluster should have the default Nodegroups', () => {
     }),
   });
 
-  expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
+  template.hasResourceProperties('AWS::EKS::Nodegroup', {
     NodegroupName: 'critical-0',
     AmiType: 'AL2_ARM_64',
     InstanceTypes: ['m6gd.8xlarge'],
     Labels: {
-      'role': 'critical',
+      role: 'critical',
       'node-lifecycle': 'on-demand',
     },
     ScalingConfig: {
@@ -165,7 +159,7 @@ test('EKS cluster should have the default Nodegroups', () => {
         Value: 'critical',
       },
     ],
-    Tags: assertCDK.objectLike({
+    Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
       'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'ON_DEMAND',
@@ -175,12 +169,12 @@ test('EKS cluster should have the default Nodegroups', () => {
     }),
   });
 
-  expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
+  template.hasResourceProperties('AWS::EKS::Nodegroup', {
     NodegroupName: 'shared-driver-0',
     AmiType: 'AL2_ARM_64',
     InstanceTypes: ['m6g.xlarge'],
     Labels: {
-      'role': 'shared',
+      role: 'shared',
       'spark-role': 'driver',
       'node-lifecycle': 'on-demand',
     },
@@ -189,7 +183,7 @@ test('EKS cluster should have the default Nodegroups', () => {
       MaxSize: 10,
       MinSize: 0,
     },
-    Tags: assertCDK.objectLike({
+    Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
       'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'ON_DEMAND',
@@ -199,12 +193,12 @@ test('EKS cluster should have the default Nodegroups', () => {
     }),
   });
 
-  expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
+  template.hasResourceProperties('AWS::EKS::Nodegroup', {
     NodegroupName: 'shared-executor-0',
     AmiType: 'AL2_ARM_64',
     InstanceTypes: ['m6g.8xlarge', 'm6gd.8xlarge'],
     Labels: {
-      'role': 'shared',
+      role: 'shared',
       'spark-role': 'executor',
       'node-lifecycle': 'spot',
     },
@@ -220,7 +214,7 @@ test('EKS cluster should have the default Nodegroups', () => {
         Value: 'spot',
       },
     ],
-    Tags: assertCDK.objectLike({
+    Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
       'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'SPOT',
@@ -231,11 +225,11 @@ test('EKS cluster should have the default Nodegroups', () => {
     }),
   });
 
-  expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
+  template.hasResourceProperties('AWS::EKS::Nodegroup', {
     NodegroupName: 'notebook-driver-0',
     InstanceTypes: ['t3.large'],
     Labels: {
-      'role': 'notebook',
+      role: 'notebook',
       'spark-role': 'driver',
       'node-lifecycle': 'on-demand',
     },
@@ -251,7 +245,7 @@ test('EKS cluster should have the default Nodegroups', () => {
       MaxSize: 10,
       MinSize: 0,
     },
-    Tags: assertCDK.objectLike({
+    Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
       'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'ON_DEMAND',
@@ -262,13 +256,12 @@ test('EKS cluster should have the default Nodegroups', () => {
     }),
   });
 
-  expect(emrEksClusterStack).toHaveResource('AWS::EKS::Nodegroup', {
+  template.hasResourceProperties('AWS::EKS::Nodegroup', {
     NodegroupName: 'notebook-executor-0',
-    InstanceTypes: ['t3.2xlarge',
-      't3a.2xlarge'],
+    InstanceTypes: ['t3.2xlarge', 't3a.2xlarge'],
     CapacityType: 'SPOT',
     Labels: {
-      'role': 'notebook',
+      role: 'notebook',
       'spark-role': 'executor',
       'node-lifecycle': 'spot',
     },
@@ -289,7 +282,7 @@ test('EKS cluster should have the default Nodegroups', () => {
       MaxSize: 100,
       MinSize: 0,
     },
-    Tags: assertCDK.objectLike({
+    Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
       'k8s.io/cluster-autoscaler/node-template/label/eks.amazonaws.com/capacityType': 'SPOT',
@@ -300,14 +293,13 @@ test('EKS cluster should have the default Nodegroups', () => {
       'k8s.io/cluster-autoscaler/node-template/taint/node-lifecycle': 'spot:NO_SCHEDULE',
     }),
   });
-
 });
 
 test('EMR virtual cluster should be created with proper configuration', () => {
-  expect(emrEksClusterStack).toHaveResource('AWS::EMRContainers::VirtualCluster', {
-    ContainerProvider: assertCDK.objectLike({
+  template.hasResourceProperties('AWS::EMRContainers::VirtualCluster', {
+    ContainerProvider: Match.objectLike({
       Type: 'EKS',
-      Info: assertCDK.objectLike({
+      Info: Match.objectLike({
         EksInfo: {
           Namespace: 'default',
         },
@@ -318,14 +310,15 @@ test('EMR virtual cluster should be created with proper configuration', () => {
 });
 
 test('Execution role policy should be created with attached policy', () => {
-  expect(emrEksClusterStack).toHaveResource('AWS::IAM::ManagedPolicy', {
-    PolicyDocument: assertCDK.objectLike({
-      Statement: assertCDK.arrayWith(assertCDK.objectLike({
-        Action: 's3:*',
-        Effect: 'Allow',
-        Resource: '*',
-      })),
+  template.hasResourceProperties('AWS::IAM::ManagedPolicy', {
+    PolicyDocument: Match.objectLike({
+      Statement: Match.arrayWith([
+        Match.objectLike({
+          Action: 's3:*',
+          Effect: 'Allow',
+          Resource: '*',
+        }),
+      ]),
     }),
   });
 });
-
