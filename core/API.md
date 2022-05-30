@@ -8200,14 +8200,25 @@ public readonly TOOLING_ALL: EmrEksNodegroupOptions;
 
 PreparedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
 
-PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets
+The pre-defined PreparedDatasets are available in the following regions:
+   * ap-southeast-1
+   * eu-central-1
+   * eu-west-1
+   * us-east-1
+   * us-west-2
+
+The local region is automatically used if the CDK stack is deployed in any of these, to minimize data transfer. 
+If the stack is deployed in another region, eu-west-1 is used and data transfer costs may occur.
+The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
+
+PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets.
 
 A PreparedDataset has following properties:
 
 1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range.
 There is no constraint on how long the timestamp range can be. But each file must not be larger than 100MB.
 Creating new PreparedDataset requires to find the right balance between number of partitions and the amount of data read by each BatchReplayer (micro-)batch
-The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions.
+The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions. 
 
 Here is an example:
 
@@ -8396,7 +8407,16 @@ public readonly DATASETS_BUCKET: string;
 
 The bucket name of the AWS Analytics Reference Architecture datasets.
 
-Bucket is public and
+The bucket name is dynamic to adapt to the region where the CDK stack is deployed.
+Available regions are:
+   * ap-northeast-1
+   * ap-southeast-1
+   * eu-central-1
+   * eu-west-1
+   * us-east-1
+   * us-west-2
+
+If the CDK stack is deployed in another region, eu-west-1 is used and data transfer costs can occur.
 
 ---
 

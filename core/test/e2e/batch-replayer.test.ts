@@ -10,7 +10,7 @@
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { deployStack, destroyStack } from './utils';
+import { deployStack /*, destroyStack*/ } from './utils';
 
 import { BatchReplayer } from '../../src/data-generator/batch-replayer';
 import { PreparedDataset } from '../../src/datasets/prepared-dataset';

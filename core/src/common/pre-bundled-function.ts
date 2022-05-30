@@ -146,13 +146,19 @@ export class PreBundledFunction extends Function {
     functionProps.role = lambdaExecutionRole;
     functionProps.logRetentionRole = logRetentionLambdaExecutionRole;
 
-    if (functionProps.runtime in [Runtime.PYTHON_3_8, Runtime.PYTHON_3_7, Runtime.PYTHON_3_9]) {
+    if (functionProps.runtime.toString() in [Runtime.PYTHON_3_8.toString(), Runtime.PYTHON_3_7.toString(), Runtime.PYTHON_3_9.toString()]) {
       functionProps.layers = [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')];
 
       functionProps.lambdaLayers?.forEach((layer: ILayerVersion) => {
         functionProps.layers.push(layer);
+        console.log('layer added');
       });
     }
+    console.log('runtime : '+ functionProps.runtime);
+    console.log('runtime type: '+ functionProps.runtime.type);
+    console.log('standard runtime : ' + Runtime.PYTHON_3_9);
+    console.log('equality ' + functionProps.runtime.toString() in [Runtime.PYTHON_3_8.toString(), Runtime.PYTHON_3_7.toString(), Runtime.PYTHON_3_9.toString()]);
+    console.log('layer : '+ functionProps.layers);
 
     //delete props that were added to force user input
     delete functionProps.codePath;
@@ -161,6 +167,5 @@ export class PreBundledFunction extends Function {
     delete functionProps.lambdaLayers;
 
     super(scope, id, { ...(functionProps as FunctionProps) });
-
   }
 }

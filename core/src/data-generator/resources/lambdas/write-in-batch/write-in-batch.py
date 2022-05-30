@@ -114,6 +114,7 @@ def write_all(df_list, path_prefix):
             df=df,
             path=output_path,
             index=False,
+            s3_additional_kwargs={"RequestPayer": "requester"}
         )
     return output_paths
 
@@ -147,7 +148,10 @@ def handler(event, ctx):
 
 
     log.info('Concatenating all files together')
-    df=wr.s3.read_csv(file_path)
+    df=wr.s3.read_csv(
+        path=file_path,
+        s3_additional_kwargs={"RequestPayer": "requester"}
+    )
 
     log.info(f"Filtering records from:  [{start_time.isoformat()}] to [{end_time.isoformat()}]")
     df[datetime_column_to_filter] = pd.to_datetime(df[datetime_column_to_filter])

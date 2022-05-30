@@ -18,6 +18,7 @@ import { SingletonGlueDatabase } from '../singleton-glue-database';
 import { SingletonKey } from '../singleton-kms-key';
 import { SynchronousAthenaQuery } from '../synchronous-athena-query';
 import { Construct } from 'constructs';
+import { CfnWorkGroup } from 'aws-cdk-lib/aws-athena';
 
 /**
  * The properties for DataGenerator Construct.
@@ -70,6 +71,10 @@ export class DataGenerator extends Construct {
    * Frequency (in Seconds) of the data generation
    */
   public readonly frequency: number;
+  /**
+   * Athena Workgroup used to run queries
+   */
+  public readonly workgroup: CfnWorkGroup;
 
   /**
    * Constructs a new instance of the DataGenerator class
@@ -95,6 +100,16 @@ export class DataGenerator extends Construct {
       bucketName: 'athena-log',
       serverAccessLogsPrefix: 'athena-log-bucket',
     });
+
+    // Amazon Athena Workgroup used by the DataGenerator
+    this.workgroup = new CfnWorkGroup(this, 'DataGeneratorWorkgroup', {
+      name: id,
+      // the properties below are optional
+      recursiveDeleteOption: true,
+      workGroupConfiguration: {
+        requesterPaysEnabled: true,
+      },
+    }); 
 
     // Source table creation in Amazon Athena
     const createSourceTable = new SynchronousAthenaQuery(this, 'CreateSourceTable', {
@@ -313,7 +328,7 @@ export class DataGenerator extends Construct {
     const athenaQueryTask = new AthenaStartQueryExecution(this, 'DataGeneratorQuery', {
       queryString: JsonPath.stringAt('$'),
       timeout: Duration.minutes(5),
-      workGroup: 'primary',
+      workGroup: this.workgroup.name,
       integrationPattern: IntegrationPattern.RUN_JOB,
       resultConfiguration: {
         outputLocation: {

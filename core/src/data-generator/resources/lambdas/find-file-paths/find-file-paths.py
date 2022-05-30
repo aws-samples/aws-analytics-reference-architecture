@@ -21,7 +21,10 @@ def log_file_paths(df):
 
 
 def retrieve_df_manifest(manifest_file_bucket, manifest_file_key, start_time, end_time):
-    df_manifest=wr.s3.read_csv(f"s3://{manifest_file_bucket}/{manifest_file_key}")
+    df_manifest=wr.s3.read_csv(
+        path=f"s3://{manifest_file_bucket}/{manifest_file_key}",
+        s3_additional_kwargs={"RequestPayer": "requester"}
+    )
     rows_in_range=df_manifest[START_COL].between(start_time, end_time, inclusive='left')
     df_manifest=df_manifest[rows_in_range]
     df_manifest=df_manifest.sort_values(by=[START_COL])
