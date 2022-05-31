@@ -12,7 +12,7 @@ import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from 'aws-cdk-lib/aw
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { Construct } from 'constructs';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { PreparedDataset } from '../datasets/prepared-dataset';
+import { PreparedDataset } from './prepared-dataset';
 
 /**
  * The properties for the BatchReplayer construct
@@ -135,6 +135,7 @@ export class BatchReplayer extends Construct {
         ],
         resources: [
           `arn:aws:s3:::${dataBucketName}/${dataObjectKey}/*`,
+          `arn:aws:s3:::${dataBucketName}/${dataObjectKey}-manifest.csv`,
           `arn:aws:s3:::${dataBucketName}`,
         ],
       }),
@@ -151,7 +152,7 @@ export class BatchReplayer extends Construct {
       handler: 'find-file-paths.handler',
       logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),
-      lambdaLayers: [dataWranglerLayer],
+      layers: [dataWranglerLayer],
       lambdaPolicyStatements: findFilePathsFnPolicy,
     });
 
@@ -193,7 +194,7 @@ export class BatchReplayer extends Construct {
       handler: 'write-in-batch.handler',
       logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.minutes(15),
-      lambdaLayers: [dataWranglerLayer],
+      layers: [dataWranglerLayer],
       lambdaPolicyStatements: writeInBatchFnPolicy,
     });
 

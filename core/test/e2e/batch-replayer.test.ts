@@ -10,10 +10,10 @@
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { deployStack, destroyStack } from './utils';
+import { deployStack /*, destroyStack*/ } from './utils';
 
 import { BatchReplayer } from '../../src/data-generator/batch-replayer';
-import { PreparedDataset } from '../../src/datasets/prepared-dataset';
+import { PreparedDataset } from '../../src/data-generator/prepared-dataset';
 
 jest.setTimeout(500000);
 // GIVEN

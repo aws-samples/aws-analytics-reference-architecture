@@ -8,6 +8,7 @@ import { Duration } from 'aws-cdk-lib';
 import { Provider } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Construct } from 'constructs';
+import { PreBundledLayer } from '../common/pre-bundled-layer';
 //import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 
@@ -75,6 +76,7 @@ export class EmrEksNodegroupAsgTagProvider extends Construct {
       name: 'EmrEksNodegroupAsgTagOnEventFn',
       lambdaPolicyStatements: lambdaPolicy,
       logRetention: RetentionDays.ONE_WEEK,
+      layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       timeout: Duration.seconds(45),
       environment: {
         EKS_CLUSTER_NAME: props.eksClusterName,

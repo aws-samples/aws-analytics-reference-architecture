@@ -9,6 +9,7 @@ import { Duration, Aws } from 'aws-cdk-lib';
 import { Provider } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Construct } from 'constructs';
+import { PreBundledLayer } from '../common/pre-bundled-layer';
 
 /**
 * The properties for the EMR Managed Endpoint to create.
@@ -113,6 +114,7 @@ export class EmrManagedEndpointProvider extends Construct {
       runtime: Runtime.PYTHON_3_9,
       handler: 'lambda.on_event',
       name: 'EmrManagedEndpointProviderOnEvent',
+      layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: lambdaPolicy,
       logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(120),
@@ -123,6 +125,7 @@ export class EmrManagedEndpointProvider extends Construct {
       codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',
       handler: 'lambda.is_complete',
       name: 'EmrManagedEndpointProviderIsComplete',
+      layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: lambdaPolicy,
       runtime: Runtime.PYTHON_3_9,
       logRetention: RetentionDays.ONE_WEEK,

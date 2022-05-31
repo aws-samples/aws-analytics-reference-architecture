@@ -8,6 +8,7 @@ import { Aws, CustomResource, Duration, Stack } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Provider } from 'aws-cdk-lib/custom-resources';
+import { PreBundledLayer } from '../common/pre-bundled-layer';
 //import { ScopedIamProvider } from '../common/scoped-iam-customer-resource';
 
 /**
@@ -67,6 +68,7 @@ export class SynchronousCrawler extends Construct {
       runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-crawler/resources/lambdas',
       name: 'SynchronousCrawlerStartFn',
+      layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: lambdaCRPolicy,
       handler: 'lambda.on_event',
       logRetention: RetentionDays.ONE_WEEK,
@@ -78,6 +80,7 @@ export class SynchronousCrawler extends Construct {
       runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-crawler/resources/lambdas',
       name: 'SynchronousCrawlerWaitFn',
+      layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: lambdaCRPolicy,
       handler: 'lambda.is_complete',
       logRetention: RetentionDays.ONE_WEEK,

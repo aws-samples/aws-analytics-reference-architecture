@@ -39,15 +39,17 @@ export interface PreparedDatasetProps {
 }
 
 /**
- * PreparedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
- * PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets
+ * If the stack is deployed in another region than eu-west-1, data transfer costs will apply.
+ * The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
+ * 
+ * PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets.
  *
  * A PreparedDataset has following properties:
  *
  * 1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range.
  * There is no constraint on how long the timestamp range can be. But each file must not be larger than 100MB.
  * Creating new PreparedDataset requires to find the right balance between number of partitions and the amount of data read by each BatchReplayer (micro-)batch
- * The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions.
+ * The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions. 
  *
  * Here is an example:
  *
@@ -86,11 +88,14 @@ export interface PreparedDatasetProps {
  * 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
  */
 export class PreparedDataset {
+
   /**
-   * The bucket name of the AWS Analytics Reference Architecture datasets. Bucket is public and
+   * The bucket name of the AWS Analytics Reference Architecture datasets. 
+   * Data transfer costs will aply if the stack is deployed in another region than eu-west-1.
+   * The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
    */
-  public static readonly DATASETS_BUCKET =
-    'aws-analytics-reference-architecture';
+  
+  public static readonly DATASETS_BUCKET = 'aws-analytics-reference-architecture';
 
   /**
    * The web sale dataset part of 1GB retail datasets.
