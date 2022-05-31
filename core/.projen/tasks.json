@@ -111,9 +111,6 @@
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-generator/resources lib/data-generator"
         },
         {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/datasets/resources lib/datasets"
-        },
-        {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
         },
         {

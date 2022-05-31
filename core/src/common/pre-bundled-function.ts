@@ -3,9 +3,9 @@
 
 import * as path from 'path';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { Code, Function, FunctionProps, ILayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Code, Function, FunctionProps, ILayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { Aws } from 'aws-cdk-lib';
-import { PreBundledLayer } from './pre-bundled-layer';
+// import { PreBundledLayer } from './pre-bundled-layer';
 import { Construct } from 'constructs';
 
 /**
@@ -146,19 +146,14 @@ export class PreBundledFunction extends Function {
     functionProps.role = lambdaExecutionRole;
     functionProps.logRetentionRole = logRetentionLambdaExecutionRole;
 
-    if (functionProps.runtime.toString() in [Runtime.PYTHON_3_8.toString(), Runtime.PYTHON_3_7.toString(), Runtime.PYTHON_3_9.toString()]) {
-      functionProps.layers = [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')];
 
-      functionProps.lambdaLayers?.forEach((layer: ILayerVersion) => {
-        functionProps.layers.push(layer);
-        console.log('layer added');
-      });
-    }
-    console.log('runtime : '+ functionProps.runtime);
-    console.log('runtime type: '+ functionProps.runtime.type);
-    console.log('standard runtime : ' + Runtime.PYTHON_3_9);
-    console.log('equality ' + functionProps.runtime.toString() in [Runtime.PYTHON_3_8.toString(), Runtime.PYTHON_3_7.toString(), Runtime.PYTHON_3_9.toString()]);
-    console.log('layer : '+ functionProps.layers);
+    // const runtimes = Object.values([Runtime.PYTHON_3_8, Runtime.PYTHON_3_7, Runtime.PYTHON_3_9]);
+    // let layers: ILayerVersion[] = [];
+
+    // If the runtime is Python we use the common Lambda Layer with boto3
+    // if (runtimes.includes(functionProps.runtime as Runtime)) {
+    //   layers.push(PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer'));
+    // }
 
     //delete props that were added to force user input
     delete functionProps.codePath;

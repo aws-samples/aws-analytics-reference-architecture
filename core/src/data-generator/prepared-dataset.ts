@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Location } from 'aws-cdk-lib/aws-s3';
-import { Aws } from 'aws-cdk-lib';
 
 /**
  * The properties for the PreparedDataset class used by the BatchReplayer construct
@@ -40,16 +39,7 @@ export interface PreparedDatasetProps {
 }
 
 /**
- * PreparedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
- * The pre-defined PreparedDatasets are available in the following regions:
- *   * ap-southeast-1
- *   * eu-central-1
- *   * eu-west-1
- *   * us-east-1
- *   * us-west-2
- * 
- * The local region is automatically used if the CDK stack is deployed in any of these, to minimize data transfer. 
- * If the stack is deployed in another region, eu-west-1 is used and data transfer costs may occur.
+ * If the stack is deployed in another region than eu-west-1, data transfer costs will apply.
  * The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
  * 
  * PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets.
@@ -99,30 +89,13 @@ export interface PreparedDatasetProps {
  */
 export class PreparedDataset {
 
-  private static readonly OPTIMIZED_REGIONS = [
-    'ap-northeast-1',
-    'ap-southeast-1',
-    'eu-west-1',
-    'eu-central-1',
-    'eu-west-1',
-    'us-east-1',
-    'us-west-2',
-  ]
   /**
    * The bucket name of the AWS Analytics Reference Architecture datasets. 
-   * The bucket name is dynamic to adapt to the region where the CDK stack is deployed.
-   * Available regions are:
-   *   * ap-northeast-1
-   *   * ap-southeast-1
-   *   * eu-central-1
-   *   * eu-west-1
-   *   * us-east-1
-   *   * us-west-2
-   * 
-   * If the CDK stack is deployed in another region, eu-west-1 is used and data transfer costs can occur.
+   * Data transfer costs will aply if the stack is deployed in another region than eu-west-1.
+   * The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
    */
-  public static readonly DATASETS_BUCKET =
-    'aws-analytics-reference-architecture-' + (Aws.REGION in PreparedDataset.OPTIMIZED_REGIONS) ? Aws.REGION : 'eu-west-1';
+  
+  public static readonly DATASETS_BUCKET = 'aws-analytics-reference-architecture';
 
   /**
    * The web sale dataset part of 1GB retail datasets.

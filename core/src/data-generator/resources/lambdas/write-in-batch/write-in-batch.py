@@ -113,8 +113,7 @@ def write_all(df_list, path_prefix):
         wr.s3.to_csv(
             df=df,
             path=output_path,
-            index=False,
-            s3_additional_kwargs={"RequestPayer": "requester"}
+            index=False
         )
     return output_paths
 

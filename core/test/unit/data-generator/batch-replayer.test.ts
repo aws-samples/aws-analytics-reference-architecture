@@ -9,8 +9,7 @@
 
 import { Stack } from "aws-cdk-lib";
 
-import { BatchReplayer } from "../../../src/data-generator/batch-replayer";
-import { PreparedDataset } from "../../../src/datasets";
+import { BatchReplayer, PreparedDataset } from "../../../src/data-generator";
 import { Bucket } from "aws-cdk-lib/aws-s3";
 import { Template } from "aws-cdk-lib/assertions";
 

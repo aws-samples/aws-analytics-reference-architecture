@@ -9,6 +9,7 @@ import { Aws, CustomResource, Duration, Stack } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Provider } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
+import { PreBundledLayer } from '../common/pre-bundled-layer';
 /**
  * The properties for the SynchronousAthenaQuery construct.
  */
@@ -116,6 +117,7 @@ export class SynchronousAthenaQuery extends Construct {
       runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-athena-query/resources/lambdas',
       name: 'SynchronousAthenaCrStart',
+      layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: athenaQueryStartFnPolicy,
       handler: 'lambda.on_event',
       logRetention: RetentionDays.ONE_WEEK,
@@ -146,6 +148,7 @@ export class SynchronousAthenaQuery extends Construct {
       runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-athena-query/resources/lambdas',
       name: 'SynchronousAthenaCrWait',
+      layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: athenaQueryWaitFnPolicy,
       handler: 'lambda.is_complete',
       logRetention: RetentionDays.ONE_WEEK,

@@ -1,2 +1,2 @@
-export { DataGeneratorProps, DataGenerator } from './data-generator';
 export { BatchReplayerProps, BatchReplayer } from './batch-replayer';
+export { PreparedDataset, PreparedDatasetProps } from './prepared-dataset';

@@ -84,8 +84,8 @@ def handler(event, ctx):
 if __name__ == '__main__':
     event={
         'frequency': '600',
-        'manifestFileBucket': 'aws-analytics-reference-architecture',
-        'manifestFileKey': 'sample-datasets/prepared-data/web-sales-manifest.csv',
+        'manifestFileBucket': 'aws-analytics-reference-architecture-us-east-1',
+        'manifestFileKey': 'datasets/prepared/retail/1GB/web-sale-manifest.csv',
         'triggerTime': '2021-12-24T14:50:00Z', 
         'offset': '30896421', 
     }
