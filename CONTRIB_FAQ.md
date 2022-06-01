@@ -5,13 +5,15 @@
 ### How to setup Projen for Core components?
 
 1. Go into `core` folder
-2. Install projen locally. Sometimes `projen` is installed globally and building throwns an error, deleting global `node_modules` folder solves the issue
+2. Install `glob` locally, this is used to find files based on patterns. It is used by a projen task to locate files like `.py` and `.java` to package them part of `lib`
+    `npm install glob`
+3. Install projen locally. Sometimes `projen` is installed globally and building throwns an error, deleting global `node_modules` folder solves the issue
     
     `npm install projen`
-3. Build the core artificats
+4. Build the core artificats
    
     `npx projen build`
-4. Only run unit test
+5. Only run unit test
     
     `npx projen test`
 
