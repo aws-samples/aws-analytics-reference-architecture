@@ -2,24 +2,21 @@
 # SPDX-License-Identifier: MIT-0
 
 import aws_cdk.aws_ec2 as ec2
+from constructs import Construct
 from aws_cdk import (
-    core,
+    Duration,
     aws_iam as iam,
     aws_autoscaling as _autoscaling,
-    aws_events as _events,
-    aws_events_targets as _events_targets,
     aws_iam as _iam,
-    aws_lambda as _lambda,
-    aws_route53 as _route53,
     aws_elasticloadbalancingv2 as _elbv2
 )
 
 from cdk_ec2_key_pair import KeyPair
 import common.common_cdk.config as _config
-from aws_cdk.core import Stack
+from aws_cdk import Stack
 
 
-class RedshiftBastion(core.Construct):
+class RedshiftBastion(Construct):
     '''the BastionHost may be used to access resources in a Private network using SSM. For example it is required for
     operational support of Redshift '''
 
@@ -35,7 +32,7 @@ class RedshiftBastion(core.Construct):
     def bastion_dns(self):
         return self.__bastion_nlb.load_balancer_dns_name
 
-    def __init__(self, scope: core.Construct, id: str, vpc, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, vpc, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         stack = Stack.of(self)
@@ -74,9 +71,9 @@ class RedshiftBastion(core.Construct):
             role=self._role,
             security_group=self._bastion_sg,
             vpc_subnets=ec2.SubnetSelection(availability_zones=None, one_per_az=None,
-                                            subnet_group_name=None, subnet_name=None,
-                                            subnets=None, subnet_type=ec2.SubnetType.PRIVATE),
-            cooldown=core.Duration.minutes(1),
+                                            subnet_group_name=None,
+                                            subnets=None, subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT),
+            cooldown=Duration.minutes(1),
             min_capacity=1,
             max_capacity=3,
             spot_price="0.005"
@@ -87,7 +84,7 @@ class RedshiftBastion(core.Construct):
             vpc=vpc,
             internet_facing=True,
             vpc_subnets=ec2.SubnetSelection(availability_zones=None, one_per_az=None,
-                                            subnet_group_name=None, subnet_name=None,
+                                            subnet_group_name=None,
                                             subnets=None, subnet_type=ec2.SubnetType.PUBLIC)
         )
 

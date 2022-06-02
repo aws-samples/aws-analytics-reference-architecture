@@ -1,10 +1,12 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-from aws_cdk.aws_glue import CfnJob, Database
+from aws_cdk.aws_glue import CfnJob
+from aws_cdk.aws_glue_alpha import Database
 from aws_cdk.aws_iam import Role, ServicePrincipal, PolicyDocument, PolicyStatement
 from aws_cdk.aws_s3 import Bucket
-from aws_cdk.core import Aws, Construct
+from constructs import Construct
+from aws_cdk import Aws
 import common.common_cdk.config as _config
 
 

@@ -3,12 +3,14 @@
 
 import datetime
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    Aws,
+    CfnOutput,
     custom_resources as cr
 )
 
-class QuickSightRedshiftDataset(core.Construct):
+class QuickSightRedshiftDataset(Construct):
 
     @property
     def redshift_dataset_arn(self):
@@ -16,7 +18,7 @@ class QuickSightRedshiftDataset(core.Construct):
 
     def __init__(
             self,
-            scope: core.Construct,
+            scope: Construct,
             id: str,
             iam_policy: cr.AwsCustomResourcePolicy,
             quicksight_group_arn: str,
@@ -30,7 +32,7 @@ class QuickSightRedshiftDataset(core.Construct):
 
         super().__init__(scope, id, **kwargs)
 
-        aws_account_id = core.Aws.ACCOUNT_ID
+        aws_account_id = Aws.ACCOUNT_ID
         uniquestring = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
         dataset_id = redshift_dataset_name + uniquestring
         dataset_physical_id = redshift_dataset_name + uniquestring
@@ -87,7 +89,7 @@ class QuickSightRedshiftDataset(core.Construct):
 
         self.__redshift_dataset_arn = quicksight_data_set.get_response_field("Arn")
 
-        core.CfnOutput(
+        CfnOutput(
             self, "RedshiftDataSetArn",
             description="Redshift Data Set Arn",
             value=self.__redshift_dataset_arn

@@ -19,8 +19,10 @@ setuptools.setup(
     packages=setuptools.find_packages(where="common"),
 
     install_requires=[
-        f"aws_analytics_reference_architecture @ file:///Users/gromav/Local/aws-analytics-reference-architecture/core/dist/python/aws_analytics_reference_architecture-0.0.0-py3-none-any.whl",
+        f"aws_analytics_reference_architecture @ file:///Users/chazalf/amazon/ARA/aws-analytics-reference-architecture/core/dist/python/aws_analytics_reference_architecture-0.0.0.tar.gz",
         "aws-cdk-lib>=2.25.0",
+        "aws-cdk.aws-glue-alpha>=2.25.0.a0"
+        "aws-cdk.aws-redshift-alpha>=2.25.0.a0"
         "constructs>=10.0.0",
         "cdk_ec2_key_pair==3.3.1"
     ],

@@ -4,6 +4,7 @@
 #!/usr/bin/env python3
 import os
 from aws_cdk import App, Stack, Annotations
+from constructs import Construct
 from common.common_cdk.data_lake import DataLake
 from cicd.pipeline import PipelineStack, AnalyticsEnvironment
 

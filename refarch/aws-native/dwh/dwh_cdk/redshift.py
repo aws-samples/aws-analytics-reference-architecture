@@ -1,20 +1,20 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
-    aws_redshift as redshift,
-    core as core,
+    aws_redshift_alpha as redshift,
     aws_iam as iam,
     aws_s3 as s3,
     aws_ec2 as ec2
 )
 
-from aws_cdk.aws_redshift import ClusterType, NodeType
-from aws_cdk.core import RemovalPolicy
+from aws_cdk.aws_redshift_alpha import ClusterType, NodeType
+from aws_cdk import RemovalPolicy
 import common.common_cdk.config as _config
 
 
-class RedshiftCdkStack(core.Construct):
+class RedshiftCdkStack(Construct):
 
     @property
     def redshift_sg(self):
@@ -41,7 +41,7 @@ class RedshiftCdkStack(core.Construct):
         return self.__redshift_cluster
 
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id: str,
                  vpc,
                  bastion_sg,
@@ -76,8 +76,8 @@ class RedshiftCdkStack(core.Construct):
         self.__master_user = {'master_username': "dwh_user"}
 
         self.__subnets_selection = ec2.SubnetSelection(availability_zones=None, one_per_az=None,
-                                                       subnet_group_name=None, subnet_name=None,
-                                                       subnets=None, subnet_type=ec2.SubnetType.PRIVATE)
+                                                       subnet_group_name=None,
+                                                       subnets=None, subnet_type=ec2.SubnetType.PRIVATE_WITH_NAT)
 
         # Create role that is used by the Redshift to read data from clean bucket
         self.__s3role = iam.Role(

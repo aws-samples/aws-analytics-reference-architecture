@@ -7,13 +7,38 @@
  * @group unit/ara-bucket
  */
 
-import {Stack} from 'aws-cdk-lib';
+import {NestedStack, Stack} from 'aws-cdk-lib';
 import {AraBucket} from '../../src/ara-bucket';
 
 import {Match, Template} from 'aws-cdk-lib/assertions';
 import {BucketEncryption} from "aws-cdk-lib/aws-s3";
 
-describe ('AraBucket', () => {
+describe ('AraBucket declared in Nested Stack', () => {
+  const AraBucketStack = new Stack();
+  const AraBucketNestedStack1 = new NestedStack(AraBucketStack, 'nestStack1');
+
+  // Instantiate 2 Bucket Constructs
+  AraBucket.getOrCreate(AraBucketNestedStack1, {
+    bucketName: 'test',
+    serverAccessLogsPrefix: 'test',
+    encryption: BucketEncryption.KMS,
+  });
+  AraBucket.getOrCreate(AraBucketNestedStack1, {
+    bucketName: 'test2',
+    serverAccessLogsPrefix: 'test2',
+  });
+
+  const nestedTemplate1 = Template.fromStack(AraBucketNestedStack1);
+  const template = Template.fromStack(AraBucketStack);
+
+  test('are created in root stack', () => {
+    template.resourceCountIs('AWS::S3::Bucket', 0);
+    nestedTemplate1.resourceCountIs('AWS::S3::Bucket', 3);
+  })
+});
+
+
+describe ('AraBucket Root Stack', () => {
   const AraBucketStack = new Stack();
 
   // Instantiate 2 Bucket Constructs

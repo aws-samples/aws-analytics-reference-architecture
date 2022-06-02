@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: MIT-0
 
 from aws_cdk import aws_dynamodb as _dynamodb
-from aws_cdk.core import CfnParameter, CfnOutput, Construct, Stack, Tags
+from aws_cdk import CfnOutput, Stack, Tags
+from constructs import Construct
 
 from batch.batch_cdk.batch_module import BatchModule
 from common.common_cdk.batch_data_generator import BatchDataGenerator
