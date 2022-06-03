@@ -176,7 +176,6 @@ export class EmrEksCluster extends TrackedConstruct {
   private readonly awsNodeRole: Role;
   private readonly ec2InstanceNodeGroupRole: Role;
   private readonly defaultNodeGroups: boolean;
-
   /**
    * Constructs a new instance of the EmrEksCluster construct.
    * @param {Construct} scope the Scope of the CDK Construct

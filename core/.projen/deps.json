@@ -166,6 +166,10 @@
       "type": "bundled"
     },
     {
+      "name": "simple-base",
+      "type": "bundled"
+    },
+    {
       "name": "uuid",
       "type": "bundled"
     },

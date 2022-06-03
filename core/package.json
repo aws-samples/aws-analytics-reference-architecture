@@ -94,12 +94,14 @@
     "@exodus/schemasafe": "^1.0.0-rc.6",
     "aws-sdk": "^2.1141.0",
     "js-yaml": "^4.1.0",
+    "simple-base": "^1.0.0",
     "uuid": "^8.3.2"
   },
   "bundledDependencies": [
     "@exodus/schemasafe",
     "aws-sdk",
     "js-yaml",
+    "simple-base",
     "uuid"
   ],
   "keywords": [

@@ -2627,7 +2627,7 @@ the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}.
 ##### `createExecutionRole` <a name="createExecutionRole" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole"></a>
 
 ```typescript
-public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, name?: string): Role
+public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, namespace: string, name?: string): Role
 ```
 
 Create and configure a new Amazon IAM Role usable as an execution role.
@@ -2655,6 +2655,12 @@ of the CDK resource to be created, it should be unique across the stack.
 - *Type:* aws-cdk-lib.aws_iam.IManagedPolicy
 
 the execution policy to attach to the role.
+
+---
+
+###### `namespace`<sup>Required</sup> <a name="namespace" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.namespace"></a>
+
+- *Type:* string
 
 ---
 
