@@ -49,7 +49,7 @@
   "devDependencies": {
     "@aws-cdk/cloudformation-diff": "2.25.0",
     "@aws-cdk/cx-api": "2.25.0",
-    "@types/jest": "^27.5.1",
+    "@types/jest": "^28.1.0",
     "@types/js-yaml": "*",
     "@types/node": "^14",
     "@types/prettier": "2.6.0",
@@ -60,7 +60,7 @@
     "cdk-assets": "2.25.0",
     "cdk-nag": "^2.0.0",
     "constructs": "10.1.15",
-    "esbuild": "^0.14.39",
+    "esbuild": "^0.14.42",
     "eslint": "^8",
     "eslint-import-resolver-node": "^0.3.6",
     "eslint-import-resolver-typescript": "^2.7.1",
@@ -71,16 +71,16 @@
     "jest-runner-groups": "^2.2.0",
     "jsii": "^1.59.0",
     "jsii-diff": "^1.59.0",
-    "jsii-docgen": "^7.0.16",
+    "jsii-docgen": "^7.0.26",
     "jsii-pacmak": "^1.59.0",
     "json-schema": "^0.4.0",
     "npm-check-updates": "^12",
-    "projen": "^0.56.41",
+    "projen": "^0.57.2",
     "promptly": "^3.2.0",
     "proxy-agent": "^5.0.0",
     "standard-version": "^9",
     "ts-jest": "^27",
-    "typescript": "^4.6.4"
+    "typescript": "^4.7.3"
   },
   "peerDependencies": {
     "@aws-cdk/aws-glue-alpha": "2.25.0-alpha.0",
@@ -92,7 +92,7 @@
     "@aws-cdk/aws-glue-alpha": "2.25.0-alpha.0",
     "@aws-cdk/aws-redshift-alpha": "2.25.0-alpha.0",
     "@exodus/schemasafe": "^1.0.0-rc.6",
-    "aws-sdk": "^2.1141.0",
+    "aws-sdk": "^2.1148.0",
     "js-yaml": "^4.1.0",
     "uuid": "^8.3.2"
   },
