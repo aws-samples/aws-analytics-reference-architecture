@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { join } from 'path';
+import { Aws, CfnOutput, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy } from 'aws-cdk-lib';
 import { FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes } from 'aws-cdk-lib/aws-ec2';
 import {
   CapacityType,
@@ -27,8 +28,11 @@ import {
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Bucket, BucketEncryption, Location } from 'aws-cdk-lib/aws-s3';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
-import { Aws, CfnOutput, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as SimpleBase from 'simple-base';
 import { AraBucket } from '../ara-bucket';
+import { ContextOptions } from '../common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 import { SingletonKey } from '../singleton-kms-key';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { validateSchema } from './config-override-schema-validation';
@@ -43,10 +47,7 @@ import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-import { ContextOptions } from '../common/context-options';
-import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 
-import { Construct } from 'constructs';
 
 /**
  * The properties for the EmrEksCluster Construct class.
@@ -902,13 +903,24 @@ ${userData.join('\r\n')}
    * @param {IManagedPolicy} policy the execution policy to attach to the role
    * @param {string} name for the Managed Endpoint
    */
-  public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, name?: string): Role {
+  public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, namespace: string, name?: string): Role {
 
     const stack = Stack.of(this);
 
+    const irsaConditionkey = `${this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer}:sub`;
+
+    console.log(this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer);
+
     // Create an execution role assumable by EKS OIDC provider
     return new Role(scope, `${id}ExecutionRole`, {
-      assumedBy: this.eksOidcProvider,
+      assumedBy: new FederatedPrincipal(
+        this.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+        {
+          StringLike: {
+            [irsaConditionkey]: 'system:serviceaccount:' + namespace + ':emr-containers-sa-*-*-' + Aws.ACCOUNT_ID.toString() + SimpleBase.base36.encode(name!),
+          },
+        },
+        'sts:AssumeRoleWithWebIdentity'),
       roleName: name ? name : undefined,
       managedPolicies: [policy],
       inlinePolicies: {

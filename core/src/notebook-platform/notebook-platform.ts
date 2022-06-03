@@ -186,6 +186,7 @@ export class NotebookPlatform extends TrackedConstruct {
   private readonly federatedIdPARN : string | undefined;
   private readonly authMode :string;
   private studioServiceRole: IRole;
+  private vcNamespace: string;
 
   /**
    * @public
@@ -208,6 +209,7 @@ export class NotebookPlatform extends TrackedConstruct {
     this.studioSubnetList = [];
     this.managedEndpointExecutionPolicyArnMapping = new Map<string, string>();
     this.authMode = props.studioAuthMode;
+    this.vcNamespace = props.eksNamespace ? props.eksNamespace : 'default';
 
     if (props.idpArn !== undefined) {
       this.federatedIdPARN = props.idpArn;
@@ -392,6 +394,8 @@ export class NotebookPlatform extends TrackedConstruct {
                 this,
                 `${user.identityName}${index}`,
                 notebookManagedEndpoint.executionPolicy,
+                this.vcNamespace,
+                `${endpointName}-execRole`,
               ),
               emrOnEksVersion: emrOnEksVersion ? emrOnEksVersion : NotebookPlatform.DEFAULT_EMR_VERSION,
               configurationOverrides: configOverride ? configOverride : undefined,
