@@ -3,7 +3,7 @@
     ".eslintrc.json",
     ".gitattributes",
     ".github/workflows/release.yml",
-    ".github/workflows/upgrade-main.yml",
+    ".github/workflows/upgrade-refactor-ref-arch-v2.yml",
     ".gitignore",
     ".projen/deps.json",
     ".projen/files.json",
