@@ -152,10 +152,10 @@ for (const from of glob.sync('src/**/resources')) {
   const to = dirname(from.replace('src', 'lib'));
   const cpCommand = `rsync -avr --exclude '*.ts' --exclude '*.js' ${from} ${to}`;
   copyResourcesToLibTask.exec(cpCommand);
-  glob.sync(`${to}/**/.gitignore`).map((libGitignore) => {
-    const workaroundCommand = `sed -i 's/flyway-all.jar//g' ${libGitignore}`;
-    copyResourcesToLibTask.exec(workaroundCommand);
-  });
+  // glob.sync(`${to}/**/.gitignore`).map((libGitignore) => {
+  //   const workaroundCommand = `sed -i 's/flyway-all.jar//g' ${libGitignore}`;
+  //   copyResourcesToLibTask.exec(workaroundCommand);
+  // });
 }
 
 /**

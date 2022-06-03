@@ -286,7 +286,7 @@ npx projen package
 ```python
     install_requires=[
         "aws-cdk.core==1.130.0",
-        f"aws_analytics_reference_architecture @ file://localhost<LOCAL_PATH>/aws-analytics-reference-architecture/core/dist/python/aws_analytics_reference_architecture-0.0.0-py3-none-any.whl",
+        f"aws_analytics_reference_architecture @ file:///localhost<LOCAL_PATH>/aws-analytics-reference-architecture/core/dist/python/aws_analytics_reference_architecture-0.0.0-py3-none-any.whl",
     ],
 ```
 
