@@ -50,24 +50,12 @@ class Raw2CleanJob(Construct):
                                                                           job_name)]
                         ),
                         PolicyStatement(
-                            actions=['s3:ListBucket'],
-                            resources=[
-                                raw_bucket.bucket_arn,
-                                clean_bucket.bucket_arn
-                            ]
-                        ),
-                        PolicyStatement(
                             actions=['s3:GetObject'],
-                            resources=[raw_bucket.arn_for_objects(source_entity + '/*'),
+                            resources=[
                                        script_bucket.arn_for_objects(script_location),
                                        script_bucket.arn_for_objects(_config.Raw2CleanConfig.HUDI_EXTRA_JAR_PATH),
                                        script_bucket.arn_for_objects(_config.Raw2CleanConfig.AVRO_EXTRA_JAR_PATH)
                                        ]
-                        ),
-                        PolicyStatement(
-                            actions=['s3:GetObject', 's3:PutObject', 's3:DeleteObject'],
-                            resources=[clean_bucket.arn_for_objects(target_entity + '_$folder$'),
-                                       clean_bucket.arn_for_objects(target_entity + '/*')]
                         ),
                         PolicyStatement(
                             actions=['glue:GetTable', 'glue:GetPartitions'],
@@ -120,6 +108,11 @@ class Raw2CleanJob(Construct):
                         )
                     ])}
                     )
+
+        raw_bucket.grant_read(role, source_entity + '/*')
+        clean_bucket.grant_read_write(role, target_entity + '/*')
+        clean_bucket.grant_read_write(role, target_entity + '_$folder$')
+
         # If format is Hudi, we add primary key and parallelism args to the job args
         args = {
             '--job-bookmark-option': 'job-bookmark-enable',

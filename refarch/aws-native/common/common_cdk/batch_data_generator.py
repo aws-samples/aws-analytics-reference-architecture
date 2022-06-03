@@ -43,6 +43,8 @@ class BatchDataGenerator(Construct):
             assumed_by=_iam.ServicePrincipal("ec2.amazonaws.com")
         )
 
+        sink_bucket.grant_read_write(cluster_role)
+
         _iam.Policy(
             self, 'BatchEmrClusterPolicy',
             statements=[
@@ -90,29 +92,6 @@ class BatchDataGenerator(Construct):
                     actions=['s3:PutObject'],
                     resources=[log_bucket.bucket_arn + "/data-generator/*"]
                 ),
-                _iam.PolicyStatement(
-                    actions=[
-                        "s3:AbortMultipartUpload",
-                        "s3:CreateBucket",
-                        "s3:DeleteObject",
-                        "s3:GetBucketVersioning",
-                        "s3:GetObject",
-                        "s3:GetObjectTagging",
-                        "s3:GetObjectVersion",
-                        "s3:ListBucket",
-                        "s3:ListBucketMultipartUploads",
-                        "s3:ListBucketVersions",
-                        "s3:ListMultipartUploadParts",
-                        "s3:PutBucketVersioning",
-                        "s3:PutObject",
-                        "s3:PutObjectTagging"
-                    ],
-                    resources=[
-                        sink_bucket.bucket_arn + '/*',
-                        sink_bucket.bucket_arn
-
-                    ]
-                )
             ],
             roles=[cluster_role]
         )

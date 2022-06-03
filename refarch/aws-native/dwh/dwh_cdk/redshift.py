@@ -86,16 +86,7 @@ class RedshiftCdkStack(Construct):
             assumed_by=iam.ServicePrincipal("redshift.amazonaws.com")
         )
 
-        self.__s3role.add_to_principal_policy(iam.PolicyStatement(actions=['s3:GetObject',
-                                                                         's3:ListBucket',
-                                                                         's3:GetBucketLocation',
-                                                                         's3:ListMultipartUploadParts',
-                                                                         's3:ListBucketMultipartUploads'
-                                                                         ],
-                                                                resources=[self.__clean_bucket.arn_for_objects('*'),
-                                                                           self.__clean_bucket.bucket_arn]
-                                                                ))
-
+        clean_bucket.grant_read(self.__s3role)
         self.__s3role.add_to_principal_policy(iam.PolicyStatement(actions=['glue:CreateDatabase',
                                                                          'glue:CreateDatabase',
                                                                          'glue:DeleteDatabase',

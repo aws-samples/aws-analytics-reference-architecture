@@ -24,8 +24,8 @@ from aws_cdk import (
     aws_kms as _kms
 )
 
-from common.common_cdk.auto_empty_bucket import AutoEmptyBucket
-from common.common_cdk.config import (BINARIES_LOCATION, ARA_BUCKET_NAME, BINARIES, DataGenConfig)
+from common_cdk.auto_empty_bucket import AutoEmptyBucket
+from common_cdk.config import (BINARIES_LOCATION, ARA_BUCKET_NAME, BINARIES, DataGenConfig)
 
 
 class StreamDataGenerator(Construct):
@@ -63,6 +63,9 @@ class StreamDataGenerator(Construct):
             self, 'StreamEmrClusterRole',
             assumed_by=_iam.ServicePrincipal("ec2.amazonaws.com")
         )
+
+        sink_bucket.grant_read_write(cluster_role)
+        stream_source_bucket.bucket.grant_read_write(cluster_role)
 
         _iam.Policy(
             self, 'StreamEmrClusterPolicy',
@@ -111,31 +114,6 @@ class StreamDataGenerator(Construct):
                     actions=['s3:PutObject'],
                     resources=[log_bucket.bucket_arn + "/data-generator/*"]
                 ),
-                _iam.PolicyStatement(
-                    actions=[
-                        "s3:AbortMultipartUpload",
-                        "s3:CreateBucket",
-                        "s3:DeleteObject",
-                        "s3:GetBucketVersioning",
-                        "s3:GetObject",
-                        "s3:GetObjectTagging",
-                        "s3:GetObjectVersion",
-                        "s3:ListBucket",
-                        "s3:ListBucketMultipartUploads",
-                        "s3:ListBucketVersions",
-                        "s3:ListMultipartUploadParts",
-                        "s3:PutBucketVersioning",
-                        "s3:PutObject",
-                        "s3:PutObjectTagging"
-                    ],
-                    resources=[
-                        sink_bucket.bucket_arn + '/*',
-                        sink_bucket.bucket_arn,
-                        stream_source_bucket.bucket.bucket_arn + '/*',
-                        stream_source_bucket.bucket.bucket_arn
-
-                    ]
-                )
             ],
             roles=[cluster_role]
         )
