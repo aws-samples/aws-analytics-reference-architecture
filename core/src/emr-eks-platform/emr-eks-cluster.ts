@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { join } from 'path';
-import { Aws, CfnOutput, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, CfnOutput, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy, CfnJson } from 'aws-cdk-lib';
 import { FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes } from 'aws-cdk-lib/aws-ec2';
 import {
   CapacityType,
@@ -907,18 +907,18 @@ ${userData.join('\r\n')}
 
     const stack = Stack.of(this);
 
-    const irsaConditionkey = `${this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer}:sub`;
-
-    console.log(this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer);
+    let irsaConditionkey: CfnJson = new CfnJson(this, 'irsaConditionkey', {
+      value: {
+        [`${this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer}:sub`]: 'system:serviceaccount:' + namespace + ':emr-containers-sa-*-*-' + Aws.ACCOUNT_ID.toString() +'-'+ SimpleBase.base36.encode(name!),
+      },
+    });
 
     // Create an execution role assumable by EKS OIDC provider
     return new Role(scope, `${id}ExecutionRole`, {
       assumedBy: new FederatedPrincipal(
         this.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
         {
-          StringLike: {
-            [irsaConditionkey]: 'system:serviceaccount:' + namespace + ':emr-containers-sa-*-*-' + Aws.ACCOUNT_ID.toString() + SimpleBase.base36.encode(name!),
-          },
+          StringLike: irsaConditionkey,
         },
         'sts:AssumeRoleWithWebIdentity'),
       roleName: name ? name : undefined,
