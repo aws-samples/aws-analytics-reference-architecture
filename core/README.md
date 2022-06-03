@@ -28,7 +28,7 @@ This documentation explains how to get started with the core components of the A
 2. The core components can be deployed in any AWS region
 3. Install the following components with the specified version on the machine from which the deployment will be executed:
     1. Python [3.8-3.9.2] or Typescript
-    2. AWS CDK v1: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/v1/guide/getting_started.html) guide.
+    2. AWS CDK v2: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) guide.
 
 
 ### Initialization (in Python)
@@ -43,13 +43,12 @@ python3 -m venv .env
 source .env/bin/activate
 ```
 
-2. Add the AWS Analytics Reference Architecture library in the dependencies of your project. Update **setup.py** 
+2. Add the AWS Analytics Reference Architecture library in the dependencies of your project. Update **requirements.txt** 
 
 ```bash
-    install_requires=[
-        "aws-cdk.core==1.144.0",
-        "aws-analytics-reference-architecture==1.15.0",
-    ],
+aws-cdk-lib==2.25.0
+constructs>=10.0.0,<11.0.0
+aws_analytics_reference_architecture>=2.0.0
 ```
 3. Install The Packages via **pip**
 
