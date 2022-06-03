@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 const { basename, join, dirname, relative } = require('path');
+const fs = require('fs');
 const glob = require('glob');
 
 
@@ -152,6 +153,10 @@ for (const from of glob.sync('src/**/resources')) {
   const to = dirname(from.replace('src', 'lib'));
   const cpCommand = `rsync -avr --exclude '*.ts' --exclude '*.js' ${from} ${to}`;
   copyResourcesToLibTask.exec(cpCommand);
+  glob.sync(`${to}/**/.gitignore`).map((libGitignore) => {
+    const workaroundCommand = `perl -i -pe 's/flyway-all.jar//g' ${libGitignore}`;
+    copyResourcesToLibTask.exec(workaroundCommand);
+  });
 }
 
 /**

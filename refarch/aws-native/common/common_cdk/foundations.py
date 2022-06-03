@@ -1,9 +1,10 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-from aws_cdk.core import Construct, NestedStack
+from constructs import Construct
+from aws_cdk import NestedStack
 from aws_cdk.aws_ec2 import GatewayVpcEndpointAwsService, SubnetSelection, SubnetType, Vpc, InterfaceVpcEndpointAwsService
-from aws_cdk.aws_glue import Database
+from aws_cdk.aws_glue_alpha import Database
 from aws_cdk.aws_iam import Group
 from aws_analytics_reference_architecture import DataLakeCatalog, DataLakeStorage
 from common_cdk.audit_trail_glue import AuditTrailGlue
@@ -103,11 +104,11 @@ class DataLakeFoundations(NestedStack):
         # the vpc used for the overall data lake (same vpc, different subnet for modules)
         self.__vpc = Vpc(self, 'Vpc')
         self.__public_subnets = self.__vpc.select_subnets(subnet_type=SubnetType.PUBLIC)
-        self.__private_subnets = self.__vpc.select_subnets(subnet_type=SubnetType.PRIVATE)
+        self.__private_subnets = self.__vpc.select_subnets(subnet_type=SubnetType.PRIVATE_WITH_NAT)
         self.__vpc.add_gateway_endpoint("S3GatewayEndpoint",
                                         service=GatewayVpcEndpointAwsService.S3,
                                         subnets=[SubnetSelection(subnet_type=SubnetType.PUBLIC),
-                                                 SubnetSelection(subnet_type=SubnetType.PRIVATE)])
+                                                 SubnetSelection(subnet_type=SubnetType.PRIVATE_WITH_NAT)])
 
         # IAM groups
         self.__admin_group = Group(self, 'GroupAdmins', group_name='ara-admins')

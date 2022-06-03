@@ -1,30 +1,35 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    Duration,
+    RemovalPolicy,
     aws_s3 as _s3,
     aws_lambda as _lambda,
     aws_cloudformation as _cfn,
     aws_iam as _iam,
-    custom_resources as _custom_resources
+    custom_resources as _custom_resources,
+    Duration,
+    RemovalPolicy,
+    CustomResource
 )
 
 
-class AutoEmptyBucket(core.Construct):
+class AutoEmptyBucket(Construct):
 
     @property
     def bucket(self):
         return self.__bucket
 
-    def __init__(self, scope: core.Construct, id: str, bucket_name: str, uuid: str, **kwargs):
+    def __init__(self, scope: Construct, id: str, bucket_name: str, uuid: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
         bucket_storage = _s3.LifecycleRule(transitions=[
-            _s3.Transition(storage_class=_s3.StorageClass.INTELLIGENT_TIERING, transition_after=core.Duration.days(1))
+            _s3.Transition(storage_class=_s3.StorageClass.INTELLIGENT_TIERING, transition_after=Duration.days(1))
         ])
 
-        self.__bucket = _s3.Bucket(self, 'S3Bucket', bucket_name=bucket_name, removal_policy=core.RemovalPolicy.DESTROY,
+        self.__bucket = _s3.Bucket(self, 'S3Bucket', bucket_name=bucket_name, removal_policy=RemovalPolicy.DESTROY,
                                    encryption=_s3.BucketEncryption.KMS_MANAGED, lifecycle_rules=[bucket_storage])
 
         with open('common/common_cdk/lambda/empty_bucket.py', 'r') as f:
@@ -34,9 +39,9 @@ class AutoEmptyBucket(core.Construct):
             self, 'EmptyBucketLambda',
             uuid=uuid,
             runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.inline(lambda_source),
+            code=_lambda.Code.from_inline(lambda_source),
             handler='index.handler',
-            timeout=core.Duration.minutes(15)
+            timeout=Duration.minutes(15)
         )
 
         empty_bucket_lambda.role.add_to_policy(
@@ -59,7 +64,7 @@ class AutoEmptyBucket(core.Construct):
             on_event_handler=empty_bucket_lambda
         )
 
-        custom_resource = core.CustomResource(
+        custom_resource = CustomResource(
             self, 'EmptyBucketCustomResource',
             service_token=empty_bucket_lambda_provider.service_token,
             properties={

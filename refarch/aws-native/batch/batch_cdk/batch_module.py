@@ -1,9 +1,11 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-from aws_cdk.aws_glue import Database, CfnWorkflow, CfnTrigger
+from aws_cdk.aws_glue import CfnWorkflow, CfnTrigger
+from aws_cdk.aws_glue_alpha import Database
 from aws_cdk.aws_s3 import Bucket
-from aws_cdk.core import Construct, NestedStack, Tags
+from constructs import Construct
+from aws_cdk import NestedStack, Tags
 
 import common.common_cdk.config as _config
 from batch.batch_cdk.crawler import Crawler

@@ -19,7 +19,7 @@ export class SingletonKey extends Key {
     const stack = Stack.of(scope);
     const id = `${keyName}`;
 
-    const stackKey = stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Key : stack.node.tryFindChild(id) as Key;
+    const stackKey = stack.node.tryFindChild(id) as Key ?? (stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Key : undefined);
 
     return stackKey || new Key(stack, id, {
       enableKeyRotation: true,

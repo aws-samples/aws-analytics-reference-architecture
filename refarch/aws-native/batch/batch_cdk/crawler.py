@@ -3,10 +3,12 @@
 
 from typing import List
 
-from aws_cdk.aws_glue import CfnCrawler, Database
+from aws_cdk.aws_glue import CfnCrawler
+from aws_cdk.aws_glue_alpha import Database
 from aws_cdk.aws_iam import Role, ServicePrincipal, PolicyDocument, PolicyStatement
 from aws_cdk.aws_s3 import Bucket
-from aws_cdk.core import Aws, Construct
+from constructs import Construct
+from aws_cdk import Aws
 
 
 class Crawler(Construct):
@@ -62,14 +64,6 @@ class Crawler(Construct):
                                     ]
                                 ),
                                 PolicyStatement(
-                                    actions=['s3:GetObject'],
-                                    resources=[bucket.arn_for_objects(prefix + '*')]
-                                ),
-                                PolicyStatement(
-                                    actions=["s3:ListBucket"],
-                                    resources=[bucket.bucket_arn]
-                                ),
-                                PolicyStatement(
                                     actions=['logs:CreateLogGroup'],
                                     resources=[
                                         'arn:aws:logs:{}:{}:log-group:/aws-glue/crawlers*'.format(Aws.REGION,
@@ -83,6 +77,8 @@ class Crawler(Construct):
                                 )
                             ])}
                             )
+        bucket.grant_read(crawler_role)
+
         # excluding hudi tables from the crawler because it's not supported
         if hudi_exclusions is not None:
             exclusions = ["**_SUCCESS", "**crc"] + list(map(lambda x: x + '/**', hudi_exclusions))

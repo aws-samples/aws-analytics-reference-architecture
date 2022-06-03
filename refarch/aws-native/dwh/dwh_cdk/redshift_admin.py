@@ -1,26 +1,22 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-from aws_cdk.custom_resources import Provider
-import json
 import common.common_cdk.config as _config
 
-from aws_cdk.aws_iam import PolicyStatement
-from aws_cdk.core import CfnOutput, CustomResource, Stack
+from constructs import Construct
+from aws_cdk import CfnOutput, RemovalPolicy, Stack
 
 from aws_cdk import (
-    core as core,
     aws_ec2 as _ec2,
-    aws_lambda as _lambda,
-    aws_glue as _glue,
-    aws_redshift as _redshift
+    aws_glue_alpha as _glue,
+    aws_redshift_alpha as _redshift
 )
 
 import aws_analytics_reference_architecture
 
 import os
 
-class RedshiftAdminCdkStack(core.Construct):
+class RedshiftAdminCdkStack(Construct):
     SQL_SCRIPT_DIR = '/sql/'
 
     @property
@@ -36,7 +32,7 @@ class RedshiftAdminCdkStack(core.Construct):
         return self.__quicksight_user_secret.secret_arn
 
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id: str,
                  vpc: _ec2.Vpc,
                  lambda_sg: _ec2.SecurityGroup,
@@ -54,8 +50,8 @@ class RedshiftAdminCdkStack(core.Construct):
         stack = Stack.of(self)
 
         self.__subnets_selection = _ec2.SubnetSelection(availability_zones=None, one_per_az=None,
-                                                       subnet_group_name=None, subnet_name=None,
-                                                       subnets=None, subnet_type=_ec2.SubnetType.PRIVATE)
+                                                       subnet_group_name=None,
+                                                       subnets=None, subnet_type=_ec2.SubnetType.PRIVATE_WITH_NAT)
 
 
         # This lambda function will run SQL commands to setup Redshift users and tables
@@ -64,17 +60,17 @@ class RedshiftAdminCdkStack(core.Construct):
             cluster=redshift_cluster,
             database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
             username='data_engineer',
-            removal_policy=core.RemovalPolicy.RETAIN)
+            removal_policy=RemovalPolicy.RETAIN)
         self.dataviz = _redshift.User(self, "dataviz",
             cluster=redshift_cluster,
             database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
             username='dataviz',
-            removal_policy=core.RemovalPolicy.RETAIN)
+            removal_policy=RemovalPolicy.RETAIN)
         self.etl = _redshift.User(self, "etl",
             cluster=redshift_cluster,
             database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
             username='etl',
-            removal_policy=core.RemovalPolicy.RETAIN)
+            removal_policy=RemovalPolicy.RETAIN)
             
 
         redshift_migration = aws_analytics_reference_architecture.FlywayRunner(scope=self,

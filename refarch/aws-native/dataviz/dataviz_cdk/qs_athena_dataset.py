@@ -3,12 +3,13 @@
 
 import datetime
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    Aws,
     custom_resources as cr
 )
 
-class QuickSightAthenaDataset(core.Construct):
+class QuickSightAthenaDataset(Construct):
 
     @property
     def dataset_arn(self):
@@ -16,7 +17,7 @@ class QuickSightAthenaDataset(core.Construct):
 
     def __init__(
             self,
-            scope: core.Construct,
+            scope: Construct,
             id: str,
             iam_policy: cr.AwsCustomResourcePolicy,
             quicksight_group_arn: str,
@@ -30,7 +31,7 @@ class QuickSightAthenaDataset(core.Construct):
 
         super().__init__(scope, id, **kwargs)
 
-        aws_account_id = core.Aws.ACCOUNT_ID
+        aws_account_id = Aws.ACCOUNT_ID
         uniquestring = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
         athena_dataset_id = athena_dataset_name + uniquestring
         athena_dataset_physical_id = athena_dataset_name + uniquestring
