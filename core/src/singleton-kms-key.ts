@@ -1,8 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Key } from '@aws-cdk/aws-kms';
-import { Construct, RemovalPolicy, Stack } from '@aws-cdk/core';
+import { Key } from 'aws-cdk-lib/aws-kms';
+import { RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 /**
  * An Amazon S3 Bucket implementing the singleton pattern
@@ -18,7 +19,7 @@ export class SingletonKey extends Key {
     const stack = Stack.of(scope);
     const id = `${keyName}`;
 
-    const stackKey = stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Key : stack.node.tryFindChild(id) as Key;
+    const stackKey = stack.node.tryFindChild(id) as Key ?? (stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Key : undefined);
 
     return stackKey || new Key(stack, id, {
       enableKeyRotation: true,

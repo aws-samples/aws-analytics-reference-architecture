@@ -9,9 +9,9 @@
  * @group unit/redshift/flyway-runner
  */
 
-import { Stack } from '@aws-cdk/core';
-import '@aws-cdk/assert/jest';
-import { Template } from '@aws-cdk/assertions';
+import { Stack } from 'aws-cdk-lib';
+
+import { Template } from 'aws-cdk-lib/assertions';
 
 describe('FlywayRunner', () => {
 

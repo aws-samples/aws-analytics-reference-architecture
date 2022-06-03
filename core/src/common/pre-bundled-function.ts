@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: MIT-0
 
 import * as path from 'path';
-import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from '@aws-cdk/aws-iam';
-import { Code, Function, FunctionProps, ILayerVersion, Runtime } from '@aws-cdk/aws-lambda';
-import { Aws, Construct } from '@aws-cdk/core';
-import { PreBundledLayer } from './pre-bundled-layer';
+import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Code, Function, FunctionProps, ILayerVersion } from 'aws-cdk-lib/aws-lambda';
+import { Aws } from 'aws-cdk-lib';
+// import { PreBundledLayer } from './pre-bundled-layer';
+import { Construct } from 'constructs';
 
 /**
  * The properties for the PreBundledFunction construct.
@@ -145,13 +146,14 @@ export class PreBundledFunction extends Function {
     functionProps.role = lambdaExecutionRole;
     functionProps.logRetentionRole = logRetentionLambdaExecutionRole;
 
-    if (functionProps.runtime in [Runtime.PYTHON_3_8, Runtime.PYTHON_3_7, Runtime.PYTHON_3_9]) {
-      functionProps.layers = [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')];
 
-      functionProps.lambdaLayers?.forEach((layer: ILayerVersion) => {
-        functionProps.layers.push(layer);
-      });
-    }
+    // const runtimes = Object.values([Runtime.PYTHON_3_8, Runtime.PYTHON_3_7, Runtime.PYTHON_3_9]);
+    // let layers: ILayerVersion[] = [];
+
+    // If the runtime is Python we use the common Lambda Layer with boto3
+    // if (runtimes.includes(functionProps.runtime as Runtime)) {
+    //   layers.push(PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer'));
+    // }
 
     //delete props that were added to force user input
     delete functionProps.codePath;
@@ -160,6 +162,5 @@ export class PreBundledFunction extends Function {
     delete functionProps.lambdaLayers;
 
     super(scope, id, { ...(functionProps as FunctionProps) });
-
   }
 }

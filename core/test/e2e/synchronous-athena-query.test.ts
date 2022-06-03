@@ -7,12 +7,11 @@
  * @group integ/synchronous-athena-query
  */
 
-import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { Bucket } from '@aws-cdk/aws-s3';
-import * as cdk from '@aws-cdk/core';
-import { RemovalPolicy } from '@aws-cdk/core';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import * as cdk from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
+import { deployStack, destroyStack } from './utils';
 
 import { SynchronousAthenaQuery } from '../../src/synchronous-athena-query';
 
@@ -84,17 +83,7 @@ new cdk.CfnOutput(stack, 'SynchronousAthenaQueryResource', {
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-    // WHEN
-    /*const deployResult =*/ await cloudFormation.deployStack({
-      stack: stackArtifact,
-    });
+    await deployStack(integTestApp, stack);
 
     // THEN
     expect(true);
@@ -103,14 +92,5 @@ describe('deploy succeed', () => {
 });
 
 afterAll(async () => {
-  const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-    profile: process.env.AWS_PROFILE,
-  });
-  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-  await cloudFormation.destroyStack({
-    stack: stackArtifact,
-  });
+  await destroyStack(integTestApp, stack);
 });

@@ -4,12 +4,12 @@
 /**
  * Tests synchroneous Athena query
  *
- * @group unit/athena-synchronous-query
+ * @group unit/athena/synchroneous-query
  */
 
-import { Stack } from '@aws-cdk/core';
+import { Stack } from 'aws-cdk-lib';
 import { SynchronousAthenaQuery } from '../../src/synchronous-athena-query';
-import '@aws-cdk/assert/jest';
+import { Template } from 'aws-cdk-lib/assertions';
 
 test('CrawlerStartWait', () => {
   const synchronousAthenaStack = new Stack();
@@ -22,11 +22,13 @@ test('CrawlerStartWait', () => {
     },
   });
 
-  expect(synchronousAthenaStack).toHaveResource('AWS::IAM::Role');
+  const template = Template.fromStack(synchronousAthenaStack);
 
-  expect(synchronousAthenaStack).toCountResources('AWS::Lambda::Function', 6);
+  template.resourceCountIs('AWS::IAM::Role', 8);
 
-  expect(synchronousAthenaStack).toHaveResource('AWS::CloudFormation::CustomResource');
+  template.resourceCountIs('AWS::Lambda::Function', 6);
+
+  template.resourceCountIs('AWS::CloudFormation::CustomResource', 1);
 
   // TODO: add testing
 

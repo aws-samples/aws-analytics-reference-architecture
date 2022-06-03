@@ -7,10 +7,10 @@
  * @group unit/ec2-ssm-role
  */
 
-import { ServicePrincipal } from '@aws-cdk/aws-iam';
-import { Stack } from '@aws-cdk/core';
+import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Stack } from 'aws-cdk-lib';
 import { Ec2SsmRole } from '../../src/ec2-ssm-role';
-import '@aws-cdk/assert/jest';
+import { Template } from 'aws-cdk-lib/assertions';
 
 test('Ec2SsmRole construct', () => {
 
@@ -19,8 +19,9 @@ test('Ec2SsmRole construct', () => {
   // Instantiate Ec2SsmRole Construct
   new Ec2SsmRole(ec2SsmRoleStack, 'Ec2SsmRole', { assumedBy: new ServicePrincipal('ec2.amazonaws.com') });
 
+  const template = Template.fromStack(ec2SsmRoleStack);
   // Check if the Stack has a Role
-  expect(ec2SsmRoleStack).toHaveResource('AWS::IAM::Role');
+  template.hasResource('AWS::IAM::Role', 1);
 
   // TODO: check the role has AmazonSSMManagedInstanceCore managed policy
 });

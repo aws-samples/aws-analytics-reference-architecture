@@ -1,11 +1,13 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    NestedStack,
+    Tags,
     aws_ec2 as ec2,
     aws_s3 as s3,
-    aws_glue as _glue
+    aws_glue_alpha as _glue
 )
 from dwh.dwh_cdk.bastion_host import RedshiftBastion
 from dwh.dwh_cdk.dwh_loader import DwhLoader
@@ -13,7 +15,7 @@ from dwh.dwh_cdk.redshift import RedshiftCdkStack
 from dwh.dwh_cdk.redshift_admin import RedshiftAdminCdkStack
 
 
-class DwhModule(core.NestedStack):
+class DwhModule(NestedStack):
 
     @property
     def redshift_sg_id(self):
@@ -36,7 +38,7 @@ class DwhModule(core.NestedStack):
         return self.__redshift.redshift_endpoint
 
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id: str,
                  vpc: ec2.IVpc,
                  clean_bucket: s3.Bucket,
@@ -75,4 +77,4 @@ class DwhModule(core.NestedStack):
             user_secret=self.__redshift_admin.etl_user_secret
         )
 
-        core.Tags.of(self).add('module-name', 'dwh')
+        Tags.of(self).add('module-name', 'dwh')

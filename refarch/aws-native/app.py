@@ -3,11 +3,9 @@
 
 #!/usr/bin/env python3
 import os
-
-from aws_cdk import core
-from aws_cdk.core import Construct, Annotations
-from common_cdk.data_lake import DataLake
-
+from aws_cdk import App, Stack, Annotations
+from constructs import Construct
+from common.common_cdk.data_lake import DataLake
 from cicd.pipeline import PipelineStack, AnalyticsEnvironment
 
 
@@ -25,7 +23,7 @@ def make_env(scope: Construct, context_key: str):
 
 
 # Initialize the CDK App and PipelineStack
-app = core.App()
+app = App()
 
 if app.node.try_get_context('EnableCICD') == 'true':
     deploy_envs = []

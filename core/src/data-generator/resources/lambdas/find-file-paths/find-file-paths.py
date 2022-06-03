@@ -21,7 +21,10 @@ def log_file_paths(df):
 
 
 def retrieve_df_manifest(manifest_file_bucket, manifest_file_key, start_time, end_time):
-    df_manifest=wr.s3.read_csv(f"s3://{manifest_file_bucket}/{manifest_file_key}")
+    df_manifest=wr.s3.read_csv(
+        path=f"s3://{manifest_file_bucket}/{manifest_file_key}",
+        s3_additional_kwargs={"RequestPayer": "requester"}
+    )
     rows_in_range=df_manifest[START_COL].between(start_time, end_time, inclusive='left')
     df_manifest=df_manifest[rows_in_range]
     df_manifest=df_manifest.sort_values(by=[START_COL])
@@ -81,8 +84,8 @@ def handler(event, ctx):
 if __name__ == '__main__':
     event={
         'frequency': '600',
-        'manifestFileBucket': 'aws-analytics-reference-architecture',
-        'manifestFileKey': 'sample-datasets/prepared-data/web-sales-manifest.csv',
+        'manifestFileBucket': 'aws-analytics-reference-architecture-us-east-1',
+        'manifestFileKey': 'datasets/prepared/retail/1GB/web-sale-manifest.csv',
         'triggerTime': '2021-12-24T14:50:00Z', 
         'offset': '30896421', 
     }

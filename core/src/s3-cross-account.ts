@@ -1,9 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { AccountPrincipal } from '@aws-cdk/aws-iam';
-import { Bucket } from '@aws-cdk/aws-s3';
-import { Construct } from '@aws-cdk/core';
+import { AccountPrincipal } from 'aws-cdk-lib/aws-iam';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Construct } from 'constructs';
 
 /**
  * The props for S3CrossAccount construct
@@ -36,7 +36,7 @@ export interface S3CrossAccountProps {
  *
  * Usage example:
  * ```typescript
- * import * as cdk from '@aws-cdk/core';
+ * import * as cdk from 'aws-cdk-lib';
  * import { S3CrossAccount } from 'aws-analytics-reference-architecture';
  *
  * const exampleApp = new cdk.App();

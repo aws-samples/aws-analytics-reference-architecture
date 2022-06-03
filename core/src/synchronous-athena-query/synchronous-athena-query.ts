@@ -1,13 +1,15 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { PolicyStatement } from '@aws-cdk/aws-iam';
-import { Runtime } from '@aws-cdk/aws-lambda';
-import { RetentionDays } from '@aws-cdk/aws-logs';
-import { Bucket, Location } from '@aws-cdk/aws-s3';
-import { Construct, Aws, CustomResource, Duration, Stack } from '@aws-cdk/core';
-import { Provider } from '@aws-cdk/custom-resources';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Bucket, Location } from 'aws-cdk-lib/aws-s3';
+import { Aws, CustomResource, Duration, Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { Provider } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
+import { PreBundledLayer } from '../common/pre-bundled-layer';
 /**
  * The properties for the SynchronousAthenaQuery construct.
  */
@@ -112,9 +114,10 @@ export class SynchronousAthenaQuery extends Construct {
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
     const athenaQueryStartFn = new PreBundledFunction(this, 'AthenaQueryStartFn', {
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-athena-query/resources/lambdas',
       name: 'SynchronousAthenaCrStart',
+      layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: athenaQueryStartFnPolicy,
       handler: 'lambda.on_event',
       logRetention: RetentionDays.ONE_WEEK,
@@ -142,9 +145,10 @@ export class SynchronousAthenaQuery extends Construct {
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
     const athenaQueryWaitFn = new PreBundledFunction(this, 'AthenaQueryWaitFn', {
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-athena-query/resources/lambdas',
       name: 'SynchronousAthenaCrWait',
+      layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: athenaQueryWaitFnPolicy,
       handler: 'lambda.is_complete',
       logRetention: RetentionDays.ONE_WEEK,

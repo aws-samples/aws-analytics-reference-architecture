@@ -8,11 +8,11 @@
  */
 
 
-import { App, Stack } from '@aws-cdk/core';
+import { App, Stack } from 'aws-cdk-lib';
 import { ContextOptions } from '../../src/common/context-options';
 import * as trackedConstruct from '../../src/common/tracked-construct';
 
-import '@aws-cdk/assert/jest';
+
 
 test('tracked construct add tracking code to description if not explicitely disabled', () => {
 

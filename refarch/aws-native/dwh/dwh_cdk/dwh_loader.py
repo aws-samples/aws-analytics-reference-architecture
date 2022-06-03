@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: MIT-0
 
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    Aws,
+    Duration,
     aws_iam as _iam,
     aws_stepfunctions as _sfn,
     aws_stepfunctions_tasks as _sfn_tasks,
@@ -12,17 +14,17 @@ from aws_cdk import (
 )
 
 from aws_cdk.aws_secretsmanager import Secret
-from aws_cdk.core import Stack
+from aws_cdk import Stack
 import aws_cdk.aws_lambda as _lambda
 import subprocess
 
 import common.common_cdk.config as _config
 
 
-class DwhLoader(core.Construct):
+class DwhLoader(Construct):
 
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id: str,
                  redshift_cluster_name: str,
                  user_secret: Secret) -> None:
@@ -107,11 +109,11 @@ class DwhLoader(core.Construct):
                 'PROCEDURE': _config.Redshift.ETL_PROCEDURE,
                 'SECRET_ARN': user_secret.secret_arn,
                 'DATABASE': _config.Redshift.DATABASE,
-                'REGION': core.Aws.REGION,
+                'REGION': Aws.REGION,
                 'SCHEMA': _config.Redshift.SCHEMA
             },
             layers=[requirements_layer],
-            timeout=core.Duration.seconds(30),
+            timeout=Duration.seconds(30),
             role=dwh_loader_role
         )
 
@@ -123,7 +125,7 @@ class DwhLoader(core.Construct):
 
         dwh_loader_wait = _sfn.Wait(
             self, 'Wait',
-            time=_sfn.WaitTime.duration(core.Duration.seconds(30))
+            time=_sfn.WaitTime.duration(Duration.seconds(30))
         )
 
         dwh_loader_complete = _sfn.Choice(
@@ -154,7 +156,7 @@ class DwhLoader(core.Construct):
         dwh_loader_stepfunctions = _sfn.StateMachine(
             self, 'StepFunctions',
             definition=definition,
-            timeout=core.Duration.minutes(30)
+            timeout=Duration.minutes(30)
         )
 
         step_trigger = _events.Rule(

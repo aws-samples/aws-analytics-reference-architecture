@@ -1,7 +1,8 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-from aws_cdk import core
+from constructs import Construct
+from aws_cdk import Stack, CfnParameter, Fn, CfnOutput
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_secretsmanager as sm
 import aws_cdk.custom_resources as cr
@@ -11,17 +12,17 @@ from dataviz_redshift.redshift_config import Config as cfg
 from dataviz_redshift.qs_redshift_dataset import QuickSightRedshiftDataset
 from dataviz_redshift.qs_redshift_analysis import QuickSightRedshiftAnalysis
 
-class DataVizRedshiftStack(core.Stack):
+class DataVizRedshiftStack(Stack):
 
-    def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # Add the VPC connection arn as an input parameter
-        vpc_conn_arn = core.CfnParameter(self, "VpcConnectionArn", type="String",
+        vpc_conn_arn = CfnParameter(self, "VpcConnectionArn", type="String",
             description="The Arn of the VPC connection to use for Redshift.")
 
-        quicksight_group_arn = core.Fn.import_value('ara-QuickSight-Group-Arn')
-        secret_arn = core.Fn.import_value('ara-QuickSight-Redshift-Secret-Arn')
+        quicksight_group_arn = Fn.import_value('ara-QuickSight-Group-Arn')
+        secret_arn = Fn.import_value('ara-QuickSight-Redshift-Secret-Arn')
 
         # Create the custom resource policy with the necessary permissions
         iam_policy = cr.AwsCustomResourcePolicy.from_statements(
@@ -54,7 +55,7 @@ class DataVizRedshiftStack(core.Stack):
 
         lambda_provider = cr.Provider(self, id='LambdaProvider', on_event_handler=redshift_datasource_lambda)
 
-        responseLamb = core.CustomResource(self, 'RedshiftDatasourceResource',
+        responseLamb = CustomResource(self, 'RedshiftDatasourceResource',
                                           service_token=lambda_provider.service_token,
                                           properties={
                                                 'Secret_arn': secret_arn,
@@ -67,7 +68,7 @@ class DataVizRedshiftStack(core.Stack):
 
         redshift_datasource_arn = responseLamb.get_att_string('datasource_arn')
 
-        core.CfnOutput(
+        CfnOutput(
             self, "RedshiftDataSourceArn",
             description="Redshift Data Source Arn",
             value=redshift_datasource_arn

@@ -22,7 +22,7 @@ The bucket has the following default properties:
 All standard S3 Bucket properties can be provided to not use the defaults.
 Usage example:
 ```typescript
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
 import { AraBucket } from 'aws-analytics-reference-architecture';
 
 const exampleApp = new cdk.App();
@@ -92,7 +92,7 @@ account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 
 ###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.AraBucket.applyRemovalPolicy.parameter.policy"></a>
 
-- *Type:* @aws-cdk/core.RemovalPolicy
+- *Type:* aws-cdk-lib.RemovalPolicy
 
 ---
 
@@ -117,7 +117,7 @@ Adds a bucket notification event destination.
 
 ###### `event`<sup>Required</sup> <a name="event" id="aws-analytics-reference-architecture.AraBucket.addEventNotification.parameter.event"></a>
 
-- *Type:* @aws-cdk/aws-s3.EventType
+- *Type:* aws-cdk-lib.aws_s3.EventType
 
 The event to trigger the notification.
 
@@ -125,7 +125,7 @@ The event to trigger the notification.
 
 ###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.AraBucket.addEventNotification.parameter.dest"></a>
 
-- *Type:* @aws-cdk/aws-s3.IBucketNotificationDestination
+- *Type:* aws-cdk-lib.aws_s3.IBucketNotificationDestination
 
 The notification destination (Lambda, SNS Topic or SQS Queue).
 
@@ -133,7 +133,7 @@ The notification destination (Lambda, SNS Topic or SQS Queue).
 
 ###### `filters`<sup>Required</sup> <a name="filters" id="aws-analytics-reference-architecture.AraBucket.addEventNotification.parameter.filters"></a>
 
-- *Type:* @aws-cdk/aws-s3.NotificationKeyFilter
+- *Type:* aws-cdk-lib.aws_s3.NotificationKeyFilter
 
 S3 object key filter rules to determine which objects trigger this event.
 
@@ -156,7 +156,7 @@ This is identical to calling
 
 ###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.AraBucket.addObjectCreatedNotification.parameter.dest"></a>
 
-- *Type:* @aws-cdk/aws-s3.IBucketNotificationDestination
+- *Type:* aws-cdk-lib.aws_s3.IBucketNotificationDestination
 
 The notification destination (see onEvent).
 
@@ -164,7 +164,7 @@ The notification destination (see onEvent).
 
 ###### `filters`<sup>Required</sup> <a name="filters" id="aws-analytics-reference-architecture.AraBucket.addObjectCreatedNotification.parameter.filters"></a>
 
-- *Type:* @aws-cdk/aws-s3.NotificationKeyFilter
+- *Type:* aws-cdk-lib.aws_s3.NotificationKeyFilter
 
 Filters (see onEvent).
 
@@ -183,7 +183,7 @@ This is identical to calling
 
 ###### `dest`<sup>Required</sup> <a name="dest" id="aws-analytics-reference-architecture.AraBucket.addObjectRemovedNotification.parameter.dest"></a>
 
-- *Type:* @aws-cdk/aws-s3.IBucketNotificationDestination
+- *Type:* aws-cdk-lib.aws_s3.IBucketNotificationDestination
 
 The notification destination (see onEvent).
 
@@ -191,7 +191,7 @@ The notification destination (see onEvent).
 
 ###### `filters`<sup>Required</sup> <a name="filters" id="aws-analytics-reference-architecture.AraBucket.addObjectRemovedNotification.parameter.filters"></a>
 
-- *Type:* @aws-cdk/aws-s3.NotificationKeyFilter
+- *Type:* aws-cdk-lib.aws_s3.NotificationKeyFilter
 
 Filters (see onEvent).
 
@@ -213,7 +213,7 @@ So it's safest to do nothing in these cases.
 
 ###### `permission`<sup>Required</sup> <a name="permission" id="aws-analytics-reference-architecture.AraBucket.addToResourcePolicy.parameter.permission"></a>
 
-- *Type:* @aws-cdk/aws-iam.PolicyStatement
+- *Type:* aws-cdk-lib.aws_iam.PolicyStatement
 
 the policy statement to be added to the bucket's policy.
 
@@ -249,7 +249,7 @@ Grants s3:DeleteObject* permission to an IAM principal for objects in this bucke
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantDelete.parameter.identity"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 The principal.
 
@@ -321,7 +321,7 @@ of written files will also be granted to the same principal.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantPut.parameter.identity"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 The principal.
 
@@ -349,7 +349,7 @@ in this case, if you need to modify object ACLs, call this method explicitly.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantPutAcl.parameter.identity"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 ---
 
@@ -372,7 +372,7 @@ of the bucket will also be granted to the same principal.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantRead.parameter.identity"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 The principal.
 
@@ -407,7 +407,7 @@ use the {@link grantPutAcl} method.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantReadWrite.parameter.identity"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 ---
 
@@ -438,7 +438,7 @@ use the {@link grantPutAcl} method.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantWrite.parameter.identity"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 ---
 
@@ -469,7 +469,7 @@ The id of the rule.
 
 ###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailEvent.parameter.options"></a>
 
-- *Type:* @aws-cdk/aws-s3.OnCloudTrailBucketEventOptions
+- *Type:* aws-cdk-lib.aws_s3.OnCloudTrailBucketEventOptions
 
 Options for adding the rule.
 
@@ -500,7 +500,7 @@ The id of the rule.
 
 ###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailPutObject.parameter.options"></a>
 
-- *Type:* @aws-cdk/aws-s3.OnCloudTrailBucketEventOptions
+- *Type:* aws-cdk-lib.aws_s3.OnCloudTrailBucketEventOptions
 
 Options for adding the rule.
 
@@ -534,7 +534,7 @@ The id of the rule.
 
 ###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.onCloudTrailWriteObject.parameter.options"></a>
 
-- *Type:* @aws-cdk/aws-s3.OnCloudTrailBucketEventOptions
+- *Type:* aws-cdk-lib.aws_s3.OnCloudTrailBucketEventOptions
 
 Options for adding the rule.
 
@@ -589,7 +589,7 @@ bucket is returned.
 
 ###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.transferAccelerationUrlForObject.parameter.options"></a>
 
-- *Type:* @aws-cdk/aws-s3.TransferAccelerationUrlOptions
+- *Type:* aws-cdk-lib.aws_s3.TransferAccelerationUrlOptions
 
 Options for generating URL.
 
@@ -644,7 +644,7 @@ bucket is returned.
 
 ###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.AraBucket.virtualHostedUrlForObject.parameter.options"></a>
 
-- *Type:* @aws-cdk/aws-s3.VirtualHostedStyleUrlOptions
+- *Type:* aws-cdk-lib.aws_s3.VirtualHostedStyleUrlOptions
 
 Options for generating URL.
 
@@ -660,7 +660,7 @@ Adds a cross-origin access configuration for objects in an Amazon S3 bucket.
 
 ###### `rule`<sup>Required</sup> <a name="rule" id="aws-analytics-reference-architecture.AraBucket.addCorsRule.parameter.rule"></a>
 
-- *Type:* @aws-cdk/aws-s3.CorsRule
+- *Type:* aws-cdk-lib.aws_s3.CorsRule
 
 The CORS configuration rule to add.
 
@@ -676,7 +676,7 @@ Add an inventory configuration.
 
 ###### `inventory`<sup>Required</sup> <a name="inventory" id="aws-analytics-reference-architecture.AraBucket.addInventory.parameter.inventory"></a>
 
-- *Type:* @aws-cdk/aws-s3.Inventory
+- *Type:* aws-cdk-lib.aws_s3.Inventory
 
 configuration to add.
 
@@ -692,7 +692,7 @@ Add a lifecycle rule to the bucket.
 
 ###### `rule`<sup>Required</sup> <a name="rule" id="aws-analytics-reference-architecture.AraBucket.addLifecycleRule.parameter.rule"></a>
 
-- *Type:* @aws-cdk/aws-s3.LifecycleRule
+- *Type:* aws-cdk-lib.aws_s3.LifecycleRule
 
 The rule to add.
 
@@ -708,7 +708,7 @@ Adds a metrics configuration for the CloudWatch request metrics from the bucket.
 
 ###### `metric`<sup>Required</sup> <a name="metric" id="aws-analytics-reference-architecture.AraBucket.addMetric.parameter.metric"></a>
 
-- *Type:* @aws-cdk/aws-s3.BucketMetrics
+- *Type:* aws-cdk-lib.aws_s3.BucketMetrics
 
 The metric configuration to add.
 
@@ -718,7 +718,7 @@ The metric configuration to add.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AraBucket.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketArn">fromBucketArn</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketAttributes">fromBucketAttributes</a></code> | Creates a Bucket construct that represents an external bucket. |
@@ -736,11 +736,27 @@ import { AraBucket } from 'aws-analytics-reference-architecture'
 AraBucket.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.AraBucket.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -756,7 +772,7 @@ Check whether the given construct is a Resource.
 
 ###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.AraBucket.isResource.parameter.construct"></a>
 
-- *Type:* @aws-cdk/core.IConstruct
+- *Type:* constructs.IConstruct
 
 ---
 
@@ -814,7 +830,7 @@ The construct's name.
 
 ###### `attrs`<sup>Required</sup> <a name="attrs" id="aws-analytics-reference-architecture.AraBucket.fromBucketAttributes.parameter.attrs"></a>
 
-- *Type:* @aws-cdk/aws-s3.BucketAttributes
+- *Type:* aws-cdk-lib.aws_s3.BucketAttributes
 
 A `BucketAttributes` object.
 
@@ -881,7 +897,7 @@ If no bucket exists, it creates a new one based on the provided properties.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.AraBucket.getOrCreate.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 ---
 
@@ -895,9 +911,9 @@ If no bucket exists, it creates a new one based on the provided properties.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.env">env</a></code> | <code>aws-cdk-lib.ResourceEnvironment</code> | The environment this resource belongs to. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.stack">stack</a></code> | <code>aws-cdk-lib.Stack</code> | The stack in which this resource is defined. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketArn">bucketArn</a></code> | <code>string</code> | The ARN of the bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketDomainName">bucketDomainName</a></code> | <code>string</code> | The IPv4 DNS name of the specified bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketDualStackDomainName">bucketDualStackDomainName</a></code> | <code>string</code> | The IPv6 DNS name of the specified bucket. |
@@ -905,21 +921,21 @@ If no bucket exists, it creates a new one based on the provided properties.
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketRegionalDomainName">bucketRegionalDomainName</a></code> | <code>string</code> | The regional domain name of the specified bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketWebsiteDomainName">bucketWebsiteDomainName</a></code> | <code>string</code> | The Domain name of the static website. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.property.bucketWebsiteUrl">bucketWebsiteUrl</a></code> | <code>string</code> | The URL of the static website. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.encryptionKey">encryptionKey</a></code> | <code>@aws-cdk/aws-kms.IKey</code> | Optional KMS encryption key associated with this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.encryptionKey">encryptionKey</a></code> | <code>aws-cdk-lib.aws_kms.IKey</code> | Optional KMS encryption key associated with this bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.property.isWebsite">isWebsite</a></code> | <code>boolean</code> | If this bucket has been configured for static website hosting. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.policy">policy</a></code> | <code>@aws-cdk/aws-s3.BucketPolicy</code> | The resource policy associated with this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.property.policy">policy</a></code> | <code>aws-cdk-lib.aws_s3.BucketPolicy</code> | The resource policy associated with this bucket. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.AraBucket.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -929,7 +945,7 @@ The construct tree node associated with this construct.
 public readonly env: ResourceEnvironment;
 ```
 
-- *Type:* @aws-cdk/core.ResourceEnvironment
+- *Type:* aws-cdk-lib.ResourceEnvironment
 
 The environment this resource belongs to.
 
@@ -948,7 +964,7 @@ that might be different than the stack they were imported into.
 public readonly stack: Stack;
 ```
 
-- *Type:* @aws-cdk/core.Stack
+- *Type:* aws-cdk-lib.Stack
 
 The stack in which this resource is defined.
 
@@ -1044,7 +1060,7 @@ The URL of the static website.
 public readonly encryptionKey: IKey;
 ```
 
-- *Type:* @aws-cdk/aws-kms.IKey
+- *Type:* aws-cdk-lib.aws_kms.IKey
 
 Optional KMS encryption key associated with this bucket.
 
@@ -1068,7 +1084,7 @@ If this bucket has been configured for static website hosting.
 public readonly policy: BucketPolicy;
 ```
 
-- *Type:* @aws-cdk/aws-s3.BucketPolicy
+- *Type:* aws-cdk-lib.aws_s3.BucketPolicy
 
 The resource policy associated with this bucket.
 
@@ -1092,14 +1108,14 @@ new AthenaDemoSetup(scope: Construct, id: string)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
 
 ---
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -1133,7 +1149,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -1145,11 +1161,27 @@ import { AthenaDemoSetup } from 'aws-analytics-reference-architecture'
 AthenaDemoSetup.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.AthenaDemoSetup.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -1157,21 +1189,21 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.athenaWorkgroup">athenaWorkgroup</a></code> | <code>@aws-cdk/aws-athena.CfnWorkGroup</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.resultBucket">resultBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.athenaWorkgroup">athenaWorkgroup</a></code> | <code>aws-cdk-lib.aws_athena.CfnWorkGroup</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.property.resultBucket">resultBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.AthenaDemoSetup.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -1181,7 +1213,7 @@ The construct tree node associated with this construct.
 public readonly athenaWorkgroup: CfnWorkGroup;
 ```
 
-- *Type:* @aws-cdk/aws-athena.CfnWorkGroup
+- *Type:* aws-cdk-lib.aws_athena.CfnWorkGroup
 
 ---
 
@@ -1191,7 +1223,7 @@ public readonly athenaWorkgroup: CfnWorkGroup;
 public readonly resultBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 ---
 
@@ -1236,7 +1268,7 @@ new BatchReplayer(scope: Construct, id: string, props: BatchReplayerProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps">BatchReplayerProps</a></code> | the BatchReplayer [properties]{@link BatchReplayerProps}. |
 
@@ -1244,7 +1276,7 @@ new BatchReplayer(scope: Construct, id: string, props: BatchReplayerProps)
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.BatchReplayer.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -1286,7 +1318,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -1298,11 +1330,27 @@ import { BatchReplayer } from 'aws-analytics-reference-architecture'
 BatchReplayer.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.BatchReplayer.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -1310,10 +1358,10 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | Dataset used for replay. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.frequency">frequency</a></code> | <code>number</code> | Frequency (in Seconds) of the replaying. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | Sink bucket where the batch replayer will put data in. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket">sinkBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | Sink bucket where the batch replayer will put data in. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | Maximum file size for each output file. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | Sink object key where the batch replayer will put data in. |
 
@@ -1322,12 +1370,12 @@ Return whether the given object is a Construct.
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.BatchReplayer.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -1364,7 +1412,7 @@ for every given frequency and replay the data in that period
 public readonly sinkBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 Sink bucket where the batch replayer will put data in.
 
@@ -1400,183 +1448,6 @@ Sink object key where the batch replayer will put data in.
 ---
 
 
-### DataGenerator <a name="DataGenerator" id="aws-analytics-reference-architecture.DataGenerator"></a>
-
-DataGenerator Construct to replay data from an existing dataset into a target replacing datetime to current datetime Target can be an Amazon S3 bucket or an Amazon Kinesis Data Stream.
-
-DataGenerator can use pre-defined or custom datasets available in the [Dataset]{@link Dataset} Class
-
-This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
-
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DataGenerator.Initializer"></a>
-
-```typescript
-import { DataGenerator } from 'aws-analytics-reference-architecture'
-
-new DataGenerator(scope: Construct, id: string, props: DataGeneratorProps)
-```
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataGeneratorProps">DataGeneratorProps</a></code> | the DataGenerator [properties]{@link DataGeneratorProps}. |
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.DataGenerator.Initializer.parameter.scope"></a>
-
-- *Type:* @aws-cdk/core.Construct
-
-the Scope of the CDK Construct.
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.DataGenerator.Initializer.parameter.id"></a>
-
-- *Type:* string
-
-the ID of the CDK Construct.
-
----
-
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.DataGenerator.Initializer.parameter.props"></a>
-
-- *Type:* <a href="#aws-analytics-reference-architecture.DataGeneratorProps">DataGeneratorProps</a>
-
-the DataGenerator [properties]{@link DataGeneratorProps}.
-
----
-
-#### Methods <a name="Methods" id="Methods"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.toString">toString</a></code> | Returns a string representation of this construct. |
-
----
-
-##### ~~`toString`~~ <a name="toString" id="aws-analytics-reference-architecture.DataGenerator.toString"></a>
-
-```typescript
-public toString(): string
-```
-
-Returns a string representation of this construct.
-
-#### Static Functions <a name="Static Functions" id="Static Functions"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
-
----
-
-##### ~~`isConstruct`~~ <a name="isConstruct" id="aws-analytics-reference-architecture.DataGenerator.isConstruct"></a>
-
-```typescript
-import { DataGenerator } from 'aws-analytics-reference-architecture'
-
-DataGenerator.isConstruct(x: any)
-```
-
-Return whether the given object is a Construct.
-
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.DataGenerator.isConstruct.parameter.x"></a>
-
-- *Type:* any
-
----
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | Dataset used to generate data. |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.property.frequency">frequency</a></code> | <code>number</code> | Frequency (in Seconds) of the data generation. |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.property.sinkArn">sinkArn</a></code> | <code>string</code> | Sink Arn to receive the generated data. |
-
----
-
-##### ~~`node`~~<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataGenerator.property.node"></a>
-
-- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
-
-```typescript
-public readonly node: ConstructNode;
-```
-
-- *Type:* @aws-cdk/core.ConstructNode
-
-The construct tree node associated with this construct.
-
----
-
-##### ~~`dataset`~~<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGenerator.property.dataset"></a>
-
-- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
-
-```typescript
-public readonly dataset: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-Dataset used to generate data.
-
----
-
-##### ~~`frequency`~~<sup>Required</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGenerator.property.frequency"></a>
-
-- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
-
-```typescript
-public readonly frequency: number;
-```
-
-- *Type:* number
-
-Frequency (in Seconds) of the data generation.
-
----
-
-##### ~~`sinkArn`~~<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGenerator.property.sinkArn"></a>
-
-- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
-
-```typescript
-public readonly sinkArn: string;
-```
-
-- *Type:* string
-
-Sink Arn to receive the generated data.
-
----
-
-#### Constants <a name="Constants" id="Constants"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataGenerator.property.DATA_GENERATOR_DATABASE">DATA_GENERATOR_DATABASE</a></code> | <code>string</code> | AWS Glue Database name used by the DataGenerator. |
-
----
-
-##### ~~`DATA_GENERATOR_DATABASE`~~<sup>Required</sup> <a name="DATA_GENERATOR_DATABASE" id="aws-analytics-reference-architecture.DataGenerator.property.DATA_GENERATOR_DATABASE"></a>
-
-- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
-
-```typescript
-public readonly DATA_GENERATOR_DATABASE: string;
-```
-
-- *Type:* string
-
-AWS Glue Database name used by the DataGenerator.
-
----
-
 ### DataLakeCatalog <a name="DataLakeCatalog" id="aws-analytics-reference-architecture.DataLakeCatalog"></a>
 
 A Data Lake Catalog composed of 3 AWS Glue Database configured with AWS best practices:   Databases for Raw/Cleaned/Transformed data,.
@@ -1591,14 +1462,14 @@ new DataLakeCatalog(scope: Construct, id: string)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
 
 ---
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.DataLakeCatalog.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -1632,7 +1503,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -1644,11 +1515,27 @@ import { DataLakeCatalog } from 'aws-analytics-reference-architecture'
 DataLakeCatalog.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.DataLakeCatalog.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -1656,22 +1543,22 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.property.cleanDatabase">cleanDatabase</a></code> | <code>@aws-cdk/aws-glue.Database</code> | AWS Glue Database for Clean data. |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.property.rawDatabase">rawDatabase</a></code> | <code>@aws-cdk/aws-glue.Database</code> | AWS Glue Database for Raw data. |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.property.transformDatabase">transformDatabase</a></code> | <code>@aws-cdk/aws-glue.Database</code> | AWS Glue Database for Transform data. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.property.cleanDatabase">cleanDatabase</a></code> | <code>@aws-cdk/aws-glue-alpha.Database</code> | AWS Glue Database for Clean data. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.property.rawDatabase">rawDatabase</a></code> | <code>@aws-cdk/aws-glue-alpha.Database</code> | AWS Glue Database for Raw data. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeCatalog.property.transformDatabase">transformDatabase</a></code> | <code>@aws-cdk/aws-glue-alpha.Database</code> | AWS Glue Database for Transform data. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataLakeCatalog.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -1681,7 +1568,7 @@ The construct tree node associated with this construct.
 public readonly cleanDatabase: Database;
 ```
 
-- *Type:* @aws-cdk/aws-glue.Database
+- *Type:* @aws-cdk/aws-glue-alpha.Database
 
 AWS Glue Database for Clean data.
 
@@ -1693,7 +1580,7 @@ AWS Glue Database for Clean data.
 public readonly rawDatabase: Database;
 ```
 
-- *Type:* @aws-cdk/aws-glue.Database
+- *Type:* @aws-cdk/aws-glue-alpha.Database
 
 AWS Glue Database for Raw data.
 
@@ -1705,7 +1592,7 @@ AWS Glue Database for Raw data.
 public readonly transformDatabase: Database;
 ```
 
-- *Type:* @aws-cdk/aws-glue.Database
+- *Type:* @aws-cdk/aws-glue-alpha.Database
 
 AWS Glue Database for Transform data.
 
@@ -1729,7 +1616,7 @@ new DataLakeExporter(scope: Construct, id: string, props: DataLakeExporterProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps">DataLakeExporterProps</a></code> | *No description.* |
 
@@ -1737,7 +1624,7 @@ new DataLakeExporter(scope: Construct, id: string, props: DataLakeExporterProps)
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.DataLakeExporter.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 ---
 
@@ -1773,7 +1660,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -1785,11 +1672,27 @@ import { DataLakeExporter } from 'aws-analytics-reference-architecture'
 DataLakeExporter.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.DataLakeExporter.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -1797,20 +1700,20 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.property.cfnIngestionStream">cfnIngestionStream</a></code> | <code>@aws-cdk/aws-kinesisfirehose.CfnDeliveryStream</code> | Constructs a new instance of the DataLakeExporter class. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporter.property.cfnIngestionStream">cfnIngestionStream</a></code> | <code>aws-cdk-lib.aws_kinesisfirehose.CfnDeliveryStream</code> | Constructs a new instance of the DataLakeExporter class. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataLakeExporter.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -1820,7 +1723,7 @@ The construct tree node associated with this construct.
 public readonly cfnIngestionStream: CfnDeliveryStream;
 ```
 
-- *Type:* @aws-cdk/aws-kinesisfirehose.CfnDeliveryStream
+- *Type:* aws-cdk-lib.aws_kinesisfirehose.CfnDeliveryStream
 
 Constructs a new instance of the DataLakeExporter class.
 
@@ -1850,7 +1753,7 @@ For custom requirements, consider using {@link AraBucket}.
 
 Usage example:
 ```typescript
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
 import { DataLakeStorage } from 'aws-analytics-reference-architecture';
 
 const exampleApp = new cdk.App();
@@ -1876,7 +1779,7 @@ new DataLakeStorage(scope: Construct, id: string, props?: DataLakeStorageProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataLakeStorageProps">DataLakeStorageProps</a></code> | the DataLakeStorageProps properties. |
 
@@ -1884,7 +1787,7 @@ new DataLakeStorage(scope: Construct, id: string, props?: DataLakeStorageProps)
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -1926,7 +1829,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -1938,11 +1841,27 @@ import { DataLakeStorage } from 'aws-analytics-reference-architecture'
 DataLakeStorage.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.DataLakeStorage.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -1950,22 +1869,22 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.cleanBucket">cleanBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.rawBucket">rawBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.transformBucket">transformBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.cleanBucket">cleanBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.rawBucket">rawBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.transformBucket">transformBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataLakeStorage.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -1975,7 +1894,7 @@ The construct tree node associated with this construct.
 public readonly cleanBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 ---
 
@@ -1985,7 +1904,7 @@ public readonly cleanBucket: Bucket;
 public readonly rawBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 ---
 
@@ -1995,7 +1914,7 @@ public readonly rawBucket: Bucket;
 public readonly transformBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 ---
 
@@ -2014,15 +1933,15 @@ new Ec2SsmRole(scope: Construct, id: string, props: RoleProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-iam.RoleProps</code> | the RoleProps [properties]{@link RoleProps}. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.Initializer.parameter.props">props</a></code> | <code>aws-cdk-lib.aws_iam.RoleProps</code> | the RoleProps [properties]{@link RoleProps}. |
 
 ---
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.Ec2SsmRole.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -2038,7 +1957,7 @@ the ID of the CDK Construct.
 
 ##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.Ec2SsmRole.Initializer.parameter.props"></a>
 
-- *Type:* @aws-cdk/aws-iam.RoleProps
+- *Type:* aws-cdk-lib.aws_iam.RoleProps
 
 the RoleProps [properties]{@link RoleProps}.
 
@@ -2086,7 +2005,7 @@ account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 
 ###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.Ec2SsmRole.applyRemovalPolicy.parameter.policy"></a>
 
-- *Type:* @aws-cdk/core.RemovalPolicy
+- *Type:* aws-cdk-lib.RemovalPolicy
 
 ---
 
@@ -2100,7 +2019,7 @@ Attaches a managed policy to this role.
 
 ###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.Ec2SsmRole.addManagedPolicy.parameter.policy"></a>
 
-- *Type:* @aws-cdk/aws-iam.IManagedPolicy
+- *Type:* aws-cdk-lib.aws_iam.IManagedPolicy
 
 The the managed policy to attach.
 
@@ -2116,7 +2035,7 @@ Add to the policy of this principal.
 
 ###### `statement`<sup>Required</sup> <a name="statement" id="aws-analytics-reference-architecture.Ec2SsmRole.addToPolicy.parameter.statement"></a>
 
-- *Type:* @aws-cdk/aws-iam.PolicyStatement
+- *Type:* aws-cdk-lib.aws_iam.PolicyStatement
 
 ---
 
@@ -2132,7 +2051,7 @@ If there is no default policy attached to this role, it will be created.
 
 ###### `statement`<sup>Required</sup> <a name="statement" id="aws-analytics-reference-architecture.Ec2SsmRole.addToPrincipalPolicy.parameter.statement"></a>
 
-- *Type:* @aws-cdk/aws-iam.PolicyStatement
+- *Type:* aws-cdk-lib.aws_iam.PolicyStatement
 
 The permission statement to add to the policy document.
 
@@ -2148,7 +2067,7 @@ Attaches a policy to this role.
 
 ###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.Ec2SsmRole.attachInlinePolicy.parameter.policy"></a>
 
-- *Type:* @aws-cdk/aws-iam.Policy
+- *Type:* aws-cdk-lib.aws_iam.Policy
 
 The policy to attach.
 
@@ -2164,7 +2083,7 @@ Grant the actions defined in actions to the identity Principal on this resource.
 
 ###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.Ec2SsmRole.grant.parameter.grantee"></a>
 
-- *Type:* @aws-cdk/aws-iam.IPrincipal
+- *Type:* aws-cdk-lib.aws_iam.IPrincipal
 
 ---
 
@@ -2184,7 +2103,7 @@ Grant permissions to the given principal to pass this role.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.Ec2SsmRole.grantPassRole.parameter.identity"></a>
 
-- *Type:* @aws-cdk/aws-iam.IPrincipal
+- *Type:* aws-cdk-lib.aws_iam.IPrincipal
 
 ---
 
@@ -2204,7 +2123,7 @@ Role's policies yourself.
 
 ###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.Ec2SsmRole.withoutPolicyUpdates.parameter.options"></a>
 
-- *Type:* @aws-cdk/aws-iam.WithoutPolicyUpdatesOptions
+- *Type:* aws-cdk-lib.aws_iam.WithoutPolicyUpdatesOptions
 
 ---
 
@@ -2212,7 +2131,7 @@ Role's policies yourself.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleArn">fromRoleArn</a></code> | Import an external role by ARN. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleName">fromRoleName</a></code> | Import an external role by name. |
@@ -2227,11 +2146,27 @@ import { Ec2SsmRole } from 'aws-analytics-reference-architecture'
 Ec2SsmRole.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.Ec2SsmRole.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -2247,7 +2182,7 @@ Check whether the given construct is a Resource.
 
 ###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.Ec2SsmRole.isResource.parameter.construct"></a>
 
-- *Type:* @aws-cdk/core.IConstruct
+- *Type:* constructs.IConstruct
 
 ---
 
@@ -2296,7 +2231,7 @@ the ARN of the role to import.
 
 ###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.Ec2SsmRole.fromRoleArn.parameter.options"></a>
 
-- *Type:* @aws-cdk/aws-iam.FromRoleArnOptions
+- *Type:* aws-cdk-lib.aws_iam.FromRoleArnOptions
 
 allow customizing the behavior of the returned role.
 
@@ -2337,17 +2272,17 @@ the scope's containing Stack is being deployed to.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.env">env</a></code> | <code>aws-cdk-lib.ResourceEnvironment</code> | The environment this resource belongs to. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.stack">stack</a></code> | <code>aws-cdk-lib.Stack</code> | The stack in which this resource is defined. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.assumeRoleAction">assumeRoleAction</a></code> | <code>string</code> | When this Principal is used in an AssumeRole policy, the action to use. |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.grantPrincipal">grantPrincipal</a></code> | <code>@aws-cdk/aws-iam.IPrincipal</code> | The principal to grant permissions to. |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.policyFragment">policyFragment</a></code> | <code>@aws-cdk/aws-iam.PrincipalPolicyFragment</code> | Returns the role. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.grantPrincipal">grantPrincipal</a></code> | <code>aws-cdk-lib.aws_iam.IPrincipal</code> | The principal to grant permissions to. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.policyFragment">policyFragment</a></code> | <code>aws-cdk-lib.aws_iam.PrincipalPolicyFragment</code> | Returns the role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.roleArn">roleArn</a></code> | <code>string</code> | Returns the ARN of this role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.roleId">roleId</a></code> | <code>string</code> | Returns the stable and unique string identifying the role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.roleName">roleName</a></code> | <code>string</code> | Returns the name of the role. |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.assumeRolePolicy">assumeRolePolicy</a></code> | <code>@aws-cdk/aws-iam.PolicyDocument</code> | The assume role policy document associated with this role. |
-| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.permissionsBoundary">permissionsBoundary</a></code> | <code>@aws-cdk/aws-iam.IManagedPolicy</code> | Returns the permissions boundary attached to this role. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.assumeRolePolicy">assumeRolePolicy</a></code> | <code>aws-cdk-lib.aws_iam.PolicyDocument</code> | The assume role policy document associated with this role. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.permissionsBoundary">permissionsBoundary</a></code> | <code>aws-cdk-lib.aws_iam.IManagedPolicy</code> | Returns the permissions boundary attached to this role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.property.principalAccount">principalAccount</a></code> | <code>string</code> | The AWS account ID of this principal. |
 
 ---
@@ -2355,12 +2290,12 @@ the scope's containing Stack is being deployed to.
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.Ec2SsmRole.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -2370,7 +2305,7 @@ The construct tree node associated with this construct.
 public readonly env: ResourceEnvironment;
 ```
 
-- *Type:* @aws-cdk/core.ResourceEnvironment
+- *Type:* aws-cdk-lib.ResourceEnvironment
 
 The environment this resource belongs to.
 
@@ -2389,7 +2324,7 @@ that might be different than the stack they were imported into.
 public readonly stack: Stack;
 ```
 
-- *Type:* @aws-cdk/core.Stack
+- *Type:* aws-cdk-lib.Stack
 
 The stack in which this resource is defined.
 
@@ -2413,7 +2348,7 @@ When this Principal is used in an AssumeRole policy, the action to use.
 public readonly grantPrincipal: IPrincipal;
 ```
 
-- *Type:* @aws-cdk/aws-iam.IPrincipal
+- *Type:* aws-cdk-lib.aws_iam.IPrincipal
 
 The principal to grant permissions to.
 
@@ -2425,7 +2360,7 @@ The principal to grant permissions to.
 public readonly policyFragment: PrincipalPolicyFragment;
 ```
 
-- *Type:* @aws-cdk/aws-iam.PrincipalPolicyFragment
+- *Type:* aws-cdk-lib.aws_iam.PrincipalPolicyFragment
 
 Returns the role.
 
@@ -2476,7 +2411,7 @@ Returns the name of the role.
 public readonly assumeRolePolicy: PolicyDocument;
 ```
 
-- *Type:* @aws-cdk/aws-iam.PolicyDocument
+- *Type:* aws-cdk-lib.aws_iam.PolicyDocument
 
 The assume role policy document associated with this role.
 
@@ -2488,7 +2423,7 @@ The assume role policy document associated with this role.
 public readonly permissionsBoundary: IManagedPolicy;
 ```
 
-- *Type:* @aws-cdk/aws-iam.IManagedPolicy
+- *Type:* aws-cdk-lib.aws_iam.IManagedPolicy
 
 Returns the permissions boundary attached to this role.
 
@@ -2614,7 +2549,7 @@ Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 of the stack where virtual cluster is deployed.
 
@@ -2640,7 +2575,7 @@ CfnOutput can be customized.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the scope of the stack where managed endpoint is deployed.
 
@@ -2701,7 +2636,7 @@ This method makes the created role assumed by the Amazon EKS cluster Open ID Con
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 of the IAM role.
 
@@ -2717,7 +2652,7 @@ of the CDK resource to be created, it should be unique across the stack.
 
 ###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.policy"></a>
 
-- *Type:* @aws-cdk/aws-iam.IManagedPolicy
+- *Type:* aws-cdk-lib.aws_iam.IManagedPolicy
 
 the execution policy to attach to the role.
 
@@ -2759,7 +2694,7 @@ The local path of the yaml podTemplate files to upload.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.getOrCreate">getOrCreate</a></code> | Get an existing EmrEksCluster based on the cluster name property or create a new one only one EKS cluster can exist per stack. |
 
 ---
@@ -2772,11 +2707,27 @@ import { EmrEksCluster } from 'aws-analytics-reference-architecture'
 EmrEksCluster.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.EmrEksCluster.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -2792,7 +2743,7 @@ Get an existing EmrEksCluster based on the cluster name property or create a new
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.getOrCreate.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the CDK scope used to search or create the cluster.
 
@@ -2810,12 +2761,12 @@ the EmrEksClusterProps [properties]{@link EmrEksClusterProps} if created.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.assetBucket">assetBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.assetBucket">assetBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig">criticalDefaultConfig</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster">eksCluster</a></code> | <code>@aws-cdk/aws-eks.Cluster</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig">notebookDefaultConfig</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.podTemplateLocation">podTemplateLocation</a></code> | <code>@aws-cdk/aws-s3.Location</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.podTemplateLocation">podTemplateLocation</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.sharedDefaultConfig">sharedDefaultConfig</a></code> | <code>string</code> | *No description.* |
 
 ---
@@ -2823,12 +2774,12 @@ the EmrEksClusterProps [properties]{@link EmrEksClusterProps} if created.
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.EmrEksCluster.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -2838,7 +2789,7 @@ The construct tree node associated with this construct.
 public readonly assetBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 ---
 
@@ -2858,7 +2809,7 @@ public readonly criticalDefaultConfig: string;
 public readonly eksCluster: Cluster;
 ```
 
-- *Type:* @aws-cdk/aws-eks.Cluster
+- *Type:* aws-cdk-lib.aws_eks.Cluster
 
 ---
 
@@ -2878,7 +2829,7 @@ public readonly notebookDefaultConfig: string;
 public readonly podTemplateLocation: Location;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* aws-cdk-lib.aws_s3.Location
 
 ---
 
@@ -2905,9 +2856,9 @@ Usage example:
 *This example assume that migration SQL files are located in `resources/sql` of the cdk project.*
 ```typescript
 import * as path from 'path';
-import * as ec2 from '@aws-cdk/aws-ec2';
-import * as redshift from '@aws-cdk/aws-redshift';
-import * as cdk from '@aws-cdk/core';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as redshift from '@aws-cdk/aws-redshift-alpha';
+import * as cdk from 'aws-cdk-lib';
 
 import { FlywayRunner } from 'aws-analytics-reference-architecture';
 
@@ -2944,7 +2895,7 @@ new FlywayRunner(scope: Construct, id: string, props: FlywayRunnerProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps">FlywayRunnerProps</a></code> | the FlywayRunner [properties]{@link FlywayRunnerProps}. |
 
@@ -2952,7 +2903,7 @@ new FlywayRunner(scope: Construct, id: string, props: FlywayRunnerProps)
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.FlywayRunner.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -2994,7 +2945,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -3006,11 +2957,27 @@ import { FlywayRunner } from 'aws-analytics-reference-architecture'
 FlywayRunner.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.FlywayRunner.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -3018,20 +2985,20 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.property.runner">runner</a></code> | <code>@aws-cdk/core.CustomResource</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunner.property.runner">runner</a></code> | <code>aws-cdk-lib.CustomResource</code> | *No description.* |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.FlywayRunner.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -3041,7 +3008,7 @@ The construct tree node associated with this construct.
 public readonly runner: CustomResource;
 ```
 
-- *Type:* @aws-cdk/core.CustomResource
+- *Type:* aws-cdk-lib.CustomResource
 
 ---
 
@@ -3074,7 +3041,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate">getOrCreate</a></code> | *No description.* |
 
 ---
@@ -3087,11 +3054,27 @@ import { GlueDefaultRole } from 'aws-analytics-reference-architecture'
 GlueDefaultRole.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.GlueDefaultRole.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -3105,7 +3088,7 @@ GlueDefaultRole.getOrCreate(scope: Construct)
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 ---
 
@@ -3113,20 +3096,20 @@ GlueDefaultRole.getOrCreate(scope: Construct)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole">iamRole</a></code> | <code>@aws-cdk/aws-iam.Role</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole">iamRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.GlueDefaultRole.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -3136,7 +3119,7 @@ The construct tree node associated with this construct.
 public readonly iamRole: Role;
 ```
 
-- *Type:* @aws-cdk/aws-iam.Role
+- *Type:* aws-cdk-lib.aws_iam.Role
 
 ---
 
@@ -3161,7 +3144,7 @@ The CDK construct instantiate the cfnresource in order to register the S3 locati
 
 Usage example:
 ```typescript
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
 import { LakeformationS3Location } from 'aws-analytics-reference-architecture';
 
 const exampleApp = new cdk.App();
@@ -3185,7 +3168,7 @@ new LakeformationS3Location(scope: Construct, id: string, props: LakeFormationS3
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps">LakeFormationS3LocationProps</a></code> | *No description.* |
 
@@ -3193,7 +3176,7 @@ new LakeformationS3Location(scope: Construct, id: string, props: LakeFormationS3
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 ---
 
@@ -3229,7 +3212,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -3241,11 +3224,27 @@ import { LakeformationS3Location } from 'aws-analytics-reference-architecture'
 LakeformationS3Location.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.LakeformationS3Location.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -3253,20 +3252,20 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.property.dataAccessRole">dataAccessRole</a></code> | <code>@aws-cdk/aws-iam.Role</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.property.dataAccessRole">dataAccessRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.LakeformationS3Location.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -3276,7 +3275,7 @@ The construct tree node associated with this construct.
 public readonly dataAccessRole: Role;
 ```
 
-- *Type:* @aws-cdk/aws-iam.Role
+- *Type:* aws-cdk-lib.aws_iam.Role
 
 ---
 
@@ -3361,7 +3360,7 @@ new NotebookPlatform(scope: Construct, id: string, props: NotebookPlatformProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the AWS CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the AWS CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the AWS CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.NotebookPlatformProps">NotebookPlatformProps</a></code> | the DataPlatformNotebooks [properties]{@link NotebookPlatformProps}. |
 
@@ -3369,7 +3368,7 @@ new NotebookPlatform(scope: Construct, id: string, props: NotebookPlatformProps)
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.NotebookPlatform.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the AWS CDK Construct.
 
@@ -3426,7 +3425,7 @@ list of users.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -3438,11 +3437,27 @@ import { NotebookPlatform } from 'aws-analytics-reference-architecture'
 NotebookPlatform.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.NotebookPlatform.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -3450,19 +3465,19 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookPlatform.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.NotebookPlatform.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -3477,7 +3492,7 @@ It's the responsibility of the target account to grant permissions to the releva
 
 Usage example:
 ```typescript
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
 import { S3CrossAccount } from 'aws-analytics-reference-architecture';
 
 const exampleApp = new cdk.App();
@@ -3502,7 +3517,7 @@ new S3CrossAccount(scope: Construct, id: string, props: S3CrossAccountProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps">S3CrossAccountProps</a></code> | *No description.* |
 
@@ -3510,7 +3525,7 @@ new S3CrossAccount(scope: Construct, id: string, props: S3CrossAccountProps)
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.S3CrossAccount.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 ---
 
@@ -3546,7 +3561,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -3558,11 +3573,27 @@ import { S3CrossAccount } from 'aws-analytics-reference-architecture'
 S3CrossAccount.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.S3CrossAccount.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -3570,19 +3601,19 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccount.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.S3CrossAccount.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -3601,15 +3632,15 @@ new SingletonCfnLaunchTemplate(scope: Construct, id: string, props?: CfnLaunchTe
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | - scope in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | - scope in which this resource is defined. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.id">id</a></code> | <code>string</code> | - scoped id of the resource. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-ec2.CfnLaunchTemplateProps</code> | - resource properties. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props">props</a></code> | <code>aws-cdk-lib.aws_ec2.CfnLaunchTemplateProps</code> | - resource properties. |
 
 ---
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 scope in which this resource is defined.
 
@@ -3625,7 +3656,7 @@ scoped id of the resource.
 
 ##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props"></a>
 
-- *Type:* @aws-cdk/aws-ec2.CfnLaunchTemplateProps
+- *Type:* aws-cdk-lib.aws_ec2.CfnLaunchTemplateProps
 
 resource properties.
 
@@ -3703,7 +3734,7 @@ and the dependency will automatically be transferred to the relevant scope.
 
 ###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn.parameter.target"></a>
 
-- *Type:* @aws-cdk/core.CfnResource
+- *Type:* aws-cdk-lib.CfnResource
 
 ---
 
@@ -3868,13 +3899,13 @@ account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 
 ###### `policy`<sup>Optional</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy.parameter.policy"></a>
 
-- *Type:* @aws-cdk/core.RemovalPolicy
+- *Type:* aws-cdk-lib.RemovalPolicy
 
 ---
 
 ###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy.parameter.options"></a>
 
-- *Type:* @aws-cdk/core.RemovalPolicyOptions
+- *Type:* aws-cdk-lib.RemovalPolicyOptions
 
 ---
 
@@ -3931,7 +3962,7 @@ Examines the CloudFormation resource and discloses attributes.
 
 ###### `inspector`<sup>Required</sup> <a name="inspector" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.inspect.parameter.inspector"></a>
 
-- *Type:* @aws-cdk/core.TreeInspector
+- *Type:* aws-cdk-lib.TreeInspector
 
 tree inspector to collect and process attributes.
 
@@ -3941,7 +3972,7 @@ tree inspector to collect and process attributes.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnElement">isCfnElement</a></code> | Returns `true` if a construct is a stack element (i.e. part of the synthesized cloudformation template). |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource">isCfnResource</a></code> | Check whether the given construct is a CfnResource. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate">getOrCreate</a></code> | *No description.* |
@@ -3956,11 +3987,27 @@ import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture
 SingletonCfnLaunchTemplate.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -4009,7 +4056,7 @@ SingletonCfnLaunchTemplate.getOrCreate(scope: Construct, name: string, data: str
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 ---
 
@@ -4029,30 +4076,30 @@ SingletonCfnLaunchTemplate.getOrCreate(scope: Construct, name: string, data: str
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.creationStack">creationStack</a></code> | <code>string[]</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.logicalId">logicalId</a></code> | <code>string</code> | The logical ID for this CloudFormation stack element. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this element is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.stack">stack</a></code> | <code>aws-cdk-lib.Stack</code> | The stack in which this element is defined. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.ref">ref</a></code> | <code>string</code> | Return a string that will be resolved to a CloudFormation `{ Ref }` for this element. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnOptions">cfnOptions</a></code> | <code>@aws-cdk/core.ICfnResourceOptions</code> | Options for this resource, such as condition, update policy etc. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnOptions">cfnOptions</a></code> | <code>aws-cdk-lib.ICfnResourceOptions</code> | Options for this resource, such as condition, update policy etc. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnResourceType">cfnResourceType</a></code> | <code>string</code> | AWS resource type. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrDefaultVersionNumber">attrDefaultVersionNumber</a></code> | <code>string</code> | The default version of the launch template, such as 2. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrLatestVersionNumber">attrLatestVersionNumber</a></code> | <code>string</code> | The latest version of the launch template, such as `5` . |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData">launchTemplateData</a></code> | <code>@aws-cdk/core.IResolvable \| @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateDataProperty</code> | The information for the launch template. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData">launchTemplateData</a></code> | <code>aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty \| aws-cdk-lib.IResolvable</code> | The information for the launch template. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateName">launchTemplateName</a></code> | <code>string</code> | A name for the launch template. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications">tagSpecifications</a></code> | <code>@aws-cdk/core.IResolvable \| @aws-cdk/core.IResolvable \| @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty[]</code> | The tags to apply to the launch template during creation. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications">tagSpecifications</a></code> | <code>aws-cdk-lib.IResolvable \| aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty \| aws-cdk-lib.IResolvable[]</code> | The tags to apply to the launch template during creation. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -4089,7 +4136,7 @@ To override this value, use `overrideLogicalId(newLogicalId)`.
 public readonly stack: Stack;
 ```
 
-- *Type:* @aws-cdk/core.Stack
+- *Type:* aws-cdk-lib.Stack
 
 The stack in which this element is defined.
 
@@ -4118,7 +4165,7 @@ coerce it to an IResolvable through `Lazy.any({ produce: resource.ref })`.
 public readonly cfnOptions: ICfnResourceOptions;
 ```
 
-- *Type:* @aws-cdk/core.ICfnResourceOptions
+- *Type:* aws-cdk-lib.ICfnResourceOptions
 
 Options for this resource, such as condition, update policy etc.
 
@@ -4165,10 +4212,10 @@ The latest version of the launch template, such as `5` .
 ##### `launchTemplateData`<sup>Optional</sup> <a name="launchTemplateData" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData"></a>
 
 ```typescript
-public readonly launchTemplateData: IResolvable | LaunchTemplateDataProperty;
+public readonly launchTemplateData: LaunchTemplateDataProperty | IResolvable;
 ```
 
-- *Type:* @aws-cdk/core.IResolvable | @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateDataProperty
+- *Type:* aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty | aws-cdk-lib.IResolvable
 
 The information for the launch template.
 
@@ -4193,10 +4240,10 @@ A name for the launch template.
 ##### `tagSpecifications`<sup>Optional</sup> <a name="tagSpecifications" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications"></a>
 
 ```typescript
-public readonly tagSpecifications: IResolvable | IResolvable | LaunchTemplateTagSpecificationProperty[];
+public readonly tagSpecifications: IResolvable | LaunchTemplateTagSpecificationProperty | IResolvable[];
 ```
 
-- *Type:* @aws-cdk/core.IResolvable | @aws-cdk/core.IResolvable | @aws-cdk/aws-ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty[]
+- *Type:* aws-cdk-lib.IResolvable | aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty | aws-cdk-lib.IResolvable[]
 
 The tags to apply to the launch template during creation.
 
@@ -4240,7 +4287,7 @@ new SingletonGlueDatabase(scope: Construct, id: string, props: DatabaseProps)
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-glue.DatabaseProps</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-glue-alpha.DatabaseProps</code> | *No description.* |
 
 ---
 
@@ -4258,7 +4305,7 @@ new SingletonGlueDatabase(scope: Construct, id: string, props: DatabaseProps)
 
 ##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.props"></a>
 
-- *Type:* @aws-cdk/aws-glue.DatabaseProps
+- *Type:* @aws-cdk/aws-glue-alpha.DatabaseProps
 
 ---
 
@@ -4297,7 +4344,7 @@ account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 
 ###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonGlueDatabase.applyRemovalPolicy.parameter.policy"></a>
 
-- *Type:* @aws-cdk/core.RemovalPolicy
+- *Type:* aws-cdk-lib.RemovalPolicy
 
 ---
 
@@ -4305,7 +4352,7 @@ account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn">fromDatabaseArn</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate">getOrCreate</a></code> | *No description.* |
@@ -4320,11 +4367,27 @@ import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
 SingletonGlueDatabase.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -4340,7 +4403,7 @@ Check whether the given construct is a Resource.
 
 ###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isResource.parameter.construct"></a>
 
-- *Type:* @aws-cdk/core.IConstruct
+- *Type:* constructs.IConstruct
 
 ---
 
@@ -4380,7 +4443,7 @@ SingletonGlueDatabase.getOrCreate(scope: Construct, name: string)
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 ---
 
@@ -4394,9 +4457,9 @@ SingletonGlueDatabase.getOrCreate(scope: Construct, name: string)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.env">env</a></code> | <code>aws-cdk-lib.ResourceEnvironment</code> | The environment this resource belongs to. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.stack">stack</a></code> | <code>aws-cdk-lib.Stack</code> | The stack in which this resource is defined. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogArn">catalogArn</a></code> | <code>string</code> | ARN of the Glue catalog in which this database is stored. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.catalogId">catalogId</a></code> | <code>string</code> | The catalog id of the database (usually, the AWS account id). |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.property.databaseArn">databaseArn</a></code> | <code>string</code> | ARN of this database. |
@@ -4408,12 +4471,12 @@ SingletonGlueDatabase.getOrCreate(scope: Construct, name: string)
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonGlueDatabase.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -4423,7 +4486,7 @@ The construct tree node associated with this construct.
 public readonly env: ResourceEnvironment;
 ```
 
-- *Type:* @aws-cdk/core.ResourceEnvironment
+- *Type:* aws-cdk-lib.ResourceEnvironment
 
 The environment this resource belongs to.
 
@@ -4442,7 +4505,7 @@ that might be different than the stack they were imported into.
 public readonly stack: Stack;
 ```
 
-- *Type:* @aws-cdk/core.Stack
+- *Type:* aws-cdk-lib.Stack
 
 The stack in which this resource is defined.
 
@@ -4525,7 +4588,7 @@ new SingletonKey(scope: Construct, id: string, props?: KeyProps)
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-kms.KeyProps</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.props">props</a></code> | <code>aws-cdk-lib.aws_kms.KeyProps</code> | *No description.* |
 
 ---
 
@@ -4543,7 +4606,7 @@ new SingletonKey(scope: Construct, id: string, props?: KeyProps)
 
 ##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonKey.Initializer.parameter.props"></a>
 
-- *Type:* @aws-cdk/aws-kms.KeyProps
+- *Type:* aws-cdk-lib.aws_kms.KeyProps
 
 ---
 
@@ -4589,7 +4652,7 @@ account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 
 ###### `policy`<sup>Required</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonKey.applyRemovalPolicy.parameter.policy"></a>
 
-- *Type:* @aws-cdk/core.RemovalPolicy
+- *Type:* aws-cdk-lib.RemovalPolicy
 
 ---
 
@@ -4617,7 +4680,7 @@ Adds a statement to the KMS key resource policy.
 
 ###### `statement`<sup>Required</sup> <a name="statement" id="aws-analytics-reference-architecture.SingletonKey.addToResourcePolicy.parameter.statement"></a>
 
-- *Type:* @aws-cdk/aws-iam.PolicyStatement
+- *Type:* aws-cdk-lib.aws_iam.PolicyStatement
 
 The policy statement to add.
 
@@ -4645,7 +4708,7 @@ must not be empty and so default grants won't work.
 
 ###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grant.parameter.grantee"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 ---
 
@@ -4668,7 +4731,7 @@ to use the key in cryptographic operations (e.g., encrypt, decrypt).
 
 ###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantAdmin.parameter.grantee"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 ---
 
@@ -4682,7 +4745,7 @@ Grant decryption permissions using this key to the given principal.
 
 ###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantDecrypt.parameter.grantee"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 ---
 
@@ -4696,7 +4759,7 @@ Grant encryption permissions using this key to the given principal.
 
 ###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantEncrypt.parameter.grantee"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 ---
 
@@ -4710,7 +4773,7 @@ Grant encryption and decryption permissions using this key to the given principa
 
 ###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantEncryptDecrypt.parameter.grantee"></a>
 
-- *Type:* @aws-cdk/aws-iam.IGrantable
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
 
 ---
 
@@ -4718,7 +4781,7 @@ Grant encryption and decryption permissions using this key to the given principa
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonKey.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromCfnKey">fromCfnKey</a></code> | Create a mutable {@link IKey} based on a low-level {@link CfnKey}. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromKeyArn">fromKeyArn</a></code> | Import an externally defined KMS Key using its ARN. |
@@ -4735,11 +4798,27 @@ import { SingletonKey } from 'aws-analytics-reference-architecture'
 SingletonKey.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonKey.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -4755,7 +4834,7 @@ Check whether the given construct is a Resource.
 
 ###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonKey.isResource.parameter.construct"></a>
 
-- *Type:* @aws-cdk/core.IConstruct
+- *Type:* constructs.IConstruct
 
 ---
 
@@ -4780,7 +4859,7 @@ on which calling those methods would have no effect.
 
 ###### `cfnKey`<sup>Required</sup> <a name="cfnKey" id="aws-analytics-reference-architecture.SingletonKey.fromCfnKey.parameter.cfnKey"></a>
 
-- *Type:* @aws-cdk/aws-kms.CfnKey
+- *Type:* aws-cdk-lib.aws_kms.CfnKey
 
 ---
 
@@ -4858,7 +4937,7 @@ https://docs.aws.amazon.com/cdk/latest/guide/context.html for more information.
 
 ###### `options`<sup>Required</sup> <a name="options" id="aws-analytics-reference-architecture.SingletonKey.fromLookup.parameter.options"></a>
 
-- *Type:* @aws-cdk/aws-kms.KeyLookupOptions
+- *Type:* aws-cdk-lib.aws_kms.KeyLookupOptions
 
 ---
 
@@ -4876,7 +4955,7 @@ If no key exists, it creates a new one.
 
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SingletonKey.getOrCreate.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 ---
 
@@ -4890,9 +4969,9 @@ If no key exists, it creates a new one.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.env">env</a></code> | <code>@aws-cdk/core.ResourceEnvironment</code> | The environment this resource belongs to. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.stack">stack</a></code> | <code>@aws-cdk/core.Stack</code> | The stack in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.env">env</a></code> | <code>aws-cdk-lib.ResourceEnvironment</code> | The environment this resource belongs to. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.stack">stack</a></code> | <code>aws-cdk-lib.Stack</code> | The stack in which this resource is defined. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.keyArn">keyArn</a></code> | <code>string</code> | The ARN of the key. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.property.keyId">keyId</a></code> | <code>string</code> | The ID of the key (the part that looks something like: 1234abcd-12ab-34cd-56ef-1234567890ab). |
 
@@ -4901,12 +4980,12 @@ If no key exists, it creates a new one.
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SingletonKey.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -4916,7 +4995,7 @@ The construct tree node associated with this construct.
 public readonly env: ResourceEnvironment;
 ```
 
-- *Type:* @aws-cdk/core.ResourceEnvironment
+- *Type:* aws-cdk-lib.ResourceEnvironment
 
 The environment this resource belongs to.
 
@@ -4935,7 +5014,7 @@ that might be different than the stack they were imported into.
 public readonly stack: Stack;
 ```
 
-- *Type:* @aws-cdk/core.Stack
+- *Type:* aws-cdk-lib.Stack
 
 The stack in which this resource is defined.
 
@@ -4980,7 +5059,7 @@ new SynchronousAthenaQuery(scope: Construct, id: string, props: SynchronousAthen
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQuery.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQuery.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQuery.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQuery.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQueryProps">SynchronousAthenaQueryProps</a></code> | the CrawlerStartWait [properties]{@link SynchronousAthenaQueryProps}. |
 
@@ -4988,7 +5067,7 @@ new SynchronousAthenaQuery(scope: Construct, id: string, props: SynchronousAthen
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SynchronousAthenaQuery.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -5030,7 +5109,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQuery.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQuery.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -5042,11 +5121,27 @@ import { SynchronousAthenaQuery } from 'aws-analytics-reference-architecture'
 SynchronousAthenaQuery.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SynchronousAthenaQuery.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -5054,19 +5149,19 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQuery.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQuery.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SynchronousAthenaQuery.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -5085,7 +5180,7 @@ new SynchronousCrawler(scope: Construct, id: string, props: SynchronousCrawlerPr
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SynchronousCrawler.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousCrawler.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.SynchronousCrawler.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.SynchronousCrawler.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.SynchronousCrawlerProps">SynchronousCrawlerProps</a></code> | the CrawlerStartWait [properties]{@link SynchronousCrawlerProps}. |
 
@@ -5093,7 +5188,7 @@ new SynchronousCrawler(scope: Construct, id: string, props: SynchronousCrawlerPr
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SynchronousCrawler.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -5135,7 +5230,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SynchronousCrawler.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousCrawler.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -5147,11 +5242,27 @@ import { SynchronousCrawler } from 'aws-analytics-reference-architecture'
 SynchronousCrawler.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SynchronousCrawler.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -5159,19 +5270,19 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SynchronousCrawler.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousCrawler.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SynchronousCrawler.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -5192,7 +5303,7 @@ new TrackedConstruct(scope: Construct, id: string, props: TrackedConstructProps)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.scope">scope</a></code> | <code>@aws-cdk/core.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.TrackedConstructProps">TrackedConstructProps</a></code> | the TrackedConstruct [properties]{@link TrackedConstructProps}. |
 
@@ -5200,7 +5311,7 @@ new TrackedConstruct(scope: Construct, id: string, props: TrackedConstructProps)
 
 ##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.TrackedConstruct.Initializer.parameter.scope"></a>
 
-- *Type:* @aws-cdk/core.Construct
+- *Type:* constructs.Construct
 
 the Scope of the CDK Construct.
 
@@ -5242,7 +5353,7 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.isConstruct">isConstruct</a></code> | Return whether the given object is a Construct. |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
@@ -5254,11 +5365,27 @@ import { TrackedConstruct } from 'aws-analytics-reference-architecture'
 TrackedConstruct.isConstruct(x: any)
 ```
 
-Return whether the given object is a Construct.
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
 
 ###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.TrackedConstruct.isConstruct.parameter.x"></a>
 
 - *Type:* any
+
+Any object.
 
 ---
 
@@ -5266,19 +5393,19 @@ Return whether the given object is a Construct.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.property.node">node</a></code> | <code>@aws-cdk/core.ConstructNode</code> | The construct tree node associated with this construct. |
+| <code><a href="#aws-analytics-reference-architecture.TrackedConstruct.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 
 ---
 
 ##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.TrackedConstruct.property.node"></a>
 
 ```typescript
-public readonly node: ConstructNode;
+public readonly node: Node;
 ```
 
-- *Type:* @aws-cdk/core.ConstructNode
+- *Type:* constructs.Node
 
-The construct tree node associated with this construct.
+The tree node.
 
 ---
 
@@ -5300,23 +5427,23 @@ const araBucketProps: AraBucketProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.bucketName">bucketName</a></code> | <code>string</code> | The Amazon S3 bucket name. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.accessControl">accessControl</a></code> | <code>@aws-cdk/aws-s3.BucketAccessControl</code> | Specifies a canned ACL that grants predefined permissions to the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.accessControl">accessControl</a></code> | <code>aws-cdk-lib.aws_s3.BucketAccessControl</code> | Specifies a canned ACL that grants predefined permissions to the bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.autoDeleteObjects">autoDeleteObjects</a></code> | <code>boolean</code> | Whether all objects should be automatically deleted when the bucket is removed from the stack or when the stack is deleted. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.blockPublicAccess">blockPublicAccess</a></code> | <code>@aws-cdk/aws-s3.BlockPublicAccess</code> | The block public access configuration of this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.blockPublicAccess">blockPublicAccess</a></code> | <code>aws-cdk-lib.aws_s3.BlockPublicAccess</code> | The block public access configuration of this bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.bucketKeyEnabled">bucketKeyEnabled</a></code> | <code>boolean</code> | Specifies whether Amazon S3 should use an S3 Bucket Key with server-side encryption using KMS (SSE-KMS) for new objects in the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.cors">cors</a></code> | <code>@aws-cdk/aws-s3.CorsRule[]</code> | The CORS configuration of this bucket. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.encryption">encryption</a></code> | <code>@aws-cdk/aws-s3.BucketEncryption</code> | The encryption mode for the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.encryptionKey">encryptionKey</a></code> | <code>@aws-cdk/aws-kms.IKey</code> | The KMS key for the bucket encryption. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.cors">cors</a></code> | <code>aws-cdk-lib.aws_s3.CorsRule[]</code> | The CORS configuration of this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.encryption">encryption</a></code> | <code>aws-cdk-lib.aws_s3.BucketEncryption</code> | The encryption mode for the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.encryptionKey">encryptionKey</a></code> | <code>aws-cdk-lib.aws_kms.IKey</code> | The KMS key for the bucket encryption. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.enforceSSL">enforceSSL</a></code> | <code>boolean</code> | Enforces SSL for requests. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.intelligentTieringConfigurations">intelligentTieringConfigurations</a></code> | <code>@aws-cdk/aws-s3.IntelligentTieringConfiguration[]</code> | Inteligent Tiering Configurations. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.inventories">inventories</a></code> | <code>@aws-cdk/aws-s3.Inventory[]</code> | The inventory configuration of the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.lifecycleRules">lifecycleRules</a></code> | <code>@aws-cdk/aws-s3.LifecycleRule[]</code> | Rules that define how Amazon S3 manages objects during their lifetime. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.metrics">metrics</a></code> | <code>@aws-cdk/aws-s3.BucketMetrics[]</code> | The metrics configuration of this bucket. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.notificationsHandlerRole">notificationsHandlerRole</a></code> | <code>@aws-cdk/aws-iam.IRole</code> | The role to be used by the notifications handler. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.objectOwnership">objectOwnership</a></code> | <code>@aws-cdk/aws-s3.ObjectOwnership</code> | The objectOwnership of the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.intelligentTieringConfigurations">intelligentTieringConfigurations</a></code> | <code>aws-cdk-lib.aws_s3.IntelligentTieringConfiguration[]</code> | Inteligent Tiering Configurations. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.inventories">inventories</a></code> | <code>aws-cdk-lib.aws_s3.Inventory[]</code> | The inventory configuration of the bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.lifecycleRules">lifecycleRules</a></code> | <code>aws-cdk-lib.aws_s3.LifecycleRule[]</code> | Rules that define how Amazon S3 manages objects during their lifetime. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.metrics">metrics</a></code> | <code>aws-cdk-lib.aws_s3.BucketMetrics[]</code> | The metrics configuration of this bucket. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.notificationsHandlerRole">notificationsHandlerRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | The role to be used by the notifications handler. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.objectOwnership">objectOwnership</a></code> | <code>aws-cdk-lib.aws_s3.ObjectOwnership</code> | The objectOwnership of the bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.publicReadAccess">publicReadAccess</a></code> | <code>boolean</code> | Grants public read access to all objects in the bucket. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.removalPolicy">removalPolicy</a></code> | <code>@aws-cdk/core.RemovalPolicy</code> | Policy to apply when the bucket is removed from this stack. |
-| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.serverAccessLogsBucket">serverAccessLogsBucket</a></code> | <code>@aws-cdk/aws-s3.IBucket</code> | Destination bucket for the server access logs. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.removalPolicy">removalPolicy</a></code> | <code>aws-cdk-lib.RemovalPolicy</code> | Policy to apply when the bucket is removed from this stack. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.serverAccessLogsBucket">serverAccessLogsBucket</a></code> | <code>aws-cdk-lib.aws_s3.IBucket</code> | Destination bucket for the server access logs. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.serverAccessLogsPrefix">serverAccessLogsPrefix</a></code> | <code>string</code> | The log file prefix to use for the bucket's access logs. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.transferAcceleration">transferAcceleration</a></code> | <code>boolean</code> | Whether this bucket should have transfer acceleration turned on or not. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucketProps.property.versioned">versioned</a></code> | <code>boolean</code> | Whether this bucket should have versioning turned on or not. |
@@ -5343,7 +5470,7 @@ The bucket name is postfixed with the AWS account ID and the AWS region
 public readonly accessControl: BucketAccessControl;
 ```
 
-- *Type:* @aws-cdk/aws-s3.BucketAccessControl
+- *Type:* aws-cdk-lib.aws_s3.BucketAccessControl
 - *Default:* BucketAccessControl.PRIVATE
 
 Specifies a canned ACL that grants predefined permissions to the bucket.
@@ -5371,7 +5498,7 @@ Requires the `removalPolicy` to be set to `RemovalPolicy.DESTROY`.
 public readonly blockPublicAccess: BlockPublicAccess;
 ```
 
-- *Type:* @aws-cdk/aws-s3.BlockPublicAccess
+- *Type:* aws-cdk-lib.aws_s3.BlockPublicAccess
 - *Default:* Block all public access and no ACL or bucket policy can grant public access.
 
 The block public access configuration of this bucket.
@@ -5397,7 +5524,7 @@ Specifies whether Amazon S3 should use an S3 Bucket Key with server-side encrypt
 public readonly cors: CorsRule[];
 ```
 
-- *Type:* @aws-cdk/aws-s3.CorsRule[]
+- *Type:* aws-cdk-lib.aws_s3.CorsRule[]
 - *Default:* No CORS configuration.
 
 The CORS configuration of this bucket.
@@ -5410,7 +5537,7 @@ The CORS configuration of this bucket.
 public readonly encryption: BucketEncryption;
 ```
 
-- *Type:* @aws-cdk/aws-s3.BucketEncryption
+- *Type:* aws-cdk-lib.aws_s3.BucketEncryption
 - *Default:* Server side encryption with AWS managed key (SSE-KMS)
 
 The encryption mode for the bucket.
@@ -5423,7 +5550,7 @@ The encryption mode for the bucket.
 public readonly encryptionKey: IKey;
 ```
 
-- *Type:* @aws-cdk/aws-kms.IKey
+- *Type:* aws-cdk-lib.aws_kms.IKey
 - *Default:* if encryption is KMS, use a unique KMS key across the stack called `AraDefaultKmsKey`
 
 The KMS key for the bucket encryption.
@@ -5449,7 +5576,7 @@ Enforces SSL for requests.
 public readonly intelligentTieringConfigurations: IntelligentTieringConfiguration[];
 ```
 
-- *Type:* @aws-cdk/aws-s3.IntelligentTieringConfiguration[]
+- *Type:* aws-cdk-lib.aws_s3.IntelligentTieringConfiguration[]
 - *Default:* No Intelligent Tiiering Configurations.
 
 Inteligent Tiering Configurations.
@@ -5462,7 +5589,7 @@ Inteligent Tiering Configurations.
 public readonly inventories: Inventory[];
 ```
 
-- *Type:* @aws-cdk/aws-s3.Inventory[]
+- *Type:* aws-cdk-lib.aws_s3.Inventory[]
 - *Default:* No inventory configuration
 
 The inventory configuration of the bucket.
@@ -5475,7 +5602,7 @@ The inventory configuration of the bucket.
 public readonly lifecycleRules: LifecycleRule[];
 ```
 
-- *Type:* @aws-cdk/aws-s3.LifecycleRule[]
+- *Type:* aws-cdk-lib.aws_s3.LifecycleRule[]
 - *Default:* No lifecycle rules.
 
 Rules that define how Amazon S3 manages objects during their lifetime.
@@ -5488,7 +5615,7 @@ Rules that define how Amazon S3 manages objects during their lifetime.
 public readonly metrics: BucketMetrics[];
 ```
 
-- *Type:* @aws-cdk/aws-s3.BucketMetrics[]
+- *Type:* aws-cdk-lib.aws_s3.BucketMetrics[]
 - *Default:* No metrics configuration.
 
 The metrics configuration of this bucket.
@@ -5501,7 +5628,7 @@ The metrics configuration of this bucket.
 public readonly notificationsHandlerRole: IRole;
 ```
 
-- *Type:* @aws-cdk/aws-iam.IRole
+- *Type:* aws-cdk-lib.aws_iam.IRole
 - *Default:* a new role will be created.
 
 The role to be used by the notifications handler.
@@ -5514,7 +5641,7 @@ The role to be used by the notifications handler.
 public readonly objectOwnership: ObjectOwnership;
 ```
 
-- *Type:* @aws-cdk/aws-s3.ObjectOwnership
+- *Type:* aws-cdk-lib.aws_s3.ObjectOwnership
 - *Default:* No ObjectOwnership configuration, uploading account will own the object.
 
 The objectOwnership of the bucket.
@@ -5542,7 +5669,7 @@ Similar to calling `bucket.grantPublicAccess()`
 public readonly removalPolicy: RemovalPolicy;
 ```
 
-- *Type:* @aws-cdk/core.RemovalPolicy
+- *Type:* aws-cdk-lib.RemovalPolicy
 - *Default:* destroy the bucket
 
 Policy to apply when the bucket is removed from this stack.
@@ -5555,7 +5682,7 @@ Policy to apply when the bucket is removed from this stack.
 public readonly serverAccessLogsBucket: IBucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.IBucket
+- *Type:* aws-cdk-lib.aws_s3.IBucket
 - *Default:* if serverAccessLogsPrefix is defined, use a unique bucket across the stack called `s3-access-logs`
 
 Destination bucket for the server access logs.
@@ -5618,7 +5745,7 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The [PreparedDataset]{@link PreparedDataset} used to replay data. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | The S3 Bucket sink where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | The S3 Bucket sink where the BatchReplayer writes data. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>number</code> | The frequency of the replay in seconds. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | The maximum file size in Bytes written by the BatchReplayer. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | The S3 object key sink where the BatchReplayer writes data. |
@@ -5643,7 +5770,7 @@ The [PreparedDataset]{@link PreparedDataset} used to replay data.
 public readonly sinkBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 The S3 Bucket sink where the BatchReplayer writes data.
 
@@ -5690,79 +5817,6 @@ The S3 object key sink where the BatchReplayer writes data.
 
 ---
 
-### DataGeneratorProps <a name="DataGeneratorProps" id="aws-analytics-reference-architecture.DataGeneratorProps"></a>
-
-The properties for DataGenerator Construct.
-
-This construct is deprecated in favor of the [BatchReplayer]{@link BatchReplayer} construct
-
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DataGeneratorProps.Initializer"></a>
-
-```typescript
-import { DataGeneratorProps } from 'aws-analytics-reference-architecture'
-
-const dataGeneratorProps: DataGeneratorProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataGeneratorProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | Source dataset used to generate the data by replying it. |
-| <code><a href="#aws-analytics-reference-architecture.DataGeneratorProps.property.sinkArn">sinkArn</a></code> | <code>string</code> | Sink Arn to receive the generated data. |
-| <code><a href="#aws-analytics-reference-architecture.DataGeneratorProps.property.frequency">frequency</a></code> | <code>number</code> | Frequency (in Seconds) of the data generation. |
-
----
-
-##### ~~`dataset`~~<sup>Required</sup> <a name="dataset" id="aws-analytics-reference-architecture.DataGeneratorProps.property.dataset"></a>
-
-- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
-
-```typescript
-public readonly dataset: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-Source dataset used to generate the data by replying it.
-
-Use a pre-defined [Dataset]{@link Dataset} or create a [custom one]{@link Dataset.constructor}.
-
----
-
-##### ~~`sinkArn`~~<sup>Required</sup> <a name="sinkArn" id="aws-analytics-reference-architecture.DataGeneratorProps.property.sinkArn"></a>
-
-- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
-
-```typescript
-public readonly sinkArn: string;
-```
-
-- *Type:* string
-
-Sink Arn to receive the generated data.
-
-Sink must be an Amazon S3 bucket.
-
----
-
-##### ~~`frequency`~~<sup>Optional</sup> <a name="frequency" id="aws-analytics-reference-architecture.DataGeneratorProps.property.frequency"></a>
-
-- *Deprecated:* replaced by [BatchReplayer]{@link BatchReplayer}
-
-```typescript
-public readonly frequency: number;
-```
-
-- *Type:* number
-- *Default:* 30 min (1800s)
-
-Frequency (in Seconds) of the data generation.
-
-Should be > 60s.
-
----
-
 ### DataLakeExporterProps <a name="DataLakeExporterProps" id="aws-analytics-reference-architecture.DataLakeExporterProps"></a>
 
 The properties for DataLakeExporter Construct.
@@ -5779,10 +5833,10 @@ const dataLakeExporterProps: DataLakeExporterProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkBucket">sinkBucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | Amazon S3 sink Bucket where the data lake exporter write data. |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueDatabase">sourceGlueDatabase</a></code> | <code>@aws-cdk/aws-glue.Database</code> | Source AWS Glue Database containing the schema of the stream. |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueTable">sourceGlueTable</a></code> | <code>@aws-cdk/aws-glue.Table</code> | Source AWS Glue Table containing the schema of the stream. |
-| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceKinesisDataStream">sourceKinesisDataStream</a></code> | <code>@aws-cdk/aws-kinesis.Stream</code> | Source must be an Amazon Kinesis Data Stream. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkBucket">sinkBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | Amazon S3 sink Bucket where the data lake exporter write data. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueDatabase">sourceGlueDatabase</a></code> | <code>@aws-cdk/aws-glue-alpha.Database</code> | Source AWS Glue Database containing the schema of the stream. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceGlueTable">sourceGlueTable</a></code> | <code>@aws-cdk/aws-glue-alpha.Table</code> | Source AWS Glue Table containing the schema of the stream. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sourceKinesisDataStream">sourceKinesisDataStream</a></code> | <code>aws-cdk-lib.aws_kinesis.Stream</code> | Source must be an Amazon Kinesis Data Stream. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.deliveryInterval">deliveryInterval</a></code> | <code>number</code> | Delivery interval in seconds. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.deliverySize">deliverySize</a></code> | <code>number</code> | Maximum delivery size in MB. |
 | <code><a href="#aws-analytics-reference-architecture.DataLakeExporterProps.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | Amazon S3 sink object key where the data lake exporter write data. |
@@ -5795,7 +5849,7 @@ const dataLakeExporterProps: DataLakeExporterProps = { ... }
 public readonly sinkBucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 Amazon S3 sink Bucket where the data lake exporter write data.
 
@@ -5807,7 +5861,7 @@ Amazon S3 sink Bucket where the data lake exporter write data.
 public readonly sourceGlueDatabase: Database;
 ```
 
-- *Type:* @aws-cdk/aws-glue.Database
+- *Type:* @aws-cdk/aws-glue-alpha.Database
 
 Source AWS Glue Database containing the schema of the stream.
 
@@ -5819,7 +5873,7 @@ Source AWS Glue Database containing the schema of the stream.
 public readonly sourceGlueTable: Table;
 ```
 
-- *Type:* @aws-cdk/aws-glue.Table
+- *Type:* @aws-cdk/aws-glue-alpha.Table
 
 Source AWS Glue Table containing the schema of the stream.
 
@@ -5831,7 +5885,7 @@ Source AWS Glue Table containing the schema of the stream.
 public readonly sourceKinesisDataStream: Stream;
 ```
 
-- *Type:* @aws-cdk/aws-kinesis.Stream
+- *Type:* aws-cdk-lib.aws_kinesis.Stream
 
 Source must be an Amazon Kinesis Data Stream.
 
@@ -5983,103 +6037,6 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 
 ---
 
-### DatasetProps <a name="DatasetProps" id="aws-analytics-reference-architecture.DatasetProps"></a>
-
-The properties of the Dataset class.
-
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DatasetProps.Initializer"></a>
-
-```typescript
-import { DatasetProps } from 'aws-analytics-reference-architecture'
-
-const datasetProps: DatasetProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DatasetProps.property.createSourceTable">createSourceTable</a></code> | <code>string</code> | The CREATE TABLE DDL command to create the source AWS Glue Table. |
-| <code><a href="#aws-analytics-reference-architecture.DatasetProps.property.generateData">generateData</a></code> | <code>string</code> | The SELECT query used to generate new data. |
-| <code><a href="#aws-analytics-reference-architecture.DatasetProps.property.location">location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The Amazon S3 Location of the source dataset. |
-| <code><a href="#aws-analytics-reference-architecture.DatasetProps.property.startDatetime">startDatetime</a></code> | <code>string</code> | The minimum datetime value in the dataset used to calculate time offset. |
-| <code><a href="#aws-analytics-reference-architecture.DatasetProps.property.createTargetTable">createTargetTable</a></code> | <code>string</code> | The CREATE TABLE DDL command to create the target AWS Glue Table. |
-
----
-
-##### ~~`createSourceTable`~~<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.DatasetProps.property.createSourceTable"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly createSourceTable: string;
-```
-
-- *Type:* string
-
-The CREATE TABLE DDL command to create the source AWS Glue Table.
-
----
-
-##### ~~`generateData`~~<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.DatasetProps.property.generateData"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly generateData: string;
-```
-
-- *Type:* string
-
-The SELECT query used to generate new data.
-
----
-
-##### ~~`location`~~<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.DatasetProps.property.location"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly location: Location;
-```
-
-- *Type:* @aws-cdk/aws-s3.Location
-
-The Amazon S3 Location of the source dataset.
-
-It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
-
----
-
-##### ~~`startDatetime`~~<sup>Required</sup> <a name="startDatetime" id="aws-analytics-reference-architecture.DatasetProps.property.startDatetime"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly startDatetime: string;
-```
-
-- *Type:* string
-
-The minimum datetime value in the dataset used to calculate time offset.
-
----
-
-##### ~~`createTargetTable`~~<sup>Optional</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.DatasetProps.property.createTargetTable"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly createTargetTable: string;
-```
-
-- *Type:* string
-- *Default:* Use the same DDL as the source table
-
-The CREATE TABLE DDL command to create the target AWS Glue Table.
-
----
-
 ### EmrEksClusterProps <a name="EmrEksClusterProps" id="aws-analytics-reference-architecture.EmrEksClusterProps"></a>
 
 The properties for the EmrEksCluster Construct class.
@@ -6099,9 +6056,9 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodeGroups">defaultNodeGroups</a></code> | <code>boolean</code> | If set to true construct will create default EKS nodegroups. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcAttributes">eksVpcAttributes</a></code> | <code>@aws-cdk/aws-ec2.VpcAttributes</code> | Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcAttributes">eksVpcAttributes</a></code> | <code>aws-cdk-lib.aws_ec2.VpcAttributes</code> | Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups">emrEksNodegroups</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup">EmrEksNodegroup</a>[]</code> | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion">kubernetesVersion</a></code> | <code>@aws-cdk/aws-eks.KubernetesVersion</code> | Kubernetes version for Amazon EKS cluster that will be created. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion">kubernetesVersion</a></code> | <code>aws-cdk-lib.aws_eks.KubernetesVersion</code> | Kubernetes version for Amazon EKS cluster that will be created. |
 
 ---
 
@@ -6154,7 +6111,7 @@ Name of the Amazon EKS cluster to be created.
 public readonly eksVpcAttributes: VpcAttributes;
 ```
 
-- *Type:* @aws-cdk/aws-ec2.VpcAttributes
+- *Type:* aws-cdk-lib.aws_ec2.VpcAttributes
 
 Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'.
 
@@ -6179,7 +6136,7 @@ List of EmrEksNodegroup to create in the cluster in addition to the default [nod
 public readonly kubernetesVersion: KubernetesVersion;
 ```
 
-- *Type:* @aws-cdk/aws-eks.KubernetesVersion
+- *Type:* aws-cdk-lib.aws_eks.KubernetesVersion
 - *Default:* v1.21 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
@@ -6208,26 +6165,25 @@ const emrEksNodegroupOptions: EmrEksNodegroupOptions = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.amiType">amiType</a></code> | <code>@aws-cdk/aws-eks.NodegroupAmiType</code> | The AMI type for your node group. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.capacityType">capacityType</a></code> | <code>@aws-cdk/aws-eks.CapacityType</code> | The capacity type of the nodegroup. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.amiType">amiType</a></code> | <code>aws-cdk-lib.aws_eks.NodegroupAmiType</code> | The AMI type for your node group. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.capacityType">capacityType</a></code> | <code>aws-cdk-lib.aws_eks.CapacityType</code> | The capacity type of the nodegroup. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.desiredSize">desiredSize</a></code> | <code>number</code> | The current number of worker nodes that the managed node group should maintain. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.diskSize">diskSize</a></code> | <code>number</code> | The root device disk size (in GiB) for your node group instances. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.forceUpdate">forceUpdate</a></code> | <code>boolean</code> | Force the update if the existing node group's pods are unable to be drained due to a pod disruption budget issue. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.instanceType">instanceType</a></code> | <code>@aws-cdk/aws-ec2.InstanceType</code> | The instance type to use for your node group. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.instanceTypes">instanceTypes</a></code> | <code>@aws-cdk/aws-ec2.InstanceType[]</code> | The instance types to use for your node group. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.instanceTypes">instanceTypes</a></code> | <code>aws-cdk-lib.aws_ec2.InstanceType[]</code> | The instance types to use for your node group. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.labels">labels</a></code> | <code>{[ key: string ]: string}</code> | The Kubernetes labels to be applied to the nodes in the node group when they are created. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.launchTemplateSpec">launchTemplateSpec</a></code> | <code>@aws-cdk/aws-eks.LaunchTemplateSpec</code> | Launch template specification used for the nodegroup. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.launchTemplateSpec">launchTemplateSpec</a></code> | <code>aws-cdk-lib.aws_eks.LaunchTemplateSpec</code> | Launch template specification used for the nodegroup. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.maxSize">maxSize</a></code> | <code>number</code> | The maximum number of worker nodes that the managed node group can scale out to. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.minSize">minSize</a></code> | <code>number</code> | The minimum number of worker nodes that the managed node group can scale in to. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.nodegroupName">nodegroupName</a></code> | <code>string</code> | Name of the Nodegroup. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.nodeRole">nodeRole</a></code> | <code>@aws-cdk/aws-iam.IRole</code> | The IAM role to associate with your node group. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.nodeRole">nodeRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | The IAM role to associate with your node group. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.releaseVersion">releaseVersion</a></code> | <code>string</code> | The AMI version of the Amazon EKS-optimized AMI to use with your node group (for example, `1.14.7-YYYYMMDD`). |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.remoteAccess">remoteAccess</a></code> | <code>@aws-cdk/aws-eks.NodegroupRemoteAccess</code> | The remote access (SSH) configuration to use with your node group. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.subnets">subnets</a></code> | <code>@aws-cdk/aws-ec2.SubnetSelection</code> | The subnets to use for the Auto Scaling group that is created for your node group. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.remoteAccess">remoteAccess</a></code> | <code>aws-cdk-lib.aws_eks.NodegroupRemoteAccess</code> | The remote access (SSH) configuration to use with your node group. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.subnets">subnets</a></code> | <code>aws-cdk-lib.aws_ec2.SubnetSelection</code> | The subnets to use for the Auto Scaling group that is created for your node group. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.tags">tags</a></code> | <code>{[ key: string ]: string}</code> | The metadata to apply to the node group to assist with categorization and organization. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.taints">taints</a></code> | <code>@aws-cdk/aws-eks.TaintSpec[]</code> | The Kubernetes taints to be applied to the nodes in the node group when they are created. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.taints">taints</a></code> | <code>aws-cdk-lib.aws_eks.TaintSpec[]</code> | The Kubernetes taints to be applied to the nodes in the node group when they are created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.mountNvme">mountNvme</a></code> | <code>boolean</code> | Set to true if using instance types with local NVMe drives to mount them automatically at boot time. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.subnet">subnet</a></code> | <code>@aws-cdk/aws-ec2.ISubnet</code> | Configure the Amazon EKS NodeGroup in this subnet. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.subnet">subnet</a></code> | <code>aws-cdk-lib.aws_ec2.ISubnet</code> | Configure the Amazon EKS NodeGroup in this subnet. |
 
 ---
 
@@ -6237,7 +6193,7 @@ const emrEksNodegroupOptions: EmrEksNodegroupOptions = { ... }
 public readonly amiType: NodegroupAmiType;
 ```
 
-- *Type:* @aws-cdk/aws-eks.NodegroupAmiType
+- *Type:* aws-cdk-lib.aws_eks.NodegroupAmiType
 - *Default:* auto-determined from the instanceTypes property when launchTemplateSpec property is not specified
 
 The AMI type for your node group.
@@ -6253,7 +6209,7 @@ the node group deployment will fail. In other cases, you will need to specify co
 public readonly capacityType: CapacityType;
 ```
 
-- *Type:* @aws-cdk/aws-eks.CapacityType
+- *Type:* aws-cdk-lib.aws_eks.CapacityType
 - *Default:* ON_DEMAND
 
 The capacity type of the nodegroup.
@@ -6306,32 +6262,13 @@ running on the node.
 
 ---
 
-##### ~~`instanceType`~~<sup>Optional</sup> <a name="instanceType" id="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.instanceType"></a>
-
-- *Deprecated:* Use `instanceTypes` instead.
-
-```typescript
-public readonly instanceType: InstanceType;
-```
-
-- *Type:* @aws-cdk/aws-ec2.InstanceType
-- *Default:* t3.medium
-
-The instance type to use for your node group.
-
-Currently, you can specify a single instance type for a node group.
-The default value for this parameter is `t3.medium`. If you choose a GPU instance type, be sure to specify the
-`AL2_x86_64_GPU` with the amiType parameter.
-
----
-
 ##### `instanceTypes`<sup>Optional</sup> <a name="instanceTypes" id="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.instanceTypes"></a>
 
 ```typescript
 public readonly instanceTypes: InstanceType[];
 ```
 
-- *Type:* @aws-cdk/aws-ec2.InstanceType[]
+- *Type:* aws-cdk-lib.aws_ec2.InstanceType[]
 - *Default:* t3.medium will be used according to the cloudformation document.
 
 The instance types to use for your node group.
@@ -6359,7 +6296,7 @@ The Kubernetes labels to be applied to the nodes in the node group when they are
 public readonly launchTemplateSpec: LaunchTemplateSpec;
 ```
 
-- *Type:* @aws-cdk/aws-eks.LaunchTemplateSpec
+- *Type:* aws-cdk-lib.aws_eks.LaunchTemplateSpec
 - *Default:* no launch template
 
 Launch template specification used for the nodegroup.
@@ -6417,7 +6354,7 @@ Name of the Nodegroup.
 public readonly nodeRole: IRole;
 ```
 
-- *Type:* @aws-cdk/aws-iam.IRole
+- *Type:* aws-cdk-lib.aws_iam.IRole
 - *Default:* None. Auto-generated if not specified.
 
 The IAM role to associate with your node group.
@@ -6448,7 +6385,7 @@ The AMI version of the Amazon EKS-optimized AMI to use with your node group (for
 public readonly remoteAccess: NodegroupRemoteAccess;
 ```
 
-- *Type:* @aws-cdk/aws-eks.NodegroupRemoteAccess
+- *Type:* aws-cdk-lib.aws_eks.NodegroupRemoteAccess
 - *Default:* disabled
 
 The remote access (SSH) configuration to use with your node group.
@@ -6465,7 +6402,7 @@ then port 22 on the worker nodes is opened to the internet (0.0.0.0/0)
 public readonly subnets: SubnetSelection;
 ```
 
-- *Type:* @aws-cdk/aws-ec2.SubnetSelection
+- *Type:* aws-cdk-lib.aws_ec2.SubnetSelection
 - *Default:* private subnets
 
 The subnets to use for the Auto Scaling group that is created for your node group.
@@ -6500,7 +6437,7 @@ associated with the node group, such as the Amazon EC2 instances or subnets.
 public readonly taints: TaintSpec[];
 ```
 
-- *Type:* @aws-cdk/aws-eks.TaintSpec[]
+- *Type:* aws-cdk-lib.aws_eks.TaintSpec[]
 - *Default:* None
 
 The Kubernetes taints to be applied to the nodes in the node group when they are created.
@@ -6526,7 +6463,7 @@ Set to true if using instance types with local NVMe drives to mount them automat
 public readonly subnet: ISubnet;
 ```
 
-- *Type:* @aws-cdk/aws-ec2.ISubnet
+- *Type:* aws-cdk-lib.aws_ec2.ISubnet
 - *Default:* One NodeGroup is deployed per cluster AZ
 
 Configure the Amazon EKS NodeGroup in this subnet.
@@ -6552,7 +6489,7 @@ const emrManagedEndpointOptions: EmrManagedEndpointOptions = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.executionRole">executionRole</a></code> | <code>@aws-cdk/aws-iam.IRole</code> | The Amazon IAM role used as the execution role, this role must provide access to all the AWS resource a user will interact with These can be S3, DynamoDB, Glue Catalog. |
+| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.executionRole">executionRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | The Amazon IAM role used as the execution role, this role must provide access to all the AWS resource a user will interact with These can be S3, DynamoDB, Glue Catalog. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the EMR managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.virtualClusterId">virtualClusterId</a></code> | <code>string</code> | The Id of the Amazon EMR virtual cluster containing the managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>string</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint. |
@@ -6566,7 +6503,7 @@ const emrManagedEndpointOptions: EmrManagedEndpointOptions = { ... }
 public readonly executionRole: IRole;
 ```
 
-- *Type:* @aws-cdk/aws-iam.IRole
+- *Type:* aws-cdk-lib.aws_iam.IRole
 
 The Amazon IAM role used as the execution role, this role must provide access to all the AWS resource a user will interact with These can be S3, DynamoDB, Glue Catalog.
 
@@ -6698,11 +6635,11 @@ const flywayRunnerProps: FlywayRunnerProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps.property.cluster">cluster</a></code> | <code>@aws-cdk/aws-redshift.Cluster</code> | The cluster to run migration scripts against. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps.property.cluster">cluster</a></code> | <code>@aws-cdk/aws-redshift-alpha.Cluster</code> | The cluster to run migration scripts against. |
 | <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps.property.databaseName">databaseName</a></code> | <code>string</code> | The database name to run migration scripts against. |
 | <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps.property.migrationScriptsFolderAbsolutePath">migrationScriptsFolderAbsolutePath</a></code> | <code>string</code> | The absolute path to the flyway migration scripts. |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps.property.vpc">vpc</a></code> | <code>@aws-cdk/aws-ec2.Vpc</code> | The vpc hosting the cluster. |
-| <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps.property.logRetention">logRetention</a></code> | <code>@aws-cdk/aws-logs.RetentionDays</code> | Period to keep the logs around. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps.property.vpc">vpc</a></code> | <code>aws-cdk-lib.aws_ec2.Vpc</code> | The vpc hosting the cluster. |
+| <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps.property.logRetention">logRetention</a></code> | <code>aws-cdk-lib.aws_logs.RetentionDays</code> | Period to keep the logs around. |
 | <code><a href="#aws-analytics-reference-architecture.FlywayRunnerProps.property.replaceDictionary">replaceDictionary</a></code> | <code>{[ key: string ]: string}</code> | A key-value map of string (encapsulated between `${` and `}`) to replace in the SQL files given. |
 
 ---
@@ -6713,7 +6650,7 @@ const flywayRunnerProps: FlywayRunnerProps = { ... }
 public readonly cluster: Cluster;
 ```
 
-- *Type:* @aws-cdk/aws-redshift.Cluster
+- *Type:* @aws-cdk/aws-redshift-alpha.Cluster
 
 The cluster to run migration scripts against.
 
@@ -6753,7 +6690,7 @@ Those scripts needs to follow expected flyway naming convention.
 public readonly vpc: Vpc;
 ```
 
-- *Type:* @aws-cdk/aws-ec2.Vpc
+- *Type:* aws-cdk-lib.aws_ec2.Vpc
 
 The vpc hosting the cluster.
 
@@ -6765,7 +6702,7 @@ The vpc hosting the cluster.
 public readonly logRetention: RetentionDays;
 ```
 
-- *Type:* @aws-cdk/aws-logs.RetentionDays
+- *Type:* aws-cdk-lib.aws_logs.RetentionDays
 - *Default:* logs.RetentionDays.ONE_WEEK
 
 Period to keep the logs around.
@@ -6816,7 +6753,7 @@ const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket">s3Bucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | S3 Bucket to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket">s3Bucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | S3 Bucket to be registered with Lakeformation. |
 | <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3ObjectKey">s3ObjectKey</a></code> | <code>string</code> | S3 object key to be registered with Lakeformation. |
 
 ---
@@ -6827,7 +6764,7 @@ const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
 public readonly s3Bucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 S3 Bucket to be registered with Lakeformation.
 
@@ -6862,7 +6799,7 @@ const notebookManagedEndpointOptions: NotebookManagedEndpointOptions = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.executionPolicy">executionPolicy</a></code> | <code>@aws-cdk/aws-iam.ManagedPolicy</code> | The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.executionPolicy">executionPolicy</a></code> | <code>aws-cdk-lib.aws_iam.ManagedPolicy</code> | The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>any</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json). |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code>string</code> | The version of Amazon EMR to deploy. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name. |
@@ -6875,7 +6812,7 @@ const notebookManagedEndpointOptions: NotebookManagedEndpointOptions = { ... }
 public readonly executionPolicy: ManagedPolicy;
 ```
 
-- *Type:* @aws-cdk/aws-iam.ManagedPolicy
+- *Type:* aws-cdk-lib.aws_iam.ManagedPolicy
 
 The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog.
 
@@ -7105,8 +7042,8 @@ const preparedDatasetProps: PreparedDatasetProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.dateTimeColumnToFilter">dateTimeColumnToFilter</a></code> | <code>string</code> | Datetime column for filtering data. |
-| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.location">location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The Amazon S3 Location of the source dataset. |
-| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.manifestLocation">manifestLocation</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Manifest file in csv format with two columns: start, path. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.location">location</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The Amazon S3 Location of the source dataset. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.manifestLocation">manifestLocation</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | Manifest file in csv format with two columns: start, path. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.startDatetime">startDatetime</a></code> | <code>string</code> | The minimum datetime value in the dataset used to calculate time offset. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.dateTimeColumnsToAdjust">dateTimeColumnsToAdjust</a></code> | <code>string[]</code> | Array of column names with datetime to adjust. |
 
@@ -7130,7 +7067,7 @@ Datetime column for filtering data.
 public readonly location: Location;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* aws-cdk-lib.aws_s3.Location
 
 The Amazon S3 Location of the source dataset.
 
@@ -7144,7 +7081,7 @@ It's composed of an Amazon S3 bucketName and an Amazon S3 objectKey
 public readonly manifestLocation: Location;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* aws-cdk-lib.aws_s3.Location
 
 Manifest file in csv format with two columns: start, path.
 
@@ -7195,7 +7132,7 @@ const s3CrossAccountProps: S3CrossAccountProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.accountId">accountId</a></code> | <code>string</code> | The account ID to grant on the S3 location. |
-| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.s3Bucket">s3Bucket</a></code> | <code>@aws-cdk/aws-s3.Bucket</code> | The S3 Bucket object to grant cross account access. |
+| <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.s3Bucket">s3Bucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | The S3 Bucket object to grant cross account access. |
 | <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps.property.s3ObjectKey">s3ObjectKey</a></code> | <code>string</code> | The S3 object key to grant cross account access (S3 prefix without the bucket name). |
 
 ---
@@ -7218,7 +7155,7 @@ The account ID to grant on the S3 location.
 public readonly s3Bucket: Bucket;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.Bucket
 
 The S3 Bucket object to grant cross account access.
 
@@ -7255,9 +7192,9 @@ const synchronousAthenaQueryProps: SynchronousAthenaQueryProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.resultPath">resultPath</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The Amazon S3 Location for the query results (without trailing slash). |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.resultPath">resultPath</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The Amazon S3 Location for the query results (without trailing slash). |
 | <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.statement">statement</a></code> | <code>string</code> | The name of the Athena query to execute. |
-| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.executionRoleStatements">executionRoleStatements</a></code> | <code>@aws-cdk/aws-iam.PolicyStatement[]</code> | The Amazon IAM Policy Statements used to run the query. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.executionRoleStatements">executionRoleStatements</a></code> | <code>aws-cdk-lib.aws_iam.PolicyStatement[]</code> | The Amazon IAM Policy Statements used to run the query. |
 | <code><a href="#aws-analytics-reference-architecture.SynchronousAthenaQueryProps.property.timeout">timeout</a></code> | <code>number</code> | The timeout in seconds to wait for query success. |
 
 ---
@@ -7268,7 +7205,7 @@ const synchronousAthenaQueryProps: SynchronousAthenaQueryProps = { ... }
 public readonly resultPath: Location;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* aws-cdk-lib.aws_s3.Location
 
 The Amazon S3 Location for the query results (without trailing slash).
 
@@ -7292,7 +7229,7 @@ The name of the Athena query to execute.
 public readonly executionRoleStatements: PolicyStatement[];
 ```
 
-- *Type:* @aws-cdk/aws-iam.PolicyStatement[]
+- *Type:* aws-cdk-lib.aws_iam.PolicyStatement[]
 - *Default:* No Policy Statements are added to the execution role
 
 The Amazon IAM Policy Statements used to run the query.
@@ -7391,396 +7328,6 @@ Unique code used to measure the number of the CloudFormation deployments.
 ---
 
 ## Classes <a name="Classes" id="Classes"></a>
-
-### Dataset <a name="Dataset" id="aws-analytics-reference-architecture.Dataset"></a>
-
-Dataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
-
-This is deprecated in favor of the [PreparedDataset]{@link PreparedDataset} class
-
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.Dataset.Initializer"></a>
-
-```typescript
-import { Dataset } from 'aws-analytics-reference-architecture'
-
-new Dataset(props: DatasetProps)
-```
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DatasetProps">DatasetProps</a></code> | the DatasetProps. |
-
----
-
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.Dataset.Initializer.parameter.props"></a>
-
-- *Type:* <a href="#aws-analytics-reference-architecture.DatasetProps">DatasetProps</a>
-
-the DatasetProps.
-
----
-
-#### Methods <a name="Methods" id="Methods"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery">parseCreateSourceQuery</a></code> | Parse the CREATE TABLE statement template for the source. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery">parseCreateTargetQuery</a></code> | Parse the CREATE TABLE statement template for the source. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.parseGenerateQuery">parseGenerateQuery</a></code> | Parse the CREATE TABLE statement template for the target. |
-
----
-
-##### ~~`parseCreateSourceQuery`~~ <a name="parseCreateSourceQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery"></a>
-
-```typescript
-public parseCreateSourceQuery(database: string, table: string, bucket: string, key: string): string
-```
-
-Parse the CREATE TABLE statement template for the source.
-
-###### `database`<sup>Required</sup> <a name="database" id="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery.parameter.database"></a>
-
-- *Type:* string
-
-the database name to parse.
-
----
-
-###### `table`<sup>Required</sup> <a name="table" id="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery.parameter.table"></a>
-
-- *Type:* string
-
-the table name to parse.
-
----
-
-###### `bucket`<sup>Required</sup> <a name="bucket" id="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery.parameter.bucket"></a>
-
-- *Type:* string
-
-the bucket name to parse.
-
----
-
-###### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.Dataset.parseCreateSourceQuery.parameter.key"></a>
-
-- *Type:* string
-
-the key to parse.
-
----
-
-##### ~~`parseCreateTargetQuery`~~ <a name="parseCreateTargetQuery" id="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery"></a>
-
-```typescript
-public parseCreateTargetQuery(database: string, table: string, bucket: string, key: string): string
-```
-
-Parse the CREATE TABLE statement template for the source.
-
-###### `database`<sup>Required</sup> <a name="database" id="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery.parameter.database"></a>
-
-- *Type:* string
-
-the database name to parse.
-
----
-
-###### `table`<sup>Required</sup> <a name="table" id="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery.parameter.table"></a>
-
-- *Type:* string
-
-the table name to parse.
-
----
-
-###### `bucket`<sup>Required</sup> <a name="bucket" id="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery.parameter.bucket"></a>
-
-- *Type:* string
-
-the bucket name to parse.
-
----
-
-###### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.Dataset.parseCreateTargetQuery.parameter.key"></a>
-
-- *Type:* string
-
-the key to parse.
-
----
-
-##### ~~`parseGenerateQuery`~~ <a name="parseGenerateQuery" id="aws-analytics-reference-architecture.Dataset.parseGenerateQuery"></a>
-
-```typescript
-public parseGenerateQuery(database: string, sourceTable: string, targetTable: string): string
-```
-
-Parse the CREATE TABLE statement template for the target.
-
-###### `database`<sup>Required</sup> <a name="database" id="aws-analytics-reference-architecture.Dataset.parseGenerateQuery.parameter.database"></a>
-
-- *Type:* string
-
-the database name to parse.
-
----
-
-###### `sourceTable`<sup>Required</sup> <a name="sourceTable" id="aws-analytics-reference-architecture.Dataset.parseGenerateQuery.parameter.sourceTable"></a>
-
-- *Type:* string
-
-the source table name to parse.
-
----
-
-###### `targetTable`<sup>Required</sup> <a name="targetTable" id="aws-analytics-reference-architecture.Dataset.parseGenerateQuery.parameter.targetTable"></a>
-
-- *Type:* string
-
-the target table name to parse.
-
----
-
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.createSourceTable">createSourceTable</a></code> | <code>string</code> | The CREATE TABLE DDL command to create the source AWS Glue Table. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.createTargetTable">createTargetTable</a></code> | <code>string</code> | The CREATE TABLE DDL command to create the target AWS Glue Table. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.generateData">generateData</a></code> | <code>string</code> | The SELECT query used to generate new data. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.location">location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The Amazon S3 Location of the source dataset. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.offset">offset</a></code> | <code>number</code> | The offset of the Dataset (difference between min datetime and now) in Seconds. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.tableName">tableName</a></code> | <code>string</code> | The name of the SQL table extracted from path. |
-
----
-
-##### ~~`createSourceTable`~~<sup>Required</sup> <a name="createSourceTable" id="aws-analytics-reference-architecture.Dataset.property.createSourceTable"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly createSourceTable: string;
-```
-
-- *Type:* string
-
-The CREATE TABLE DDL command to create the source AWS Glue Table.
-
----
-
-##### ~~`createTargetTable`~~<sup>Required</sup> <a name="createTargetTable" id="aws-analytics-reference-architecture.Dataset.property.createTargetTable"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly createTargetTable: string;
-```
-
-- *Type:* string
-
-The CREATE TABLE DDL command to create the target AWS Glue Table.
-
----
-
-##### ~~`generateData`~~<sup>Required</sup> <a name="generateData" id="aws-analytics-reference-architecture.Dataset.property.generateData"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly generateData: string;
-```
-
-- *Type:* string
-
-The SELECT query used to generate new data.
-
----
-
-##### ~~`location`~~<sup>Required</sup> <a name="location" id="aws-analytics-reference-architecture.Dataset.property.location"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly location: Location;
-```
-
-- *Type:* @aws-cdk/aws-s3.Location
-
-The Amazon S3 Location of the source dataset.
-
----
-
-##### ~~`offset`~~<sup>Required</sup> <a name="offset" id="aws-analytics-reference-architecture.Dataset.property.offset"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly offset: number;
-```
-
-- *Type:* number
-
-The offset of the Dataset (difference between min datetime and now) in Seconds.
-
----
-
-##### ~~`tableName`~~<sup>Required</sup> <a name="tableName" id="aws-analytics-reference-architecture.Dataset.property.tableName"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly tableName: string;
-```
-
-- *Type:* string
-
-The name of the SQL table extracted from path.
-
----
-
-#### Constants <a name="Constants" id="Constants"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.DATASETS_BUCKET">DATASETS_BUCKET</a></code> | <code>string</code> | The bucket name of the AWS Analytics Reference Architecture datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER">RETAIL_100GB_CUSTOMER</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The customer dataset part of 100GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER_ADDRESS">RETAIL_100GB_CUSTOMER_ADDRESS</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The customer address dataset part of 100GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_ITEM">RETAIL_100GB_ITEM</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The item dataset part of 100GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_PROMO">RETAIL_100GB_PROMO</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The promotion dataset part of 100GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE">RETAIL_100GB_STORE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The store dataset part of 100GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE_SALE">RETAIL_100GB_STORE_SALE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The store sale dataset part of 100GB retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WAREHOUSE">RETAIL_100GB_WAREHOUSE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The warehouse dataset part 100GB of retail datasets. |
-| <code><a href="#aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WEB_SALE">RETAIL_100GB_WEB_SALE</a></code> | <code><a href="#aws-analytics-reference-architecture.Dataset">Dataset</a></code> | The web sale dataset part of 100GB retail datasets. |
-
----
-
-##### ~~`DATASETS_BUCKET`~~<sup>Required</sup> <a name="DATASETS_BUCKET" id="aws-analytics-reference-architecture.Dataset.property.DATASETS_BUCKET"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly DATASETS_BUCKET: string;
-```
-
-- *Type:* string
-
-The bucket name of the AWS Analytics Reference Architecture datasets.
-
----
-
-##### ~~`RETAIL_100GB_CUSTOMER`~~<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly RETAIL_100GB_CUSTOMER: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The customer dataset part of 100GB retail datasets.
-
----
-
-##### ~~`RETAIL_100GB_CUSTOMER_ADDRESS`~~<sup>Required</sup> <a name="RETAIL_100GB_CUSTOMER_ADDRESS" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_CUSTOMER_ADDRESS"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly RETAIL_100GB_CUSTOMER_ADDRESS: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The customer address dataset part of 100GB retail datasets.
-
----
-
-##### ~~`RETAIL_100GB_ITEM`~~<sup>Required</sup> <a name="RETAIL_100GB_ITEM" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_ITEM"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly RETAIL_100GB_ITEM: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The item dataset part of 100GB retail datasets.
-
----
-
-##### ~~`RETAIL_100GB_PROMO`~~<sup>Required</sup> <a name="RETAIL_100GB_PROMO" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_PROMO"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly RETAIL_100GB_PROMO: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The promotion dataset part of 100GB retail datasets.
-
----
-
-##### ~~`RETAIL_100GB_STORE`~~<sup>Required</sup> <a name="RETAIL_100GB_STORE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly RETAIL_100GB_STORE: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The store dataset part of 100GB retail datasets.
-
----
-
-##### ~~`RETAIL_100GB_STORE_SALE`~~<sup>Required</sup> <a name="RETAIL_100GB_STORE_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_STORE_SALE"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly RETAIL_100GB_STORE_SALE: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The store sale dataset part of 100GB retail datasets.
-
----
-
-##### ~~`RETAIL_100GB_WAREHOUSE`~~<sup>Required</sup> <a name="RETAIL_100GB_WAREHOUSE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WAREHOUSE"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly RETAIL_100GB_WAREHOUSE: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The warehouse dataset part 100GB of retail datasets.
-
----
-
-##### ~~`RETAIL_100GB_WEB_SALE`~~<sup>Required</sup> <a name="RETAIL_100GB_WEB_SALE" id="aws-analytics-reference-architecture.Dataset.property.RETAIL_100GB_WEB_SALE"></a>
-
-- *Deprecated:* replaced by [PreparedDataset]{@link PreparedDataset}
-
-```typescript
-public readonly RETAIL_100GB_WEB_SALE: Dataset;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.Dataset">Dataset</a>
-
-The web sale dataset part of 100GB retail datasets.
-
----
 
 ### EmrEksNodegroup <a name="EmrEksNodegroup" id="aws-analytics-reference-architecture.EmrEksNodegroup"></a>
 
@@ -7898,16 +7445,18 @@ public readonly TOOLING_ALL: EmrEksNodegroupOptions;
 
 ### PreparedDataset <a name="PreparedDataset" id="aws-analytics-reference-architecture.PreparedDataset"></a>
 
-PreparedDataset enum-like class providing pre-defined datasets metadata and custom dataset creation.
+If the stack is deployed in another region than eu-west-1, data transfer costs will apply.
 
-PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets
+The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
+
+PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets.
 
 A PreparedDataset has following properties:
 
 1. Data is partitioned by timestamp (a range in seconds). Each folder stores data within a given range.
 There is no constraint on how long the timestamp range can be. But each file must not be larger than 100MB.
 Creating new PreparedDataset requires to find the right balance between number of partitions and the amount of data read by each BatchReplayer (micro-)batch
-The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions.
+The available PreparedDatasets have a timestamp range that fit the total dataset time range (see each dataset documentation below) to avoid having too many partitions. 
 
 Here is an example:
 
@@ -7974,8 +7523,8 @@ the DatasetProps.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.dateTimeColumnToFilter">dateTimeColumnToFilter</a></code> | <code>string</code> | Datetime column for filtering data. |
-| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.location">location</a></code> | <code>@aws-cdk/aws-s3.Location</code> | The Amazon S3 Location of the source dataset. |
-| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.manifestLocation">manifestLocation</a></code> | <code>@aws-cdk/aws-s3.Location</code> | Manifest file in csv format with two columns: start, path. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.location">location</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The Amazon S3 Location of the source dataset. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.manifestLocation">manifestLocation</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | Manifest file in csv format with two columns: start, path. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.offset">offset</a></code> | <code>number</code> | The offset of the Dataset (difference between min datetime and now) in Seconds. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.startDateTime">startDateTime</a></code> | <code>string</code> | Start datetime replaying this dataset. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.tableName">tableName</a></code> | <code>string</code> | The name of the SQL table extracted from path. |
@@ -8001,7 +7550,7 @@ Datetime column for filtering data.
 public readonly location: Location;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* aws-cdk-lib.aws_s3.Location
 
 The Amazon S3 Location of the source dataset.
 
@@ -8013,7 +7562,7 @@ The Amazon S3 Location of the source dataset.
 public readonly manifestLocation: Location;
 ```
 
-- *Type:* @aws-cdk/aws-s3.Location
+- *Type:* aws-cdk-lib.aws_s3.Location
 
 Manifest file in csv format with two columns: start, path.
 
@@ -8096,7 +7645,8 @@ public readonly DATASETS_BUCKET: string;
 
 The bucket name of the AWS Analytics Reference Architecture datasets.
 
-Bucket is public and
+Data transfer costs will aply if the stack is deployed in another region than eu-west-1.
+The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
 
 ---
 

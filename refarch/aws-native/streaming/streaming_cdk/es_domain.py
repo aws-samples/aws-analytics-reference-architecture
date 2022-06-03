@@ -3,8 +3,8 @@
 
 import subprocess
 
+from constructs import Construct
 from aws_cdk import (
-    core,
     aws_lambda as _lambda,
     aws_logs as logs,
     aws_elasticsearch as es
@@ -14,11 +14,11 @@ from aws_cdk.aws_cognito import CfnUserPool, CfnUserPoolDomain, CfnIdentityPool,
 from aws_cdk.aws_iam import FederatedPrincipal, Role, ServicePrincipal, ManagedPolicy, ArnPrincipal, PolicyDocument, \
     PolicyStatement
 from aws_cdk.aws_kms import Key
-from aws_cdk.core import CfnOutput, CustomResource, Fn, Stack, RemovalPolicy, Duration
+from aws_cdk import CfnOutput, CustomResource, Fn, Stack, RemovalPolicy, Duration
 from aws_cdk.custom_resources import Provider
 
 
-class EsDomain(core.Construct):
+class EsDomain(Construct):
     @property
     def user_pool(self):
         return self.__user_pool
@@ -32,7 +32,7 @@ class EsDomain(core.Construct):
         return self.__es_domain
 
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id: str,
                  application_prefix: str,
                  suffix: str,

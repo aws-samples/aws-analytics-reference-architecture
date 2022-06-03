@@ -1,11 +1,17 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-from aws_cdk.core import Aws, Construct, Stack
+from constructs import Construct
+from aws_cdk import Aws, Stack
 from aws_cdk.aws_cloudtrail import DataResourceType, Trail
-from aws_cdk.aws_glue import CfnCrawler, Database, DataFormat, InputFormat, OutputFormat, SerializationLibrary, Table
+from aws_cdk.aws_glue import CfnCrawler
+from aws_cdk.aws_glue_alpha import Database, DataFormat, InputFormat, OutputFormat, SerializationLibrary, Table
 from aws_cdk.aws_iam import ManagedPolicy, Role, PolicyDocument, PolicyStatement, ServicePrincipal
 from aws_cdk.aws_s3 import IBucket
+
+from constructs import Construct
+from aws_cdk import App, Stack
+from aws_cdk import aws_s3 as s3
 
 import common.common_cdk.config as config
 

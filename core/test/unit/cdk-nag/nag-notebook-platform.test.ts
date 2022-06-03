@@ -8,9 +8,9 @@
  */
 
 
-import { Annotations, Match } from '@aws-cdk/assertions';
-import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
-import { App, Stack, Aspects, ArnFormat, Aws } from '@aws-cdk/core';
+import { App, Stack, Aspects, ArnFormat, Aws } from 'aws-cdk-lib';
+import { Annotations, Match } from 'aws-cdk-lib/assertions';
+import { ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { SSOIdentityType } from '../../../lib';
@@ -482,6 +482,79 @@ NagSuppressions.addResourceSuppressionsByPath(
     id: 'AwsSolutions-IAM5',
     reason: 'Policy not relevant, it used for the cdk-nag test. The user will have to provide its own',
   }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/AsgTagProvider/CustomResourceProvider/framework-onEvent/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-isComplete/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-onEvent/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-onTimeout/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/OnEventHandler/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, for the stability of the construct it is not changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/IsCompleteHandler/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, for the stability of the construct it is not changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-onEvent/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-onTimeout/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.ClusterResourceProvider/Provider/framework-isComplete/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.KubectlProvider/Handler/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, for the stability of the construct it is not changed' }],
+);
+
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/@aws-cdk--aws-eks.KubectlProvider/Provider/framework-onEvent/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
 );
 
 test('No unsuppressed Errors', () => {

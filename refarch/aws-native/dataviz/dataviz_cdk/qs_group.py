@@ -1,12 +1,13 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    Aws,
     custom_resources as cr
 )
 
-class QuickSightGroup(core.Construct):
+class QuickSightGroup(Construct):
 
     @property
     def group_arn(self):
@@ -14,7 +15,7 @@ class QuickSightGroup(core.Construct):
 
     def __init__(
             self,
-            scope: core.Construct,
+            scope: Construct,
             id: str,
             iam_policy: cr.AwsCustomResourcePolicy,
             group_name: str,
@@ -24,7 +25,7 @@ class QuickSightGroup(core.Construct):
 
         super().__init__(scope, id, **kwargs)
 
-        aws_account_id = core.Aws.ACCOUNT_ID
+        aws_account_id = Aws.ACCOUNT_ID
         group_physical_id = id + group_name
 
         quicksight_group = cr.AwsCustomResource(self, 'QuickSightGroup',
