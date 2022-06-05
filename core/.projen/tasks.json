@@ -114,12 +114,6 @@
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
         },
         {
-          "exec": "perl -i -pe 's/flyway-all.jar//g' lib/db-schema-manager/resources/flyway-lambda/.gitignore"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/build/resources lib/db-schema-manager/resources/flyway-lambda/build"
-        },
-        {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
         },
         {
@@ -136,6 +130,9 @@
         },
         {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-crawler/resources lib/synchronous-crawler"
+        },
+        {
+          "exec": "perl -i -pe 's/flyway-all.jar//g' lib/db-schema-manager/resources/flyway-lambda/.gitignore"
         }
       ]
     },
@@ -183,7 +180,7 @@
       "description": "./gradlew shadowJar all folders in lib that has requirements.txt",
       "steps": [
         {
-          "exec": "cd src/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null"
+          "exec": "cd src/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar && cp build/libs/*.jar ./ && rm -rf build 2> /dev/null"
         }
       ]
     },
@@ -283,7 +280,8 @@
       "name": "release",
       "description": "Prepare a release from \"main\" branch",
       "env": {
-        "RELEASE": "true"
+        "RELEASE": "true",
+        "MAJOR": "2"
       },
       "steps": [
         {
