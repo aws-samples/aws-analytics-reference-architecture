@@ -10,7 +10,7 @@ const { awscdk } = require('projen');
 
 const CDK_VERSION = '2.25.0';
 const project = new awscdk.AwsCdkConstructLibrary({
-
+  majorVersion: 2,
   authorName: 'Amazon Web Services',
   authorUrl: 'https://aws.amazon.com',
   authorOrganization: true,
