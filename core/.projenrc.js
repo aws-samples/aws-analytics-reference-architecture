@@ -159,11 +159,9 @@ for (const from of glob.sync('src/**/resources')) {
   const to = dirname(from.replace('src', 'lib'));
   const cpCommand = `rsync -avr --exclude '*.ts' --exclude '*.js' ${from} ${to}`;
   copyResourcesToLibTask.exec(cpCommand);
-  glob.sync(`${to}/**/.gitignore`).map((libGitignore) => {
-    const workaroundCommand = `perl -i -pe 's/flyway-all.jar//g' ${libGitignore}`;
-    copyResourcesToLibTask.exec(workaroundCommand);
-  });
 }
+const workaroundCommand = `perl -i -pe 's/flyway-all.jar//g' lib/db-schema-manager/resources/flyway-lambda/.gitignore`;
+copyResourcesToLibTask.exec(workaroundCommand);
 
 /**
  * Task to pip install all Python Lambda functions in lib folder
