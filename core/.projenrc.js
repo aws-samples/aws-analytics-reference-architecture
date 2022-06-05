@@ -29,7 +29,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
-  repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
+  repositoryUrl: 'https://github.com/flochaz/aws-analytics-reference-architecture.git',
   repositoryDirectory: 'core',
   workflow: false,
   buildWorkflow: false,
