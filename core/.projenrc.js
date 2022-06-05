@@ -191,7 +191,7 @@ const gradleBuildTask = project.addTask('gradle-build', {
 for (const gradlePath of findAllGradleLambdaDir('src')) {
   console.log('loop over gradle dir');
   const dirPath = dirname(gradlePath);
-  const gradleCmd = `cd ${dirPath} && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null`;
+  const gradleCmd = `cd ${dirPath} && ./gradlew shadowJar && cp build/libs/*.jar ./ && rm -rf build 2> /dev/null`;
 
   gradleBuildTask.exec(gradleCmd);
 }

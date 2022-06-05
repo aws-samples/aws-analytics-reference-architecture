@@ -114,9 +114,6 @@
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
         },
         {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/build/resources lib/db-schema-manager/resources/flyway-lambda/build"
-        },
-        {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
         },
         {
@@ -183,7 +180,7 @@
       "description": "./gradlew shadowJar all folders in lib that has requirements.txt",
       "steps": [
         {
-          "exec": "cd src/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null"
+          "exec": "cd src/db-schema-manager/resources/flyway-lambda && ./gradlew shadowJar && cp build/libs/*.jar ./ && rm -rf build 2> /dev/null"
         }
       ]
     },
