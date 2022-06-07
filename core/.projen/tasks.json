@@ -205,9 +205,6 @@
         },
         {
           "spawn": "package:python"
-        },
-        {
-          "exec": "rm src/db-schema-manager/resources/flyway-lambda/flyway-all.jar"
         }
       ]
     },
