@@ -8,10 +8,10 @@ import { S3CrossAccount, S3CrossAccountProps } from '../s3-cross-account';
  * Properties for the DataProduct Construct
  */
 export interface DataProductProps {
-    /**
-    * S3CrossAccountProps for S3CrossAccount construct
-    */
-    readonly crossAccountAccessProps: S3CrossAccountProps;
+  /**
+  * S3CrossAccountProps for S3CrossAccount construct
+  */
+  readonly crossAccountAccessProps: S3CrossAccountProps;
 }
 
 /**
@@ -40,21 +40,21 @@ export interface DataProductProps {
  * 
  */
 export class DataProduct extends Construct {
-    /**
-     * Construct a new instance of DataProduct.
-     * @param {Construct} scope the Scope of the CDK Construct
-     * @param {string} id the ID of the CDK Construct
-     * @param {DataProductProps} props the DataProductProps properties
-     * @access public
-     */
+  /**
+   * Construct a new instance of DataProduct.
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {DataProductProps} props the DataProductProps properties
+   * @access public
+   */
 
-    constructor(scope: Construct, id: string, props: DataProductProps) {
-        super(scope, id);
+  constructor(scope: Construct, id: string, props: DataProductProps) {
+    super(scope, id);
 
-        // cross-account bucket policy to grant access to Central Governance account
-        new S3CrossAccount(this, 'CentralCrossAccountAccess', props.crossAccountAccessProps);
+    // cross-account bucket policy to grant access to Central Governance account
+    new S3CrossAccount(this, 'CentralCrossAccountAccess', props.crossAccountAccessProps);
 
-        // TODO: Make optional trigger for an EventBridge event via CustomResource in Central Gov. account if used without the UI
-        // --> This is to create a new data product by passing database name and table names to central account
-    }
+    // TODO: Make optional trigger for an EventBridge event via CustomResource in Central Gov. account if used without the UI
+    // --> This is to create a new data product by passing database name and table names to central account
+  }
 }

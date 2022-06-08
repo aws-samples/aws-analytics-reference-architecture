@@ -14,20 +14,20 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
  * Properties for the DataDomain Construct
  */
 export interface DataDomainPros {
-    /**
-    * Central Governance account Id
-    */
-    readonly centralAccId: string;
+  /**
+  * Central Governance account Id
+  */
+  readonly centralAccId: string;
 
-    /**
-    * Flag to create a Crawler workflow in Data Domain account
-    */
-    readonly crawlerWorkflow?: boolean;
+  /**
+  * Flag to create a Crawler workflow in Data Domain account
+  */
+  readonly crawlerWorkflow?: boolean;
 
-    /**
-    * Lake Formation admin role
-    */
-    readonly lfAdminRole: IRole;
+  /**
+  * Lake Formation admin role
+  */
+  readonly lfAdminRole: IRole;
 }
 
 /**
@@ -64,95 +64,95 @@ export interface DataDomainPros {
  */
 export class DataDomain extends Construct {
 
-    public readonly dataLake: DataLakeStorage;
-    public readonly dataDomainWorkflow: DataDomainWorkflow;
-    public readonly eventBus: EventBus;
+  public readonly dataLake: DataLakeStorage;
+  public readonly dataDomainWorkflow: DataDomainWorkflow;
+  public readonly eventBus: EventBus;
 
-    /**
-     * Construct a new instance of DataDomain.
-     * @param {Construct} scope the Scope of the CDK Construct
-     * @param {string} id the ID of the CDK Construct
-     * @param {DataDomainPros} props the DataDomainPros properties
-     * @access public
-     */
+  /**
+   * Construct a new instance of DataDomain.
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {DataDomainPros} props the DataDomainPros properties
+   * @access public
+   */
 
-    constructor(scope: Construct, id: string, props: DataDomainPros) {
-        super(scope, id);
+  constructor(scope: Construct, id: string, props: DataDomainPros) {
+    super(scope, id);
 
-        this.dataLake = new DataLakeStorage(this, 'dataLakeStorage');
+    this.dataLake = new DataLakeStorage(this, 'dataLakeStorage');
 
-        props.lfAdminRole.attachInlinePolicy(new Policy(this, 'DataLakeAccess', {
-            statements: [
-                new PolicyStatement({
-                    actions: ['s3:GetObject', 's3:ListBucket'],
-                    resources: [
-                        this.dataLake.cleanBucket.bucketArn,
-                        `${this.dataLake.cleanBucket.bucketArn}/*`
-                    ],
-                }),
-            ],
-        }));
+    props.lfAdminRole.attachInlinePolicy(new Policy(this, 'DataLakeAccess', {
+      statements: [
+        new PolicyStatement({
+          actions: ['s3:GetObject', 's3:ListBucket'],
+          resources: [
+            this.dataLake.cleanBucket.bucketArn,
+            `${this.dataLake.cleanBucket.bucketArn}/*`
+          ],
+        }),
+      ],
+    }));
 
-        props.lfAdminRole.attachInlinePolicy(new Policy(this, 'DataLakeKms', {
-            statements: [
-                new PolicyStatement({
-                    actions: ['kms:Decrypt', 'kms:DescribeKey'],
-                    resources: [this.dataLake.cleanBucket.encryptionKey!.keyArn],
-                }),
-            ],
-        }));
+    props.lfAdminRole.attachInlinePolicy(new Policy(this, 'DataLakeKms', {
+      statements: [
+        new PolicyStatement({
+          actions: ['kms:Decrypt', 'kms:DescribeKey'],
+          resources: [this.dataLake.cleanBucket.encryptionKey!.keyArn],
+        }),
+      ],
+    }));
 
-        // Event Bridge event bus for data domain account
-        this.eventBus = new EventBus(this, 'dataDomainEventBus', {
-            eventBusName: `${Aws.ACCOUNT_ID}_dataDomainEventBus`,
-        });
-        this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    // Event Bridge event bus for data domain account
+    this.eventBus = new EventBus(this, 'dataDomainEventBus', {
+      eventBusName: `${Aws.ACCOUNT_ID}_dataDomainEventBus`,
+    });
+    this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
-        // Cross-account policy to allow the central account to send events to data domain's bus
-        const crossAccountBusPolicy = new CfnEventBusPolicy(this, 'crossAccountBusPolicy', {
-            eventBusName: this.eventBus.eventBusName,
-            statementId: 'AllowCentralAccountToPutEvents',
-            action: 'events:PutEvents',
-            principal: props.centralAccId,
-        });
-        crossAccountBusPolicy.node.addDependency(this.eventBus);
+    // Cross-account policy to allow the central account to send events to data domain's bus
+    const crossAccountBusPolicy = new CfnEventBusPolicy(this, 'crossAccountBusPolicy', {
+      eventBusName: this.eventBus.eventBusName,
+      statementId: 'AllowCentralAccountToPutEvents',
+      action: 'events:PutEvents',
+      principal: props.centralAccId,
+    });
+    crossAccountBusPolicy.node.addDependency(this.eventBus);
 
-        this.dataDomainWorkflow = new DataDomainWorkflow(this, 'DataDomainWorkflow', {
-            lfAdminRole: props.lfAdminRole,
-            centralAccId: props.centralAccId,
-            eventBus: this.eventBus,
-        });
+    this.dataDomainWorkflow = new DataDomainWorkflow(this, 'DataDomainWorkflow', {
+      lfAdminRole: props.lfAdminRole,
+      centralAccId: props.centralAccId,
+      eventBus: this.eventBus,
+    });
 
-        // Event Bridge Rule to trigger the this worklfow upon event from the central account
-        const rule = new Rule(this, 'DataDomainRule', {
-            eventPattern: {
-                source: ['com.central.stepfunction'],
-                account: [props.centralAccId],
-                detailType: [`${Aws.ACCOUNT_ID}_createResourceLinks`],
-            },
-            eventBus: this.eventBus,
-        });
+    // Event Bridge Rule to trigger the this worklfow upon event from the central account
+    const rule = new Rule(this, 'DataDomainRule', {
+      eventPattern: {
+        source: ['com.central.stepfunction'],
+        account: [props.centralAccId],
+        detailType: [`${Aws.ACCOUNT_ID}_createResourceLinks`],
+      },
+      eventBus: this.eventBus,
+    });
 
-        rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
-        rule.addTarget(new targets.SfnStateMachine(this.dataDomainWorkflow.stateMachine));
-        rule.node.addDependency(this.eventBus);
+    rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    rule.addTarget(new targets.SfnStateMachine(this.dataDomainWorkflow.stateMachine));
+    rule.node.addDependency(this.eventBus);
 
-        // Allow LF admin role to send events to data domain event bus
-        props.lfAdminRole.attachInlinePolicy(new Policy(this, 'SendEvents', {
-            statements: [
-                new PolicyStatement({
-                    actions: ['events:Put*'],
-                    resources: [this.eventBus.eventBusArn],
-                }),
-            ],
-        }));
+    // Allow LF admin role to send events to data domain event bus
+    props.lfAdminRole.attachInlinePolicy(new Policy(this, 'SendEvents', {
+      statements: [
+        new PolicyStatement({
+          actions: ['events:Put*'],
+          resources: [this.eventBus.eventBusArn],
+        }),
+      ],
+    }));
 
-        if (props.crawlerWorkflow) {
-            new DataDomainCrawler(this, 'DataDomainCrawler', {
-                eventBus: this.eventBus,
-                lfAdminRole: props.lfAdminRole,
-                dataDomainWorkflowArn: this.dataDomainWorkflow.stateMachine.stateMachineArn,
-            });
-        }
+    if (props.crawlerWorkflow) {
+      new DataDomainCrawler(this, 'DataDomainCrawler', {
+        eventBus: this.eventBus,
+        lfAdminRole: props.lfAdminRole,
+        dataDomainWorkflowArn: this.dataDomainWorkflow.stateMachine.stateMachineArn,
+      });
     }
+  }
 }

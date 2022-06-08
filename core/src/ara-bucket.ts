@@ -189,7 +189,7 @@ export class AraBucket extends Bucket {
     const stack = Stack.of(scope);
     const id = `${props.bucketName}`;
 
-    const stackBucket = stack.node.tryFindChild(id) as Bucket ?? (stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Bucket : undefined) ;
+    const stackBucket = stack.node.tryFindChild(id) as Bucket ?? (stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Bucket : undefined);
 
     return stackBucket || new AraBucket(stack, props);
   }

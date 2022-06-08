@@ -10,20 +10,20 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
  * Properties for the DataDomainRegistration Construct
  */
 export interface DataDomainRegistrationProps {
-    /**
-    * EventBus Name in Central Governance account
-    */
-    readonly eventBusName?: string;
+  /**
+  * EventBus Name in Central Governance account
+  */
+  readonly eventBusName?: string;
 
-    /**
-    * Data Domain Account region
-    */
-    readonly dataDomainRegion: string;
+  /**
+  * Data Domain Account region
+  */
+  readonly dataDomainRegion: string;
 
-    /**
-    * Data Domain Account Id
-    */
-    readonly dataDomainAccId: string;
+  /**
+  * Data Domain Account Id
+  */
+  readonly dataDomainAccId: string;
 }
 
 /**
@@ -49,46 +49,46 @@ export interface DataDomainRegistrationProps {
  * 
  */
 export class DataDomainRegistration extends Construct {
-    /**
-     * Construct a new instance of DataDomainRegistration.
-     * @param {Construct} scope the Scope of the CDK Construct
-     * @param {string} id the ID of the CDK Construct
-     * @param {DataDomainRegistrationProps} props the DataDomainRegistrationProps properties
-     * @access public
-     */
+  /**
+   * Construct a new instance of DataDomainRegistration.
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {DataDomainRegistrationProps} props the DataDomainRegistrationProps properties
+   * @access public
+   */
 
-    constructor(scope: Construct, id: string, props: DataDomainRegistrationProps) {
-        super(scope, id);
+  constructor(scope: Construct, id: string, props: DataDomainRegistrationProps) {
+    super(scope, id);
 
-        const eventBusName = props.eventBusName || `${Aws.ACCOUNT_ID}_centralEventBus`;
-        const eventBus = EventBus.fromEventBusName(this, 'dataDomainEventBus', eventBusName);
-        const dataDomainBusArn = `arn:aws:events:${props.dataDomainRegion}:${props.dataDomainAccId}`
-            + `:event-bus/${props.dataDomainAccId}_dataDomainEventBus`;
+    const eventBusName = props.eventBusName || `${Aws.ACCOUNT_ID}_centralEventBus`;
+    const eventBus = EventBus.fromEventBusName(this, 'dataDomainEventBus', eventBusName);
+    const dataDomainBusArn = `arn:aws:events:${props.dataDomainRegion}:${props.dataDomainAccId}`
+      + `:event-bus/${props.dataDomainAccId}_dataDomainEventBus`;
 
-        // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
-        new CfnEventBusPolicy(this, 'Policy', {
-            eventBusName: eventBusName,
-            statementId: `AllowDataDomainAccToPutEvents_${props.dataDomainAccId}`,
-            action: 'events:PutEvents',
-            principal: props.dataDomainAccId,
-        });
+    // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
+    new CfnEventBusPolicy(this, 'Policy', {
+      eventBusName: eventBusName,
+      statementId: `AllowDataDomainAccToPutEvents_${props.dataDomainAccId}`,
+      action: 'events:PutEvents',
+      principal: props.dataDomainAccId,
+    });
 
-        // Event Bridge Rule to trigger createResourceLinks workflow in target Data Domain account
-        const rule = new Rule(this, 'Rule', {
-            eventPattern: {
-                source: ['com.central.stepfunction'],
-                detailType: [`${props.dataDomainAccId}_createResourceLinks`],
-            },
-            eventBus,
-        });
+    // Event Bridge Rule to trigger createResourceLinks workflow in target Data Domain account
+    const rule = new Rule(this, 'Rule', {
+      eventPattern: {
+        source: ['com.central.stepfunction'],
+        detailType: [`${props.dataDomainAccId}_createResourceLinks`],
+      },
+      eventBus,
+    });
 
-        rule.addTarget(new targets.EventBus(
-            EventBus.fromEventBusArn(
-                this,
-                'DomainEventBus',
-                dataDomainBusArn
-            )),
-        );
-        rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
-    }
+    rule.addTarget(new targets.EventBus(
+      EventBus.fromEventBusArn(
+        this,
+        'DomainEventBus',
+        dataDomainBusArn
+      )),
+    );
+    rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
+  }
 }

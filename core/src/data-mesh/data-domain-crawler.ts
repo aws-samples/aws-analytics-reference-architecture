@@ -14,20 +14,20 @@ import { LogGroup } from 'aws-cdk-lib/aws-logs';
  * Properties for the DataDomainCrawler Construct
  */
 export interface DataDomainCrawlerProps {
-    /**
-    * ARN of DataDomainWorkflow State Machine
-    */
-    readonly dataDomainWorkflowArn: string;
+  /**
+  * ARN of DataDomainWorkflow State Machine
+  */
+  readonly dataDomainWorkflowArn: string;
 
-    /**
-    * Event Bus in Data Domain account
-    */
-    readonly eventBus: EventBus;
+  /**
+  * Event Bus in Data Domain account
+  */
+  readonly eventBus: EventBus;
 
-    /**
-    * LF Admin Role
-    */
-    readonly lfAdminRole: IRole;
+  /**
+  * LF Admin Role
+  */
+  readonly lfAdminRole: IRole;
 }
 
 /**
@@ -57,148 +57,148 @@ export interface DataDomainCrawlerProps {
  * 
  */
 export class DataDomainCrawler extends Construct {
-    /**
-     * Construct a new instance of DataDomainCrawler.
-     * @param {Construct} scope the Scope of the CDK Construct
-     * @param {string} id the ID of the CDK Construct
-     * @param {DataDomainCrawlerProps} props the DataDomainCrawlerProps properties
-     * @access public
-     */
+  /**
+   * Construct a new instance of DataDomainCrawler.
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {DataDomainCrawlerProps} props the DataDomainCrawlerProps properties
+   * @access public
+   */
 
-    constructor(scope: Construct, id: string, props: DataDomainCrawlerProps) {
-        super(scope, id);
+  constructor(scope: Construct, id: string, props: DataDomainCrawlerProps) {
+    super(scope, id);
 
-        const traverseTableArray = new Map(this, 'TraverseTableArray', {
-            itemsPath: '$.detail.table_names',
-            maxConcurrency: 2,
-            parameters: {
-                'tableName.$': "States.Format('rl-{}', $$.Map.Item.Value)",
-                'databaseName.$': '$.detail.database_name'
-            },
-            resultPath: JsonPath.DISCARD
-        });
+    const traverseTableArray = new Map(this, 'TraverseTableArray', {
+      itemsPath: '$.detail.table_names',
+      maxConcurrency: 2,
+      parameters: {
+        'tableName.$': "States.Format('rl-{}', $$.Map.Item.Value)",
+        'databaseName.$': '$.detail.database_name'
+      },
+      resultPath: JsonPath.DISCARD
+    });
 
-        const grantPermissions = new CallAwsService(this, 'GrantPermissions', {
-            service: 'lakeformation',
-            action: 'grantPermissions',
-            iamResources: ['*'],
-            parameters: {
-                'Permissions': [
-                    'ALL'
-                ],
-                'Principal': {
-                    'DataLakePrincipalIdentifier': props.lfAdminRole.roleArn
-                },
-                "Resource": {
-                    'Table': {
-                        'DatabaseName.$': '$.databaseName',
-                        'Name.$': '$.tableName'
-                    }
-                }
-            },
-            resultPath: JsonPath.DISCARD
-        });
+    const grantPermissions = new CallAwsService(this, 'GrantPermissions', {
+      service: 'lakeformation',
+      action: 'grantPermissions',
+      iamResources: ['*'],
+      parameters: {
+        'Permissions': [
+          'ALL'
+        ],
+        'Principal': {
+          'DataLakePrincipalIdentifier': props.lfAdminRole.roleArn
+        },
+        "Resource": {
+          'Table': {
+            'DatabaseName.$': '$.databaseName',
+            'Name.$': '$.tableName'
+          }
+        }
+      },
+      resultPath: JsonPath.DISCARD
+    });
 
-        const createCrawlerForTable = new CallAwsService(this, 'CreateCrawlerForTable', {
-            service: 'glue',
-            action: 'createCrawler',
-            iamResources: ['*'],
-            parameters: {
-                'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)",
-                'Role': props.lfAdminRole.roleArn,
-                'Targets': {
-                    'CatalogTargets': [
-                        {
-                            'DatabaseName.$': '$.databaseName',
-                            'Tables.$': 'States.Array($.tableName)'
-                        }
-                    ]
-                },
-                'SchemaChangePolicy': {
-                    'DeleteBehavior': 'LOG',
-                    'UpdateBehavior': 'UPDATE_IN_DATABASE'
-                }
-            },
-            resultPath: JsonPath.DISCARD
-        });
-
-        const startCrawler = new CallAwsService(this, 'StartCrawler', {
-            service: 'glue',
-            action: 'startCrawler',
-            iamResources: ['*'],
-            parameters: {
-                'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
-            },
-            resultPath: JsonPath.DISCARD
-        });
-
-        const waitForCrawler = new Wait(this, 'WaitForCrawler', {
-            time: WaitTime.duration(Duration.seconds(15))
-        });
-
-        const getCrawler = new CallAwsService(this, 'GetCrawler', {
-            service: 'glue',
-            action: 'getCrawler',
-            iamResources: ['*'],
-            parameters: {
-                'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
-            },
-            resultPath: '$.crawlerInfo'
-        });
-
-        const checkCrawlerStatusChoice = new Choice(this, 'CheckCrawlerStatusChoice');
-
-        const deleteCrawler = new CallAwsService(this, 'DeleteCrawler', {
-            service: 'glue',
-            action: 'deleteCrawler',
-            iamResources: ['*'],
-            parameters: {
-                'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
-            },
-            resultPath: JsonPath.DISCARD
-        });
-        deleteCrawler.endStates;
-
-        checkCrawlerStatusChoice
-            .when(Condition.stringEquals("$.crawlerInfo.Crawler.State", "READY"), deleteCrawler)
-            .otherwise(waitForCrawler);
-
-        getCrawler.next(checkCrawlerStatusChoice);
-        waitForCrawler.next(getCrawler);
-        startCrawler.next(waitForCrawler);
-        createCrawlerForTable.next(startCrawler);
-        grantPermissions.next(createCrawlerForTable);
-
-        traverseTableArray.iterator(grantPermissions).endStates;
-
-        const initState = new Wait(this, 'WaitForMetadata', {
-            time: WaitTime.duration(Duration.seconds(15))
-        })
-
-        initState.next(traverseTableArray);
-
-        // Create Log group for this state machine
-        const logGroup = new LogGroup(this, 'centralGov-stateMachine');
-        logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
-
-        const updateTableSchemasStateMachine = new StateMachine(this, 'UpdateTableSchemas', {
-            definition: initState,
-            role: props.lfAdminRole,
-            logs: {
-                destination: logGroup,
-                level: LogLevel.ALL,
-            },
-        });
-
-        new Rule(this, 'TriggerUpdateTableSchemasRule', {
-            eventBus: props.eventBus,
-            targets: [
-                new SfnStateMachine(updateTableSchemasStateMachine)
-            ],
-            eventPattern: {
-                source: ['com.central.stepfunction'],
-                detailType: ['triggerCrawler'],
+    const createCrawlerForTable = new CallAwsService(this, 'CreateCrawlerForTable', {
+      service: 'glue',
+      action: 'createCrawler',
+      iamResources: ['*'],
+      parameters: {
+        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)",
+        'Role': props.lfAdminRole.roleArn,
+        'Targets': {
+          'CatalogTargets': [
+            {
+              'DatabaseName.$': '$.databaseName',
+              'Tables.$': 'States.Array($.tableName)'
             }
-        });
-    }
+          ]
+        },
+        'SchemaChangePolicy': {
+          'DeleteBehavior': 'LOG',
+          'UpdateBehavior': 'UPDATE_IN_DATABASE'
+        }
+      },
+      resultPath: JsonPath.DISCARD
+    });
+
+    const startCrawler = new CallAwsService(this, 'StartCrawler', {
+      service: 'glue',
+      action: 'startCrawler',
+      iamResources: ['*'],
+      parameters: {
+        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
+      },
+      resultPath: JsonPath.DISCARD
+    });
+
+    const waitForCrawler = new Wait(this, 'WaitForCrawler', {
+      time: WaitTime.duration(Duration.seconds(15))
+    });
+
+    const getCrawler = new CallAwsService(this, 'GetCrawler', {
+      service: 'glue',
+      action: 'getCrawler',
+      iamResources: ['*'],
+      parameters: {
+        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
+      },
+      resultPath: '$.crawlerInfo'
+    });
+
+    const checkCrawlerStatusChoice = new Choice(this, 'CheckCrawlerStatusChoice');
+
+    const deleteCrawler = new CallAwsService(this, 'DeleteCrawler', {
+      service: 'glue',
+      action: 'deleteCrawler',
+      iamResources: ['*'],
+      parameters: {
+        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
+      },
+      resultPath: JsonPath.DISCARD
+    });
+    deleteCrawler.endStates;
+
+    checkCrawlerStatusChoice
+      .when(Condition.stringEquals("$.crawlerInfo.Crawler.State", "READY"), deleteCrawler)
+      .otherwise(waitForCrawler);
+
+    getCrawler.next(checkCrawlerStatusChoice);
+    waitForCrawler.next(getCrawler);
+    startCrawler.next(waitForCrawler);
+    createCrawlerForTable.next(startCrawler);
+    grantPermissions.next(createCrawlerForTable);
+
+    traverseTableArray.iterator(grantPermissions).endStates;
+
+    const initState = new Wait(this, 'WaitForMetadata', {
+      time: WaitTime.duration(Duration.seconds(15))
+    })
+
+    initState.next(traverseTableArray);
+
+    // Create Log group for this state machine
+    const logGroup = new LogGroup(this, 'centralGov-stateMachine');
+    logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+    const updateTableSchemasStateMachine = new StateMachine(this, 'UpdateTableSchemas', {
+      definition: initState,
+      role: props.lfAdminRole,
+      logs: {
+        destination: logGroup,
+        level: LogLevel.ALL,
+      },
+    });
+
+    new Rule(this, 'TriggerUpdateTableSchemasRule', {
+      eventBus: props.eventBus,
+      targets: [
+        new SfnStateMachine(updateTableSchemasStateMachine)
+      ],
+      eventPattern: {
+        source: ['com.central.stepfunction'],
+        detailType: ['triggerCrawler'],
+      }
+    });
+  }
 }

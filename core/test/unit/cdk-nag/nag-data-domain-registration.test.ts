@@ -20,26 +20,26 @@ const mockApp = new App();
 const dataDomainRegStack = new Stack(mockApp, 'dataDomainReg');
 
 const eventBus = new EventBus(dataDomainRegStack, 'centralEventBus', {
-    eventBusName: `${Aws.ACCOUNT_ID}_centralEventBus`,
+  eventBusName: `${Aws.ACCOUNT_ID}_centralEventBus`,
 });
 eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
 new DataDomainRegistration(dataDomainRegStack, 'registerMyDomain', {
-    dataDomainAccId: '1234567891011',
-    dataDomainRegion: 'us-east-1',
-    eventBusName: eventBus.eventBusName,
+  dataDomainAccId: '1234567891011',
+  dataDomainRegion: 'us-east-1',
+  eventBusName: eventBus.eventBusName,
 })
 
 Aspects.of(dataDomainRegStack).add(new AwsSolutionsChecks());
 
 test('No unsuppressed Warnings', () => {
-    const warnings = Annotations.fromStack(dataDomainRegStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
-    console.log(warnings);
-    expect(warnings).toHaveLength(0);
+  const warnings = Annotations.fromStack(dataDomainRegStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  console.log(warnings);
+  expect(warnings).toHaveLength(0);
 });
 
 test('No unsuppressed Errors', () => {
-    const errors = Annotations.fromStack(dataDomainRegStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
-    console.log(errors);
-    expect(errors).toHaveLength(0);
+  const errors = Annotations.fromStack(dataDomainRegStack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
+  console.log(errors);
+  expect(errors).toHaveLength(0);
 });

@@ -10,95 +10,95 @@ const { awscdk } = require('projen');
 
 const CDK_VERSION = '2.25.0';
 const project = new awscdk.AwsCdkConstructLibrary({
-    majorVersion: 2,
-    authorName: 'Amazon Web Services',
-    authorUrl: 'https://aws.amazon.com',
-    authorOrganization: true,
-    homepage: 'https://aws-samples.github.io/aws-analytics-reference-architecture/',
-    copyrightPeriod: `2021-${new Date().getFullYear()}`,
-    copyrightOwner: 'Amazon.com, Inc. or its affiliates. All Rights Reserved.',
-    keywords: [
-        'aws',
-        'constructs',
-        'cdk',
-        'analytics',
-    ],
+  majorVersion: 2,
+  authorName: 'Amazon Web Services',
+  authorUrl: 'https://aws.amazon.com',
+  authorOrganization: true,
+  homepage: 'https://aws-samples.github.io/aws-analytics-reference-architecture/',
+  copyrightPeriod: `2021-${new Date().getFullYear()}`,
+  copyrightOwner: 'Amazon.com, Inc. or its affiliates. All Rights Reserved.',
+  keywords: [
+    'aws',
+    'constructs',
+    'cdk',
+    'analytics',
+  ],
 
-    cdkVersion: CDK_VERSION,
-    constructsVersion: '10.1.15',
-    defaultReleaseBranch: 'main',
-    license: 'MIT-0',
-    name: 'aws-analytics-reference-architecture',
-    repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
-    repositoryDirectory: 'core',
-    workflow: false,
-    buildWorkflow: false,
-    release: true,
-    depsUpgrade: true,
-    stale: false,
-    pullRequestTemplate: false,
-    cdkVersionPinning: true,
-    githubOptions: {
-        pullRequestLint: false,
+  cdkVersion: CDK_VERSION,
+  constructsVersion: '10.1.15',
+  defaultReleaseBranch: 'main',
+  license: 'MIT-0',
+  name: 'aws-analytics-reference-architecture',
+  repositoryUrl: 'https://github.com/aws-samples/aws-analytics-reference-architecture.git',
+  repositoryDirectory: 'core',
+  workflow: false,
+  buildWorkflow: false,
+  release: true,
+  depsUpgrade: true,
+  stale: false,
+  pullRequestTemplate: false,
+  cdkVersionPinning: true,
+  githubOptions: {
+    pullRequestLint: false,
+  },
+  //workflowContainerImage: 'jsii/superchain:1-buster-slim',
+
+  deps: [
+    '@exodus/schemasafe',
+    `@aws-cdk/aws-redshift-alpha@${CDK_VERSION}-alpha.0`,
+    `@aws-cdk/aws-glue-alpha@${CDK_VERSION}-alpha.0`,
+  ],
+
+  devDeps: [
+    '@types/js-yaml',
+    '@types/jest',
+    'esbuild',
+    'cdk-nag@^2.0.0',
+    'constructs',
+    'aws-cdk-lib',
+    `aws-cdk@${CDK_VERSION}`,
+    `cdk-assets@${CDK_VERSION}`,
+    `@aws-cdk/cx-api@${CDK_VERSION}`,
+    `@aws-cdk/cloudformation-diff@${CDK_VERSION}`,
+    'jest-runner-groups',
+    'promptly',
+    'proxy-agent',
+    'glob',
+    '@types/prettier@2.6.0',
+  ],
+
+  peerDeps: [
+    `@aws-cdk/aws-redshift-alpha@${CDK_VERSION}-alpha.0`,
+    `@aws-cdk/aws-glue-alpha@${CDK_VERSION}-alpha.0`,
+  ],
+
+  jestOptions: {
+    jestConfig: {
+      runner: 'groups',
     },
-    //workflowContainerImage: 'jsii/superchain:1-buster-slim',
+  },
 
-    deps: [
-        '@exodus/schemasafe',
-        `@aws-cdk/aws-redshift-alpha@${CDK_VERSION}-alpha.0`,
-        `@aws-cdk/aws-glue-alpha@${CDK_VERSION}-alpha.0`,
-    ],
+  bundledDeps: [
+    'js-yaml',
+    'uuid',
+    'aws-sdk',
+    '@exodus/schemasafe',
+  ],
 
-    devDeps: [
-        '@types/js-yaml',
-        '@types/jest',
-        'esbuild',
-        'cdk-nag@^2.0.0',
-        'constructs',
-        'aws-cdk-lib',
-        `aws-cdk@${CDK_VERSION}`,
-        `cdk-assets@${CDK_VERSION}`,
-        `@aws-cdk/cx-api@${CDK_VERSION}`,
-        `@aws-cdk/cloudformation-diff@${CDK_VERSION}`,
-        'jest-runner-groups',
-        'promptly',
-        'proxy-agent',
-        'glob',
-        '@types/prettier@2.6.0',
-    ],
+  python: {
+    distName: 'aws_analytics_reference_architecture',
+    module: 'aws_analytics_reference_architecture',
+  },
 
-    peerDeps: [
-        `@aws-cdk/aws-redshift-alpha@${CDK_VERSION}-alpha.0`,
-        `@aws-cdk/aws-glue-alpha@${CDK_VERSION}-alpha.0`,
-    ],
-
-    jestOptions: {
-        jestConfig: {
-            runner: 'groups',
-        },
+  tsconfig: {
+    compilerOptions: {
+      resolveJsonModule: true,
+      esModuleInterop: true,
     },
+    include: ['src/**/*.json'],
+  },
 
-    bundledDeps: [
-        'js-yaml',
-        'uuid',
-        'aws-sdk',
-        '@exodus/schemasafe',
-    ],
-
-    python: {
-        distName: 'aws_analytics_reference_architecture',
-        module: 'aws_analytics_reference_architecture',
-    },
-
-    tsconfig: {
-        compilerOptions: {
-            resolveJsonModule: true,
-            esModuleInterop: true,
-        },
-        include: ['src/**/*.json'],
-    },
-
-    stability: 'experimental',
+  stability: 'experimental',
 
 });
 
@@ -107,27 +107,27 @@ project.testTask.reset('jest --group=unit');
 project.testTask.spawn('eslint');
 
 project.addTask('test:best-practice', {
-    exec: 'jest --group=best-practice',
+  exec: 'jest --group=best-practice',
 });
 
 project.addTask('test:unit', {
-    exec: 'jest --group=unit',
+  exec: 'jest --group=unit',
 });
 
 project.addTask('test:integ', {
-    exec: 'jest --group=integ',
+  exec: 'jest --group=integ',
 });
 
 project.addTask('test:integ/data-lake', {
-    exec: 'jest --group=integ/data-lake',
+  exec: 'jest --group=integ/data-lake',
 });
 
 project.addTask('test:integ/redshift', {
-    exec: 'jest --group=integ/redshift',
+  exec: 'jest --group=integ/redshift',
 });
 
 const testDeploy = project.addTask('test:deploy', {
-    exec: 'cdk --version && cdk deploy --app=./lib/integ.default.js',
+  exec: 'cdk --version && cdk deploy --app=./lib/integ.default.js',
 });
 
 testDeploy.prependExec('npx projen build');
@@ -135,7 +135,7 @@ testDeploy.prependExec('npx projen build');
 project.packageTask.spawn(project.tasks.tryFind('package-all'));
 
 project.addTask('test:destroy', {
-    exec: 'cdk destroy --app=./lib/integ.default.js',
+  exec: 'cdk destroy --app=./lib/integ.default.js',
 });
 
 
@@ -146,13 +146,13 @@ project.addDevDeps('glob');
  */
 
 const copyResourcesToLibTask = project.addTask('copy-resources', {
-    description: 'Copy all resources directories from src to lib',
+  description: 'Copy all resources directories from src to lib',
 });
 
 for (const from of glob.sync('src/**/resources')) {
-    const to = dirname(from.replace('src', 'lib'));
-    const cpCommand = `rsync -avr --exclude '*.ts' --exclude '*.js' ${from} ${to}`;
-    copyResourcesToLibTask.exec(cpCommand);
+  const to = dirname(from.replace('src', 'lib'));
+  const cpCommand = `rsync -avr --exclude '*.ts' --exclude '*.js' ${from} ${to}`;
+  copyResourcesToLibTask.exec(cpCommand);
 }
 const workaroundCommand = `perl -i -pe 's/flyway-all.jar//g' lib/db-schema-manager/resources/flyway-lambda/.gitignore`;
 copyResourcesToLibTask.exec(workaroundCommand);
@@ -162,32 +162,32 @@ copyResourcesToLibTask.exec(workaroundCommand);
  */
 
 const pipInstallTask = project.addTask('pip-install', {
-    description: 'pip install all folders in lib that has requirements.txt',
+  description: 'pip install all folders in lib that has requirements.txt',
 });
 
 for (const dirPath of findAllPythonLambdaDir('src')) {
-    // Assume that all folders with 'requirements.txt' have been copied to lib
-    // by the task 'copy-resources'
-    const dirPathInLib = dirPath.replace('src', 'lib');
-    const target = dirname(dirPathInLib);
-    const pipCmd = `pip3 install -r ${dirPathInLib} --target ${target} --upgrade`;
+  // Assume that all folders with 'requirements.txt' have been copied to lib
+  // by the task 'copy-resources'
+  const dirPathInLib = dirPath.replace('src', 'lib');
+  const target = dirname(dirPathInLib);
+  const pipCmd = `pip3 install -r ${dirPathInLib} --target ${target} --upgrade`;
 
-    pipInstallTask.exec(pipCmd);
+  pipInstallTask.exec(pipCmd);
 }
 
 /**
  * Task to build java lambda jar with gradle
  */
 const gradleBuildTask = project.addTask('gradle-build', {
-    description: './gradlew shadowJar all folders in lib that has requirements.txt',
+  description: './gradlew shadowJar all folders in lib that has requirements.txt',
 });
 
 for (const gradlePath of findAllGradleLambdaDir('src')) {
-    console.log('loop over gradle dir');
-    const dirPath = dirname(gradlePath);
-    const gradleCmd = `cd ${dirPath} && ./gradlew shadowJar && cp build/libs/*.jar ./ && rm -rf build 2> /dev/null`;
+  console.log('loop over gradle dir');
+  const dirPath = dirname(gradlePath);
+  const gradleCmd = `cd ${dirPath} && ./gradlew shadowJar && cp build/libs/*.jar ./ && rm -rf build 2> /dev/null`;
 
-    gradleBuildTask.exec(gradleCmd);
+  gradleBuildTask.exec(gradleCmd);
 }
 
 /**
@@ -206,9 +206,9 @@ project.compileTask.exec('npx projen pip-install');
  */
 function findAllPythonLambdaDir(rootDir) {
 
-    return glob.sync(`${rootDir}/**/requirements.txt`).map((pathWithReq) => {
-        return pathWithReq;
-    });
+  return glob.sync(`${rootDir}/**/requirements.txt`).map((pathWithReq) => {
+    return pathWithReq;
+  });
 }
 
 /**
@@ -219,11 +219,11 @@ function findAllPythonLambdaDir(rootDir) {
  * @returns Array of directory paths
  */
 function findAllGradleLambdaDir(rootDir) {
-    console.log('findAllGradleLambdaDir');
+  console.log('findAllGradleLambdaDir');
 
-    return glob.sync(`${rootDir}/**/build.gradle`).map((pathWithGradle) => {
-        return pathWithGradle;
-    });
+  return glob.sync(`${rootDir}/**/build.gradle`).map((pathWithGradle) => {
+    return pathWithGradle;
+  });
 }
 
 project.synth();
