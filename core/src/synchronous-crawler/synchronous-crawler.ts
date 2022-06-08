@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Aws, CustomResource, Duration, Stack } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
@@ -46,7 +46,7 @@ export class SynchronousCrawler extends Construct {
     const stack = Stack.of(this);
 
     //Lambda policy to allow starting a crawler
-    const lambdaCRPolicy : PolicyStatement []= [new PolicyStatement({
+    const lambdaCRPolicy: PolicyStatement[] = [new PolicyStatement({
       resources: [
         stack.formatArn({
           region: Aws.REGION,

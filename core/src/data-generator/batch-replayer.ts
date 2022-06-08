@@ -251,7 +251,7 @@ export class BatchReplayer extends Construct {
     });
 
     new Rule(this, 'BatchReplayStepFnTrigger', {
-      schedule: Schedule.cron({ minute: `0/${Math.ceil(this.frequency/60)}` }),
+      schedule: Schedule.cron({ minute: `0/${Math.ceil(this.frequency / 60)}` }),
       targets: [new SfnStateMachine(batchReplayStepFn, {})],
     });
   }

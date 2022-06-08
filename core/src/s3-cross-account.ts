@@ -46,7 +46,7 @@ export interface S3CrossAccountProps {
  *
  * new S3CrossAccount(stack, 'S3CrossAccountGrant', {
  *   bucket: myBucket,
- *   objectKey: 'my-data',
+ *   s3ObjectKey: 'my-data',
  *   accountId: '1234567891011',
  * });
  * ```
