@@ -28,7 +28,7 @@ export interface DataDomainWorkflowProps {
   /**
   * Central Governance account Id
   */
-  readonly centralAccId: string;
+  readonly centralAccountId: string;
 
   /**
   * Lake Formation admin role
@@ -68,7 +68,7 @@ export interface DataDomainWorkflowProps {
  * new DataDomainWorkflow(this, 'DataDomainWorkflow', {
  *  eventBus: eventBus,
  *  lfAdminRole: lfAdminRole,
- *  centralAccId: '1234567891011',
+ *  centralAccountId: '1234567891011',
  * });
  * ```
  * 
@@ -153,7 +153,7 @@ export class DataDomainWorkflow extends Construct {
         'TableInput': {
           'Name.$': "States.Format('rl-{}', $.table_name)",
           'TargetTable': {
-            'CatalogId': props.centralAccId,
+            'CatalogId': props.centralAccountId,
             'DatabaseName.$': '$.central_database_name',
             'Name.$': '$.table_name',
           },

@@ -11,19 +11,9 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
  */
 export interface DataDomainRegistrationProps {
   /**
-  * EventBus Name in Central Governance account
-  */
-  readonly eventBusName?: string;
-
-  /**
-  * Data Domain Account region
-  */
-  readonly dataDomainRegion: string;
-
-  /**
   * Data Domain Account Id
   */
-  readonly dataDomainAccId: string;
+  readonly dataDomainAccountId: string;
 }
 
 /**
@@ -42,8 +32,7 @@ export interface DataDomainRegistrationProps {
  * const stack = new Stack(exampleApp, 'DataProductStack');
  * 
  * new DataDomainRegistration(stack, 'registerDataDomain', {
- *  dataDomainAccId: "1234567891011",
- *  dataDomainRegion: "us-east-1"
+ *  dataDomainAccountId: "1234567891011",
  * });
  * ```
  * 
@@ -60,24 +49,24 @@ export class DataDomainRegistration extends Construct {
   constructor(scope: Construct, id: string, props: DataDomainRegistrationProps) {
     super(scope, id);
 
-    const eventBusName = props.eventBusName || `${Aws.ACCOUNT_ID}_centralEventBus`;
+    const eventBusName = `${Aws.ACCOUNT_ID}_centralEventBus`;
     const eventBus = EventBus.fromEventBusName(this, 'dataDomainEventBus', eventBusName);
-    const dataDomainBusArn = `arn:aws:events:${props.dataDomainRegion}:${props.dataDomainAccId}`
-      + `:event-bus/${props.dataDomainAccId}_dataDomainEventBus`;
+    const dataDomainBusArn = `arn:aws:events:${Aws.REGION}:${props.dataDomainAccountId}`
+      + `:event-bus/${props.dataDomainAccountId}_dataDomainEventBus`;
 
     // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
     new CfnEventBusPolicy(this, 'Policy', {
       eventBusName: eventBusName,
-      statementId: `AllowDataDomainAccToPutEvents_${props.dataDomainAccId}`,
+      statementId: `AllowDataDomainAccToPutEvents_${props.dataDomainAccountId}`,
       action: 'events:PutEvents',
-      principal: props.dataDomainAccId,
+      principal: props.dataDomainAccountId,
     });
 
     // Event Bridge Rule to trigger createResourceLinks workflow in target Data Domain account
     const rule = new Rule(this, 'Rule', {
       eventPattern: {
         source: ['com.central.stepfunction'],
-        detailType: [`${props.dataDomainAccId}_createResourceLinks`],
+        detailType: [`${props.dataDomainAccountId}_createResourceLinks`],
       },
       eventBus,
     });

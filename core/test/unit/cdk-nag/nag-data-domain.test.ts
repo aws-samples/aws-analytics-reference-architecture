@@ -29,7 +29,7 @@ const lfAdminRole = new Role(dataDomainStack, 'myRole', {
 lfAdminRole.applyRemovalPolicy(RemovalPolicy.DESTROY)
 
 new DataDomain(dataDomainStack, 'myDataDomain', {
-  centralAccId: '1234567891011',
+  centralAccountId: '1234567891011',
   crawlerWorkflow: false,
   lfAdminRole,
 })

@@ -17,7 +17,7 @@ export interface DataDomainPros {
   /**
   * Central Governance account Id
   */
-  readonly centralAccId: string;
+  readonly centralAccountId: string;
 
   /**
   * Flag to create a Crawler workflow in Data Domain account
@@ -56,7 +56,7 @@ export interface DataDomainPros {
  * 
  * new DataDomain(stack, 'myDataDomain', {
  *  lfAdminRole: lfAdminRole,
- *  centralAccId: '1234567891011',
+ *  centralAccountId: '1234567891011',
  *  crawlerWorkflow: false,
  * });
  * ```
@@ -113,13 +113,13 @@ export class DataDomain extends Construct {
       eventBusName: this.eventBus.eventBusName,
       statementId: 'AllowCentralAccountToPutEvents',
       action: 'events:PutEvents',
-      principal: props.centralAccId,
+      principal: props.centralAccountId,
     });
     crossAccountBusPolicy.node.addDependency(this.eventBus);
 
     this.dataDomainWorkflow = new DataDomainWorkflow(this, 'DataDomainWorkflow', {
       lfAdminRole: props.lfAdminRole,
-      centralAccId: props.centralAccId,
+      centralAccountId: props.centralAccountId,
       eventBus: this.eventBus,
     });
 
@@ -127,7 +127,7 @@ export class DataDomain extends Construct {
     const rule = new Rule(this, 'DataDomainRule', {
       eventPattern: {
         source: ['com.central.stepfunction'],
-        account: [props.centralAccId],
+        account: [props.centralAccountId],
         detailType: [`${Aws.ACCOUNT_ID}_createResourceLinks`],
       },
       eventBus: this.eventBus,

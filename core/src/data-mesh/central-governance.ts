@@ -77,6 +77,7 @@ export class CentralGovernance extends Construct {
       ],
     }));
 
+    // This policy grants decrypt on KMS Key in Producer account. Interpolated value is added at runtime
     const kmsPolicyDocument = new PolicyDocument({
       statements: [
         new PolicyStatement({
@@ -86,21 +87,24 @@ export class CentralGovernance extends Construct {
         }),
       ]
     });
+
+    // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
     const kmsPolicy = Utils.intrinsicReplacer(JSON.stringify(kmsPolicyDocument.toJSON()));
 
-    // This task adds a policy for KMS key of a Producer account
+    // This task adds policy kmsPolicyDocument to lfAdminRole 
     const addKmsPolicy = new CallAwsService(this, 'addKmsPolicy', {
       service: 'iam',
       action: 'putRolePolicy',
       iamResources: ['*'],
       parameters: {
-        'PolicyDocument.$': `States.Format('${kmsPolicy}', $.data_product_s3)`,
+        'PolicyDocument.$': `States.Format('${kmsPolicy}', $.producer_acc_id)`,
         'RoleName': props.lfAdminRole.roleName,
         'PolicyName.$': "States.Format('kms-{}', $.producer_acc_id)",
       },
       resultPath: JsonPath.DISCARD
     });
 
+    // This Policy allows access to S3 of a newly registered Data Product. Interpolated value is added at runtime 
     const bucketPolicyDocument = new PolicyDocument({
       statements: [
         new PolicyStatement({
@@ -110,9 +114,11 @@ export class CentralGovernance extends Construct {
         }),
       ]
     });
+
+    // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
     const bucketPolicy = Utils.intrinsicReplacer(JSON.stringify(bucketPolicyDocument.toJSON()));
 
-    // This task adds a policy for S3 of a Data Product being registered
+    // This task adds policy bucketPolicyDocument to lfAdminRole
     const addBucketPolicy = new CallAwsService(this, 'addBucketPolicy', {
       service: 'iam',
       action: 'putRolePolicy',

@@ -36,7 +36,7 @@ eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
 new DataDomainWorkflow(dataDomainWorkflowStack, 'myDataDomain', {
   lfAdminRole,
-  centralAccId: '1234567891011',
+  centralAccountId: '1234567891011',
   eventBus,
 });
 

@@ -25,9 +25,7 @@ const eventBus = new EventBus(dataDomainRegStack, 'centralEventBus', {
 eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
 new DataDomainRegistration(dataDomainRegStack, 'registerMyDomain', {
-  dataDomainAccId: '1234567891011',
-  dataDomainRegion: 'us-east-1',
-  eventBusName: eventBus.eventBusName,
+  dataDomainAccountId: '1234567891011',
 })
 
 Aspects.of(dataDomainRegStack).add(new AwsSolutionsChecks());

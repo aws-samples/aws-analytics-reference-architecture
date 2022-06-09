@@ -1622,7 +1622,7 @@ const lfAdminRole = new Role(stack, 'myLFAdminRole', {
 
 new DataDomain(stack, 'myDataDomain', {
   lfAdminRole: lfAdminRole,
-  centralAccId: '1234567891011',
+  centralAccountId: '1234567891011',
   crawlerWorkflow: false,
 });
 ```
@@ -1795,8 +1795,7 @@ const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
 new DataDomainRegistration(stack, 'registerDataDomain', {
-  dataDomainAccId: "1234567891011",
-  dataDomainRegion: "us-east-1"
+  dataDomainAccountId: "1234567891011",
 });
 ```
 
@@ -1946,7 +1945,7 @@ const lfAdminRole = new Role(stack, 'myLFAdminRole', {
 new DataDomainWorkflow(this, 'DataDomainWorkflow', {
   eventBus: eventBus,
   lfAdminRole: lfAdminRole,
-  centralAccId: '1234567891011',
+  centralAccountId: '1234567891011',
 });
 ```
 
@@ -6639,16 +6638,16 @@ const dataDomainPros: DataDomainPros = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.centralAccId">centralAccId</a></code> | <code>string</code> | Central Governance account Id. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.crawlerWorkflow">crawlerWorkflow</a></code> | <code>boolean</code> | Flag to create a Crawler workflow in Data Domain account. |
 
 ---
 
-##### `centralAccId`<sup>Required</sup> <a name="centralAccId" id="aws-analytics-reference-architecture.DataDomainPros.property.centralAccId"></a>
+##### `centralAccountId`<sup>Required</sup> <a name="centralAccountId" id="aws-analytics-reference-architecture.DataDomainPros.property.centralAccountId"></a>
 
 ```typescript
-public readonly centralAccId: string;
+public readonly centralAccountId: string;
 ```
 
 - *Type:* string
@@ -6697,45 +6696,19 @@ const dataDomainRegistrationProps: DataDomainRegistrationProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainRegistrationProps.property.dataDomainAccId">dataDomainAccId</a></code> | <code>string</code> | Data Domain Account Id. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainRegistrationProps.property.dataDomainRegion">dataDomainRegion</a></code> | <code>string</code> | Data Domain Account region. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainRegistrationProps.property.eventBusName">eventBusName</a></code> | <code>string</code> | EventBus Name in Central Governance account. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainRegistrationProps.property.dataDomainAccountId">dataDomainAccountId</a></code> | <code>string</code> | Data Domain Account Id. |
 
 ---
 
-##### `dataDomainAccId`<sup>Required</sup> <a name="dataDomainAccId" id="aws-analytics-reference-architecture.DataDomainRegistrationProps.property.dataDomainAccId"></a>
+##### `dataDomainAccountId`<sup>Required</sup> <a name="dataDomainAccountId" id="aws-analytics-reference-architecture.DataDomainRegistrationProps.property.dataDomainAccountId"></a>
 
 ```typescript
-public readonly dataDomainAccId: string;
+public readonly dataDomainAccountId: string;
 ```
 
 - *Type:* string
 
 Data Domain Account Id.
-
----
-
-##### `dataDomainRegion`<sup>Required</sup> <a name="dataDomainRegion" id="aws-analytics-reference-architecture.DataDomainRegistrationProps.property.dataDomainRegion"></a>
-
-```typescript
-public readonly dataDomainRegion: string;
-```
-
-- *Type:* string
-
-Data Domain Account region.
-
----
-
-##### `eventBusName`<sup>Optional</sup> <a name="eventBusName" id="aws-analytics-reference-architecture.DataDomainRegistrationProps.property.eventBusName"></a>
-
-```typescript
-public readonly eventBusName: string;
-```
-
-- *Type:* string
-
-EventBus Name in Central Governance account.
 
 ---
 
@@ -6755,16 +6728,16 @@ const dataDomainWorkflowProps: DataDomainWorkflowProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.centralAccId">centralAccId</a></code> | <code>string</code> | Central Governance account Id. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.IEventBus</code> | Event Bus in Data Domain. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
 
 ---
 
-##### `centralAccId`<sup>Required</sup> <a name="centralAccId" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.property.centralAccId"></a>
+##### `centralAccountId`<sup>Required</sup> <a name="centralAccountId" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.property.centralAccountId"></a>
 
 ```typescript
-public readonly centralAccId: string;
+public readonly centralAccountId: string;
 ```
 
 - *Type:* string
