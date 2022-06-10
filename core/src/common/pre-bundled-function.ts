@@ -106,8 +106,7 @@ export class PreBundledFunction extends Function {
     });
 
     //Create an execution role for the lambda and attach to it a policy formed from user input
-    const lambdaExecutionRole = new Role(scope,
-      'LambdaExecutionRole' + functionProps.functionName, {
+    const lambdaExecutionRole = new Role(scope, 'LambdaExecutionRole' + functionProps.functionName, {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       description: 'Role used by lambda in ARA',
       managedPolicies: [lambdaExecutionRolePolicy],
@@ -135,8 +134,7 @@ export class PreBundledFunction extends Function {
     });
 
     //Create an execution role for the lambda and attach to it a policy formed from user input
-    const logRetentionLambdaExecutionRole = new Role(scope,
-      'LogRetentionLambdaExecutionRole' + functionProps.functionName, {
+    const logRetentionLambdaExecutionRole = new Role(scope, 'LogRetentionLambdaExecutionRole' + functionProps.functionName, {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       description: 'Role used by lambda to modify log retention',
       managedPolicies: [logRetentionLambdaExecutionRolePolicy],
