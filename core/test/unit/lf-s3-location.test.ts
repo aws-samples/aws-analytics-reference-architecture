@@ -12,14 +12,17 @@ import { LakeformationS3Location } from '../../src/lf-s3-location';
 import { Stack } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Key } from 'aws-cdk-lib/aws-kms';
 
 describe('LakeFormationS3Location test', () => {
 
   const lfS3Stack = new Stack();  
   const bucket = new Bucket(lfS3Stack, 'Bucket');
+  const key = new Key(lfS3Stack, 'Key');
   new LakeformationS3Location(lfS3Stack, 'S3Location', {
     s3Bucket: bucket,
     s3ObjectKey: 'test',
+    kmsKey: key,
   });
   
   const template = Template.fromStack(lfS3Stack);
@@ -42,7 +45,7 @@ describe('LakeFormationS3Location test', () => {
     );
   });
 
-  test('S3Location should create the proper IAM role', () => {
+  test('S3Location should create the proper IAM role with S3 permissions', () => {
     template.hasResourceProperties('AWS::IAM::Policy', 
       Match.objectLike({
         PolicyDocument: {
@@ -70,9 +73,31 @@ describe('LakeFormationS3Location test', () => {
                       "/test/*"
                     ]
                   ]
+                },
+                {
+                  "Fn::GetAtt": [
+                    Match.anyValue(),
+                    "Arn"
+                  ]
                 }
               ])
             },
+            {
+              Action: [
+                'kms:Encrypt*',
+                'kms:Decrypt*',
+                'kms:ReEncrypt*',
+                'kms:GenerateDataKey*',
+                'kms:Describe*',
+              ],
+              Effect: 'Allow',
+              Resource:  {
+                "Fn::GetAtt": [
+                  Match.anyValue(),
+                  "Arn"
+                ]
+              }
+            }
           ])
         }
       })
