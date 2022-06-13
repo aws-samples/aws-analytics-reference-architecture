@@ -2627,7 +2627,7 @@ the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}.
 ##### `createExecutionRole` <a name="createExecutionRole" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole"></a>
 
 ```typescript
-public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, name?: string): Role
+public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, namespace: string, name: string): Role
 ```
 
 Create and configure a new Amazon IAM Role usable as an execution role.
@@ -2658,11 +2658,21 @@ the execution policy to attach to the role.
 
 ---
 
-###### `name`<sup>Optional</sup> <a name="name" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.name"></a>
+###### `namespace`<sup>Required</sup> <a name="namespace" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.namespace"></a>
 
 - *Type:* string
 
-for the Managed Endpoint.
+The namespace from which the role is going to be used.
+
+MUST be the same as the namespace of the Virtual Cluster from which the job is submitted
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.name"></a>
+
+- *Type:* string
+
+Name to use for the role, required and is used to scope the iam role.
 
 ---
 

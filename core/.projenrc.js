@@ -83,6 +83,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'uuid',
     'aws-sdk',
     '@exodus/schemasafe',
+    'simple-base',
   ],
 
   python: {
