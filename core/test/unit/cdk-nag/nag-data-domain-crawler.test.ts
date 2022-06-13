@@ -20,14 +20,14 @@ const mockApp = new App();
 
 const dataDomainCrawlerStack = new Stack(mockApp, 'dataDomainCrawler');
 
-const lfAdminRole = new Role(dataDomainCrawlerStack, 'myRole', {
+const workflowRole = new Role(dataDomainCrawlerStack, 'myRole', {
   assumedBy: new CompositePrincipal(
     new ServicePrincipal('glue.amazonaws.com'),
     new ServicePrincipal('lakeformation.amazonaws.com'),
     new ServicePrincipal('states.amazonaws.com')
   ),
 });
-lfAdminRole.applyRemovalPolicy(RemovalPolicy.DESTROY)
+workflowRole.applyRemovalPolicy(RemovalPolicy.DESTROY)
 
 const eventBus = new EventBus(dataDomainCrawlerStack, 'dataDomainEventBus', {
   eventBusName: `${Aws.ACCOUNT_ID}_dataDomainEventBus`,
@@ -35,17 +35,24 @@ const eventBus = new EventBus(dataDomainCrawlerStack, 'dataDomainEventBus', {
 eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
 new DataDomainCrawler(dataDomainCrawlerStack, 'myDataDomainCrawler', {
-  lfAdminRole,
+  workflowRole,
   eventBus,
   dataDomainWorkflowArn: "arn-test"
 });
 
 Aspects.of(dataDomainCrawlerStack).add(new AwsSolutionsChecks());
 
+// See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions_tasks.CallAwsService.html#iamresources 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainCrawlerStack,
   'dataDomainCrawler/myRole/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The role is not part of tested resources' }],
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Step Function CallAWSService requires iamResources to allow it to make API calls. ' +
+      'For each API call required, there is a wildcard on resource as resources are not known before Step Function execution. ' +
+      'Granular access controls are added to the role that Step Function assumes during execution. ' +
+      'Additionally, wildcard is added for Log group by default. See: https://github.com/aws/aws-cdk/issues/7158'
+  }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(

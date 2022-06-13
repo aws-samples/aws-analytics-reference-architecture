@@ -3,12 +3,14 @@
 
 import { Construct } from 'constructs';
 import { Aws, RemovalPolicy } from 'aws-cdk-lib';
-import { IRole, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { DataLakeStorage } from '../data-lake-storage';
 import { DataDomainWorkflow } from './data-domain-workflow';
 import { DataDomainCrawler } from './data-domain-crawler';
 import { CfnEventBusPolicy, Rule, EventBus } from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
+
+import { LfAdminRole } from './lf-admin-role';
 
 /**
  * Properties for the DataDomain Construct
@@ -27,7 +29,7 @@ export interface DataDomainPros {
   /**
   * Lake Formation admin role
   */
-  readonly lfAdminRole: IRole;
+  readonly lfAdminRole?: IRole;
 }
 
 /**
@@ -50,6 +52,7 @@ export interface DataDomainPros {
  * const exampleApp = new App();
  * const stack = new Stack(exampleApp, 'DataProductStack');
  * 
+ * // Optional role
  * const lfAdminRole = new Role(stack, 'myLFAdminRole', {
  *  assumedBy: ...
  * });
@@ -67,6 +70,7 @@ export class DataDomain extends Construct {
   public readonly dataLake: DataLakeStorage;
   public readonly dataDomainWorkflow: DataDomainWorkflow;
   public readonly eventBus: EventBus;
+  public readonly workflowRole: IRole;
 
   /**
    * Construct a new instance of DataDomain.
@@ -81,7 +85,17 @@ export class DataDomain extends Construct {
 
     this.dataLake = new DataLakeStorage(this, 'dataLakeStorage');
 
-    props.lfAdminRole.attachInlinePolicy(new Policy(this, 'DataLakeAccess', {
+    // Workflow role that is LF admin, used by the state machine
+    this.workflowRole = props.lfAdminRole ||
+      new LfAdminRole(this, 'WorkflowRole', {
+        assumedBy: new CompositePrincipal(
+          new ServicePrincipal('glue.amazonaws.com'),
+          new ServicePrincipal('lakeformation.amazonaws.com'),
+          new ServicePrincipal('states.amazonaws.com'),
+        ),
+      });
+
+    this.workflowRole.attachInlinePolicy(new Policy(this, 'DataLakeAccess', {
       statements: [
         new PolicyStatement({
           actions: ['s3:GetObject', 's3:ListBucket'],
@@ -93,7 +107,7 @@ export class DataDomain extends Construct {
       ],
     }));
 
-    props.lfAdminRole.attachInlinePolicy(new Policy(this, 'DataLakeKms', {
+    this.workflowRole.attachInlinePolicy(new Policy(this, 'DataLakeKms', {
       statements: [
         new PolicyStatement({
           actions: ['kms:Decrypt', 'kms:DescribeKey'],
@@ -118,7 +132,7 @@ export class DataDomain extends Construct {
     crossAccountBusPolicy.node.addDependency(this.eventBus);
 
     this.dataDomainWorkflow = new DataDomainWorkflow(this, 'DataDomainWorkflow', {
-      lfAdminRole: props.lfAdminRole,
+      workflowRole: this.workflowRole,
       centralAccountId: props.centralAccountId,
       eventBus: this.eventBus,
     });
@@ -138,7 +152,7 @@ export class DataDomain extends Construct {
     rule.node.addDependency(this.eventBus);
 
     // Allow LF admin role to send events to data domain event bus
-    props.lfAdminRole.attachInlinePolicy(new Policy(this, 'SendEvents', {
+    this.workflowRole.attachInlinePolicy(new Policy(this, 'SendEvents', {
       statements: [
         new PolicyStatement({
           actions: ['events:Put*'],
@@ -150,7 +164,7 @@ export class DataDomain extends Construct {
     if (props.crawlerWorkflow) {
       new DataDomainCrawler(this, 'DataDomainCrawler', {
         eventBus: this.eventBus,
-        lfAdminRole: props.lfAdminRole,
+        workflowRole: this.workflowRole,
         dataDomainWorkflowArn: this.dataDomainWorkflow.stateMachine.stateMachineArn,
       });
     }

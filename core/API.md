@@ -1469,6 +1469,7 @@ import { CentralGovernance } from 'aws-analytics-reference-architecture';
 const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
+// Optional role
 const lfAdminRole = new Role(stack, 'myLFAdminRole', {
   assumedBy: ...
 });
@@ -1579,6 +1580,7 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.workflowRole">workflowRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | *No description.* |
 
 ---
 
@@ -1591,6 +1593,16 @@ public readonly node: Node;
 - *Type:* constructs.Node
 
 The tree node.
+
+---
+
+##### `workflowRole`<sup>Required</sup> <a name="workflowRole" id="aws-analytics-reference-architecture.CentralGovernance.property.workflowRole"></a>
+
+```typescript
+public readonly workflowRole: IRole;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.IRole
 
 ---
 
@@ -1616,6 +1628,7 @@ import { DataDomain } from 'aws-analytics-reference-architecture';
 const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
+// Optional role
 const lfAdminRole = new Role(stack, 'myLFAdminRole', {
   assumedBy: ...
 });
@@ -1731,6 +1744,7 @@ Any object.
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataDomainWorkflow">dataDomainWorkflow</a></code> | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow">DataDomainWorkflow</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataLake">dataLake</a></code> | <code><a href="#aws-analytics-reference-architecture.DataLakeStorage">DataLakeStorage</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.EventBus</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.workflowRole">workflowRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | *No description.* |
 
 ---
 
@@ -1773,6 +1787,16 @@ public readonly eventBus: EventBus;
 ```
 
 - *Type:* aws-cdk-lib.aws_events.EventBus
+
+---
+
+##### `workflowRole`<sup>Required</sup> <a name="workflowRole" id="aws-analytics-reference-architecture.DataDomain.property.workflowRole"></a>
+
+```typescript
+public readonly workflowRole: IRole;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.IRole
 
 ---
 
@@ -1938,13 +1962,13 @@ import { DataDomain } from 'aws-analytics-reference-architecture';
 const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
-const lfAdminRole = new Role(stack, 'myLFAdminRole', {
+const workflowRole = new Role(stack, 'myWorkflowRole', {
   assumedBy: ...
 });
 
 new DataDomainWorkflow(this, 'DataDomainWorkflow', {
   eventBus: eventBus,
-  lfAdminRole: lfAdminRole,
+  workflowRole: workflowRole,
   centralAccountId: '1234567891011',
 });
 ```
@@ -6610,7 +6634,7 @@ const centralGovernanceProps: CentralGovernanceProps = { ... }
 
 ---
 
-##### `lfAdminRole`<sup>Required</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.CentralGovernanceProps.property.lfAdminRole"></a>
+##### `lfAdminRole`<sup>Optional</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.CentralGovernanceProps.property.lfAdminRole"></a>
 
 ```typescript
 public readonly lfAdminRole: IRole;
@@ -6639,8 +6663,8 @@ const dataDomainPros: DataDomainPros = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.crawlerWorkflow">crawlerWorkflow</a></code> | <code>boolean</code> | Flag to create a Crawler workflow in Data Domain account. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
 
 ---
 
@@ -6656,18 +6680,6 @@ Central Governance account Id.
 
 ---
 
-##### `lfAdminRole`<sup>Required</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole"></a>
-
-```typescript
-public readonly lfAdminRole: IRole;
-```
-
-- *Type:* aws-cdk-lib.aws_iam.IRole
-
-Lake Formation admin role.
-
----
-
 ##### `crawlerWorkflow`<sup>Optional</sup> <a name="crawlerWorkflow" id="aws-analytics-reference-architecture.DataDomainPros.property.crawlerWorkflow"></a>
 
 ```typescript
@@ -6677,6 +6689,18 @@ public readonly crawlerWorkflow: boolean;
 - *Type:* boolean
 
 Flag to create a Crawler workflow in Data Domain account.
+
+---
+
+##### `lfAdminRole`<sup>Optional</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole"></a>
+
+```typescript
+public readonly lfAdminRole: IRole;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.IRole
+
+Lake Formation admin role.
 
 ---
 
@@ -6730,7 +6754,7 @@ const dataDomainWorkflowProps: DataDomainWorkflowProps = { ... }
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.IEventBus</code> | Event Bus in Data Domain. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.workflowRole">workflowRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
 
 ---
 
@@ -6758,10 +6782,10 @@ Event Bus in Data Domain.
 
 ---
 
-##### `lfAdminRole`<sup>Required</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.property.lfAdminRole"></a>
+##### `workflowRole`<sup>Required</sup> <a name="workflowRole" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.property.workflowRole"></a>
 
 ```typescript
-public readonly lfAdminRole: IRole;
+public readonly workflowRole: IRole;
 ```
 
 - *Type:* aws-cdk-lib.aws_iam.IRole

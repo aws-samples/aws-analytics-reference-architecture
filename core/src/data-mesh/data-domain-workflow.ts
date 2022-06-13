@@ -33,7 +33,7 @@ export interface DataDomainWorkflowProps {
   /**
   * Lake Formation admin role
   */
-  readonly lfAdminRole: IRole;
+  readonly workflowRole: IRole;
 
   /**
   * Event Bus in Data Domain
@@ -61,13 +61,13 @@ export interface DataDomainWorkflowProps {
  * const exampleApp = new App();
  * const stack = new Stack(exampleApp, 'DataProductStack');
  * 
- * const lfAdminRole = new Role(stack, 'myLFAdminRole', {
+ * const workflowRole = new Role(stack, 'myWorkflowRole', {
  *  assumedBy: ...
  * });
  * 
  * new DataDomainWorkflow(this, 'DataDomainWorkflow', {
  *  eventBus: eventBus,
- *  lfAdminRole: lfAdminRole,
+ *  workflowRole: workflowRole,
  *  centralAccountId: '1234567891011',
  * });
  * ```
@@ -132,7 +132,7 @@ export class DataDomainWorkflow extends Construct {
           'ALL'
         ],
         'Principal': {
-          'DataLakePrincipalIdentifier': props.lfAdminRole.roleArn
+          'DataLakePrincipalIdentifier': props.workflowRole.roleArn
         },
         'Resource': {
           'Database': {
@@ -248,7 +248,7 @@ export class DataDomainWorkflow extends Construct {
         .when(Condition.isPresent('$.taskresult.ResourceShareInvitations[0]'), createLocalDatabase)
         .otherwise(finishWorkflow)
       ),
-      role: props.lfAdminRole,
+      role: props.workflowRole,
       logs: {
         destination: logGroup,
         level: LogLevel.ALL,
