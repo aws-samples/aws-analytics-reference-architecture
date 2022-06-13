@@ -900,15 +900,16 @@ ${userData.join('\r\n')}
    * @param {Construct} scope of the IAM role
    * @param {string} id of the CDK resource to be created, it should be unique across the stack
    * @param {IManagedPolicy} policy the execution policy to attach to the role
-   * @param {string} name for the Managed Endpoint
+   * @param {string} namespace The namespace from which the role is going to be used. MUST be the same as the namespace of the Virtual Cluster from which the job is submitted
+   * @param {string} name Name to use for the role, required and is used to scope the iam role
    */
-  public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, namespace: string, name?: string): Role {
+  public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, namespace: string, name: string): Role {
 
     const stack = Stack.of(this);
 
     let irsaConditionkey: CfnJson = new CfnJson(this, 'irsaConditionkey', {
       value: {
-        [`${this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer}:sub`]: 'system:serviceaccount:' + namespace + ':emr-containers-sa-*-*-' + Aws.ACCOUNT_ID.toString() +'-'+ SimpleBase.base36.encode(name!),
+        [`${this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer}:sub`]: 'system:serviceaccount:' + namespace + ':emr-containers-sa-*-*-' + Aws.ACCOUNT_ID.toString() +'-'+ SimpleBase.base36.encode(name),
       },
     });
 
