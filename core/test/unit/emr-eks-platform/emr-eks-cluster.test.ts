@@ -7,11 +7,11 @@
  * @group unit/emr-eks-platform/emr-eks-cluster
  */
 
-import { Stack } from 'aws-cdk-lib';
-import { Template, Match } from 'aws-cdk-lib/assertions';
-import { TaintEffect } from 'aws-cdk-lib/aws-eks';
 import { ManagedPolicy, PolicyDocument, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { Stack } from 'aws-cdk-lib';
 import { EmrEksCluster } from '../../../src/emr-eks-platform/emr-eks-cluster';
+import { TaintEffect } from 'aws-cdk-lib/aws-eks';
+import { Template, Match } from 'aws-cdk-lib/assertions';
 
 const emrEksClusterStack = new Stack();
 const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, {
@@ -144,7 +144,7 @@ test('EKS cluster should have the default Nodegroups', () => {
     AmiType: 'AL2_ARM_64',
     InstanceTypes: ['m6gd.8xlarge'],
     Labels: {
-      'role': 'critical',
+      role: 'critical',
       'node-lifecycle': 'on-demand',
     },
     ScalingConfig: {
@@ -174,7 +174,7 @@ test('EKS cluster should have the default Nodegroups', () => {
     AmiType: 'AL2_ARM_64',
     InstanceTypes: ['m6g.xlarge'],
     Labels: {
-      'role': 'shared',
+      role: 'shared',
       'spark-role': 'driver',
       'node-lifecycle': 'on-demand',
     },
@@ -198,7 +198,7 @@ test('EKS cluster should have the default Nodegroups', () => {
     AmiType: 'AL2_ARM_64',
     InstanceTypes: ['m6g.8xlarge', 'm6gd.8xlarge'],
     Labels: {
-      'role': 'shared',
+      role: 'shared',
       'spark-role': 'executor',
       'node-lifecycle': 'spot',
     },
@@ -229,7 +229,7 @@ test('EKS cluster should have the default Nodegroups', () => {
     NodegroupName: 'notebook-driver-0',
     InstanceTypes: ['t3.large'],
     Labels: {
-      'role': 'notebook',
+      role: 'notebook',
       'spark-role': 'driver',
       'node-lifecycle': 'on-demand',
     },
@@ -261,7 +261,7 @@ test('EKS cluster should have the default Nodegroups', () => {
     InstanceTypes: ['t3.2xlarge', 't3a.2xlarge'],
     CapacityType: 'SPOT',
     Labels: {
-      'role': 'notebook',
+      role: 'notebook',
       'spark-role': 'executor',
       'node-lifecycle': 'spot',
     },

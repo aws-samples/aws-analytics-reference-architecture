@@ -1,8 +1,9 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    ArnFormat,
     aws_s3 as s3,
     aws_iam as iam,
     aws_logs as logs
@@ -10,18 +11,18 @@ from aws_cdk import (
 from aws_cdk.aws_elasticsearch import CfnDomain
 from aws_cdk.aws_iam import PolicyStatement
 from aws_cdk.aws_kinesisanalytics import CfnApplicationV2, CfnApplicationCloudWatchLoggingOptionV2
-from aws_cdk.core import RemovalPolicy, Stack
+from aws_cdk import RemovalPolicy, Stack
 from aws_cdk.custom_resources import AwsCustomResource, AwsCustomResourcePolicy, AwsSdkCall, PhysicalResourceId
 
 import common.common_cdk.config as _config
 
 
-class KdaApplication(core.Construct):
+class KdaApplication(Construct):
     @property
     def app(self):
         return self.__app
 
-    def __init__(self, scope: core.Construct, id: str, es_domain: CfnDomain, kda_role: iam.Role,
+    def __init__(self, scope: Construct, id: str, es_domain: CfnDomain, kda_role: iam.Role,
                  source_bucket: s3.Bucket, dest_bucket: s3.Bucket, **kwargs):
         super().__init__(scope, id, **kwargs)
 
@@ -47,7 +48,7 @@ class KdaApplication(core.Construct):
                                           resource='log-group',
                                           resource_name=log_group.log_group_name + ':log-stream:' +
                                                         log_stream.log_stream_name,
-                                          sep=':')
+                                          arn_format=ArnFormat.COLON_RESOURCE_NAME)
 
         # TODO: restrict
         kda_role.add_to_policy(PolicyStatement(actions=['logs:*'],

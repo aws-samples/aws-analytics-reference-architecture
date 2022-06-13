@@ -1,19 +1,19 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    Aws,
+    CustomResource,
     aws_lambda as _lambda,
-    aws_cloudformation as _cfn,
     aws_iam as _iam,
-    aws_ec2 as _ec2,
     custom_resources as _custom_resources
 )
 
 
-class AutoEmptySecurityGroup(core.Construct):
+class AutoEmptySecurityGroup(Construct):
 
-    def __init__(self, scope: core.Construct, id: str, secgroup_name: str, **kwargs):
+    def __init__(self, scope: Construct, id: str, secgroup_name: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
         with open('common/common_cdk/lambda/empty_security_group.py', 'r') as f:
@@ -23,7 +23,7 @@ class AutoEmptySecurityGroup(core.Construct):
         empty_secgroup_lambda = _lambda.SingletonFunction(self, 'EmptySecurityGroupLambda',
                                                           uuid="dfs3k8730-4ee1-11e8-9c2d-fdfs65dfsc",
                                                           runtime=_lambda.Runtime.PYTHON_3_7,
-                                                          code=_lambda.Code.inline(lambda_source),
+                                                          code=_lambda.Code.from_inline(lambda_source),
                                                           handler='index.handler',
                                                           function_name='ara-auto-empty-secgroup'
                                                           )
@@ -39,7 +39,7 @@ class AutoEmptySecurityGroup(core.Construct):
                     'ec2:RevokeSecurityGroupIngress',
                     'ec2:RevokeSecurityGroupEgress'
                 ],
-                resources=['arn:aws:ec2::'+core.Aws.ACCOUNT_ID+':security-group/'+secgroup_name]
+                resources=['arn:aws:ec2::'+Aws.ACCOUNT_ID+':security-group/'+secgroup_name]
             )
         )
 
@@ -48,7 +48,7 @@ class AutoEmptySecurityGroup(core.Construct):
             on_event_handler=empty_secgroup_lambda
         )
 
-        core.CustomResource(
+        CustomResource(
             self, 'EmptyBucketCustomResource',
             service_token=empty_secgroup_lambda_provider.service_token,
             properties={

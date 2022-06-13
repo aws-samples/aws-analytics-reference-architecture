@@ -1,7 +1,14 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
+    Aws,
+    CustomResource,
+    Duration,
+    Fn,
+    Stack,
+    ArnFormat,
     aws_iam as _iam,
     aws_ec2 as _ec2,
     aws_s3 as _s3,
@@ -14,17 +21,16 @@ from aws_cdk import (
     aws_stepfunctions as _sfn,
     aws_stepfunctions_tasks as _sfn_tasks,
     custom_resources as _custom_resources,
-    aws_kms as _kms,
-    core
+    aws_kms as _kms
 )
 
-from common.common_cdk.auto_empty_bucket import AutoEmptyBucket
-from common.common_cdk.config import (BINARIES_LOCATION, ARA_BUCKET_NAME, BINARIES, DataGenConfig)
+from common_cdk.auto_empty_bucket import AutoEmptyBucket
+from common_cdk.config import (BINARIES_LOCATION, ARA_BUCKET_NAME, BINARIES, DataGenConfig)
 
 
-class StreamDataGenerator(core.Construct):
+class StreamDataGenerator(Construct):
 
-    def __init__(self, scope: core.Construct, id: str,
+    def __init__(self, scope: Construct, id: str,
                  log_bucket: _s3.Bucket,
                  config_table: _dynamodb.Table,
                  tshirt_size: str,
@@ -38,11 +44,11 @@ class StreamDataGenerator(core.Construct):
 
         super().__init__(scope, id, **kwargs)
 
-        stack = core.Stack.of(self)
+        stack = Stack.of(self)
 
         stream_source_bucket = AutoEmptyBucket(
             self, 'StreamSource',
-            bucket_name='ara-stream-source-'+core.Aws.ACCOUNT_ID,
+            bucket_name='ara-stream-source-'+Aws.ACCOUNT_ID,
             uuid='95505f50-0276-11eb-adc1-0242ac120002'
         )
 
@@ -57,6 +63,9 @@ class StreamDataGenerator(core.Construct):
             self, 'StreamEmrClusterRole',
             assumed_by=_iam.ServicePrincipal("ec2.amazonaws.com")
         )
+
+        sink_bucket.grant_read_write(cluster_role)
+        stream_source_bucket.bucket.grant_read_write(cluster_role)
 
         _iam.Policy(
             self, 'StreamEmrClusterPolicy',
@@ -105,31 +114,6 @@ class StreamDataGenerator(core.Construct):
                     actions=['s3:PutObject'],
                     resources=[log_bucket.bucket_arn + "/data-generator/*"]
                 ),
-                _iam.PolicyStatement(
-                    actions=[
-                        "s3:AbortMultipartUpload",
-                        "s3:CreateBucket",
-                        "s3:DeleteObject",
-                        "s3:GetBucketVersioning",
-                        "s3:GetObject",
-                        "s3:GetObjectTagging",
-                        "s3:GetObjectVersion",
-                        "s3:ListBucket",
-                        "s3:ListBucketMultipartUploads",
-                        "s3:ListBucketVersions",
-                        "s3:ListMultipartUploadParts",
-                        "s3:PutBucketVersioning",
-                        "s3:PutObject",
-                        "s3:PutObjectTagging"
-                    ],
-                    resources=[
-                        sink_bucket.bucket_arn + '/*',
-                        sink_bucket.bucket_arn,
-                        stream_source_bucket.bucket.bucket_arn + '/*',
-                        stream_source_bucket.bucket.bucket_arn
-
-                    ]
-                )
             ],
             roles=[cluster_role]
         )
@@ -178,14 +162,14 @@ class StreamDataGenerator(core.Construct):
             self, 'StreamConfigureDatagenLambda',
             uuid="a9904dec-01cf-11eb-adc1-0242ac120002",
             runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.inline(lambda_source),
+            code=_lambda.Code.from_inline(lambda_source),
             handler='index.handler',
             function_name='stream-datagen-config',
             environment={
                 'TABLE_NAME': config_table.table_name,
                 'JAR_LOCATION': BINARIES_LOCATION + DataGenConfig.JAR_FILE,
             },
-            timeout=core.Duration.seconds(10)
+            timeout=Duration.seconds(10)
         )
 
         configure_datagen_function.role.add_to_policy(
@@ -290,7 +274,7 @@ class StreamDataGenerator(core.Construct):
         datagen_stepfunctions = _sfn.StateMachine(
             self, "StreamDataGenStepFunctions",
             definition=definition,
-            timeout=core.Duration.minutes(30)
+            timeout=Duration.minutes(30)
         )
 
         datagen_stepfunctions.add_to_role_policy(
@@ -315,7 +299,7 @@ class StreamDataGenerator(core.Construct):
         step_trigger.add_target(
             _events_targets.SfnStateMachine(
                 machine=datagen_stepfunctions,
-                input=_events.RuleTargetInput.from_object({"Emr": {"Cluster": {"Id": core.Fn.ref(emr_cluster.logical_id)}}})
+                input=_events.RuleTargetInput.from_object({"Emr": {"Cluster": {"Id": Fn.ref(emr_cluster.logical_id)}}})
             )
         )
 
@@ -326,7 +310,7 @@ class StreamDataGenerator(core.Construct):
             self, 'StreamStepFunctionsTriggerLambda',
             uuid="cf042246-01d0-11eb-adc1-0242ac120002",
             runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.inline(lambda_source),
+            code=_lambda.Code.from_inline(lambda_source),
             handler='index.handler',
             function_name='stepfunctions-stream-datagen-trigger'
         )
@@ -343,7 +327,7 @@ class StreamDataGenerator(core.Construct):
             on_event_handler=stepfunctions_trigger_lambda
         )
 
-        core.CustomResource(
+        CustomResource(
             self, 'StreamStepFunctionsTrigger',
             service_token=trigger_step_lambda_provider.service_token,
             properties={
@@ -359,11 +343,11 @@ class StreamDataGenerator(core.Construct):
             id='WebSaleStreamGenerator',
             runtime=_lambda.Runtime.PYTHON_3_7,
             memory_size=2048,
-            timeout=core.Duration.minutes(15),
-            code=_lambda.Code.inline(lambda_source),
+            timeout=Duration.minutes(15),
+            code=_lambda.Code.from_inline(lambda_source),
             handler='index.lambda_handler',
             environment={
-                'REGION': core.Aws.REGION,
+                'REGION': Aws.REGION,
                 'STREAM_NAME': web_sale_stream
             }
         )
@@ -401,7 +385,7 @@ class StreamDataGenerator(core.Construct):
         sale_stream_generator_lambda.add_to_role_policy(
             _iam.PolicyStatement(
                 actions=['kms:GenerateDataKey'],
-                resources=[stack.format_arn(service='kms', resource='key', sep='/', resource_name=kinesis_key.key_id)]
+                resources=[stack.format_arn(service='kms', resource='key', arn_format=ArnFormat.SLASH_RESOURCE_NAME, resource_name=kinesis_key.key_id)]
             )
         )
 
@@ -410,11 +394,11 @@ class StreamDataGenerator(core.Construct):
             id='WebCustomerStreamGenerator',
             runtime=_lambda.Runtime.PYTHON_3_7,
             memory_size=2048,
-            timeout=core.Duration.minutes(15),
-            code=_lambda.Code.inline(lambda_source),
+            timeout=Duration.minutes(15),
+            code=_lambda.Code.from_inline(lambda_source),
             handler='index.lambda_handler',
             environment={
-                'REGION': core.Aws.REGION,
+                'REGION': Aws.REGION,
                 'STREAM_NAME': web_customer_stream
             }
         )
@@ -451,7 +435,7 @@ class StreamDataGenerator(core.Construct):
         customer_stream_generator_lambda.add_to_role_policy(
             _iam.PolicyStatement(
                 actions=['kms:GenerateDataKey'],
-                resources=[stack.format_arn(service='kms', resource='key', sep='/', resource_name=kinesis_key.key_id)]
+                resources=[stack.format_arn(service='kms', resource='key', arn_format=ArnFormat.SLASH_RESOURCE_NAME, resource_name=kinesis_key.key_id)]
             )
         )
 
@@ -460,11 +444,11 @@ class StreamDataGenerator(core.Construct):
             id='WebCustomerAddressStreamGenerator',
             runtime=_lambda.Runtime.PYTHON_3_7,
             memory_size=2048,
-            timeout=core.Duration.minutes(15),
-            code=_lambda.Code.inline(lambda_source),
+            timeout=Duration.minutes(15),
+            code=_lambda.Code.from_inline(lambda_source),
             handler='index.lambda_handler',
             environment={
-                'REGION': core.Aws.REGION,
+                'REGION': Aws.REGION,
                 'STREAM_NAME': web_customer_address_stream
             }
         )
@@ -501,6 +485,6 @@ class StreamDataGenerator(core.Construct):
         address_stream_generator_lambda.add_to_role_policy(
             _iam.PolicyStatement(
                 actions=['kms:GenerateDataKey'],
-                resources=[stack.format_arn(service='kms', resource='key', sep='/', resource_name=kinesis_key.key_id)]
+                resources=[stack.format_arn(service='kms', resource='key', arn_format=ArnFormat.SLASH_RESOURCE_NAME, resource_name=kinesis_key.key_id)]
             )
         )

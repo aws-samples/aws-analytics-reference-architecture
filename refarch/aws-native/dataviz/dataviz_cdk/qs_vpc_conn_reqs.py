@@ -1,12 +1,12 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
-    core,
     aws_ec2 as ec2
 )
 
-class QuickSightVpcConnectionReqs(core.Construct):
+class QuickSightVpcConnectionReqs(Construct):
 
     @property
     def security_group_id(self):
@@ -14,7 +14,7 @@ class QuickSightVpcConnectionReqs(core.Construct):
 
     def __init__(
             self,
-            scope: core.Construct,
+            scope: Construct,
             id: str,
             vpc,
             redshift_security_group_id,

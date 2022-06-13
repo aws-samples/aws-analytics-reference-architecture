@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: MIT-0
 
 import aws_cdk.aws_ec2 as ec2
-import aws_cdk.aws_glue as glue
+import aws_cdk.aws_glue_alpha as glue
 import aws_cdk.aws_iam as iam
-import aws_cdk.core as core
+from constructs import Construct
+from aws_cdk import NestedStack, Tags
 import aws_cdk.custom_resources as cr
 
 from common.common_cdk.config import DataVizConfig as cfg
@@ -15,7 +16,7 @@ from dataviz.dataviz_cdk.qs_group import QuickSightGroup
 from dataviz.dataviz_cdk.qs_vpc_conn_reqs import QuickSightVpcConnectionReqs
 
 
-class DataVizModule(core.NestedStack):
+class DataVizModule(NestedStack):
 
     @property
     def quicksight_group_arn(self):
@@ -25,7 +26,7 @@ class DataVizModule(core.NestedStack):
     def quicksight_security_group_id(self):
         return self.__quicksight_security_group_id
 
-    def __init__(self, scope: core.Construct, id: str,
+    def __init__(self, scope: Construct, id: str,
                  vpc: ec2.IVpc, clean_glue_db_name: glue.Database,
                  redshift_sg_id: str, quicksight_username: str,
                  quicksight_identity_region: str, **kwargs) -> None:
@@ -85,4 +86,4 @@ class DataVizModule(core.NestedStack):
                                                                           redshift_security_group_id=redshift_sg_id,
                                                                           quicksight_security_group_name='quicksight-sg').security_group_id
 
-        core.Tags.of(self).add('module-name', 'dataviz')
+        Tags.of(self).add('module-name', 'dataviz')

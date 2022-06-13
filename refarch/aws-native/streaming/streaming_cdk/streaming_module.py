@@ -1,20 +1,22 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    NestedStack,
+    Tags,
     aws_s3 as s3
 )
 from aws_cdk.aws_iam import Role, ServicePrincipal, PolicyStatement
 from aws_cdk.aws_kinesis import Stream
 from aws_cdk.aws_kms import Key
-from aws_cdk.core import Fn
+from aws_cdk import Fn
 
 from .es_domain import EsDomain
 from .kda_application import KdaApplication
 
 
-class StreamingModule(core.NestedStack):
+class StreamingModule(NestedStack):
 
     @property
     def sale_stream(self):
@@ -32,7 +34,7 @@ class StreamingModule(core.NestedStack):
     def kinesis_kms_key(self):
         return self.__kms_key
 
-    def __init__(self, scope: core.Construct, id: str, prefix: str,
+    def __init__(self, scope: Construct, id: str, prefix: str,
                  source_bucket: s3.Bucket, dest_bucket: s3.Bucket, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -86,4 +88,4 @@ class StreamingModule(core.NestedStack):
                                  source_bucket=source_bucket,
                                  dest_bucket=dest_bucket)
 
-        core.Tags.of(self).add('module-name', 'streaming')
+        Tags.of(self).add('module-name', 'streaming')

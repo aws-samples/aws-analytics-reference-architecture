@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 const { basename, join, dirname, relative } = require('path');
+const fs = require('fs');
 const glob = require('glob');
 
 
@@ -9,7 +10,7 @@ const { awscdk } = require('projen');
 
 const CDK_VERSION = '2.25.0';
 const project = new awscdk.AwsCdkConstructLibrary({
-
+  majorVersion: 2,
   authorName: 'Amazon Web Services',
   authorUrl: 'https://aws.amazon.com',
   authorOrganization: true,
@@ -134,6 +135,8 @@ testDeploy.prependExec('npx projen build');
 
 project.packageTask.spawn(project.tasks.tryFind('package-all'));
 
+const package = project.tasks.tryFind('package-all');
+
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',
 });
@@ -154,6 +157,8 @@ for (const from of glob.sync('src/**/resources')) {
   const cpCommand = `rsync -avr --exclude '*.ts' --exclude '*.js' ${from} ${to}`;
   copyResourcesToLibTask.exec(cpCommand);
 }
+const workaroundCommand = `perl -i -pe 's/flyway-all.jar//g' lib/db-schema-manager/resources/flyway-lambda/.gitignore`;
+copyResourcesToLibTask.exec(workaroundCommand);
 
 /**
  * Task to pip install all Python Lambda functions in lib folder
@@ -183,7 +188,7 @@ const gradleBuildTask = project.addTask('gradle-build', {
 for (const gradlePath of findAllGradleLambdaDir('src')) {
   console.log('loop over gradle dir');
   const dirPath = dirname(gradlePath);
-  const gradleCmd = `cd ${dirPath} && ./gradlew shadowJar && cp build/libs/*.jar ./ 2> /dev/null`;
+  const gradleCmd = `cd ${dirPath} && ./gradlew shadowJar && cp build/libs/*.jar ./ && rm -rf build 2> /dev/null`;
 
   gradleBuildTask.exec(gradleCmd);
 }

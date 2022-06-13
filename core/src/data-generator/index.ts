@@ -1,2 +1,2 @@
 export { BatchReplayerProps, BatchReplayer } from './batch-replayer';
-export { PreparedDatasetProps, PreparedDataset } from './prepared-dataset';
+export { PreparedDataset, PreparedDatasetProps } from './prepared-dataset';

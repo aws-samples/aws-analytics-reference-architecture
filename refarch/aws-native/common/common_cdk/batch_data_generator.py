@@ -1,6 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
+from constructs import Construct
 from aws_cdk import (
     aws_stepfunctions as _sfn,
     aws_stepfunctions_tasks as _sfn_tasks,
@@ -12,14 +13,15 @@ from aws_cdk import (
     aws_events_targets as _events_targets,
     custom_resources as _custom_resources,
     aws_ec2 as _ec2,
-    core
+    Duration,
+    CustomResource
 )
 from common.common_cdk.config import (BINARIES_LOCATION, ARA_BUCKET_NAME, BINARIES, DataGenConfig)
 
 
-class BatchDataGenerator(core.Construct):
+class BatchDataGenerator(Construct):
 
-    def __init__(self, scope: core.Construct, id: str,
+    def __init__(self, scope: Construct, id: str,
                  log_bucket: _s3.Bucket,
                  config_table: _dynamodb.Table,
                  tshirt_size: str,
@@ -40,6 +42,8 @@ class BatchDataGenerator(core.Construct):
             self, 'BatchEmrClusterRole',
             assumed_by=_iam.ServicePrincipal("ec2.amazonaws.com")
         )
+
+        sink_bucket.grant_read_write(cluster_role)
 
         _iam.Policy(
             self, 'BatchEmrClusterPolicy',
@@ -88,29 +92,6 @@ class BatchDataGenerator(core.Construct):
                     actions=['s3:PutObject'],
                     resources=[log_bucket.bucket_arn + "/data-generator/*"]
                 ),
-                _iam.PolicyStatement(
-                    actions=[
-                        "s3:AbortMultipartUpload",
-                        "s3:CreateBucket",
-                        "s3:DeleteObject",
-                        "s3:GetBucketVersioning",
-                        "s3:GetObject",
-                        "s3:GetObjectTagging",
-                        "s3:GetObjectVersion",
-                        "s3:ListBucket",
-                        "s3:ListBucketMultipartUploads",
-                        "s3:ListBucketVersions",
-                        "s3:ListMultipartUploadParts",
-                        "s3:PutBucketVersioning",
-                        "s3:PutObject",
-                        "s3:PutObjectTagging"
-                    ],
-                    resources=[
-                        sink_bucket.bucket_arn + '/*',
-                        sink_bucket.bucket_arn
-
-                    ]
-                )
             ],
             roles=[cluster_role]
         )
@@ -159,14 +140,14 @@ class BatchDataGenerator(core.Construct):
             self, 'BatchConfigureDatagenLambda',
             uuid="58a9a222-ff07-11ea-adc1-0242ac120002",
             runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.inline(lambda_source),
+            code=_lambda.Code.from_inline(lambda_source),
             handler='index.handler',
             function_name='datagen-config',
             environment={
                 'TABLE_NAME': config_table.table_name,
                 'JAR_LOCATION': BINARIES_LOCATION + DataGenConfig.JAR_FILE,
             },
-            timeout=core.Duration.seconds(10)
+            timeout=Duration.seconds(10)
         )
 
         configure_datagen_function.role.add_to_policy(
@@ -181,13 +162,13 @@ class BatchDataGenerator(core.Construct):
 
         terminate_cluster = _sfn_tasks.EmrTerminateCluster(
             self, 'BatchDeleteCluster',
-            cluster_id=_sfn.TaskInput.from_data_at("$.Emr.Cluster.Id").value,
+            cluster_id=_sfn.TaskInput.from_json_path_at("$.Emr.Cluster.Id").value,
             integration_pattern=_sfn.IntegrationPattern.RUN_JOB,
         )
 
         terminate_cluster_error = _sfn_tasks.EmrTerminateCluster(
             self, 'BatchDeleteClusterError',
-            cluster_id=_sfn.TaskInput.from_data_at("$.Emr.Cluster.Id").value,
+            cluster_id=_sfn.TaskInput.from_json_path_at("$.Emr.Cluster.Id").value,
             integration_pattern=_sfn.IntegrationPattern.RUN_JOB,
         ).next(_sfn.Fail(self, 'StepFailure'))
 
@@ -353,7 +334,7 @@ class BatchDataGenerator(core.Construct):
         datagen_stepfunctions = _sfn.StateMachine(
             self, "BatchDataGenStepFunctions",
             definition=definition,
-            timeout=core.Duration.minutes(30)
+            timeout=Duration.minutes(30)
         )
 
         datagen_stepfunctions.add_to_role_policy(
@@ -401,7 +382,7 @@ class BatchDataGenerator(core.Construct):
             self, 'BatchStepFunctionsTriggerLambda',
             uuid="9597f6f2-f840-11ea-adc1-0242ac120002",
             runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.inline(lambda_source),
+            code=_lambda.Code.from_inline(lambda_source),
             handler='index.handler',
             function_name='stepfunctions-batch-datagen-trigger'
         )
@@ -418,7 +399,7 @@ class BatchDataGenerator(core.Construct):
             on_event_handler=stepfunctions_trigger_lambda
         )
 
-        core.CustomResource(
+        CustomResource(
             self, 'StepFunctionsTrigger',
             service_token=trigger_step_lambda_provider.service_token,
             properties={
@@ -434,9 +415,9 @@ class BatchDataGenerator(core.Construct):
             self, 'StepFuncTerminateBatch',
             uuid='58a9a422-ff07-11ea-adc1-0242ac120002',
             runtime=_lambda.Runtime.PYTHON_3_7,
-            code=_lambda.Code.inline(lambda_source),
+            code=_lambda.Code.from_inline(lambda_source),
             handler='index.handler',
-            timeout=core.Duration.minutes(5)
+            timeout=Duration.minutes(5)
         )
 
         sfn_terminate.role.add_to_policy(
@@ -457,7 +438,7 @@ class BatchDataGenerator(core.Construct):
             on_event_handler=sfn_terminate
         )
 
-        core.CustomResource(
+        CustomResource(
             self, 'StepFuncTerminateBatchCustomResource',
             service_token=sfn_terminate_provider.service_token,
             properties={

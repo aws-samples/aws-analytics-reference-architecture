@@ -1,6 +1,7 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
-from aws_cdk.core import Stack, Construct, Environment
+from constructs import Construct
+from aws_cdk import Stack, Environment
 from aws_cdk.pipelines import CodePipeline, CodePipelineSource, CodeBuildStep
 
 from cicd.pipeline_stage import PipelineStage

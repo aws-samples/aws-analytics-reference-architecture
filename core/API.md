@@ -3135,18 +3135,16 @@ public readonly iamRole: Role;
 This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
 
 If the location is in a different account, cross account access should be granted via the [S3CrossAccount]{@link S3CrossAccount} construct.
+If the S3 location is encrypted with KMS, the key must be explicitly passed to the construct because CDK cannot retrieve bucket encryption key from imported buckets. 
+Imported buckets are generally used in cross account setup like data mesh.
 
 This construct instantiate 2 objects:
-* An IAM role with read/write permissions to the S3 location and read access to the KMS key used to encypt the bucket
-* A CfnResource is based on an IAM role with 2 policies folowing the least privilege AWS best practices:
-* Policy 1 is for GetObject, PutObject, DeleteObject from S3 bucket
-* Policy 2 is to list S3 Buckets
+* An IAM role with read/write permissions to the S3 location and encrypt/decrypt access to the KMS key used to encypt the bucket
+* A CfnResource is based on an IAM role with 2 policy statement folowing the least privilege AWS best practices:
+   * Statement 1 for S3 permissions
+   * Statement 2 for KMS permissions if the bucket is encrypted
 
-Policy 1 takes as an input S3 object arn
-Policy 2 takes as an input S3 bucket arn
-
-
-The CDK construct instantiate the cfnresource in order to register the S3 location with Lakeformation using the IAM role defined above.
+The CDK construct instantiate the CfnResource in order to register the S3 location with Lakeformation using the IAM role defined above.
 
 Usage example:
 ```typescript
@@ -6759,7 +6757,8 @@ const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket">s3Bucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | S3 Bucket to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket">s3Bucket</a></code> | <code>aws-cdk-lib.aws_s3.IBucket</code> | S3 Bucket to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.kmsKey">kmsKey</a></code> | <code>aws-cdk-lib.aws_kms.IKey</code> | KMS key used to encrypt the S3 Location. |
 | <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3ObjectKey">s3ObjectKey</a></code> | <code>string</code> | S3 object key to be registered with Lakeformation. |
 
 ---
@@ -6767,12 +6766,25 @@ const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
 ##### `s3Bucket`<sup>Required</sup> <a name="s3Bucket" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket"></a>
 
 ```typescript
-public readonly s3Bucket: Bucket;
+public readonly s3Bucket: IBucket;
 ```
 
-- *Type:* aws-cdk-lib.aws_s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.IBucket
 
 S3 Bucket to be registered with Lakeformation.
+
+---
+
+##### `kmsKey`<sup>Optional</sup> <a name="kmsKey" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.kmsKey"></a>
+
+```typescript
+public readonly kmsKey: IKey;
+```
+
+- *Type:* aws-cdk-lib.aws_kms.IKey
+- *Default:* No encryption is used
+
+KMS key used to encrypt the S3 Location.
 
 ---
 

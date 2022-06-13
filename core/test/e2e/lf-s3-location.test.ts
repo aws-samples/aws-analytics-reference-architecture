@@ -30,6 +30,7 @@ const myBucket = new Bucket(stack, 'MyBucket', {
 const s3Location = new LakeformationS3Location(stack, 'S3Location', {
   s3Bucket: myBucket,
   s3ObjectKey: 'test',
+  kmsKey: myKey,
 });
 
 new cdk.CfnOutput(stack, 'BucketPolicy', {

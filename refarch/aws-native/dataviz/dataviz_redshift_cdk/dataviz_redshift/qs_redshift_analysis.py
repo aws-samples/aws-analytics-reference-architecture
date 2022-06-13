@@ -3,16 +3,17 @@
 
 import datetime
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    Aws,
     custom_resources as cr
 )
 
-class QuickSightRedshiftAnalysis(core.Construct):
+class QuickSightRedshiftAnalysis(Construct):
 
     def __init__(
             self,
-            scope: core.Construct,
+            scope: Construct,
             id: str,
             iam_policy: cr.AwsCustomResourcePolicy,
             quicksight_group_arn: str,
@@ -25,7 +26,7 @@ class QuickSightRedshiftAnalysis(core.Construct):
 
         super().__init__(scope, id, **kwargs)
 
-        aws_account_id = core.Aws.ACCOUNT_ID
+        aws_account_id = Aws.ACCOUNT_ID
         uniquestring = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
         redshift_analysis_id = redshift_analysis_name + uniquestring
         redshift_analysis_physical_id = redshift_analysis_name + uniquestring
