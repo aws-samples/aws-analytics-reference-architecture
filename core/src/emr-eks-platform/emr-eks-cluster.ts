@@ -27,7 +27,7 @@ import {
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Bucket, BucketEncryption, Location } from 'aws-cdk-lib/aws-s3';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
-import { Aws, CfnOutput, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, CfnOutput, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy, CfnJson } from 'aws-cdk-lib';
 import { AraBucket } from '../ara-bucket';
 import { SingletonKey } from '../singleton-kms-key';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
@@ -36,6 +36,7 @@ import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
 import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
 import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
+import * as SimpleBase from 'simple-base';
 import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
@@ -175,7 +176,6 @@ export class EmrEksCluster extends TrackedConstruct {
   private readonly awsNodeRole: Role;
   private readonly ec2InstanceNodeGroupRole: Role;
   private readonly defaultNodeGroups: boolean;
-
   /**
    * Constructs a new instance of the EmrEksCluster construct.
    * @param {Construct} scope the Scope of the CDK Construct
@@ -900,15 +900,27 @@ ${userData.join('\r\n')}
    * @param {Construct} scope of the IAM role
    * @param {string} id of the CDK resource to be created, it should be unique across the stack
    * @param {IManagedPolicy} policy the execution policy to attach to the role
-   * @param {string} name for the Managed Endpoint
+   * @param {string} namespace The namespace from which the role is going to be used. MUST be the same as the namespace of the Virtual Cluster from which the job is submitted
+   * @param {string} name Name to use for the role, required and is used to scope the iam role
    */
-  public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, name?: string): Role {
+  public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, namespace: string, name: string): Role {
 
     const stack = Stack.of(this);
 
+    let irsaConditionkey: CfnJson = new CfnJson(this, 'irsaConditionkey', {
+      value: {
+        [`${this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer}:sub`]: 'system:serviceaccount:' + namespace + ':emr-containers-sa-*-*-' + Aws.ACCOUNT_ID.toString() +'-'+ SimpleBase.base36.encode(name),
+      },
+    });
+
     // Create an execution role assumable by EKS OIDC provider
     return new Role(scope, `${id}ExecutionRole`, {
-      assumedBy: this.eksOidcProvider,
+      assumedBy: new FederatedPrincipal(
+        this.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+        {
+          StringLike: irsaConditionkey,
+        },
+        'sts:AssumeRoleWithWebIdentity'),
       roleName: name ? name : undefined,
       managedPolicies: [policy],
       inlinePolicies: {
