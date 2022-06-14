@@ -29,8 +29,8 @@ jobs:
           git config user.name "Automation"
           git config user.email "github-actions@github.com"
       - name: Configure AWS Credentials
-          uses: aws-actions/configure-aws-credentials@v1
-          with:
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
             role-to-assume: arn:aws:iam::660444162056:role/githubActionRoleE2E
             aws-region: eu-west-1
             role-session-name: GithubActionE2E
