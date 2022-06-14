@@ -37,7 +37,7 @@ jobs:
       - name: Build
         run: cd core && npx projen build
       - name: E2E
-          run: npx projen test:integ
+        run: npx projen test:integ
       - name: Check for changes
         id: git_diff
         run: git diff --exit-code || echo "::set-output name=has_changes::true"
