@@ -7,9 +7,9 @@
  * @group integ/notebook-platform
  */
 
-import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
-import * as cdk from '@aws-cdk/core';
-import { ArnFormat, Aws } from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib';
+import { ArnFormat, Aws } from 'aws-cdk-lib';
+import { ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 

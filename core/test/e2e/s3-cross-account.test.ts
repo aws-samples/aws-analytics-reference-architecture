@@ -6,12 +6,12 @@
  * @group integ/lakeformation/s3crossaccount
  */
 
+import * as cdk from 'aws-cdk-lib';
 import { Key } from 'aws-cdk-lib/aws-kms';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
-import * as cdk from 'aws-cdk-lib';
-import { deployStack, destroyStack } from './utils';
 import { S3CrossAccount } from '../../src/s3-cross-account';
- 
+import { deployStack, destroyStack } from './utils';
+
 jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
@@ -21,9 +21,9 @@ const myKey = new Key(stack, 'MyKey', {
   removalPolicy: cdk.RemovalPolicy.DESTROY,
 });
 const myBucket = new Bucket(stack, 'MyBucket', {
-    encryptionKey: myKey,
-    removalPolicy: cdk.RemovalPolicy.DESTROY,
-    autoDeleteObjects: true,
+  encryptionKey: myKey,
+  removalPolicy: cdk.RemovalPolicy.DESTROY,
+  autoDeleteObjects: true,
 });
 
 new S3CrossAccount(stack, 'MyS3CrossAccount', {

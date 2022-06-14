@@ -8,9 +8,9 @@
  */
 
 import * as cdk from 'aws-cdk-lib';
+import { EmrEksCluster } from '../../src/emr-eks-platform';
 import { deployStack, destroyStack } from './utils';
 
-import { EmrEksCluster } from '../../src/emr-eks-platform';
 
 jest.setTimeout(2000000);
 // GIVEN
@@ -30,7 +30,7 @@ describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
     const deployResult = await deployStack(integTestApp, stack);
-    
+
     // THEN
     expect(deployResult.outputs.emrEksAdminRole).toEqual('arn:aws:iam::123445678912:role/gromav');
 
