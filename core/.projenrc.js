@@ -135,8 +135,6 @@ testDeploy.prependExec('npx projen build');
 
 project.packageTask.spawn(project.tasks.tryFind('package-all'));
 
-const package = project.tasks.tryFind('package-all');
-
 project.addTask('test:destroy', {
   exec: 'cdk destroy --app=./lib/integ.default.js',
 });

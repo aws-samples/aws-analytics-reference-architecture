@@ -7,13 +7,13 @@
  * @group unit/ara-bucket
  */
 
-import {NestedStack, Stack} from 'aws-cdk-lib';
-import {AraBucket} from '../../src/ara-bucket';
+import { NestedStack, Stack } from 'aws-cdk-lib';
+import { AraBucket } from '../../src/ara-bucket';
 
-import {Match, Template} from 'aws-cdk-lib/assertions';
-import {BucketEncryption} from "aws-cdk-lib/aws-s3";
+import { Match, Template } from 'aws-cdk-lib/assertions';
+import { BucketEncryption } from "aws-cdk-lib/aws-s3";
 
-describe ('AraBucket declared in Nested Stack', () => {
+describe('AraBucket declared in Nested Stack', () => {
   const AraBucketStack = new Stack();
   const AraBucketNestedStack1 = new NestedStack(AraBucketStack, 'nestStack1');
 
@@ -38,7 +38,7 @@ describe ('AraBucket declared in Nested Stack', () => {
 });
 
 
-describe ('AraBucket Root Stack', () => {
+describe('AraBucket Root Stack', () => {
   const AraBucketStack = new Stack();
 
   // Instantiate 2 Bucket Constructs

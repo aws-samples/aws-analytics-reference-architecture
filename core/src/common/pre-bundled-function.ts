@@ -13,11 +13,11 @@ import { Construct } from 'constructs';
  * It extends existing FunctionProps as optional using `Partial`
  * (as we don't require `Code` prop)
  */
-export interface PreBundledFunctionProps extends Partial<FunctionProps>{
+export interface PreBundledFunctionProps extends Partial<FunctionProps> {
   codePath: string;
   name: string;
-  lambdaPolicyStatements?: PolicyStatement [];
-  lambdaLayers?: ILayerVersion [];
+  lambdaPolicyStatements?: PolicyStatement[];
+  lambdaLayers?: ILayerVersion[];
 }
 
 /**
@@ -66,7 +66,7 @@ export class PreBundledFunction extends Function {
       throw new Error('Pass "codePath" prop instead of "code" . See CONTRIB_FAQ.md on how to create prebundled Lambda function.');
     }
 
-    let functionProps:any = { ...props };
+    let functionProps: any = { ...props };
 
     // __dirname is where this file is. In JSII, it is <jsii_tmp_path>/lib/common.
     // When running unit tests, it is ./src/common). In both case, we need to go up one level.
@@ -75,7 +75,7 @@ export class PreBundledFunction extends Function {
     functionProps.code = Code.fromAsset(assetPath);
     functionProps.functionName = props.name.slice();
 
-    let lambdaPolicyStatement: PolicyStatement [] = [];
+    let lambdaPolicyStatement: PolicyStatement[] = [];
 
     lambdaPolicyStatement.push(new PolicyStatement({
       actions: ['logs:CreateLogGroup'],
@@ -106,15 +106,15 @@ export class PreBundledFunction extends Function {
     });
 
     //Create an execution role for the lambda and attach to it a policy formed from user input
-    const lambdaExecutionRole = new Role (scope,
+    const lambdaExecutionRole = new Role(scope,
       'LambdaExecutionRole' + functionProps.functionName, {
-        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-        description: 'Role used by lambda in ARA',
-        managedPolicies: [lambdaExecutionRolePolicy],
-        roleName: 'LambdaExecutionRole' + functionProps.functionName,
-      });
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+      description: 'Role used by lambda in ARA',
+      managedPolicies: [lambdaExecutionRolePolicy],
+      roleName: 'LambdaExecutionRole' + functionProps.functionName,
+    });
 
-    let logRetentionLambdaPolicyStatement: PolicyStatement [] = [];
+    let logRetentionLambdaPolicyStatement: PolicyStatement[] = [];
 
     logRetentionLambdaPolicyStatement.push(new PolicyStatement({
       actions: ['logs:PutRetentionPolicy', 'logs:DeleteRetentionPolicy'],
@@ -135,13 +135,13 @@ export class PreBundledFunction extends Function {
     });
 
     //Create an execution role for the lambda and attach to it a policy formed from user input
-    const logRetentionLambdaExecutionRole = new Role (scope,
+    const logRetentionLambdaExecutionRole = new Role(scope,
       'LogRetentionLambdaExecutionRole' + functionProps.functionName, {
-        assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-        description: 'Role used by lambda to modify log retention',
-        managedPolicies: [logRetentionLambdaExecutionRolePolicy],
-        roleName: 'LogRetLambdaExec' + functionProps.functionName,
-      });
+      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+      description: 'Role used by lambda to modify log retention',
+      managedPolicies: [logRetentionLambdaExecutionRolePolicy],
+      roleName: 'LogRetLambdaExec' + functionProps.functionName,
+    });
 
     functionProps.role = lambdaExecutionRole;
     functionProps.logRetentionRole = logRetentionLambdaExecutionRole;

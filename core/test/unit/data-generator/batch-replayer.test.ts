@@ -25,7 +25,8 @@ beforeEach(() => {
     dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
     frequency: 120,
     sinkBucket: bucket,
-    sinkObjectKey: 'test'  });
+    sinkObjectKey: 'test'
+  });
   template = Template.fromStack(testStack);
 });
 

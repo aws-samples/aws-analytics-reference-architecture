@@ -20,7 +20,7 @@ import { Aws, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { SingletonKey } from './singleton-kms-key';
 
-export interface AraBucketProps{
+export interface AraBucketProps {
   /**
    * The Amazon S3 bucket name. The bucket name is postfixed with the AWS account ID and the AWS region
    */
@@ -48,7 +48,7 @@ export interface AraBucketProps{
    * The KMS key for the bucket encryption
    * @default - if encryption is KMS, use a unique KMS key across the stack called `AraDefaultKmsKey`
    */
-  readonly encryptionKey?: IKey ;
+  readonly encryptionKey?: IKey;
 
   /**
    * Enforces SSL for requests.
@@ -189,7 +189,7 @@ export class AraBucket extends Bucket {
     const stack = Stack.of(scope);
     const id = `${props.bucketName}`;
 
-    const stackBucket = stack.node.tryFindChild(id) as Bucket ?? (stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Bucket : undefined) ;
+    const stackBucket = stack.node.tryFindChild(id) as Bucket ?? (stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Bucket : undefined);
 
     return stackBucket || new AraBucket(stack, props);
   }
@@ -204,7 +204,7 @@ export class AraBucket extends Bucket {
   private constructor(scope: Construct, props: AraBucketProps) {
 
     var serverAccessLogsBucket = undefined;
-    if ( props.serverAccessLogsPrefix ) {
+    if (props.serverAccessLogsPrefix) {
       serverAccessLogsBucket = props.serverAccessLogsBucket || AraBucket.getOrCreate(scope, { bucketName: 's3-access-logs', encryption: BucketEncryption.S3_MANAGED });
     }
 

@@ -10,7 +10,7 @@ export class Utils {
    * Sanitize a string by removing upper case and replacing special characters except underscore
    * @param {string} toSanitize the string to sanitize
    */
-  public static stringSanitizer (toSanitize: string ): string {
+  public static stringSanitizer(toSanitize: string): string {
     return toSanitize.toLowerCase().replace(/[^\w\s]/gi, '');
   }
 
@@ -20,5 +20,13 @@ export class Utils {
    */
   public static randomize(name: string) {
     return `${name}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+  }
+
+  /**
+   * Escape reserved characters in intrinsic functions for Amazon State Language
+   * @param {string} toEscape the string for which to escape reserved characters
+   */
+  public static intrinsicReplacer(toEscape: string) {
+    return toEscape.replace(/[{]/g, '\\{').replace(/[}]/g, '\\}').replace(/<interpolated_value>/g, '{}');
   }
 }
