@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { AccountPrincipal } from 'aws-cdk-lib/aws-iam';
+import { AccountPrincipal, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
@@ -86,5 +86,18 @@ export class S3CrossAccount extends Construct {
 
     const objectKey = props.s3ObjectKey ? props.s3ObjectKey + '/*' : '*';
     props.s3Bucket.grantReadWrite(targetAccount, objectKey);
-  };
+
+    // Grant target account access to encryption configuration of an S3 bucket
+    props.s3Bucket.addToResourcePolicy(
+      new PolicyStatement({
+        principals: [targetAccount],
+        actions: [
+          's3:GetEncryptionConfiguration'
+        ],
+        resources: [
+          props.s3Bucket.bucketArn,
+        ]
+      })
+    );
+  }
 }

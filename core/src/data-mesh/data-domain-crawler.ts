@@ -27,7 +27,7 @@ export interface DataDomainCrawlerProps {
   /**
   * LF Admin Role
   */
-  readonly lfAdminRole: IRole;
+  readonly workflowRole: IRole;
 }
 
 /**
@@ -50,7 +50,7 @@ export interface DataDomainCrawlerProps {
  * 
  * new DataDomainCrawler(this, 'DataDomainCrawler', {
  *  eventBus: eventBus,
- *  lfAdminRole: lfAdminRole,
+ *  workflowRole: workflowRole,
  *  dataDomainWorkflowArn: dataDomainWorkflow.stateMachine.stateMachineArn,
  * });
  * ```
@@ -78,34 +78,13 @@ export class DataDomainCrawler extends Construct {
       resultPath: JsonPath.DISCARD
     });
 
-    const grantPermissions = new CallAwsService(this, 'GrantPermissions', {
-      service: 'lakeformation',
-      action: 'grantPermissions',
-      iamResources: ['*'],
-      parameters: {
-        'Permissions': [
-          'ALL'
-        ],
-        'Principal': {
-          'DataLakePrincipalIdentifier': props.lfAdminRole.roleArn
-        },
-        "Resource": {
-          'Table': {
-            'DatabaseName.$': '$.databaseName',
-            'Name.$': '$.tableName'
-          }
-        }
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
     const createCrawlerForTable = new CallAwsService(this, 'CreateCrawlerForTable', {
       service: 'glue',
       action: 'createCrawler',
       iamResources: ['*'],
       parameters: {
         'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)",
-        'Role': props.lfAdminRole.roleArn,
+        'Role': props.workflowRole.roleArn,
         'Targets': {
           'CatalogTargets': [
             {
@@ -167,9 +146,8 @@ export class DataDomainCrawler extends Construct {
     waitForCrawler.next(getCrawler);
     startCrawler.next(waitForCrawler);
     createCrawlerForTable.next(startCrawler);
-    grantPermissions.next(createCrawlerForTable);
 
-    traverseTableArray.iterator(grantPermissions).endStates;
+    traverseTableArray.iterator(createCrawlerForTable).endStates;
 
     const initState = new Wait(this, 'WaitForMetadata', {
       time: WaitTime.duration(Duration.seconds(15))
@@ -183,7 +161,7 @@ export class DataDomainCrawler extends Construct {
 
     const updateTableSchemasStateMachine = new StateMachine(this, 'UpdateTableSchemas', {
       definition: initState,
-      role: props.lfAdminRole,
+      role: props.workflowRole,
       logs: {
         destination: logGroup,
         level: LogLevel.ALL,

@@ -20,14 +20,14 @@ const mockApp = new App();
 
 const dataDomainWorkflowStack = new Stack(mockApp, 'dataDomainWorkflow');
 
-const lfAdminRole = new Role(dataDomainWorkflowStack, 'myRole', {
+const workflowRole = new Role(dataDomainWorkflowStack, 'myRole', {
   assumedBy: new CompositePrincipal(
     new ServicePrincipal('glue.amazonaws.com'),
     new ServicePrincipal('lakeformation.amazonaws.com'),
     new ServicePrincipal('states.amazonaws.com')
   ),
 });
-lfAdminRole.applyRemovalPolicy(RemovalPolicy.DESTROY)
+workflowRole.applyRemovalPolicy(RemovalPolicy.DESTROY)
 
 const eventBus = new EventBus(dataDomainWorkflowStack, 'dataDomainEventBus', {
   eventBusName: `${Aws.ACCOUNT_ID}_dataDomainEventBus`,
@@ -35,17 +35,25 @@ const eventBus = new EventBus(dataDomainWorkflowStack, 'dataDomainEventBus', {
 eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
 new DataDomainWorkflow(dataDomainWorkflowStack, 'myDataDomain', {
-  lfAdminRole,
+  workflowRole,
   centralAccountId: '1234567891011',
   eventBus,
 });
 
 Aspects.of(dataDomainWorkflowStack).add(new AwsSolutionsChecks());
 
+// See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions_tasks.CallAwsService.html#iamresources
+// See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions_tasks.CallAwsService.html#iamresources
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainWorkflowStack,
   'dataDomainWorkflow/myRole/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The role is not part of tested resources' }],
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Step Function CallAWSService requires iamResources to allow it to make API calls. ' +
+      'For each API call required, there is a wildcard on resource as resources are not known before Step Function execution. ' +
+      'Granular access controls are added to the role that Step Function assumes during execution. ' +
+      'Additionally, wildcard is added for Log group by default. See: https://github.com/aws/aws-cdk/issues/7158'
+  }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(

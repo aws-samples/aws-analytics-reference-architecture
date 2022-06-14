@@ -55,7 +55,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: dist
-          path: core/dist
+          path: core
       - name: Release
         run: errout=$(mktemp); cd core && gh release create $(cat dist/releasetag.txt) -R
           $GITHUB_REPOSITORY -F dist/changelog.md -t $(cat dist/releasetag.txt)
@@ -112,6 +112,7 @@ jobs:
     needs: 
       - release_npm
       - release_pypi
+      - release_github
     runs-on: ubuntu-latest
     steps:
       - name: publish latest release

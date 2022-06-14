@@ -1469,6 +1469,7 @@ import { CentralGovernance } from 'aws-analytics-reference-architecture';
 const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
+// Optional role
 const lfAdminRole = new Role(stack, 'myLFAdminRole', {
   assumedBy: ...
 });
@@ -1579,6 +1580,7 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.workflowRole">workflowRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | *No description.* |
 
 ---
 
@@ -1591,6 +1593,16 @@ public readonly node: Node;
 - *Type:* constructs.Node
 
 The tree node.
+
+---
+
+##### `workflowRole`<sup>Required</sup> <a name="workflowRole" id="aws-analytics-reference-architecture.CentralGovernance.property.workflowRole"></a>
+
+```typescript
+public readonly workflowRole: IRole;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.IRole
 
 ---
 
@@ -1616,6 +1628,7 @@ import { DataDomain } from 'aws-analytics-reference-architecture';
 const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
+// Optional role
 const lfAdminRole = new Role(stack, 'myLFAdminRole', {
   assumedBy: ...
 });
@@ -1731,6 +1744,7 @@ Any object.
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataDomainWorkflow">dataDomainWorkflow</a></code> | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow">DataDomainWorkflow</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataLake">dataLake</a></code> | <code><a href="#aws-analytics-reference-architecture.DataLakeStorage">DataLakeStorage</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.EventBus</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.workflowRole">workflowRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | *No description.* |
 
 ---
 
@@ -1773,6 +1787,16 @@ public readonly eventBus: EventBus;
 ```
 
 - *Type:* aws-cdk-lib.aws_events.EventBus
+
+---
+
+##### `workflowRole`<sup>Required</sup> <a name="workflowRole" id="aws-analytics-reference-architecture.DataDomain.property.workflowRole"></a>
+
+```typescript
+public readonly workflowRole: IRole;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.IRole
 
 ---
 
@@ -1938,13 +1962,13 @@ import { DataDomain } from 'aws-analytics-reference-architecture';
 const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
-const lfAdminRole = new Role(stack, 'myLFAdminRole', {
+const workflowRole = new Role(stack, 'myWorkflowRole', {
   assumedBy: ...
 });
 
 new DataDomainWorkflow(this, 'DataDomainWorkflow', {
   eventBus: eventBus,
-  lfAdminRole: lfAdminRole,
+  workflowRole: workflowRole,
   centralAccountId: '1234567891011',
 });
 ```
@@ -2747,6 +2771,7 @@ the RoleProps [properties]{@link RoleProps}.
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.addToPrincipalPolicy">addToPrincipalPolicy</a></code> | Adds a permission to the role's default policy document. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.attachInlinePolicy">attachInlinePolicy</a></code> | Attaches a policy to this role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.grant">grant</a></code> | Grant the actions defined in actions to the identity Principal on this resource. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.grantAssumeRole">grantAssumeRole</a></code> | Grant permissions to the given principal to assume this role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.grantPassRole">grantPassRole</a></code> | Grant permissions to the given principal to pass this role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.withoutPolicyUpdates">withoutPolicyUpdates</a></code> | Return a copy of this Role object whose Policies will not be updated. |
 
@@ -2863,6 +2888,20 @@ Grant the actions defined in actions to the identity Principal on this resource.
 ###### `actions`<sup>Required</sup> <a name="actions" id="aws-analytics-reference-architecture.Ec2SsmRole.grant.parameter.actions"></a>
 
 - *Type:* string
+
+---
+
+##### `grantAssumeRole` <a name="grantAssumeRole" id="aws-analytics-reference-architecture.Ec2SsmRole.grantAssumeRole"></a>
+
+```typescript
+public grantAssumeRole(identity: IPrincipal): Grant
+```
+
+Grant permissions to the given principal to assume this role.
+
+###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.Ec2SsmRole.grantAssumeRole.parameter.identity"></a>
+
+- *Type:* aws-cdk-lib.aws_iam.IPrincipal
 
 ---
 
@@ -3400,7 +3439,7 @@ the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}.
 ##### `createExecutionRole` <a name="createExecutionRole" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole"></a>
 
 ```typescript
-public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, name?: string): Role
+public createExecutionRole(scope: Construct, id: string, policy: IManagedPolicy, namespace: string, name: string): Role
 ```
 
 Create and configure a new Amazon IAM Role usable as an execution role.
@@ -3431,11 +3470,21 @@ the execution policy to attach to the role.
 
 ---
 
-###### `name`<sup>Optional</sup> <a name="name" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.name"></a>
+###### `namespace`<sup>Required</sup> <a name="namespace" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.namespace"></a>
 
 - *Type:* string
 
-for the Managed Endpoint.
+The namespace from which the role is going to be used.
+
+MUST be the same as the namespace of the Virtual Cluster from which the job is submitted
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole.parameter.name"></a>
+
+- *Type:* string
+
+Name to use for the role, required and is used to scope the iam role.
 
 ---
 
@@ -3902,18 +3951,16 @@ public readonly iamRole: Role;
 This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
 
 If the location is in a different account, cross account access should be granted via the [S3CrossAccount]{@link S3CrossAccount} construct.
+If the S3 location is encrypted with KMS, the key must be explicitly passed to the construct because CDK cannot retrieve bucket encryption key from imported buckets. 
+Imported buckets are generally used in cross account setup like data mesh.
 
 This construct instantiate 2 objects:
-* An IAM role with read/write permissions to the S3 location and read access to the KMS key used to encypt the bucket
-* A CfnResource is based on an IAM role with 2 policies folowing the least privilege AWS best practices:
-* Policy 1 is for GetObject, PutObject, DeleteObject from S3 bucket
-* Policy 2 is to list S3 Buckets
+* An IAM role with read/write permissions to the S3 location and encrypt/decrypt access to the KMS key used to encypt the bucket
+* A CfnResource is based on an IAM role with 2 policy statement folowing the least privilege AWS best practices:
+   * Statement 1 for S3 permissions
+   * Statement 2 for KMS permissions if the bucket is encrypted
 
-Policy 1 takes as an input S3 object arn
-Policy 2 takes as an input S3 bucket arn
-
-
-The CDK construct instantiate the cfnresource in order to register the S3 location with Lakeformation using the IAM role defined above.
+The CDK construct instantiate the CfnResource in order to register the S3 location with Lakeformation using the IAM role defined above.
 
 Usage example:
 ```typescript
@@ -6610,7 +6657,7 @@ const centralGovernanceProps: CentralGovernanceProps = { ... }
 
 ---
 
-##### `lfAdminRole`<sup>Required</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.CentralGovernanceProps.property.lfAdminRole"></a>
+##### `lfAdminRole`<sup>Optional</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.CentralGovernanceProps.property.lfAdminRole"></a>
 
 ```typescript
 public readonly lfAdminRole: IRole;
@@ -6639,8 +6686,8 @@ const dataDomainPros: DataDomainPros = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.crawlerWorkflow">crawlerWorkflow</a></code> | <code>boolean</code> | Flag to create a Crawler workflow in Data Domain account. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
 
 ---
 
@@ -6656,18 +6703,6 @@ Central Governance account Id.
 
 ---
 
-##### `lfAdminRole`<sup>Required</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole"></a>
-
-```typescript
-public readonly lfAdminRole: IRole;
-```
-
-- *Type:* aws-cdk-lib.aws_iam.IRole
-
-Lake Formation admin role.
-
----
-
 ##### `crawlerWorkflow`<sup>Optional</sup> <a name="crawlerWorkflow" id="aws-analytics-reference-architecture.DataDomainPros.property.crawlerWorkflow"></a>
 
 ```typescript
@@ -6677,6 +6712,18 @@ public readonly crawlerWorkflow: boolean;
 - *Type:* boolean
 
 Flag to create a Crawler workflow in Data Domain account.
+
+---
+
+##### `lfAdminRole`<sup>Optional</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole"></a>
+
+```typescript
+public readonly lfAdminRole: IRole;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.IRole
+
+Lake Formation admin role.
 
 ---
 
@@ -6730,7 +6777,7 @@ const dataDomainWorkflowProps: DataDomainWorkflowProps = { ... }
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.IEventBus</code> | Event Bus in Data Domain. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.workflowRole">workflowRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
 
 ---
 
@@ -6758,10 +6805,10 @@ Event Bus in Data Domain.
 
 ---
 
-##### `lfAdminRole`<sup>Required</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.property.lfAdminRole"></a>
+##### `workflowRole`<sup>Required</sup> <a name="workflowRole" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.property.workflowRole"></a>
 
 ```typescript
-public readonly lfAdminRole: IRole;
+public readonly workflowRole: IRole;
 ```
 
 - *Type:* aws-cdk-lib.aws_iam.IRole
@@ -7738,7 +7785,8 @@ const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket">s3Bucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | S3 Bucket to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket">s3Bucket</a></code> | <code>aws-cdk-lib.aws_s3.IBucket</code> | S3 Bucket to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.kmsKey">kmsKey</a></code> | <code>aws-cdk-lib.aws_kms.IKey</code> | KMS key used to encrypt the S3 Location. |
 | <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3ObjectKey">s3ObjectKey</a></code> | <code>string</code> | S3 object key to be registered with Lakeformation. |
 
 ---
@@ -7746,12 +7794,25 @@ const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
 ##### `s3Bucket`<sup>Required</sup> <a name="s3Bucket" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket"></a>
 
 ```typescript
-public readonly s3Bucket: Bucket;
+public readonly s3Bucket: IBucket;
 ```
 
-- *Type:* aws-cdk-lib.aws_s3.Bucket
+- *Type:* aws-cdk-lib.aws_s3.IBucket
 
 S3 Bucket to be registered with Lakeformation.
+
+---
+
+##### `kmsKey`<sup>Optional</sup> <a name="kmsKey" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.kmsKey"></a>
+
+```typescript
+public readonly kmsKey: IKey;
+```
+
+- *Type:* aws-cdk-lib.aws_kms.IKey
+- *Default:* No encryption is used
+
+KMS key used to encrypt the S3 Location.
 
 ---
 

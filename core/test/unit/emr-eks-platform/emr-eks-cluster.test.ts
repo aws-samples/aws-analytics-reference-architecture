@@ -30,7 +30,7 @@ const policy = new ManagedPolicy(emrEksClusterStack, 'testPolicy', {
     ],
   }),
 });
-cluster.createExecutionRole(emrEksClusterStack, 'test', policy);
+cluster.createExecutionRole(emrEksClusterStack, 'test', policy, 'default', 'myExecRole');
 const template = Template.fromStack(emrEksClusterStack);
 
 test('EKS cluster created with correct version and name', () => {

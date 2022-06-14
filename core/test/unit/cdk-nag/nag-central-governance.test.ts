@@ -8,7 +8,6 @@
  */
 
 import { Annotations, Match } from 'aws-cdk-lib/assertions';
-import { Role, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { App, Stack, Aspects } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
@@ -19,24 +18,30 @@ const mockApp = new App();
 
 const centralGovStack = new Stack(mockApp, 'centralGov');
 
-const lfAdminRole = new Role(centralGovStack, 'myRole', {
-  assumedBy: new CompositePrincipal(
-    new ServicePrincipal('glue.amazonaws.com'),
-    new ServicePrincipal('lakeformation.amazonaws.com'),
-    new ServicePrincipal('states.amazonaws.com')
-  ),
-})
-
-new CentralGovernance(centralGovStack, 'myCentralGov', {
-  lfAdminRole
-})
+new CentralGovernance(centralGovStack, 'myCentralGov', {})
 
 Aspects.of(centralGovStack).add(new AwsSolutionsChecks());
 
+// See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions_tasks.CallAwsService.html#iamresources 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'centralGov/myRole/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The role is not part of tested resources' }],
+  'centralGov/myCentralGov/WorkflowRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Step Function CallAWSService requires iamResources to allow it to make API calls. ' +
+      'For each API call required, there is a wildcard on resource as resources are not known before Step Function execution. ' +
+      'Granular access controls are added to the role that Step Function assumes during execution. ' +
+      'Additionally, wildcard is added for Log group by default. See: https://github.com/aws/aws-cdk/issues/7158'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'centralGov/myCentralGov/WorkflowRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'The purpose of the LfAdminRole construct is to use an AWS Managed Policy.'
+  }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(

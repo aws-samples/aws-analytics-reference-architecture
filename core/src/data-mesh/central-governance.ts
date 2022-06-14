@@ -1,14 +1,15 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Aws, RemovalPolicy } from 'aws-cdk-lib';;
+import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
-import { IRole, Policy, PolicyStatement, PolicyDocument, Effect } from 'aws-cdk-lib/aws-iam';
+import { IRole, Policy, PolicyStatement, PolicyDocument, Effect, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
-import { StateMachine, JsonPath, TaskInput, Map, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
+import { StateMachine, JsonPath, TaskInput, Map, Wait, WaitTime, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
 import { EventBus } from 'aws-cdk-lib/aws-events';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
 
+import { LfAdminRole } from './lf-admin-role';
 import { Utils } from '../utils';
 
 /**
@@ -18,7 +19,7 @@ export interface CentralGovernanceProps {
   /**
   * Lake Formation admin role
   */
-  readonly lfAdminRole: IRole;
+  readonly lfAdminRole?: IRole;
 }
 
 /**
@@ -40,6 +41,7 @@ export interface CentralGovernanceProps {
  * const exampleApp = new App();
  * const stack = new Stack(exampleApp, 'DataProductStack');
  * 
+ * // Optional role
  * const lfAdminRole = new Role(stack, 'myLFAdminRole', {
  *  assumedBy: ...
  * });
@@ -51,6 +53,9 @@ export interface CentralGovernanceProps {
  * 
  */
 export class CentralGovernance extends Construct {
+
+  public readonly workflowRole: IRole;
+
   /**
    * Construct a new instance of CentralGovernance.
    * @param {Construct} scope the Scope of the CDK Construct
@@ -68,7 +73,17 @@ export class CentralGovernance extends Construct {
     });
     eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
-    props.lfAdminRole.attachInlinePolicy(new Policy(this, 'sendEvents', {
+    // Workflow role that is LF admin, used by the state machine
+    this.workflowRole = props.lfAdminRole ||
+      new LfAdminRole(this, 'WorkflowRole', {
+        assumedBy: new CompositePrincipal(
+          new ServicePrincipal('glue.amazonaws.com'),
+          new ServicePrincipal('lakeformation.amazonaws.com'),
+          new ServicePrincipal('states.amazonaws.com'),
+        ),
+      });
+
+    this.workflowRole.attachInlinePolicy(new Policy(this, 'sendEvents', {
       statements: [
         new PolicyStatement({
           actions: ['events:Put*'],
@@ -77,12 +92,53 @@ export class CentralGovernance extends Construct {
       ],
     }));
 
+    // This policy adds permission to perform GetEncryptionConfiguration on target S3 bucket
+    const bucketEncryPolicyDocument = new PolicyDocument({
+      statements: [
+        new PolicyStatement({
+          actions: ['s3:GetEncryptionConfiguration'],
+          resources: ['arn:aws:s3:::<interpolated_value>'],
+          effect: Effect.ALLOW,
+        }),
+      ]
+    });
+
+    // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
+    const bucketEncryPolicy = Utils.intrinsicReplacer(JSON.stringify(bucketEncryPolicyDocument.toJSON()));
+
+    // This task adds policy bucketEncryPolicyDocument to workflowRole
+    const addBucketEncryPolicy = new CallAwsService(this, 'addBucketEncryPolicy', {
+      service: 'iam',
+      action: 'putRolePolicy',
+      iamResources: ['*'],
+      parameters: {
+        'PolicyDocument.$': `States.Format('${bucketEncryPolicy}', $.data_product_s3)`,
+        'PolicyName.$': "States.Format('getEncryption-{}', $.data_product_s3)",
+        'RoleName': this.workflowRole.roleName,
+      },
+      resultPath: JsonPath.DISCARD
+    });
+
+    // This task obtains bucket's encryption configuration
+    const getBucketEncryption = new CallAwsService(this, 'getBucketEncryption', {
+      service: 's3',
+      action: 'getBucketEncryption',
+      iamResources: ['*'],
+      parameters: {
+        'Bucket.$': '$.data_product_s3'
+      },
+      resultPath: '$.kms',
+      resultSelector: {
+        'arn.$': '$..KmsMasterKeyID'
+      }
+    });
+
     // This policy grants decrypt on KMS Key in Producer account. Interpolated value is added at runtime
     const kmsPolicyDocument = new PolicyDocument({
       statements: [
         new PolicyStatement({
           actions: ['kms:Decrypt', 'kms:DescribeKey'],
-          resources: ['arn:aws:kms:*:<interpolated_value>:*'],
+          resources: ["<interpolated_value>"],
           effect: Effect.ALLOW,
         }),
       ]
@@ -91,15 +147,15 @@ export class CentralGovernance extends Construct {
     // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
     const kmsPolicy = Utils.intrinsicReplacer(JSON.stringify(kmsPolicyDocument.toJSON()));
 
-    // This task adds policy kmsPolicyDocument to lfAdminRole 
+    // This task adds policy kmsPolicyDocument to workflowRole 
     const addKmsPolicy = new CallAwsService(this, 'addKmsPolicy', {
       service: 'iam',
       action: 'putRolePolicy',
       iamResources: ['*'],
       parameters: {
-        'PolicyDocument.$': `States.Format('${kmsPolicy}', $.producer_acc_id)`,
-        'RoleName': props.lfAdminRole.roleName,
-        'PolicyName.$': "States.Format('kms-{}', $.producer_acc_id)",
+        'PolicyDocument.$': `States.Format('${kmsPolicy}', $.kms.arn[0])`,
+        'RoleName': this.workflowRole.roleName,
+        'PolicyName.$': "States.Format('kms-{}-{}', $.producer_acc_id, $.data_product_s3)",
       },
       resultPath: JsonPath.DISCARD
     });
@@ -118,7 +174,7 @@ export class CentralGovernance extends Construct {
     // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
     const bucketPolicy = Utils.intrinsicReplacer(JSON.stringify(bucketPolicyDocument.toJSON()));
 
-    // This task adds policy bucketPolicyDocument to lfAdminRole
+    // This task adds policy bucketPolicyDocument to workflowRole
     const addBucketPolicy = new CallAwsService(this, 'addBucketPolicy', {
       service: 'iam',
       action: 'putRolePolicy',
@@ -126,7 +182,7 @@ export class CentralGovernance extends Construct {
       parameters: {
         'PolicyDocument.$': `States.Format('${bucketPolicy}', $.data_product_s3, $.tables.location_key)`,
         'PolicyName.$': "States.Format('dataProductPolicy-{}', $.tables.name)",
-        'RoleName': props.lfAdminRole.roleName,
+        'RoleName': this.workflowRole.roleName,
       },
       resultPath: JsonPath.DISCARD
     });
@@ -138,12 +194,12 @@ export class CentralGovernance extends Construct {
       iamResources: ['*'],
       parameters: {
         'ResourceArn.$': "States.Format('arn:aws:s3:::{}', $.data_product_s3)",
-        'RoleArn': props.lfAdminRole.roleArn,
+        'RoleArn': this.workflowRole.roleArn,
       },
       resultPath: JsonPath.DISCARD
     });
 
-    // Grant Data Location access to Lake Formation Admin role
+    // Grant Data Location access to Workflow role
     const grantLfAdminAccess = new CallAwsService(this, 'grantLfAdminAccess', {
       service: 'lakeformation',
       action: 'grantPermissions',
@@ -153,7 +209,7 @@ export class CentralGovernance extends Construct {
           'DATA_LOCATION_ACCESS'
         ],
         'Principal': {
-          'DataLakePrincipalIdentifier': props.lfAdminRole.roleArn
+          'DataLakePrincipalIdentifier': this.workflowRole.roleArn
         },
         'Resource': {
           'DataLocation': {
@@ -324,6 +380,16 @@ export class CentralGovernance extends Construct {
     }).next(grantLfAdminAccess);
 
     addKmsPolicy.next(registerS3Location);
+    getBucketEncryption.next(addKmsPolicy);
+
+    // Avoid sync issues with IAM when adding policy
+    const waitForIam = new Wait(this, 'WaitForIam', {
+      time: WaitTime.duration(Duration.seconds(10))
+    });
+
+    // Add bucket policy and add delay before the next API call
+    waitForIam.next(getBucketEncryption);
+    addBucketEncryPolicy.next(waitForIam);
 
     // Create Log group for this state machine
     const logGroup = new LogGroup(this, 'centralGov-stateMachine');
@@ -331,8 +397,8 @@ export class CentralGovernance extends Construct {
 
     // State machine to register data product from Data Domain
     new StateMachine(this, 'RegisterDataProduct', {
-      definition: addKmsPolicy,
-      role: props.lfAdminRole,
+      definition: addBucketEncryPolicy,
+      role: this.workflowRole,
       logs: {
         destination: logGroup,
         level: LogLevel.ALL,
