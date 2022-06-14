@@ -112,6 +112,7 @@ jobs:
     needs: 
       - release_npm
       - release_pypi
+      - release_github
     runs-on: ubuntu-latest
     steps:
       - name: publish latest release
