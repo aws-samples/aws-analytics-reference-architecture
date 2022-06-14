@@ -18,6 +18,7 @@ import { Utils } from '../utils';
 export interface CentralGovernanceProps {
   /**
   * Lake Formation admin role
+  * @default - A new role is created
   */
   readonly lfAdminRole?: IRole;
 }

@@ -28,6 +28,7 @@ export interface DataDomainPros {
 
   /**
   * Lake Formation admin role
+  * @default - A new role is created
   */
   readonly lfAdminRole?: IRole;
 }
