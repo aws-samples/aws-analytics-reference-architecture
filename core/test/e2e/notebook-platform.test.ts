@@ -1,11 +1,12 @@
+/*
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-/**
+/!**
  * Tests EmrEksCluster
  *
  * @group integ/notebook-platform
- */
+ *!/
 
 import * as cdk from 'aws-cdk-lib';
 import { ArnFormat, Aws } from 'aws-cdk-lib';
@@ -104,3 +105,4 @@ afterAll(async () => {
     stack: stackArtifact,
   });
 });
+*/
