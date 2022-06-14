@@ -1974,6 +1974,7 @@ the RoleProps [properties]{@link RoleProps}.
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.addToPrincipalPolicy">addToPrincipalPolicy</a></code> | Adds a permission to the role's default policy document. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.attachInlinePolicy">attachInlinePolicy</a></code> | Attaches a policy to this role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.grant">grant</a></code> | Grant the actions defined in actions to the identity Principal on this resource. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.grantAssumeRole">grantAssumeRole</a></code> | Grant permissions to the given principal to assume this role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.grantPassRole">grantPassRole</a></code> | Grant permissions to the given principal to pass this role. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.withoutPolicyUpdates">withoutPolicyUpdates</a></code> | Return a copy of this Role object whose Policies will not be updated. |
 
@@ -2090,6 +2091,20 @@ Grant the actions defined in actions to the identity Principal on this resource.
 ###### `actions`<sup>Required</sup> <a name="actions" id="aws-analytics-reference-architecture.Ec2SsmRole.grant.parameter.actions"></a>
 
 - *Type:* string
+
+---
+
+##### `grantAssumeRole` <a name="grantAssumeRole" id="aws-analytics-reference-architecture.Ec2SsmRole.grantAssumeRole"></a>
+
+```typescript
+public grantAssumeRole(identity: IPrincipal): Grant
+```
+
+Grant permissions to the given principal to assume this role.
+
+###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.Ec2SsmRole.grantAssumeRole.parameter.identity"></a>
+
+- *Type:* aws-cdk-lib.aws_iam.IPrincipal
 
 ---
 
