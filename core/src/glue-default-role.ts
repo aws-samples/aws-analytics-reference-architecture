@@ -62,6 +62,16 @@ export class GlueDefaultRole extends Construct {
               resources: ['*'],
               actions: ['lakeformation:GetDataAccess'],
             }),
+            new PolicyStatement({
+              resources: ['*'],
+              actions: [
+                'kms:Encrypt*',
+                'kms:Decrypt*',
+                'kms:ReEncrypt*',
+                'kms:GenerateDataKey*',
+                'kms:Describe*',
+              ],
+            }),
           ],
         }),
       },
