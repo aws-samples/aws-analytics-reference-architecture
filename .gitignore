@@ -21,6 +21,7 @@ refarch/aws-native/dwh/dwh_loader_layer
 refarch/aws-native/streaming/streaming_cdk/lambda-layer
 refarch/aws-native/streaming/stream-processing/target
 core/node_modules/
+core/src/integ.default.ts
 *.log
 doc/site
 __init__.py

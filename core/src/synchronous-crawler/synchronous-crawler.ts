@@ -64,10 +64,9 @@ export class SynchronousCrawler extends Construct {
     })];
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start crawler
-    const crawlerStartFn = new PreBundledFunction(this, 'crawlerStartFn', {
+    const crawlerStartFn = new PreBundledFunction(this, 'StartFn', {
       runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-crawler/resources/lambdas',
-      name: 'SynchronousCrawlerStartFn',
       layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: lambdaCRPolicy,
       handler: 'lambda.on_event',
@@ -76,10 +75,9 @@ export class SynchronousCrawler extends Construct {
     });
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for crawler completion
-    const crawlerWaitFn = new PreBundledFunction(this, 'crawlerWaitFn', {
+    const crawlerWaitFn = new PreBundledFunction(this, 'WaitFn', {
       runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-crawler/resources/lambdas',
-      name: 'SynchronousCrawlerWaitFn',
       layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: lambdaCRPolicy,
       handler: 'lambda.is_complete',

@@ -30,37 +30,37 @@ Aspects.of(batchReplayer).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
-  'BatchReplayer/TestBatchReplayer/LambdaExecutionRolePolicyFindFilePathsFn/Resource',
+  'BatchReplayer/TestBatchReplayer/LambdaExecutionRolePolicyTestBatchReplayerFindFilePath/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The IAM policy needs access to all objects in the source dataset' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
-  'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRolePolicyFindFilePathsFn/Resource',
+  'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRolePolicyTestBatchReplayerFindFilePath/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The Lambda execution role for log retention needs * access' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
-  'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRoleFindFilePathsFn/DefaultPolicy/Resource',
+  'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRoleTestBatchReplayerFindFilePath/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The Lambda execution role for log retention needs * access' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
-  'BatchReplayer/TestBatchReplayer/LambdaExecutionRolePolicyWriteInBatchFn/Resource',
+  'BatchReplayer/TestBatchReplayer/LambdaExecutionRolePolicyTestBatchReplayerWriteInBatch/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The IAM policy needs access to all objects in the sink location' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
-  'BatchReplayer/TestBatchReplayer/LambdaExecutionRoleWriteInBatchFn/DefaultPolicy/Resource',
+  'BatchReplayer/TestBatchReplayer/LambdaExecutionRoleTestBatchReplayerWriteInBatch/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The IAM policy needs access to all objects in the sink location' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
-  'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRolePolicyWriteInBatchFn/Resource',
+  'BatchReplayer/TestBatchReplayer/LogRetentionLambdaExecutionRolePolicyTestBatchReplayerWriteInBatch/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The Lambda execution role for log retention needs * access' }],
 );
 

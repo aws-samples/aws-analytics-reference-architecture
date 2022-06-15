@@ -3,7 +3,7 @@
 
 import * as path from 'path';
 import { Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { Code, Function, FunctionProps, ILayerVersion } from 'aws-cdk-lib/aws-lambda';
+import { Code, Function, FunctionProps } from 'aws-cdk-lib/aws-lambda';
 import { Aws } from 'aws-cdk-lib';
 // import { PreBundledLayer } from './pre-bundled-layer';
 import { Construct } from 'constructs';
@@ -15,9 +15,7 @@ import { Construct } from 'constructs';
  */
 export interface PreBundledFunctionProps extends Partial<FunctionProps> {
   codePath: string;
-  name: string;
   lambdaPolicyStatements?: PolicyStatement[];
-  lambdaLayers?: ILayerVersion[];
 }
 
 /**
@@ -41,14 +39,13 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps> {
  *
  * new PreBundledFunction(this, 'PreBundledFunction', {
  *   codePath: 'construct-dir/resources/lambdas/lambda_dir',
+ *   lambdaPolicyStatements: findFilePathsFnPolicy,
  *   // you can use any property available in Function CDK Construct including
- *   name: 'myFunctionName',
  *   memorySize: 1024,
  *   runtime: Runtime.PYTHON_3_8,
  *   handler: 'lmabda-file-name.handler',
  *   logRetention: RetentionDays.ONE_WEEK,
  *   timeout: Duration.minutes(15),
- *   lambdaPolicyStatements: findFilePathsFnPolicy,
  * });
  * ```
  */
@@ -73,7 +70,7 @@ export class PreBundledFunction extends Function {
     let assetPath = path.join(__dirname, `../${props.codePath}`);
 
     functionProps.code = Code.fromAsset(assetPath);
-    functionProps.functionName = props.name.slice();
+    functionProps.functionName = `${scope.node.id}${id}`;
 
     let lambdaPolicyStatement: PolicyStatement[] = [];
 
@@ -111,7 +108,7 @@ export class PreBundledFunction extends Function {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       description: 'Role used by lambda in ARA',
       managedPolicies: [lambdaExecutionRolePolicy],
-      roleName: 'LambdaExecutionRole' + functionProps.functionName,
+      //roleName: 'LambdaExecutionRole' + functionProps.functionName,
     });
 
     let logRetentionLambdaPolicyStatement: PolicyStatement[] = [];
@@ -140,26 +137,16 @@ export class PreBundledFunction extends Function {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       description: 'Role used by lambda to modify log retention',
       managedPolicies: [logRetentionLambdaExecutionRolePolicy],
-      roleName: 'LogRetLambdaExec' + functionProps.functionName,
+      //roleName: 'LogRetLambdaExec' + functionProps.functionName,
     });
 
     functionProps.role = lambdaExecutionRole;
     functionProps.logRetentionRole = logRetentionLambdaExecutionRole;
 
-
-    // const runtimes = Object.values([Runtime.PYTHON_3_8, Runtime.PYTHON_3_7, Runtime.PYTHON_3_9]);
-    // let layers: ILayerVersion[] = [];
-
-    // If the runtime is Python we use the common Lambda Layer with boto3
-    // if (runtimes.includes(functionProps.runtime as Runtime)) {
-    //   layers.push(PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer'));
-    // }
-
     //delete props that were added to force user input
     delete functionProps.codePath;
     delete functionProps.name;
     delete functionProps.lambdaPolicyStatements;
-    delete functionProps.lambdaLayers;
 
     super(scope, id, { ...(functionProps as FunctionProps) });
   }

@@ -113,7 +113,6 @@ export class EmrManagedEndpointProvider extends Construct {
       codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',
       runtime: Runtime.PYTHON_3_9,
       handler: 'lambda.on_event',
-      name: 'EmrManagedEndpointProviderOnEvent',
       layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: lambdaPolicy,
       logRetention: RetentionDays.ONE_WEEK,
@@ -124,7 +123,6 @@ export class EmrManagedEndpointProvider extends Construct {
     const isComplete = new PreBundledFunction(this, 'IsComplete', {
       codePath: 'emr-eks-platform/resources/lambdas/managed-endpoint',
       handler: 'lambda.is_complete',
-      name: 'EmrManagedEndpointProviderIsComplete',
       layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: lambdaPolicy,
       runtime: Runtime.PYTHON_3_9,
