@@ -8,20 +8,20 @@
  */
 
 import { Stack } from 'aws-cdk-lib';
-import { GlueDefaultRole } from '../../src/glue-default-role';
+import { GlueDemoRole } from '../../src/glue-demo-role';
 import { Template, Match } from 'aws-cdk-lib/assertions';
 
-test('SingletonGlueDefaultRole', () => {
+test('GlueDemoRole', () => {
 
-  const glueDefaultRoleStack = new Stack();
+  const glueDemoRoleStack = new Stack();
 
-  // Instantiate 2 SingletonGlueDefaultRole Constructs
-  GlueDefaultRole.getOrCreate(glueDefaultRoleStack);
-  GlueDefaultRole.getOrCreate(glueDefaultRoleStack);
+  // Instantiate 2 GlueDemoRole Constructs
+  GlueDemoRole.getOrCreate(glueDemoRoleStack);
+  GlueDemoRole.getOrCreate(glueDemoRoleStack);
 
-  const template = Template.fromStack(glueDefaultRoleStack);
+  const template = Template.fromStack(glueDemoRoleStack);
 
-  // Test if SingletonGlueDefaultRole is a singleton
+  // Test if GlueDemoRole is a singleton
   template.resourceCountIs('AWS::IAM::Role', 1);
 
   // Test the created Amazon IAM Role
