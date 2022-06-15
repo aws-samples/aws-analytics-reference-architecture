@@ -20,7 +20,7 @@ import { NotebookPlatform, StudioAuthMode } from '../../../src/notebook-platform
 const mockApp = new App();
 const stack = new Stack(mockApp, 'eks-emr-studio');
 
-Aspects.of(mockApp).add(new AwsSolutionsChecks());
+Aspects.of(mockApp).add(new AwsSolutionsChecks({ verbose: true }));
 
 const emrEks = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
@@ -108,25 +108,25 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/LogRetentionLambdaExecutionRoleEmrEksNodegroupAsgTagOnEventFn/DefaultPolicy/Resource',
+  'eks-emr-studio/data-platform/AsgTagProvider/LogRetentionLambdaExecutionRoleAsgTagProviderTag/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Policy set by Provider in CDK construct cannot amend it' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  '/eks-emr-studio/data-platform/ManagedEndpointProvider/LambdaExecutionRolePolicyEmrManagedEndpointProviderOnEvent/Resource',
+  '/eks-emr-studio/data-platform/ManagedEndpointProvider/LambdaExecutionRolePolicyManagedEndpointProviderOnEvent/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'wild card mitigated by using tag based access control,  wild card used when not possible to restrict action' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  '/eks-emr-studio/data-platform/ManagedEndpointProvider/LogRetentionLambdaExecutionRolePolicyEmrManagedEndpointProviderOnEvent/Resource',
+  '/eks-emr-studio/data-platform/ManagedEndpointProvider/LogRetentionLambdaExecutionRolePolicyManagedEndpointProviderOnEvent/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'wild card used as logs are not known until run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  '/eks-emr-studio/data-platform/ManagedEndpointProvider/LogRetentionLambdaExecutionRolePolicyEmrManagedEndpointProviderIsComplete/Resource',
+  '/eks-emr-studio/data-platform/ManagedEndpointProvider/LogRetentionLambdaExecutionRolePolicyManagedEndpointProviderIsComplete/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'wild card used as logs are not known until run time' }],
 );
 
@@ -204,19 +204,19 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/LambdaExecutionRolePolicyEmrEksNodegroupAsgTagOnEventFn/Resource',
+  'eks-emr-studio/data-platform/AsgTagProvider/LambdaExecutionRolePolicyAsgTagProviderTag/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard needed and violation mitigated with tag based access control' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/ManagedEndpointProvider/LambdaExecutionRolePolicyEmrManagedEndpointProviderIsComplete/Resource',
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/LambdaExecutionRolePolicyManagedEndpointProviderIsComplete/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard needed and violation mitigated with tag based access control' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AsgTagProvider/LogRetentionLambdaExecutionRolePolicyEmrEksNodegroupAsgTagOnEventFn/Resource',
+  'eks-emr-studio/data-platform/AsgTagProvider/LogRetentionLambdaExecutionRolePolicyAsgTagProviderTag/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard needed for puteventlog IAM action' }],
 );
 

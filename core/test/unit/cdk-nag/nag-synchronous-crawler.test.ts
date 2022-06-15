@@ -27,28 +27,33 @@ Aspects.of(crawlerStartWaitStack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/LambdaExecutionRolePolicySynchronousCrawlerStartFn/Resource',
+  'synchronous-crawler/CrawlerStartWaitTest/LambdaExecutionRolePolicyCrawlerStartWaitTestStartFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card for log stream, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/LogRetentionLambdaExecutionRolePolicySynchronousCrawlerStartFn/Resource',
+  'synchronous-crawler/CrawlerStartWaitTest/LogRetentionLambdaExecutionRoleCrawlerStartWaitTestStartFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/LambdaExecutionRolePolicySynchronousCrawlerWaitFn/Resource',
+  'synchronous-crawler/CrawlerStartWaitTest/LambdaExecutionRolePolicyCrawlerStartWaitTestWaitFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wild card for log stream, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/LogRetentionLambdaExecutionRolePolicySynchronousCrawlerWaitFn/Resource',
+  'synchronous-crawler/CrawlerStartWaitTest/LogRetentionLambdaExecutionRolePolicyCrawlerStartWaitTestWaitFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  crawlerStartWaitStack,
+  'synchronous-crawler/CrawlerStartWaitTest/LogRetentionLambdaExecutionRolePolicyCrawlerStartWaitTestStartFn/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
+);
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
@@ -71,7 +76,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   crawlerStartWaitStack,
-  'synchronous-crawler/CrawlerStartWaitTest/LogRetentionLambdaExecutionRoleSynchronousCrawlerStartFn/DefaultPolicy/Resource',
+  'synchronous-crawler/CrawlerStartWaitTest/LogRetentionLambdaExecutionRoleCrawlerStartWaitTestStartFn/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 

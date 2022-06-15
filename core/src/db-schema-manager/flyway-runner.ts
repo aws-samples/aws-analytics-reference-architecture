@@ -160,9 +160,8 @@ export class FlywayRunner extends Construct {
       }),
     ];
 
-    const flywayLambda = new PreBundledFunction(this, 'runner', {
+    const flywayLambda = new PreBundledFunction(this, 'FlywayLambda', {
       codePath: path.join(__dirname.split('/').slice(-1)[0], './resources/flyway-lambda/flyway-all.jar'),
-      name: 'flywayLambda',
       lambdaPolicyStatements: flywayLambdaPolicy,
       handler: 'com.geekoosh.flyway.FlywayCustomResourceHandler::handleRequest',
       runtime: lambda.Runtime.JAVA_11,

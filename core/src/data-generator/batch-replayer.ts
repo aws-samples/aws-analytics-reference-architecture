@@ -145,7 +145,6 @@ export class BatchReplayer extends Construct {
      * Find all paths within the time range from the manifest file
      */
     const findFilePathsFn = new PreBundledFunction(this, 'FindFilePath', {
-      name: 'FindFilePathsFn',
       memorySize: 1024,
       codePath: 'data-generator/resources/lambdas/find-file-paths',
       runtime: Runtime.PYTHON_3_9,
@@ -187,8 +186,7 @@ export class BatchReplayer extends Construct {
      * Rewrite data
      */
     const writeInBatchFn = new PreBundledFunction(this, 'WriteInBatch', {
-      name: 'WriteInBatchFn',
-      memorySize: 1024 * 5,
+      memorySize: 1024 * 3,
       codePath: 'data-generator/resources/lambdas/write-in-batch',
       runtime: Runtime.PYTHON_3_9,
       handler: 'write-in-batch.handler',
