@@ -3835,9 +3835,9 @@ public readonly runner: CustomResource;
 ---
 
 
-### GlueDefaultRole <a name="GlueDefaultRole" id="aws-analytics-reference-architecture.GlueDefaultRole"></a>
+### GlueDemoRole <a name="GlueDemoRole" id="aws-analytics-reference-architecture.GlueDemoRole"></a>
 
-SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
+GlueDemoRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
 
 The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
 If you would like to scope down the permission you should create a new role with a scoped down policy
@@ -3847,11 +3847,11 @@ The Construct provides a getOrCreate method for SingletonInstantiation
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.toString">toString</a></code> | Returns a string representation of this construct. |
 
 ---
 
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.GlueDefaultRole.toString"></a>
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.GlueDemoRole.toString"></a>
 
 ```typescript
 public toString(): string
@@ -3863,17 +3863,17 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate">getOrCreate</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.getOrCreate">getOrCreate</a></code> | *No description.* |
 
 ---
 
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.GlueDefaultRole.isConstruct"></a>
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.GlueDemoRole.isConstruct"></a>
 
 ```typescript
-import { GlueDefaultRole } from 'aws-analytics-reference-architecture'
+import { GlueDemoRole } from 'aws-analytics-reference-architecture'
 
-GlueDefaultRole.isConstruct(x: any)
+GlueDemoRole.isConstruct(x: any)
 ```
 
 Checks if `x` is a construct.
@@ -3892,7 +3892,7 @@ library can be accidentally installed, and `instanceof` will behave
 unpredictably. It is safest to avoid using `instanceof`, and using
 this type-testing method instead.
 
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.GlueDefaultRole.isConstruct.parameter.x"></a>
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.GlueDemoRole.isConstruct.parameter.x"></a>
 
 - *Type:* any
 
@@ -3900,15 +3900,15 @@ Any object.
 
 ---
 
-##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate"></a>
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.GlueDemoRole.getOrCreate"></a>
 
 ```typescript
-import { GlueDefaultRole } from 'aws-analytics-reference-architecture'
+import { GlueDemoRole } from 'aws-analytics-reference-architecture'
 
-GlueDefaultRole.getOrCreate(scope: Construct)
+GlueDemoRole.getOrCreate(scope: Construct)
 ```
 
-###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate.parameter.scope"></a>
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.GlueDemoRole.getOrCreate.parameter.scope"></a>
 
 - *Type:* constructs.Construct
 
@@ -3918,12 +3918,12 @@ GlueDefaultRole.getOrCreate(scope: Construct)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole">iamRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.property.iamRole">iamRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
 
 ---
 
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.GlueDefaultRole.property.node"></a>
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.GlueDemoRole.property.node"></a>
 
 ```typescript
 public readonly node: Node;
@@ -3935,7 +3935,7 @@ The tree node.
 
 ---
 
-##### `iamRole`<sup>Required</sup> <a name="iamRole" id="aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole"></a>
+##### `iamRole`<sup>Required</sup> <a name="iamRole" id="aws-analytics-reference-architecture.GlueDemoRole.property.iamRole"></a>
 
 ```typescript
 public readonly iamRole: Role;
