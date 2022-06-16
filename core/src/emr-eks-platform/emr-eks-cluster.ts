@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { join } from 'path';
+import { Aws, CfnOutput, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy, CfnJson } from 'aws-cdk-lib';
 import { FlowLogDestination, IVpc, SubnetType, Vpc, VpcAttributes } from 'aws-cdk-lib/aws-ec2';
 import {
   CapacityType,
@@ -27,8 +28,11 @@ import {
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Bucket, BucketEncryption, Location } from 'aws-cdk-lib/aws-s3';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
-import { Aws, CfnOutput, CustomResource, Duration, Fn, Stack, Tags, RemovalPolicy, CfnJson } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as SimpleBase from 'simple-base';
 import { AraBucket } from '../ara-bucket';
+import { ContextOptions } from '../common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 import { SingletonKey } from '../singleton-kms-key';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { validateSchema } from './config-override-schema-validation';
@@ -36,7 +40,6 @@ import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
 import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
 import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
-import * as SimpleBase from 'simple-base';
 import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
@@ -44,10 +47,7 @@ import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-import { ContextOptions } from '../common/context-options';
-import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 
-import { Construct } from 'constructs';
 
 /**
  * The properties for the EmrEksCluster Construct class.
@@ -92,6 +92,12 @@ export interface EmrEksClusterProps {
    * @default -  true
    */
   readonly defaultNodeGroups?: boolean;
+
+  /**
+   * The version of autoscaler to pass to Helm
+   * @default -  version matching the default Kubernete version
+   */
+  readonly autoscalerVersion?: number;
 }
 
 /**
@@ -318,7 +324,7 @@ export class EmrEksCluster extends TrackedConstruct {
     this.eksCluster.addHelmChart('AutoScaler', {
       chart: 'cluster-autoscaler',
       repository: 'https://kubernetes.github.io/autoscaler',
-      version: '9.11.0',
+      version: props.autoscalerVersion ? props.autoscalerVersion.toString() : '9.11.0',
       namespace: 'kube-system',
       timeout: Duration.minutes(14),
       values: {
