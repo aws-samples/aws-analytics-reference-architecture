@@ -1,4 +1,4 @@
-name: Build
+name: E2E
 on:
   pull_request: {}
   workflow_dispatch: {}
@@ -36,8 +36,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1.6.1
         with:
-            role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
-            aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
+          aws-region: us-east-1
       - name: E2E
         run: cd core && npx projen test:integ
       - name: Check for changes
