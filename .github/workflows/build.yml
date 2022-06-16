@@ -27,10 +27,6 @@ jobs:
           java-version: '11'
       - name: Install dependencies
         run: cd core && yarn install --check-files --frozen-lockfile
-      - name: Set git identity
-        run: |-
-          git config user.name "Automation"
-          git config user.email "github-actions@github.com"
       - name: Build
         run: cd core && npx projen build
       - name: Configure AWS Credentials
@@ -40,19 +36,5 @@ jobs:
             aws-region: us-east-1
       - name: E2E
         run: cd core && npx projen test:integ
-      - name: Check for changes
-        id: git_diff
-        run: git diff --exit-code || echo "::set-output name=has_changes::true"
-      - if: steps.git_diff.outputs.has_changes
-        name: Commit and push changes (if changed)
-        run: 'git add . && git commit -m "chore: self mutation" && git push origin
-          HEAD:${{ github.event.pull_request.head.ref }}'
-      - if: steps.git_diff.outputs.has_changes
-        name: Update status check (if changed)
-        run: gh api -X POST /repos/${{ github.event.pull_request.head.repo.full_name
-          }}/check-runs -F name="build" -F head_sha="$(git rev-parse HEAD)" -F
-          status="completed" -F conclusion="success"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     container:
       image: jsii/superchain:1-buster-slim-node14
