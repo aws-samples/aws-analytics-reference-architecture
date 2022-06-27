@@ -30,7 +30,7 @@ export interface PreBundledPysparkJobExecutableProps extends Partial<PythonSpark
  * import { Job } from '@aws-cdk/aws-glue-alpha';
  * 
  * new glue.Job(this, 'PythonShellJob', {
- *   executable: PreBundledPysparkJobExecutable({
+ *   executable: PreBundledPysparkJobExecutable.pythonEtl({
  *     glueVersion: glue.GlueVersion.V3_0,
  *     pythonVersion: glue.PythonVersion.THREE,
  *     codePath: 'construct-dir/resources/glue/script.py',
@@ -41,7 +41,7 @@ export interface PreBundledPysparkJobExecutableProps extends Partial<PythonSpark
  */
 export class PreBundledPysparkJobExecutable {
  
-  public static preBundledPythonEtl(props: PreBundledPysparkJobExecutableProps) {
+  public static pythonEtl(props: PreBundledPysparkJobExecutableProps) {
     
     if (props.script) {
       throw new Error('Use "codePath" prop instead of "script" to ensure the code is bundled into the Glue job');
