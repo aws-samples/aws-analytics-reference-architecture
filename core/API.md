@@ -7086,6 +7086,7 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscalerVersion">autoscalerVersion</a></code> | <code>number</code> | The version of autoscaler to pass to Helm. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodeGroups">defaultNodeGroups</a></code> | <code>boolean</code> | If set to true construct will create default EKS nodegroups. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcAttributes">eksVpcAttributes</a></code> | <code>aws-cdk-lib.aws_ec2.VpcAttributes</code> | Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'. |
@@ -7103,6 +7104,19 @@ public readonly eksAdminRoleArn: string;
 - *Type:* string
 
 Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
+
+---
+
+##### `autoscalerVersion`<sup>Optional</sup> <a name="autoscalerVersion" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscalerVersion"></a>
+
+```typescript
+public readonly autoscalerVersion: number;
+```
+
+- *Type:* number
+- *Default:* version matching the default Kubernete version
+
+The version of autoscaler to pass to Helm.
 
 ---
 
