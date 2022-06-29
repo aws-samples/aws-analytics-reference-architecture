@@ -2,26 +2,26 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
- * Tests GlueDefaultRole
+ * Tests GlueDemoRole
  *
- * @group integ/glue-default-role
+ * @group integ/glue-demo-role
  */
 
  import * as cdk from 'aws-cdk-lib';
  import { deployStack, destroyStack } from './utils';
 
- import { GlueDefaultRole } from '../../src/glue-default-role';
+ import { GlueDemoRole } from '../../src/glue-demo-role';
  
  jest.setTimeout(100000);
  // GIVEN
  const integTestApp = new cdk.App();
- const stack = new cdk.Stack(integTestApp, 'GlueDefaultRoleE2eTest');
+ const stack = new cdk.Stack(integTestApp, 'GlueDemoRoleE2eTest');
  
- const glueDefaultRole = GlueDefaultRole.getOrCreate(stack);
+ const glueDemoRole = GlueDemoRole.getOrCreate(stack);
 
- new cdk.CfnOutput(stack, 'GlueDefaultRoleName', {
-   value: glueDefaultRole.iamRole.roleName,
-   exportName: 'glueDefaultRoleName',
+ new cdk.CfnOutput(stack, 'GlueDemoRoleName', {
+   value: glueDemoRole.iamRole.roleName,
+   exportName: 'glueDemoRoleName',
  });
  
  describe('deploy succeed', () => {
@@ -30,7 +30,7 @@
      const deployResult = await deployStack(integTestApp, stack);
      
      // THEN
-     expect(deployResult.outputs.GlueDefaultRoleName).toContain('GlueDefaultRole');
+     expect(deployResult.outputs.GlueDemoRoleName).toContain('GlueDemoRole');
  
    }, 9000000);
  });

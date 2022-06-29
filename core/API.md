@@ -2541,6 +2541,7 @@ The tree node.
 
 ---
 
+<<<<<<< HEAD
 ##### `cleanBucket`<sup>Required</sup> <a name="cleanBucket" id="aws-analytics-reference-architecture.DataLakeStorage.property.cleanBucket"></a>
 
 ```typescript
@@ -2558,6 +2559,196 @@ public readonly rawBucket: Bucket;
 ```
 
 - *Type:* aws-cdk-lib.aws_s3.Bucket
+=======
+##### `cfnIngestionStream`<sup>Required</sup> <a name="cfnIngestionStream" id="aws-analytics-reference-architecture.DataLakeExporter.property.cfnIngestionStream"></a>
+
+```typescript
+public readonly cfnIngestionStream: CfnDeliveryStream;
+```
+
+- *Type:* aws-cdk-lib.aws_kinesisfirehose.CfnDeliveryStream
+
+Constructs a new instance of the DataLakeExporter class.
+
+---
+
+
+### DataLakeStorage <a name="DataLakeStorage" id="aws-analytics-reference-architecture.DataLakeStorage"></a>
+
+A CDK Construct that creates the storage layers of a data lake composed of Amazon S3 Buckets.
+
+This construct is based on 3 Amazon S3 buckets configured with AWS best practices:
+  * S3 buckets for Raw/Cleaned/Transformed data,
+  * data lifecycle optimization/transitioning to different Amazon S3 storage classes
+  * server side buckets encryption managed by KMS customer key
+  * Default single KMS key
+  * SSL communication enforcement
+  * access logged to an S3 bucket
+  * All public access blocked
+
+By default the transitioning rules to Amazon S3 storage classes are configured as following:
+  * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days
+  * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived
+
+Objects and buckets are automatically deleted when the CDK application is detroyed.
+
+For custom requirements, consider using {@link AraBucket}.
+
+Usage example:
+```typescript
+import * as cdk from 'aws-cdk-lib';
+import { DataLakeStorage } from 'aws-analytics-reference-architecture';
+
+const exampleApp = new cdk.App();
+const stack = new cdk.Stack(exampleApp, 'DataLakeStorageStack');
+
+new DataLakeStorage(stack, 'MyDataLakeStorage', {
+  rawInfrequentAccessDelay: 90,
+  rawArchiveDelay: 180,
+  cleanInfrequentAccessDelay: 180,
+  cleanArchiveDelay: 360,
+  transformInfrequentAccessDelay: 180,
+  transformArchiveDelay: 360,
+});
+```
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DataLakeStorage.Initializer"></a>
+
+```typescript
+import { DataLakeStorage } from 'aws-analytics-reference-architecture'
+
+new DataLakeStorage(scope: Construct, id: string, props?: DataLakeStorageProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataLakeStorageProps">DataLakeStorageProps</a></code> | the DataLakeStorageProps properties. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.DataLakeStorage.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.DataLakeStorageProps">DataLakeStorageProps</a>
+
+the DataLakeStorageProps properties.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.DataLakeStorage.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.DataLakeStorage.isConstruct"></a>
+
+```typescript
+import { DataLakeStorage } from 'aws-analytics-reference-architecture'
+
+DataLakeStorage.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.DataLakeStorage.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.cleanBucket">cleanBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.rawBucket">rawBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataLakeStorage.property.transformBucket">transformBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataLakeStorage.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `cleanBucket`<sup>Required</sup> <a name="cleanBucket" id="aws-analytics-reference-architecture.DataLakeStorage.property.cleanBucket"></a>
+
+```typescript
+public readonly cleanBucket: Bucket;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Bucket
+
+---
+
+##### `rawBucket`<sup>Required</sup> <a name="rawBucket" id="aws-analytics-reference-architecture.DataLakeStorage.property.rawBucket"></a>
+
+```typescript
+public readonly rawBucket: Bucket;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Bucket
+>>>>>>> main
 
 ---
 
@@ -3835,9 +4026,9 @@ public readonly runner: CustomResource;
 ---
 
 
-### GlueDefaultRole <a name="GlueDefaultRole" id="aws-analytics-reference-architecture.GlueDefaultRole"></a>
+### GlueDemoRole <a name="GlueDemoRole" id="aws-analytics-reference-architecture.GlueDemoRole"></a>
 
-SingletonGlueDefaultRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
+GlueDemoRole Construct to automatically setup a new Amazon IAM role to use with AWS Glue jobs.
 
 The role is created with AWSGlueServiceRole policy and authorize all actions on S3.
 If you would like to scope down the permission you should create a new role with a scoped down policy
@@ -3847,11 +4038,11 @@ The Construct provides a getOrCreate method for SingletonInstantiation
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.toString">toString</a></code> | Returns a string representation of this construct. |
 
 ---
 
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.GlueDefaultRole.toString"></a>
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.GlueDemoRole.toString"></a>
 
 ```typescript
 public toString(): string
@@ -3863,17 +4054,17 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate">getOrCreate</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.getOrCreate">getOrCreate</a></code> | *No description.* |
 
 ---
 
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.GlueDefaultRole.isConstruct"></a>
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.GlueDemoRole.isConstruct"></a>
 
 ```typescript
-import { GlueDefaultRole } from 'aws-analytics-reference-architecture'
+import { GlueDemoRole } from 'aws-analytics-reference-architecture'
 
-GlueDefaultRole.isConstruct(x: any)
+GlueDemoRole.isConstruct(x: any)
 ```
 
 Checks if `x` is a construct.
@@ -3892,7 +4083,7 @@ library can be accidentally installed, and `instanceof` will behave
 unpredictably. It is safest to avoid using `instanceof`, and using
 this type-testing method instead.
 
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.GlueDefaultRole.isConstruct.parameter.x"></a>
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.GlueDemoRole.isConstruct.parameter.x"></a>
 
 - *Type:* any
 
@@ -3900,15 +4091,15 @@ Any object.
 
 ---
 
-##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate"></a>
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.GlueDemoRole.getOrCreate"></a>
 
 ```typescript
-import { GlueDefaultRole } from 'aws-analytics-reference-architecture'
+import { GlueDemoRole } from 'aws-analytics-reference-architecture'
 
-GlueDefaultRole.getOrCreate(scope: Construct)
+GlueDemoRole.getOrCreate(scope: Construct)
 ```
 
-###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.GlueDefaultRole.getOrCreate.parameter.scope"></a>
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.GlueDemoRole.getOrCreate.parameter.scope"></a>
 
 - *Type:* constructs.Construct
 
@@ -3918,12 +4109,12 @@ GlueDefaultRole.getOrCreate(scope: Construct)
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
-| <code><a href="#aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole">iamRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.GlueDemoRole.property.iamRole">iamRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
 
 ---
 
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.GlueDefaultRole.property.node"></a>
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.GlueDemoRole.property.node"></a>
 
 ```typescript
 public readonly node: Node;
@@ -3935,7 +4126,7 @@ The tree node.
 
 ---
 
-##### `iamRole`<sup>Required</sup> <a name="iamRole" id="aws-analytics-reference-architecture.GlueDefaultRole.property.iamRole"></a>
+##### `iamRole`<sup>Required</sup> <a name="iamRole" id="aws-analytics-reference-architecture.GlueDemoRole.property.iamRole"></a>
 
 ```typescript
 public readonly iamRole: Role;
@@ -7086,6 +7277,7 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscalerVersion">autoscalerVersion</a></code> | <code>number</code> | The version of autoscaler to pass to Helm. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodeGroups">defaultNodeGroups</a></code> | <code>boolean</code> | If set to true construct will create default EKS nodegroups. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcAttributes">eksVpcAttributes</a></code> | <code>aws-cdk-lib.aws_ec2.VpcAttributes</code> | Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'. |
@@ -7103,6 +7295,19 @@ public readonly eksAdminRoleArn: string;
 - *Type:* string
 
 Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
+
+---
+
+##### `autoscalerVersion`<sup>Optional</sup> <a name="autoscalerVersion" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscalerVersion"></a>
+
+```typescript
+public readonly autoscalerVersion: number;
+```
+
+- *Type:* number
+- *Default:* version matching the default Kubernete version
+
+The version of autoscaler to pass to Helm.
 
 ---
 

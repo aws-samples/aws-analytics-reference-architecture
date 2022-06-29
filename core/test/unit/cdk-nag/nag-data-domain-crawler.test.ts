@@ -36,8 +36,6 @@ eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
 new DataDomainCrawler(dataDomainCrawlerStack, 'myDataDomainCrawler', {
   workflowRole,
-  eventBus,
-  dataDomainWorkflowArn: "arn-test"
 });
 
 Aspects.of(dataDomainCrawlerStack).add(new AwsSolutionsChecks());

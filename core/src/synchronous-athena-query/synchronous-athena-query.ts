@@ -113,10 +113,9 @@ export class SynchronousAthenaQuery extends Construct {
 
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to start query
-    const athenaQueryStartFn = new PreBundledFunction(this, 'AthenaQueryStartFn', {
+    const athenaQueryStartFn = new PreBundledFunction(this, 'StartFn', {
       runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-athena-query/resources/lambdas',
-      name: 'SynchronousAthenaCrStart',
       layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: athenaQueryStartFnPolicy,
       handler: 'lambda.on_event',
@@ -144,10 +143,9 @@ export class SynchronousAthenaQuery extends Construct {
     }));
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible to wait for query completion
-    const athenaQueryWaitFn = new PreBundledFunction(this, 'AthenaQueryWaitFn', {
+    const athenaQueryWaitFn = new PreBundledFunction(this, 'WaitFn', {
       runtime: Runtime.PYTHON_3_9,
       codePath: 'synchronous-athena-query/resources/lambdas',
-      name: 'SynchronousAthenaCrWait',
       layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
       lambdaPolicyStatements: athenaQueryWaitFnPolicy,
       handler: 'lambda.is_complete',

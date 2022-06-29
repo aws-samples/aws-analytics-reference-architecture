@@ -10,7 +10,7 @@
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { deployStack /*, destroyStack*/ } from './utils';
+import { deployStack , destroyStack } from './utils';
 
 import { BatchReplayer } from '../../src/data-generator/batch-replayer';
 import { PreparedDataset } from '../../src/data-generator/prepared-dataset';
@@ -27,6 +27,11 @@ const sinkBucket = new Bucket(stack, 'SinkBucket', {
 
 const batchReplayer = new BatchReplayer(stack, 'BatchReplay', {
   dataset: PreparedDataset.RETAIL_1_GB_STORE_SALE,
+  sinkBucket: sinkBucket,
+});
+
+new BatchReplayer(stack, 'BatchReplay2', {
+  dataset: PreparedDataset.RETAIL_1_GB_CUSTOMER,
   sinkBucket: sinkBucket,
 });
 

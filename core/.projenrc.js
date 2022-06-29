@@ -119,14 +119,6 @@ project.addTask('test:integ', {
   exec: 'jest --group=integ',
 });
 
-project.addTask('test:integ/data-lake', {
-  exec: 'jest --group=integ/data-lake',
-});
-
-project.addTask('test:integ/redshift', {
-  exec: 'jest --group=integ/redshift',
-});
-
 const testDeploy = project.addTask('test:deploy', {
   exec: 'cdk --version && cdk deploy --app=./lib/integ.default.js',
 });

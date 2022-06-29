@@ -72,6 +72,7 @@ export class DataDomain extends Construct {
   public readonly dataDomainWorkflow: DataDomainWorkflow;
   public readonly eventBus: EventBus;
   public readonly workflowRole: IRole;
+  public readonly accountId: string;
 
   /**
    * Construct a new instance of DataDomain.
@@ -84,6 +85,7 @@ export class DataDomain extends Construct {
   constructor(scope: Construct, id: string, props: DataDomainPros) {
     super(scope, id);
 
+    this.accountId = Aws.ACCOUNT_ID;
     this.dataLake = new DataLakeStorage(this, 'dataLakeStorage');
 
     // Workflow role that is LF admin, used by the state machine
@@ -96,6 +98,7 @@ export class DataDomain extends Construct {
         ),
       });
 
+    // TODO switch to a glue crawler role
     this.workflowRole.attachInlinePolicy(new Policy(this, 'DataLakeAccess', {
       statements: [
         new PolicyStatement({
@@ -108,6 +111,7 @@ export class DataDomain extends Construct {
       ],
     }));
 
+    // TODO switch to a glue crawler role
     this.workflowRole.attachInlinePolicy(new Policy(this, 'DataLakeKms', {
       statements: [
         new PolicyStatement({
@@ -118,9 +122,7 @@ export class DataDomain extends Construct {
     }));
 
     // Event Bridge event bus for data domain account
-    this.eventBus = new EventBus(this, 'dataDomainEventBus', {
-      eventBusName: `${Aws.ACCOUNT_ID}_dataDomainEventBus`,
-    });
+    this.eventBus = new EventBus(this, 'dataDomainEventBus');
     this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Cross-account policy to allow the central account to send events to data domain's bus
@@ -163,10 +165,19 @@ export class DataDomain extends Construct {
     }));
 
     if (props.crawlerWorkflow) {
-      new DataDomainCrawler(this, 'DataDomainCrawler', {
-        eventBus: this.eventBus,
+      const workflow = new DataDomainCrawler(this, 'DataDomainCrawler', {
         workflowRole: this.workflowRole,
-        dataDomainWorkflowArn: this.dataDomainWorkflow.stateMachine.stateMachineArn,
+      });
+
+      new Rule(this, 'TriggerUpdateTableSchemasRule', {
+        eventBus: this.eventBus,
+        targets: [
+          workflow.stateMachine,
+        ],
+        eventPattern: {
+          source: ['com.central.stepfunction'],
+          detailType: ['triggerCrawler'],
+        }
       });
     }
   }

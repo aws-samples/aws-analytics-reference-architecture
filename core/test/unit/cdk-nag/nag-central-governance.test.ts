@@ -11,21 +11,28 @@ import { Annotations, Match } from 'aws-cdk-lib/assertions';
 import { App, Stack, Aspects } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { CentralGovernance } from '../../../src/data-mesh'
+import { CentralGovernance, DataDomain } from '../../../src/data-mesh'
 
 
 const mockApp = new App();
 
-const centralGovStack = new Stack(mockApp, 'centralGov');
+const centralGovStack = new Stack(mockApp, 'CentralGovernanceStack');
+const dataDomainStack = new Stack(mockApp, 'DataDomainStack');
 
-new CentralGovernance(centralGovStack, 'myCentralGov', {})
+const governance = new CentralGovernance(centralGovStack, 'CentralGovernance', {});
+
+const domain = new DataDomain(dataDomainStack, 'Domain', {
+  centralAccountId: '1234567891011',
+})
+
+governance.registerDataDomain('Domain1', domain);
 
 Aspects.of(centralGovStack).add(new AwsSolutionsChecks());
 
 // See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions_tasks.CallAwsService.html#iamresources 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'centralGov/myCentralGov/WorkflowRole/DefaultPolicy/Resource',
+  'CentralGovernanceStack/CentralGovernance/WorkflowRole/DefaultPolicy/Resource',
   [{
     id: 'AwsSolutions-IAM5',
     reason: 'Step Function CallAWSService requires iamResources to allow it to make API calls. ' +
@@ -37,7 +44,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'centralGov/myCentralGov/WorkflowRole/Resource',
+  'CentralGovernanceStack/CentralGovernance/WorkflowRole/Resource',
   [{
     id: 'AwsSolutions-IAM4',
     reason: 'The purpose of the LfAdminRole construct is to use an AWS Managed Policy.'
@@ -46,14 +53,34 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'centralGov/myCentralGov/sendEvents/Resource',
+  'CentralGovernanceStack/CentralGovernance/sendEvents/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The LF admin role needs all events:Put actions (PutEvents, PutPermission, PutRule, PutTargets), hence Put:* for this specific Event Bus.' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'centralGov/myCentralGov/RegisterDataProduct/Resource',
+  'CentralGovernanceStack/CentralGovernance/RegisterDataProduct/Resource',
   [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the CentralGovernance construct.' }],
+);
+
+NagSuppressions.addStackSuppressions(
+  dataDomainStack,
+  [{ id: 'AwsSolutions-IAM5', reason: 'NAG testing doesn\'t target DataDomain Construct' }],
+);
+
+NagSuppressions.addStackSuppressions(
+  dataDomainStack,
+  [{ id: 'AwsSolutions-IAM4', reason: 'NAG testing doesn\'t target DataDomain Construct' }],
+);
+
+NagSuppressions.addStackSuppressions(
+  dataDomainStack,
+  [{ id: 'AwsSolutions-SF2', reason: 'NAG testing doesn\'t target DataDomain Construct' }],
+);
+
+NagSuppressions.addStackSuppressions(
+  dataDomainStack,
+  [{ id: 'AwsSolutions-S1', reason: 'NAG testing doesn\'t target DataDomain Construct' }],
 );
 
 test('No unsuppressed Warnings', () => {

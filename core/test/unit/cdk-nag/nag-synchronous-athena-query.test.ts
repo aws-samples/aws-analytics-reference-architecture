@@ -33,31 +33,31 @@ Aspects.of(synchronousAthenaStack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRolePolicySynchronousAthenaCrStart/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRolePolicySynchronousAthenaQueryTestStartFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/LogRetentionLambdaExecutionRolePolicySynchronousAthenaCrWait/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LogRetentionLambdaExecutionRolePolicySynchronousAthenaQueryTestWaitFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRolePolicySynchronousAthenaCrWait/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LambdaExecutionRolePolicySynchronousAthenaQueryTestWaitFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/LogRetentionLambdaExecutionRoleSynchronousAthenaCrStart/DefaultPolicy/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LogRetentionLambdaExecutionRoleSynchronousAthenaQueryTestStartFn/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   synchronousAthenaStack,
-  'synchronous-athena-query/SynchronousAthenaQueryTest/LogRetentionLambdaExecutionRolePolicySynchronousAthenaCrStart/Resource',
+  'synchronous-athena-query/SynchronousAthenaQueryTest/LogRetentionLambdaExecutionRolePolicySynchronousAthenaQueryTestStartFn/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 

@@ -3,14 +3,16 @@
 
 import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
-import { IRole, Policy, PolicyStatement, PolicyDocument, Effect, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { IRole, Policy, PolicyStatement, PolicyDocument, Effect, CompositePrincipal, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import { StateMachine, JsonPath, TaskInput, Map, Wait, WaitTime, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
-import { EventBus } from 'aws-cdk-lib/aws-events';
+import { CfnEventBusPolicy, EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
 
 import { LfAdminRole } from './lf-admin-role';
 import { Utils } from '../utils';
+import { DataDomain } from './data-domain';
 
 /**
  * Properties for the CentralGovernance Construct
@@ -47,15 +49,20 @@ export interface CentralGovernanceProps {
  *  assumedBy: ...
  * });
  * 
- * new CentralGovernance(stack, 'myCentralGov', {
+ * const governance = new CentralGovernance(stack, 'myCentralGov', {
  *  lfAdminRole: lfAdminRole
  * });
- * ```
  * 
+ * const domain = new DataDomain(...);
+ * 
+ * governance.registerDataDomain('Domain1', domain);
+ * ```
  */
 export class CentralGovernance extends Construct {
 
   public readonly workflowRole: IRole;
+  public readonly dataAccessRole: IRole;
+  public readonly eventBus: IEventBus;
 
   /**
    * Construct a new instance of CentralGovernance.
@@ -69,10 +76,8 @@ export class CentralGovernance extends Construct {
     super(scope, id);
 
     // Event Bridge event bus for the Central Governance account
-    const eventBus = new EventBus(this, 'centralEventBus', {
-      eventBusName: `${Aws.ACCOUNT_ID}_centralEventBus`,
-    });
-    eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    this.eventBus = new EventBus(this, 'centralEventBus');
+    this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Workflow role that is LF admin, used by the state machine
     this.workflowRole = props.lfAdminRole ||
@@ -88,12 +93,16 @@ export class CentralGovernance extends Construct {
       statements: [
         new PolicyStatement({
           actions: ['events:Put*'],
-          resources: [eventBus.eventBusArn],
+          resources: [this.eventBus.eventBusArn],
         }),
       ],
     }));
 
-    // This policy adds permission to perform GetEncryptionConfiguration on target S3 bucket
+    this.dataAccessRole = new Role(this, 'DataAccessRole', {
+      assumedBy: new ServicePrincipal('lakeformation.amazonaws.com'),
+    })
+
+    // This policy adds permission to perform GetEncryptionConfiguration on target S3 bucket. Interpolated value is added at runtime
     const bucketEncryPolicyDocument = new PolicyDocument({
       statements: [
         new PolicyStatement({
@@ -138,7 +147,13 @@ export class CentralGovernance extends Construct {
     const kmsPolicyDocument = new PolicyDocument({
       statements: [
         new PolicyStatement({
-          actions: ['kms:Decrypt', 'kms:DescribeKey'],
+          actions: [
+            'kms:Encrypt*',
+            'kms:Decrypt*',
+            'kms:ReEncrypt*',
+            'kms:GenerateDataKey*',
+            'kms:Describe*',
+          ],
           resources: ["<interpolated_value>"],
           effect: Effect.ALLOW,
         }),
@@ -148,14 +163,14 @@ export class CentralGovernance extends Construct {
     // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
     const kmsPolicy = Utils.intrinsicReplacer(JSON.stringify(kmsPolicyDocument.toJSON()));
 
-    // This task adds policy kmsPolicyDocument to workflowRole 
+    // This task adds policy kmsPolicyDocument to workflowRole
     const addKmsPolicy = new CallAwsService(this, 'addKmsPolicy', {
       service: 'iam',
       action: 'putRolePolicy',
       iamResources: ['*'],
       parameters: {
         'PolicyDocument.$': `States.Format('${kmsPolicy}', $.kms.arn[0])`,
-        'RoleName': this.workflowRole.roleName,
+        'RoleName': this.dataAccessRole.roleName,
         'PolicyName.$': "States.Format('kms-{}-{}', $.producer_acc_id, $.data_product_s3)",
       },
       resultPath: JsonPath.DISCARD
@@ -165,7 +180,18 @@ export class CentralGovernance extends Construct {
     const bucketPolicyDocument = new PolicyDocument({
       statements: [
         new PolicyStatement({
-          actions: ['s3:GetObject', 's3:ListBucket'],
+          actions: [
+            "s3:GetObject*",
+            "s3:GetBucket*",
+            "s3:List*",
+            "s3:DeleteObject*",
+            "s3:PutObject",
+            "s3:PutObjectLegalHold",
+            "s3:PutObjectRetention",
+            "s3:PutObjectTagging",
+            "s3:PutObjectVersionTagging",
+            "s3:Abort*",
+          ],
           resources: ['arn:aws:s3:::<interpolated_value>', 'arn:aws:s3:::<interpolated_value>*'],
           effect: Effect.ALLOW,
         }),
@@ -183,7 +209,7 @@ export class CentralGovernance extends Construct {
       parameters: {
         'PolicyDocument.$': `States.Format('${bucketPolicy}', $.data_product_s3, $.tables.location_key)`,
         'PolicyName.$': "States.Format('dataProductPolicy-{}', $.tables.name)",
-        'RoleName': this.workflowRole.roleName,
+        'RoleName': this.dataAccessRole.roleName,
       },
       resultPath: JsonPath.DISCARD
     });
@@ -195,7 +221,7 @@ export class CentralGovernance extends Construct {
       iamResources: ['*'],
       parameters: {
         'ResourceArn.$': "States.Format('arn:aws:s3:::{}', $.data_product_s3)",
-        'RoleArn': this.workflowRole.roleArn,
+        'RoleArn': this.dataAccessRole.roleArn,
       },
       resultPath: JsonPath.DISCARD
     });
@@ -317,7 +343,7 @@ export class CentralGovernance extends Construct {
           "{}_createResourceLinks",
           JsonPath.stringAt("$.producer_acc_id")
         ),
-        eventBus: eventBus,
+        eventBus: this.eventBus,
         source: 'com.central.stepfunction'
       }]
     });
@@ -405,5 +431,47 @@ export class CentralGovernance extends Construct {
         level: LogLevel.ALL,
       },
     });
+  }
+
+  /**
+   * Registers a new Data Domain account in Central Governance account. 
+   * It includes creating a cross-account policy for Amazon EventBridge Event Bus to enable Data Domain to send events to Central Gov. account. 
+   * It also creates a Rule to forward events to target Data Domain account. 
+   * Each Data Domain account {@link DataDomain} has to be registered in Central Gov. account before it can participate in a mesh.
+   * @param {Construct} scope the Scope of the CDK Construct
+   * @param {string} id the ID of the CDK Construct
+   * @param {DataDomainRegistrationProps} props the DataDomainRegistrationProps properties
+   * @access public
+   */
+  public registerDataDomain(id: string, domain: DataDomain) {
+    
+    const dataDomainBusArn = (domain.eventBus) ? domain.eventBus.eventBusArn : `arn:aws:events:${Aws.REGION}:${domain.accountId}`
+    + `:event-bus/${domain.accountId}_dataDomainEventBus`;
+    
+    // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
+    new CfnEventBusPolicy(this, `${id}Policy`, {
+      eventBusName: this.eventBus.eventBusName,
+      statementId: `AllowDataDomainAccToPutEvents_${domain.accountId}`,
+      action: 'events:PutEvents',
+      principal: domain.accountId,
+    });
+
+    // Event Bridge Rule to trigger createResourceLinks workflow in target Data Domain account
+    const rule = new Rule(this, `${id}Rule`, {
+      eventPattern: {
+        source: ['com.central.stepfunction'],
+        detailType: [`${domain.accountId}_createResourceLinks`],
+      },
+      eventBus: this.eventBus,
+    });
+
+    rule.addTarget(new targets.EventBus(
+      (domain.eventBus) ? domain.eventBus : EventBus.fromEventBusArn(
+        this,
+        `${id}DomainEventBus`,
+        dataDomainBusArn
+      )),
+    );
+    rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
   }
 }
