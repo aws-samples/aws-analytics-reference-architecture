@@ -44,6 +44,15 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/S3AccessPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Permissions are scoped down with resource tags'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
   'CentralGovernanceStack/CentralGovernance/WorkflowRole/Resource',
   [{
     id: 'AwsSolutions-IAM4',

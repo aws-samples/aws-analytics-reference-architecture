@@ -55,6 +55,12 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainCrawlerStack,
+  'dataDomainCrawler/myDataDomainCrawler/S3AccessPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Permissions are scoped down with resource tags' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainCrawlerStack,
   'dataDomainCrawler/myDataDomainCrawler/UpdateTableSchemas/Resource',
   [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the DataDomainCrawler construct.' }],
 );

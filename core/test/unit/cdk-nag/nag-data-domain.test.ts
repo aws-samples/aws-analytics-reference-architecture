@@ -48,11 +48,11 @@ NagSuppressions.addResourceSuppressionsByPath(
 );
 
 
-NagSuppressions.addResourceSuppressionsByPath(
-  dataDomainStack,
-  'dataDomain/myDataDomain/DataLakeAccess/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The LF admin role needs access to all the objects under the prefix' }],
-);
+// NagSuppressions.addResourceSuppressionsByPath(
+//   dataDomainStack,
+//   'dataDomain/myDataDomain/DataLakeAccess/Resource',
+//   [{ id: 'AwsSolutions-IAM5', reason: 'The LF admin role needs access to all the objects under the prefix' }],
+// );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,

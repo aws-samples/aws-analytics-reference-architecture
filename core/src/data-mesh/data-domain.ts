@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Construct } from 'constructs';
-import { Aws, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, RemovalPolicy, Tags } from 'aws-cdk-lib';
 import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { DataLakeStorage } from '../data-lake-storage';
 import { DataDomainWorkflow } from './data-domain-workflow';
@@ -88,6 +88,15 @@ export class DataDomain extends Construct {
     this.accountId = Aws.ACCOUNT_ID;
     this.dataLake = new DataLakeStorage(this, 'dataLakeStorage');
 
+    // We need to explicitly tag the following resources because they aren't children of this construct (following getOrCreate pattern)
+    Tags.of(this.dataLake.rawBucket).add('data-mesh-managed', 'true');
+    Tags.of(this.dataLake.cleanBucket).add('data-mesh-managed', 'true');
+    Tags.of(this.dataLake.transformBucket).add('data-mesh-managed', 'true');
+    if (this.dataLake.transformBucket.encryptionKey) {
+      Tags.of(this.dataLake.transformBucket.encryptionKey).add('data-mesh-managed', 'true');
+    } 
+
+
     // Workflow role that is LF admin, used by the state machine
     this.workflowRole = props.lfAdminRole ||
       new LfAdminRole(this, 'WorkflowRole', {
@@ -97,29 +106,6 @@ export class DataDomain extends Construct {
           new ServicePrincipal('states.amazonaws.com'),
         ),
       });
-
-    // TODO switch to a glue crawler role
-    this.workflowRole.attachInlinePolicy(new Policy(this, 'DataLakeAccess', {
-      statements: [
-        new PolicyStatement({
-          actions: ['s3:GetObject', 's3:ListBucket'],
-          resources: [
-            this.dataLake.cleanBucket.bucketArn,
-            `${this.dataLake.cleanBucket.bucketArn}/*`
-          ],
-        }),
-      ],
-    }));
-
-    // TODO switch to a glue crawler role
-    this.workflowRole.attachInlinePolicy(new Policy(this, 'DataLakeKms', {
-      statements: [
-        new PolicyStatement({
-          actions: ['kms:Decrypt', 'kms:DescribeKey'],
-          resources: [this.dataLake.cleanBucket.encryptionKey!.keyArn],
-        }),
-      ],
-    }));
 
     // Event Bridge event bus for data domain account
     this.eventBus = new EventBus(this, 'dataDomainEventBus');

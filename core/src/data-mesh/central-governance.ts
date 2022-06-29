@@ -1,17 +1,16 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';;
+import { RemovalPolicy } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
-import { IRole, Policy, PolicyStatement, PolicyDocument, Effect, CompositePrincipal, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
+import { IRole, Policy, PolicyStatement, Effect, CompositePrincipal, ServicePrincipal, Role, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
-import { StateMachine, JsonPath, TaskInput, Map, Wait, WaitTime, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
+import { StateMachine, JsonPath, TaskInput, Map, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
 import { CfnEventBusPolicy, EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 
 import { LfAdminRole } from './lf-admin-role';
-import { Utils } from '../utils';
 import { DataDomain } from './data-domain';
 
 /**
@@ -75,6 +74,8 @@ export class CentralGovernance extends Construct {
   constructor(scope: Construct, id: string, props: CentralGovernanceProps) {
     super(scope, id);
 
+    //Tags.of(this).add('data-mesh-managed', 'true');
+
     // Event Bridge event bus for the Central Governance account
     this.eventBus = new EventBus(this, 'centralEventBus');
     this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
@@ -98,53 +99,13 @@ export class CentralGovernance extends Construct {
       ],
     }));
 
+    // create the data access role for S3 location registration
     this.dataAccessRole = new Role(this, 'DataAccessRole', {
       assumedBy: new ServicePrincipal('lakeformation.amazonaws.com'),
     })
 
-    // This policy adds permission to perform GetEncryptionConfiguration on target S3 bucket. Interpolated value is added at runtime
-    const bucketEncryPolicyDocument = new PolicyDocument({
-      statements: [
-        new PolicyStatement({
-          actions: ['s3:GetEncryptionConfiguration'],
-          resources: ['arn:aws:s3:::<interpolated_value>'],
-          effect: Effect.ALLOW,
-        }),
-      ]
-    });
-
-    // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
-    const bucketEncryPolicy = Utils.intrinsicReplacer(JSON.stringify(bucketEncryPolicyDocument.toJSON()));
-
-    // This task adds policy bucketEncryPolicyDocument to workflowRole
-    const addBucketEncryPolicy = new CallAwsService(this, 'addBucketEncryPolicy', {
-      service: 'iam',
-      action: 'putRolePolicy',
-      iamResources: ['*'],
-      parameters: {
-        'PolicyDocument.$': `States.Format('${bucketEncryPolicy}', $.data_product_s3)`,
-        'PolicyName.$': "States.Format('getEncryption-{}', $.data_product_s3)",
-        'RoleName': this.workflowRole.roleName,
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
-    // This task obtains bucket's encryption configuration
-    const getBucketEncryption = new CallAwsService(this, 'getBucketEncryption', {
-      service: 's3',
-      action: 'getBucketEncryption',
-      iamResources: ['*'],
-      parameters: {
-        'Bucket.$': '$.data_product_s3'
-      },
-      resultPath: '$.kms',
-      resultSelector: {
-        'arn.$': '$..KmsMasterKeyID'
-      }
-    });
-
-    // This policy grants decrypt on KMS Key in Producer account. Interpolated value is added at runtime
-    const kmsPolicyDocument = new PolicyDocument({
+    // permissions of the data access role are scoped down to resources with the tag 'data-mesh-managed':'true'
+    new ManagedPolicy(this, 'S3AccessPolicy', {
       statements: [
         new PolicyStatement({
           actions: [
@@ -154,31 +115,14 @@ export class CentralGovernance extends Construct {
             'kms:GenerateDataKey*',
             'kms:Describe*',
           ],
-          resources: ["<interpolated_value>"],
+          resources: ['*'],
           effect: Effect.ALLOW,
+          conditions: {
+            StringEquals: {
+              'data-mesh-managed':'true',
+            },
+          },
         }),
-      ]
-    });
-
-    // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
-    const kmsPolicy = Utils.intrinsicReplacer(JSON.stringify(kmsPolicyDocument.toJSON()));
-
-    // This task adds policy kmsPolicyDocument to workflowRole
-    const addKmsPolicy = new CallAwsService(this, 'addKmsPolicy', {
-      service: 'iam',
-      action: 'putRolePolicy',
-      iamResources: ['*'],
-      parameters: {
-        'PolicyDocument.$': `States.Format('${kmsPolicy}', $.kms.arn[0])`,
-        'RoleName': this.dataAccessRole.roleName,
-        'PolicyName.$': "States.Format('kms-{}-{}', $.producer_acc_id, $.data_product_s3)",
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
-    // This Policy allows access to S3 of a newly registered Data Product. Interpolated value is added at runtime 
-    const bucketPolicyDocument = new PolicyDocument({
-      statements: [
         new PolicyStatement({
           actions: [
             "s3:GetObject*",
@@ -192,27 +136,17 @@ export class CentralGovernance extends Construct {
             "s3:PutObjectVersionTagging",
             "s3:Abort*",
           ],
-          resources: ['arn:aws:s3:::<interpolated_value>', 'arn:aws:s3:::<interpolated_value>*'],
+          resources: ['*'],
           effect: Effect.ALLOW,
+          conditions: {
+            StringEquals: {
+              'data-mesh-managed':'true',
+            },
+          },
         }),
-      ]
-    });
-
-    // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
-    const bucketPolicy = Utils.intrinsicReplacer(JSON.stringify(bucketPolicyDocument.toJSON()));
-
-    // This task adds policy bucketPolicyDocument to workflowRole
-    const addBucketPolicy = new CallAwsService(this, 'addBucketPolicy', {
-      service: 'iam',
-      action: 'putRolePolicy',
-      iamResources: ['*'],
-      parameters: {
-        'PolicyDocument.$': `States.Format('${bucketPolicy}', $.data_product_s3, $.tables.location_key)`,
-        'PolicyName.$': "States.Format('dataProductPolicy-{}', $.tables.name)",
-        'RoleName': this.dataAccessRole.roleName,
-      },
-      resultPath: JsonPath.DISCARD
-    });
+      ],
+      roles: [this.dataAccessRole],
+    })
 
     // This task registers new s3 location in Lake Formation
     const registerS3Location = new CallAwsService(this, 'registerS3Location', {
@@ -381,42 +315,22 @@ export class CentralGovernance extends Construct {
     });
 
     tablesMapTask.iterator(
-      addBucketPolicy.next(
         createTable.addCatch(grantTablePermissions, {
           errors: ['Glue.AlreadyExistsException'],
           resultPath: '$.CreateTableException',
-        })
-      ).next(grantTablePermissions)
-    );
-
-    // State machine dependencies
-    tablesMapTask.next(triggerProducer);
+        }).next(grantTablePermissions)
+    ).next(triggerProducer);
 
     createDatabase.addCatch(updateDatabaseOwnerMetadata, {
       errors: ['Glue.AlreadyExistsException'], resultPath: '$.Exception'
     }).next(updateDatabaseOwnerMetadata).next(tablesMapTask);
-
-    grantProducerAccess.next(createDatabase);
-    grantLfAdminAccess.next(grantProducerAccess);
 
     registerS3Location.addCatch(grantLfAdminAccess, {
       errors: [
         'LakeFormation.AlreadyExistsException'
       ],
       resultPath: '$.Exception'
-    }).next(grantLfAdminAccess);
-
-    addKmsPolicy.next(registerS3Location);
-    getBucketEncryption.next(addKmsPolicy);
-
-    // Avoid sync issues with IAM when adding policy
-    const waitForIam = new Wait(this, 'WaitForIam', {
-      time: WaitTime.duration(Duration.seconds(10))
-    });
-
-    // Add bucket policy and add delay before the next API call
-    waitForIam.next(getBucketEncryption);
-    addBucketEncryPolicy.next(waitForIam);
+    }).next(grantLfAdminAccess).next(grantProducerAccess).next(createDatabase);
 
     // Create Log group for this state machine
     const logGroup = new LogGroup(this, 'centralGov-stateMachine');
@@ -424,7 +338,7 @@ export class CentralGovernance extends Construct {
 
     // State machine to register data product from Data Domain
     new StateMachine(this, 'RegisterDataProduct', {
-      definition: addBucketEncryPolicy,
+      definition: registerS3Location,
       role: this.workflowRole,
       logs: {
         destination: logGroup,
@@ -438,15 +352,13 @@ export class CentralGovernance extends Construct {
    * It includes creating a cross-account policy for Amazon EventBridge Event Bus to enable Data Domain to send events to Central Gov. account. 
    * It also creates a Rule to forward events to target Data Domain account. 
    * Each Data Domain account {@link DataDomain} has to be registered in Central Gov. account before it can participate in a mesh.
-   * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {DataDomainRegistrationProps} props the DataDomainRegistrationProps properties
+   * @param {DataDomain} domain the Data Domain to register
    * @access public
    */
   public registerDataDomain(id: string, domain: DataDomain) {
     
-    const dataDomainBusArn = (domain.eventBus) ? domain.eventBus.eventBusArn : `arn:aws:events:${Aws.REGION}:${domain.accountId}`
-    + `:event-bus/${domain.accountId}_dataDomainEventBus`;
+    const dataDomainBusArn = domain.eventBus.eventBusArn ;
     
     // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
     new CfnEventBusPolicy(this, `${id}Policy`, {
@@ -469,7 +381,7 @@ export class CentralGovernance extends Construct {
       (domain.eventBus) ? domain.eventBus : EventBus.fromEventBusArn(
         this,
         `${id}DomainEventBus`,
-        dataDomainBusArn
+        dataDomainBusArn,
       )),
     );
     rule.applyRemovalPolicy(RemovalPolicy.DESTROY);

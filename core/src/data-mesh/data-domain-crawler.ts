@@ -4,10 +4,20 @@
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
-import { Effect, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Effect, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Choice, Condition, JsonPath, Map, StateMachine, Wait, WaitTime, LogLevel } from 'aws-cdk-lib/aws-stepfunctions';
 import { CallAwsService } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { LogGroup } from 'aws-cdk-lib/aws-logs';
+
+/**
+ * Properties for the DataDomainCrawler Construct
+ */
+ export interface DataDomainCrawlerProps {
+  /**
+   * LF Admin Role
+   */
+  readonly workflowRole: IRole;
+}
 
 /**
  * This CDK Construct creates a AWS Glue Crawler workflow in Data Domain account.
@@ -36,6 +46,7 @@ import { LogGroup } from 'aws-cdk-lib/aws-logs';
 export class DataDomainCrawler extends Construct {
 
   public readonly stateMachine: SfnStateMachine;
+  public readonly crawlerRole: IRole;
 
   /**
    * Construct a new instance of DataDomainCrawler.
@@ -45,83 +56,46 @@ export class DataDomainCrawler extends Construct {
    * @access public
    */
 
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, props: DataDomainCrawlerProps) {
     super(scope, id);
 
-    const crawlerRole = new Role (this, 'CrawlerRole', {
+    this.crawlerRole = new Role (this, 'CrawlerRole', {
       assumedBy: new ServicePrincipal('glue.amazonaws.com'),
     })
 
-    // // This policy grants decrypt on KMS Key in Producer account. Interpolated value is added at runtime
-    // const kmsPolicyDocument = new PolicyDocument({
-    //   statements: [
-    //     new PolicyStatement({
-    //       actions: [
-    //         'kms:Decrypt*',
-    //         'kms:Describe*',
-    //       ],
-    //       resources: ["<interpolated_value>"],
-    //       effect: Effect.ALLOW,
-    //     }),
-    //   ]
-    // });
-
-    // // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
-    // const kmsPolicy = Utils.intrinsicReplacer(JSON.stringify(kmsPolicyDocument.toJSON()));
-
-    // // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
-    // const kmsPolicy = Utils.intrinsicReplacer(JSON.stringify(kmsPolicyDocument.toJSON()));
-
-    // // This task adds policy kmsPolicyDocument to workflowRole
-    // const addKmsPolicy = new CallAwsService(this, 'addKmsPolicy', {
-    //   service: 'iam',
-    //   action: 'putRolePolicy',
-    //   iamResources: ['*'],
-    //   parameters: {
-    //     'PolicyDocument.$': `States.Format('${kmsPolicy}', $.kms.arn[0])`,
-    //     'RoleName': this.dataAccessRole.roleName,
-    //     'PolicyName.$': "States.Format('kms-{}-{}', $.producer_acc_id, $.data_product_s3)",
-    //   },
-    //   resultPath: JsonPath.DISCARD
-    // });
-
-    // // This Policy allows access to S3 of a newly registered Data Product. Interpolated value is added at runtime 
-    // const bucketPolicyDocument = new PolicyDocument({
-    //   statements: [
-    //     new PolicyStatement({
-    //       actions: [
-    //         "s3:GetObject*",
-    //         "s3:GetBucket*",
-    //         "s3:List*",
-    //         "s3:DeleteObject*",
-    //         "s3:PutObject",
-    //         "s3:PutObjectLegalHold",
-    //         "s3:PutObjectRetention",
-    //         "s3:PutObjectTagging",
-    //         "s3:PutObjectVersionTagging",
-    //         "s3:Abort*",
-    //       ],
-    //       resources: ['arn:aws:s3:::<interpolated_value>', 'arn:aws:s3:::<interpolated_value>*'],
-    //       effect: Effect.ALLOW,
-    //     }),
-    //   ]
-    // });
-
-    // // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
-    // const bucketPolicy = Utils.intrinsicReplacer(JSON.stringify(bucketPolicyDocument.toJSON()));
-
-    // // This task adds policy bucketPolicyDocument to workflowRole
-    // const addBucketPolicy = new CallAwsService(this, 'addBucketPolicy', {
-    //   service: 'iam',
-    //   action: 'putRolePolicy',
-    //   iamResources: ['*'],
-    //   parameters: {
-    //     'PolicyDocument.$': `States.Format('${bucketPolicy}', $.data_product_s3, $.tables.location_key)`,
-    //     'PolicyName.$': "States.Format('dataProductPolicy-{}', $.tables.name)",
-    //     'RoleName': this.dataAccessRole.roleName,
-    //   },
-    //   resultPath: JsonPath.DISCARD
-    // });
+    // permissions of the data access role are scoped down to resources with the tag 'data-mesh-managed':'true'
+    new ManagedPolicy(this, 'S3AccessPolicy', {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            'kms:Decrypt*',
+            'kms:Describe*',
+          ],
+          resources: ['*'],
+          effect: Effect.ALLOW,
+          conditions: {
+            StringEquals: {
+              'data-mesh-managed':'true',
+            },
+          },
+        }),
+        new PolicyStatement({
+          actions: [
+            "s3:GetObject*",
+            "s3:GetBucket*",
+            "s3:List*",
+          ],
+          resources: ['*'],
+          effect: Effect.ALLOW,
+          conditions: {
+            StringEquals: {
+              'data-mesh-managed':'true',
+            },
+          },
+        }),
+      ],
+      roles: [this.crawlerRole],
+    })
 
     const traverseTableArray = new Map(this, 'TraverseTableArray', {
       itemsPath: '$.detail.table_names',
@@ -139,7 +113,7 @@ export class DataDomainCrawler extends Construct {
       iamResources: ['*'],
       parameters: {
         'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)",
-        'Role': crawlerRole.roleArn,
+        'Role': this.crawlerRole.roleArn,
         'Targets': {
           'CatalogTargets': [
             {
@@ -207,7 +181,7 @@ export class DataDomainCrawler extends Construct {
     initState.next(traverseTableArray);
 
     // Create Log group for this state machine
-    const logGroup = new LogGroup(this, 'centralGov-stateMachine');
+    const logGroup = new LogGroup(this, 'CrawlerWorkflowStateMachine');
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     const updateTableSchemasStateMachine = new StateMachine(this, 'UpdateTableSchemas', {
