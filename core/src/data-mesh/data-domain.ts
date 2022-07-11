@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Construct } from 'constructs';
-import { Aws, RemovalPolicy, Tags } from 'aws-cdk-lib';
+import { Aws, RemovalPolicy, Tags, PhysicalName } from 'aws-cdk-lib';
 import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { DataLakeStorage } from '../data-lake-storage';
 import { DataDomainWorkflow } from './data-domain-workflow';
@@ -94,7 +94,7 @@ export class DataDomain extends Construct {
     Tags.of(this.dataLake.transformBucket).add('data-mesh-managed', 'true');
     if (this.dataLake.transformBucket.encryptionKey) {
       Tags.of(this.dataLake.transformBucket.encryptionKey).add('data-mesh-managed', 'true');
-    } 
+    }
 
 
     // Workflow role that is LF admin, used by the state machine
@@ -108,7 +108,9 @@ export class DataDomain extends Construct {
       });
 
     // Event Bridge event bus for data domain account
-    this.eventBus = new EventBus(this, 'dataDomainEventBus');
+    this.eventBus = new EventBus(this, 'dataDomainEventBus', {
+      eventBusName: PhysicalName.GENERATE_IF_NEEDED,
+    });
     this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Cross-account policy to allow the central account to send events to data domain's bus

@@ -12,7 +12,7 @@ import { LogGroup } from 'aws-cdk-lib/aws-logs';
 /**
  * Properties for the DataDomainCrawler Construct
  */
- export interface DataDomainCrawlerProps {
+export interface DataDomainCrawlerProps {
   /**
    * LF Admin Role
    */
@@ -59,9 +59,12 @@ export class DataDomainCrawler extends Construct {
   constructor(scope: Construct, id: string, props: DataDomainCrawlerProps) {
     super(scope, id);
 
-    this.crawlerRole = new Role (this, 'CrawlerRole', {
+    this.crawlerRole = new Role(this, 'CrawlerRole', {
       assumedBy: new ServicePrincipal('glue.amazonaws.com'),
     })
+
+    // Grant Workflow role to pass crawlerRole
+    this.crawlerRole.grantPassRole(props.workflowRole);
 
     // permissions of the data access role are scoped down to resources with the tag 'data-mesh-managed':'true'
     new ManagedPolicy(this, 'S3AccessPolicy', {
@@ -75,7 +78,7 @@ export class DataDomainCrawler extends Construct {
           effect: Effect.ALLOW,
           conditions: {
             StringEquals: {
-              'data-mesh-managed':'true',
+              'data-mesh-managed': 'true',
             },
           },
         }),
@@ -89,13 +92,13 @@ export class DataDomainCrawler extends Construct {
           effect: Effect.ALLOW,
           conditions: {
             StringEquals: {
-              'data-mesh-managed':'true',
+              'data-mesh-managed': 'true',
             },
           },
         }),
       ],
       roles: [this.crawlerRole],
-    })
+    });
 
     const traverseTableArray = new Map(this, 'TraverseTableArray', {
       itemsPath: '$.detail.table_names',

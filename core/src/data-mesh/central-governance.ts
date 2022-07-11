@@ -104,6 +104,9 @@ export class CentralGovernance extends Construct {
       assumedBy: new ServicePrincipal('lakeformation.amazonaws.com'),
     })
 
+    // Grant Workflow role to pass dataAccessRole
+    this.dataAccessRole.grantPassRole(this.workflowRole);
+
     // permissions of the data access role are scoped down to resources with the tag 'data-mesh-managed':'true'
     new ManagedPolicy(this, 'S3AccessPolicy', {
       statements: [
@@ -119,7 +122,7 @@ export class CentralGovernance extends Construct {
           effect: Effect.ALLOW,
           conditions: {
             StringEquals: {
-              'data-mesh-managed':'true',
+              'data-mesh-managed': 'true',
             },
           },
         }),
@@ -140,7 +143,7 @@ export class CentralGovernance extends Construct {
           effect: Effect.ALLOW,
           conditions: {
             StringEquals: {
-              'data-mesh-managed':'true',
+              'data-mesh-managed': 'true',
             },
           },
         }),
@@ -315,10 +318,10 @@ export class CentralGovernance extends Construct {
     });
 
     tablesMapTask.iterator(
-        createTable.addCatch(grantTablePermissions, {
-          errors: ['Glue.AlreadyExistsException'],
-          resultPath: '$.CreateTableException',
-        }).next(grantTablePermissions)
+      createTable.addCatch(grantTablePermissions, {
+        errors: ['Glue.AlreadyExistsException'],
+        resultPath: '$.CreateTableException',
+      }).next(grantTablePermissions)
     ).next(triggerProducer);
 
     createDatabase.addCatch(updateDatabaseOwnerMetadata, {
@@ -356,23 +359,23 @@ export class CentralGovernance extends Construct {
    * @param {DataDomain} domain the Data Domain to register
    * @access public
    */
-  public registerDataDomain(id: string, domain: DataDomain) {
-    
-    const dataDomainBusArn = domain.eventBus.eventBusArn ;
-    
+  public registerDataDomain(id: string, domain: DataDomain, dataDomainAccountId: string) {
+
+    const dataDomainBusArn = domain.eventBus.eventBusArn;
+
     // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
     new CfnEventBusPolicy(this, `${id}Policy`, {
       eventBusName: this.eventBus.eventBusName,
-      statementId: `AllowDataDomainAccToPutEvents_${domain.accountId}`,
+      statementId: `AllowDataDomainAccToPutEvents_${dataDomainAccountId}`,
       action: 'events:PutEvents',
-      principal: domain.accountId,
+      principal: dataDomainAccountId,
     });
 
     // Event Bridge Rule to trigger createResourceLinks workflow in target Data Domain account
     const rule = new Rule(this, `${id}Rule`, {
       eventPattern: {
         source: ['com.central.stepfunction'],
-        detailType: [`${domain.accountId}_createResourceLinks`],
+        detailType: [`${dataDomainAccountId}_createResourceLinks`],
       },
       eventBus: this.eventBus,
     });
