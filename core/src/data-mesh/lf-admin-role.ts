@@ -1,4 +1,4 @@
-import { Role, RoleProps, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import { Role, RoleProps, ManagedPolicy, PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
 import { CfnDataLakeSettings } from 'aws-cdk-lib/aws-lakeformation';
 import { Construct } from 'constructs';
 
@@ -18,9 +18,77 @@ export class LfAdminRole extends Role {
 
   constructor(scope: Construct, id: string, props: RoleProps) {
     super(scope, id, props);
-    this.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSGlueServiceRole'));
-    this.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AWSLakeFormationCrossAccountManager'));
-    this.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AWSLakeFormationDataAdmin'));
+
+    new ManagedPolicy(this, 'LFAdminPolicy', {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            'lakeformation:*',
+            'glue:GetDatabase',
+            'glue:GetDatabases',
+            'glue:CreateDatabase',
+            'glue:UpdateDatabase',
+            'glue:GetTable',
+            'glue:GetTables',
+            'glue:CreateTable',
+            'glue:UpdateTable',
+            'iam:GetRole'
+          ],
+          resources: ['*'],
+          effect: Effect.ALLOW,
+        }),
+        new PolicyStatement({
+          actions: [
+            'lakeformation:PutDataLakeSettings'
+          ],
+          resources: ['*'],
+          effect: Effect.DENY,
+        }),
+        new PolicyStatement({
+          actions: [
+            'ram:CreateResourceShare'
+          ],
+          resources: ['*'],
+          effect: Effect.ALLOW,
+          conditions: {
+            StringLikeIfExists: {
+              'ram:RequestedResourceType': [
+                'glue:Table',
+                'glue:Database',
+                'glue:Catalog'
+              ]
+            }
+          }
+        }),
+        new PolicyStatement({
+          actions: [
+            'ram:UpdateResourceShare',
+            'ram:AssociateResourceShare',
+            'ram:GetResourceShares'
+          ],
+          resources: ['*'],
+          effect: Effect.ALLOW,
+          conditions: {
+            StringLike: {
+              'ram:ResourceShareName': [
+                'LakeFormation*'
+              ]
+            }
+          }
+        }),
+        new PolicyStatement({
+          actions: [
+            'glue:PutResourcePolicy',
+            'ram:Get*',
+            'ram:List*'
+          ],
+          resources: ['*'],
+          effect: Effect.ALLOW,
+        }),
+      ],
+      roles: [this],
+    })
+
     this.grantPassRole(this);
 
     // Add this role to LF admins
