@@ -1,0 +1,1104 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.3.9">
+    
+    
+      
+        <title>Batch Analytics Solutions - AWS Analytics Reference Architecture</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.1d29e8d0.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.cbb835fc.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#546d78">
+        
+      
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/styles/atom-one-light.min.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="blue-grey" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#keeping-the-data-catalog-up-to-date" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AWS Analytics Reference Architecture" class="md-header__button md-logo" aria-label="AWS Analytics Reference Architecture" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AWS Analytics Reference Architecture
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Batch Analytics Solutions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/aws-samples/aws-analytics-reference-architecture" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    aws-samples/aws-analytics-reference-architecture
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AWS Analytics Reference Architecture" class="md-nav__button md-logo" aria-label="AWS Analytics Reference Architecture" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    AWS Analytics Reference Architecture
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/aws-samples/aws-analytics-reference-architecture" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    aws-samples/aws-analytics-reference-architecture
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          Introduction
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Introduction" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          Introduction
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        What is the Analytics Reference Architecture
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          High Level Design
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="High Level Design" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          High Level Design
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../high-level-design/architecture/" class="md-nav__link">
+        Architecture
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../high-level-design/data-sources/" class="md-nav__link">
+        Data Sources
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3" type="checkbox" id="__nav_2_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_3">
+          Modules
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Modules" data-md-level="2">
+        <label class="md-nav__title" for="__nav_2_3">
+          <span class="md-nav__icon md-icon"></span>
+          Modules
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../high-level-design/modules/data-lake/" class="md-nav__link">
+        Data Lake
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../high-level-design/modules/batch/" class="md-nav__link">
+        Batch Analytics
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2_3_3" type="checkbox" id="__nav_2_3_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2_3_3">
+          Data Warehouse
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Data Warehouse" data-md-level="3">
+        <label class="md-nav__title" for="__nav_2_3_3">
+          <span class="md-nav__icon md-icon"></span>
+          Data Warehouse
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../high-level-design/modules/data-warehouse/" class="md-nav__link">
+        Data Warehouse Data Loading
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../high-level-design/modules/star-schema-physical-model/" class="md-nav__link">
+        Star Schema Physical Data Model
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../high-level-design/modules/source-to-target-mapping/" class="md-nav__link">
+        Source to Target Mappings
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../high-level-design/modules/data-visualization/" class="md-nav__link">
+        Data Visualization
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../high-level-design/modules/streaming/" class="md-nav__link">
+        Streaming Analytics
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Solutions
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Solutions" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Solutions
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-lake/" class="md-nav__link">
+        Data Lake Solutions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Batch Analytics Solutions
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Batch Analytics Solutions
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#keeping-the-data-catalog-up-to-date" class="md-nav__link">
+    Keeping the Data Catalog Up-To-Date
+  </a>
+  
+    <nav class="md-nav" aria-label="Keeping the Data Catalog Up-To-Date">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challengeissue" class="md-nav__link">
+    Challenge/Issue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution" class="md-nav__link">
+    Solution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orchestrating-a-serverless-batch-analytics-pipeline" class="md-nav__link">
+    Orchestrating a serverless batch analytics pipeline
+  </a>
+  
+    <nav class="md-nav" aria-label="Orchestrating a serverless batch analytics pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challengeissue_1" class="md-nav__link">
+    Challenge/Issue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_1" class="md-nav__link">
+    Solution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-reusable-etl-script" class="md-nav__link">
+    Creating a reusable ETL Script
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a reusable ETL Script">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challengeissue_2" class="md-nav__link">
+    Challenge/Issue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_2" class="md-nav__link">
+    Solution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-of-late-arriving-events" class="md-nav__link">
+    Handling of late arriving events
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling of late arriving events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challengeissue_3" class="md-nav__link">
+    Challenge/Issue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_3" class="md-nav__link">
+    Solution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-warehouse/" class="md-nav__link">
+        Data Warehouse Solutions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-visualization/" class="md-nav__link">
+        Data Visualization Solutions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../streaming/" class="md-nav__link">
+        Streaming Solutions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../costs/" class="md-nav__link">
+        Costs Solutions
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#keeping-the-data-catalog-up-to-date" class="md-nav__link">
+    Keeping the Data Catalog Up-To-Date
+  </a>
+  
+    <nav class="md-nav" aria-label="Keeping the Data Catalog Up-To-Date">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challengeissue" class="md-nav__link">
+    Challenge/Issue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution" class="md-nav__link">
+    Solution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orchestrating-a-serverless-batch-analytics-pipeline" class="md-nav__link">
+    Orchestrating a serverless batch analytics pipeline
+  </a>
+  
+    <nav class="md-nav" aria-label="Orchestrating a serverless batch analytics pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challengeissue_1" class="md-nav__link">
+    Challenge/Issue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_1" class="md-nav__link">
+    Solution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-reusable-etl-script" class="md-nav__link">
+    Creating a reusable ETL Script
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating a reusable ETL Script">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challengeissue_2" class="md-nav__link">
+    Challenge/Issue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_2" class="md-nav__link">
+    Solution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#handling-of-late-arriving-events" class="md-nav__link">
+    Handling of late arriving events
+  </a>
+  
+    <nav class="md-nav" aria-label="Handling of late arriving events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#challengeissue_3" class="md-nav__link">
+    Challenge/Issue
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution_3" class="md-nav__link">
+    Solution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+  <a href="https://github.com/aws-samples/aws-analytics-reference-architecture/edit/master/docs/solutions/data-preparation.md" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+  <h1>Batch Analytics Solutions</h1>
+
+<h2 id="keeping-the-data-catalog-up-to-date">Keeping the Data Catalog Up-To-Date<a class="headerlink" href="#keeping-the-data-catalog-up-to-date" title="Permanent link">&para;</a></h2>
+<h3 id="challengeissue">Challenge/Issue<a class="headerlink" href="#challengeissue" title="Permanent link">&para;</a></h3>
+<p>To create a data lake, you must catalog the data stored within the lake.
+As described in the <a href="../../high-level-design/modules/data-lake/">data lake section of the high-level design</a>, MyStore utilizes the <a href="https://docs.aws.amazon.com/glue/latest/dg/populate-data-catalog.html">Glue Data Catalog</a> for keeping track of the location, schema, and statistics of the data.
+There are different ways to populate the metadata in the Data Catalog.
+A crawler can be used to take inventory of the data in your data stores, but there are <a href="https://docs.aws.amazon.com/glue/latest/dg/tables-described.html">various methods</a> to define and update objects manually.
+Factors like latency in visibility of newly arrived data, dependency management, and cost have to be considered when looking for the right approach to keep your Data Catalog up-to-date. </p>
+<h3 id="solution">Solution<a class="headerlink" href="#solution" title="Permanent link">&para;</a></h3>
+<p>MyStore new raw data arrives periodically every 30 minutes in the <em>raw</em> S3 bucket.
+The only process consuming from the <em>raw</em> S3 bucket is the data preparation process, which relies on up-to-date Data Catalog information about all entity types stored in that data lake location.
+For that reason, the Data Catalog gets updated as the first step in the workflow orchestrating the data preparation process.
+A single crawler is used and executed for all the entities to avoid multiple code changes in case of newly added entity types, as well as to lower the cost. The crawler is configured to identify any new and all changes to existing entity types and update the Data Catalog accordingly.</p>
+<p>After the processing of the data (one job per entity), each job updates the Data Catalog to keep the metadata related to the <em>clean</em> S3 bucket up-to-date.
+The following extract of the data preparation ETL script demonstrate how to <a href="https://docs.aws.amazon.com/glue/latest/dg/update-from-job.html">create tables, update schemas, and add new partitions in the Data Catalog from AWS Glue ETL Jobs</a>: </p>
+<pre><code>sink = glue_context.getSink(connection_type=&quot;s3&quot;, path=&quot;s3://&quot; + output_bucket_name + &quot;/&quot; + clean_table_name,
+                                enableUpdateCatalog=True, updateBehavior=&quot;UPDATE_IN_DATABASE&quot;,
+                                partitionKeys=[partition_key])
+sink.setFormat(&quot;glueparquet&quot;)
+sink.setCatalogInfo(catalogDatabase=clean_db_name, catalogTableName=clean_table_name)
+sink.writeFrame(DynamicFrame.fromDF(enriched_data, glue_context, 'result'))
+</code></pre>
+<p>Updating the Data Catalog from within the AWS Glue ETL Job has the benefit that the consumers that rely on the Data Catalog will have immediate access to the newly produced data sets.
+Furthermore, this approach can lower the cost if no additional crawler has to be executed. To understand the cost of running a crawler, refer to the <a href="https://aws.amazon.com/glue/pricing/">Glue Pricing</a> page.
+When evaluating this approach for your use case, please check your requirements against the existing <a href="https://docs.aws.amazon.com/glue/latest/dg/update-from-job.html#update-from-job-restrictions">restrictions</a>.</p>
+<p>In summary, tradeoffs have to be made between:</p>
+<ul>
+<li><strong>Latency in data visibility</strong>: Strictly separating the cataloging process for each entity type vs. introducing artificial dependencies between the independent entity types.</li>
+<li><strong>Cost</strong>: Running no, one, or multiple crawlers to update the Data Catalog.</li>
+<li><strong>Complexity</strong>: Updating the Data Catalog manually vs. only via crawlers vs. using a mix of manual updates and crawlers. </li>
+</ul>
+<h2 id="orchestrating-a-serverless-batch-analytics-pipeline">Orchestrating a serverless batch analytics pipeline<a class="headerlink" href="#orchestrating-a-serverless-batch-analytics-pipeline" title="Permanent link">&para;</a></h2>
+<h3 id="challengeissue_1">Challenge/Issue<a class="headerlink" href="#challengeissue_1" title="Permanent link">&para;</a></h3>
+<p>The usage of a workflow management product is required to schedule and monitor the individual steps of batch processing pipelines, and to manage dependencies between steps. 
+AWS provides different workflow management tools including <a href="https://aws.amazon.com/step-functions/">AWS Step Functions</a>, 
+<a href="https://aws.amazon.com/managed-workflows-for-apache-airflow/">Amazon Managed Workflows for Apache Airflow</a> and <a href="https://docs.aws.amazon.com/glue/latest/dg/workflows_overview.html">AWS Glue Workflows</a>.
+Also, 3rd party products are available via the <a href="https://aws.amazon.com/marketplace">AWS Marketplace</a>. Choosing the right workflow management product can be challenging.</p>
+<h3 id="solution_1">Solution<a class="headerlink" href="#solution_1" title="Permanent link">&para;</a></h3>
+<p>Looking at the various different workflow management products, you can easily categorize them into general purpose solutions and platform/service-specific solutions.
+While AWS Step Functions and Amazon Managed Workflows for Apache Airflow can be used for a wide variety of use cases and applications, AWS Glue Workflow is targeted to ease the definition, execution management, and monitoring of workflows consisting of AWS Glue activities, such as crawlers, jobs, and triggers.</p>
+<p>MyStore's data preparation process is completely decoupled from all up- and down-stream systems via the interfaces of the <em>raw</em> and <em>clean</em> S3 buckets, as well as metadata provided in the Glue Data Catalog, so its workflow management platform choice can be made in isolation from other processes.
+Furthermore, all individual steps of the data preparation process have been designed and implemented as AWS Glue activities, namely an AWS Glue crawler and, a single parametrised AWS Glue ETL Job for each entity type, as described in the <a href="../../high-level-design/modules/batch/">data lake section of the high-level design</a>.
+Operating solely within the context of AWS Glue, MyStore has chosen to use AWS Glue Workflows, which natively supports all the described requirements that MyStore has for their data preparation process.
+Leveraging AWS Glue Workflows, all data preparation related processing elements can be found within the AWS Glue console.  </p>
+<h2 id="creating-a-reusable-etl-script">Creating a reusable ETL Script<a class="headerlink" href="#creating-a-reusable-etl-script" title="Permanent link">&para;</a></h2>
+<h3 id="challengeissue_2">Challenge/Issue<a class="headerlink" href="#challengeissue_2" title="Permanent link">&para;</a></h3>
+<p>The data preparation process cleanses and transforms a variety of entity types, like the customer, customer address, and sales entities.
+Each entity type defines its own schema, consisting of different number of fields, field names, and data types.
+While creating a separate ETL script for each entity type would solve the issue, using a reusable approach that can process any entity type brings benefits on development and maintenance costs.</p>
+<h3 id="solution_2">Solution<a class="headerlink" href="#solution_2" title="Permanent link">&para;</a></h3>
+<p>MyStore is using a single parameterized Glue ETL script for each type of data storage format. Currently, MyStore is relying on a combination of Apache Parquet files for event logs data and Apache Hudi for updatable data. 
+(see the reasons why MyStore is using this solution <a href="../data-warehouse/#optimizing-load-performance-for-slowly-changing-dimensions-in-the-data-warehouse">here</a>). In consequence, the Batch Analytics pipeline is limited to two ETL scripts.
+Any entity-type-specific source or target information gets defined within the parameters, whose default values are specified in the entity-type-related AWS Glue Job definition.
+It is important to note that the script does not require to define the entity-type-specific schema. 
+The script defines and leverages the following parameters:</p>
+<pre><code class="language-python">args = getResolvedOptions(sys.argv,
+                          ['JOB_NAME', 'raw_db_name', 'clean_db_name', 'source_entity_name', 'target_entity_name', 'datetime_partition_column',
+                           'partition_key', 'output_bucket_name'])
+job_name = args['JOB_NAME']
+raw_db_name = args['raw_db_name']
+clean_db_name = args['clean_db_name']
+source_entity_name = args['source_entity_name']
+target_entity_name = args['target_entity_name']
+datetime_partition_column = args['datetime_partition_column']
+partition_key = args['partition_key']
+output_bucket_name = args['output_bucket_name']
+
+raw_table_name = source_entity_name
+clean_table_name = target_entity_name
+</code></pre>
+<p>To read the data from the <em>raw</em> S3 bucket, the variables <code>raw_db_name</code> and <code>raw_table_name</code> are used to refer to the entity-type-specific raw data table in the AWS Glue Data Catalog.
+Using AWS Glue's <a href="https://docs.aws.amazon.com/glue/latest/dg/aws-glue-api-crawler-pyspark-extensions-dynamic-frame.html">DynamicFrameReader</a> 's method to read data from the specified table name, there is no need to specify any reader schema within the script.</p>
+<pre><code class="language-python">raw_data: DynamicFrame = glue_context.create_dynamic_frame.from_catalog(database=raw_db_name, table_name=raw_table_name, transformation_ctx=&quot;raw_data&quot;)
+</code></pre>
+<p>After reading the data, the script transforms and enriches the raw data.
+For that, it first gets converted into a DataFrame.</p>
+<pre><code class="language-python">input_data = raw_data.toDF()
+</code></pre>
+<p>Each source, independent of the entity type, carries the <code>processing_datetime</code> in form of a unix timestamp from the ingestion system along.
+To ease the consumption of the data, the data type is transformed into a timestamp.</p>
+<pre><code class="language-python">cleaned_data = input_data.select(*[from_unixtime(c).alias(c) if c == 'processing_datetime' else col(c) for c in input_data.columns])
+</code></pre>
+<p>As time-related information in the <em>raw</em> is stored as String to allow any ingestion to succeed, the data preparation script transforms these fields accordingly.
+By convention, any field ending with <code>_datetime</code> gets transformed into a timestamp, and any field ending with <code>_date</code> gets transformed into a date.</p>
+<pre><code class="language-python">cleaned_data = cleaned_data.select(*[to_timestamp(c).alias(c) if c.endswith('_datetime') else col(c) for c in input_data.columns])
+cleaned_data = cleaned_data.select(*[to_date(c).alias(c) if c.endswith('_date') else col(c) for c in input_data.columns])
+</code></pre>
+<p>For a few exceptional cases, the automatic data type detection and conversion gets to its limits.
+As <code>zip</code> codes are detected as numeric numbers, an explicit cast into String has to be performed.</p>
+<pre><code class="language-python">cleaned_data = cleaned_data.select(*[col(c).cast('string').alias(c) if c == 'zip' else col(c) for c in input_data.columns])
+</code></pre>
+<p>Before being able to write the transformed raw data to the target location, two additional fields have to be added.
+To be able to track down a record has been touched by each process in the data pipeline, the script adds an <code>etl_processing_datetime</code> fields, which carries the timestamp of when the ETL script has been started.
+The second fields to be added is required, as the output of the data preparation process in the <em>clean</em> S3 bucket should be partitioned by event time's date.
+As the source field of the event time, as well as the partition key, is entity-type-specific, the value of the <code>datetime_partition_column</code> parameter determines the name of the source field, and the value of the 'partition_key' parameter defines the name of the newly created partition key column.  </p>
+<pre><code class="language-python">enriched_data = cleaned_data.withColumn('etl_processing_datetime', unix_timestamp(f.lit(processing_start_datetime), 'yyyy-MM-dd HH:mm:ss').cast(&quot;timestamp&quot;)).withColumn(partition_key, f.date_format(f.col(datetime_partition_column), &quot;yyyy-MM-dd&quot;).cast(&quot;date&quot;))
+</code></pre>
+<p>Finally, the script stores the enriched data sets partitioned by the <code>partition_key</code> column in the <em>clean</em> S3 bucket, which is defined in the <code>output_bucket_name</code> parameter.
+The <code>clean_table_name</code> parameter is used to prefix the object paths of the output and update the metadata in the AWS Glue Data Catalog (in combination with <code>clean_db_name</code> parameter) as described in <a href="#keeping-the-data-catalog-up-to-date">Keeping the Data Catalog Up-To-Date</a>.</p>
+<pre><code class="language-python">sink = glue_context.getSink(connection_type=&quot;s3&quot;, path=&quot;s3://&quot; + output_bucket_name + &quot;/&quot; + clean_table_name,
+                            enableUpdateCatalog=True, updateBehavior=&quot;UPDATE_IN_DATABASE&quot;,
+                            partitionKeys=[partition_key])
+sink.setFormat(&quot;glueparquet&quot;)
+sink.setCatalogInfo(catalogDatabase=clean_db_name, catalogTableName=clean_table_name)
+sink.writeFrame(DynamicFrame.fromDF(enriched_data, glue_context, 'result'))
+</code></pre>
+<p>With the provided approach of implementing the ETL script, MyStore ends up in just having a single version of the ETL script stored in S3 and all AWS Glue Jobs referencing to it.
+The entity-type-specific configuration is defined within the AWS Glue Jobs.
+However, as seen with the example of the zip code, this approach still requires non-generic code fragments to be placed within the reusable script.
+Given the simplicity of the variation in the source data schema and formats, this approach is working well for the given scenario of MyStore.</p>
+<h2 id="handling-of-late-arriving-events">Handling of late arriving events<a class="headerlink" href="#handling-of-late-arriving-events" title="Permanent link">&para;</a></h2>
+<h3 id="challengeissue_3">Challenge/Issue<a class="headerlink" href="#challengeissue_3" title="Permanent link">&para;</a></h3>
+<p>Data from the source systems can arrive with delays in the <em>raw</em> S3 bucket.
+At the same time, data consumers should not miss any data, even when arriving late.</p>
+<h3 id="solution_3">Solution<a class="headerlink" href="#solution_3" title="Permanent link">&para;</a></h3>
+<p>The data preparation process consumes its input data from the <em>raw</em> S3 bucket, where the data is partitioned by the processing time of the source system.
+By aligning the data pipeline end-to-end on the continuously increasing source system's processing time, all late arriving data would automatically be picked up at any stage of the pipeline.</p>
+<p>However, MyStore decided to provide a more user-friendly view on the data in the <em>clean</em> S3 bucket, which is the output location of the data preparation process, by partitioning the data by event time.
+Event time being the point in time when the event has been created at its original source.
+Querying on event time is the more natural way for users to interact with the data than considering a time when a particular system has touched the event. 
+As event time and processing time can diverge in certain situations, there is no direct correlation between the partition of the input and output data.
+This design results in updates being made to existing partitions in the <em>clean</em> S3 bucket.</p>
+<p>While switching partitioning from processing time to event time eases the situation for downstream consumers that run isolated queries on append-only data sets, it creates additional challenges for consumers that are interested in the incremental changes that are applied to a data set.
+To handle this challenge, consumers that utilize AWS Glue can leverage a feature called <a href="https://docs.aws.amazon.com/glue/latest/dg/monitor-continuations.html">job bookmarks</a>.
+Using this feature, AWS Glue tracks data that has already been processed during a previous run of an ETL job and prevents reprocessing of old data.
+In case of consuming data from Amazon S3, the tracking happens on object level across all partition.
+Another option for consumers to identify and consume the incremental changes to the data set is to leverage <a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/NotificationHowTo.html">Amazon S3 event notifications</a>.
+Using this feature, consumers will be notified when new objects are created in any of the partitions and can process them according to their needs.</p>
+<p>Choosing an approach to handle late arriving events always has to consider the full data processing pipeline from the data source down to the final consumer of the event.
+In a flow, which only includes processing steps that are interested in the incremental changes to the data set, sticking to a processing time based partitioning is usually the simplest approach.
+If, like in the MyStore Inc scenario, a single view should be provided that allows end users to query based on event time, but also processes to pick up incremental changes, additional mechanisms have to be leveraged as described above.</p>
+
+              
+            </article>
+            
+          </div>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../data-lake/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Data Lake Solutions" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Data Lake Solutions
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../data-warehouse/" class="md-footer__link md-footer__link--next" aria-label="Next: Data Warehouse Solutions" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Data Warehouse Solutions
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections"], "search": "../../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.6c7ad80a.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.2/highlight.min.js"></script>
+      
+        <script src="../../javascripts/config.js"></script>
+      
+    
+  </body>
+</html>
