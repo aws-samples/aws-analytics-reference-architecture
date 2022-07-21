@@ -29,7 +29,13 @@ This documentation explains how to get started with the core components of the A
 3. Install the following components with the specified version on the machine from which the deployment will be executed:
     1. Python [3.8-3.9.2] or Typescript
     2. AWS CDK v2: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html) guide.
+1. Bootstrap AWS CDK in your region (here **eu-west-1**). It will provision resources required to deploy AWS CDK applications
 
+```bash
+export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+export AWS_REGION=eu-west-1
+cdk bootstrap aws://$ACCOUNT_ID/eu-west-1
+```
 
 ### Initialization (in Python)
 
@@ -46,7 +52,7 @@ source .env/bin/activate
 2. Add the AWS Analytics Reference Architecture library in the dependencies of your project. Update **requirements.txt** 
 
 ```bash
-aws-cdk-lib==2.25.0
+aws-cdk-lib==2.27.0
 constructs>=10.0.0,<11.0.0
 aws_analytics_reference_architecture>=2.0.0
 ```
@@ -84,51 +90,43 @@ import aws_analytics_reference_architecture as ara
 
 ```bash
         # Generate the Sales Data
-        sales_data = ara.DataGenerator(
-            scope = self, 
-            id = 'sale-data', 
-            dataset = ara.Dataset.RETAIL_1_GB_STORE_SALE, 
-            sink_arn = storage.raw_bucket.bucket_arn, 
-            frequency = 120
-        )
+        sales_data = ara.BatchReplayer(
+            scope=self,
+            id="sale-data",
+            dataset=ara.PreparedDataset.RETAIL_1_GB_STORE_SALE,
+            sink_object_key="sale",
+            sink_bucket=storage.raw_bucket,
+         )
+
 ```
 
 ```bash
         # Generate the Customer Data
-        customer_data = ara.DataGenerator(
-            scope = self, 
-            id = 'customer-data', 
-            dataset = ara.Dataset.RETAIL_1_GB_CUSTOMER, 
-            sink_arn = storage.raw_bucket.bucket_arn, 
-            frequency = 120
-        )
+        customer_data = ara.BatchReplayer(
+            scope=self,
+            id="customer-data",
+            dataset=ara.PreparedDataset.RETAIL_1_GB_CUSTOMER,
+            sink_object_key="customer",
+            sink_bucket=storage.raw_bucket,
+         )
+
 ```
 
 * Additionally, the library provides some helpers to quickly run demos:
 
 ```bash
         # Configure defaults for Athena console
-        ara.AthenaDefaultSetup(
-            scope = self,
-            id = 'defaultSetup'
-        )
+        athena_defaults = ara.AthenaDemoSetup(scope=self, id="demo_setup")
 ```
 
 ```bash
         # Configure a default role for AWS Glue jobs
-        ara.SingletonGlueDefaultRole.get_or_create(self)
+        ara.GlueDemoRole.get_or_create(self)
 ```
 
 ### Deployment
 
-1. Bootstrap AWS CDK in your region (here **eu-west-1**). It will provision resources required to deploy AWS CDK applications
-
-```bash
-export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-export AWS_REGION=eu-west-1
-cdk bootstrap aws://$ACCOUNT_ID/eu-west-1
-```
-2. Deploy the AWS CDK application
+Deploy the AWS CDK application
 
 ```bash
 cdk deploy
@@ -146,7 +144,7 @@ cdk destroy
 
 ## API Reference
 
-More contructs, helpers and datasets are available in the AWS Analytics Reference Architecture. See the full API specification [here](https://constructs.dev/packages/aws-analytics-reference-architecture/v/1.15.0?lang=python)
+More contructs, helpers and datasets are available in the AWS Analytics Reference Architecture. See the full API specification [here](https://constructs.dev/packages/aws-analytics-reference-architecture)
 
 ## Contributing
 
