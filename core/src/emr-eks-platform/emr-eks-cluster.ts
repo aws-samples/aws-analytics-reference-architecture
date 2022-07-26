@@ -913,7 +913,7 @@ ${userData.join('\r\n')}
 
     const stack = Stack.of(this);
 
-    let irsaConditionkey: CfnJson = new CfnJson(this, 'irsaConditionkey'+name, {
+    let irsaConditionkey: CfnJson = new CfnJson(this, 'irsaConditionkey'+id, {
       value: {
         [`${this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer}:sub`]: 'system:serviceaccount:' + namespace + ':emr-containers-sa-*-*-' + Aws.ACCOUNT_ID.toString() +'-'+ SimpleBase.base36.encode(name),
       },
