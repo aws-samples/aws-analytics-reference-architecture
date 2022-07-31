@@ -913,7 +913,7 @@ ${userData.join('\r\n')}
 
     const stack = Stack.of(this);
 
-    let irsaConditionkey: CfnJson = new CfnJson(this, 'irsaConditionkey'+id, {
+    let irsaConditionkey: CfnJson = new CfnJson(this, `${id}irsaConditionkey'`, {
       value: {
         [`${this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer}:sub`]: 'system:serviceaccount:' + namespace + ':emr-containers-sa-*-*-' + Aws.ACCOUNT_ID.toString() +'-'+ SimpleBase.base36.encode(name),
       },
@@ -927,7 +927,7 @@ ${userData.join('\r\n')}
           StringLike: irsaConditionkey,
         },
         'sts:AssumeRoleWithWebIdentity'),
-      roleName: name ? name : undefined,
+      roleName: name,
       managedPolicies: [policy],
       inlinePolicies: {
         PodTemplateAccess: new PolicyDocument({
