@@ -63,6 +63,7 @@ notebookPlatform.addUser([{
   notebookManagedEndpoints: [{
     emrOnEksVersion: 'emr-6.3.0-latest',
     executionPolicy: policy1,
+    managedEndpointName: 'nagRole',
   }],
 }]);
 
