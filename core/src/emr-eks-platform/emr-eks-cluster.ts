@@ -42,7 +42,7 @@ import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-man
 import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
-import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook.json';
+import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook-pod-template-ready.json';
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
@@ -162,8 +162,8 @@ export class EmrEksCluster extends TrackedConstruct {
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-  private static readonly EMR_VERSIONS = ['emr-6.6.0-latest', 'emr-6.5.0-latest', 'emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
-  private static readonly DEFAULT_EMR_VERSION = 'emr-6.6.0-latest';
+  private static readonly EMR_VERSIONS = ['emr-6.7.0-latest', 'emr-6.6.0-latest', 'emr-6.5.0-latest', 'emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
+  private static readonly DEFAULT_EMR_VERSION = 'emr-6.7.0-latest';
   private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
   private static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
   public readonly eksCluster: Cluster;
@@ -457,8 +457,8 @@ export class EmrEksCluster extends TrackedConstruct {
     this.uploadPodTemplate('defaultPodTemplates', join(__dirname, 'resources/k8s/pod-template'));
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the notebook default config
-    // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-driver.yaml`);
-    // NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-executor.yaml`);
+    NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.driver.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-driver.yaml`);
+    NotebookDefaultConfig.applicationConfiguration[0].properties['spark.kubernetes.executor.podTemplateFile'] = this.assetBucket.s3UrlForObject(`${this.podTemplateLocation.objectKey}/notebook-executor.yaml`);
     this.notebookDefaultConfig = JSON.parse(JSON.stringify(NotebookDefaultConfig));
 
     // Replace the pod template location for driver and executor with the correct Amazon S3 path in the critical default config
@@ -913,7 +913,7 @@ ${userData.join('\r\n')}
 
     const stack = Stack.of(this);
 
-    let irsaConditionkey: CfnJson = new CfnJson(this, 'irsaConditionkey'+id, {
+    let irsaConditionkey: CfnJson = new CfnJson(this, `${id}irsaConditionkey'`, {
       value: {
         [`${this.eksCluster.openIdConnectProvider.openIdConnectProviderIssuer}:sub`]: 'system:serviceaccount:' + namespace + ':emr-containers-sa-*-*-' + Aws.ACCOUNT_ID.toString() +'-'+ SimpleBase.base36.encode(name),
       },
@@ -927,7 +927,7 @@ ${userData.join('\r\n')}
           StringLike: irsaConditionkey,
         },
         'sts:AssumeRoleWithWebIdentity'),
-      roleName: name ? name : undefined,
+      roleName: name,
       managedPolicies: [policy],
       inlinePolicies: {
         PodTemplateAccess: new PolicyDocument({
