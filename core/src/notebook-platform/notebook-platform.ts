@@ -380,7 +380,7 @@ export class NotebookPlatform extends TrackedConstruct {
 
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this,
-            `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.executionPolicy.managedPolicyName)}`,
+            `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.managedEndpointName)}`,
             {
               managedEndpointName: `${this.studioName}-${notebookManagedEndpoint.managedEndpointName}`,
               virtualClusterId: this.emrVirtCluster.attrId,
