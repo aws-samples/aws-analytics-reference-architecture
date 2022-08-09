@@ -74,7 +74,7 @@
     "jsii-docgen": "^7.0.33",
     "jsii-pacmak": "^1.60.1",
     "json-schema": "^0.4.0",
-    "npm-check-updates": "^15",
+    "npm-check-updates": "^12",
     "projen": "^0.58.15",
     "promptly": "^3.2.0",
     "proxy-agent": "^5.0.0",
@@ -89,7 +89,7 @@
     "constructs": "^10.1.38"
   },
   "dependencies": {
-    "@aws-cdk/aws-glue-alpha": "^2.27.0-alpha.0",
+    "@aws-cdk/aws-glue-alpha": "2.27.0-alpha.0",
     "@aws-cdk/aws-redshift-alpha": "2.27.0-alpha.0",
     "@exodus/schemasafe": "^1.0.0-rc.6",
     "aws-sdk": "^2.1153.0",
@@ -118,7 +118,7 @@
     "runner": "groups",
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/*.ts?(x)",
-      "<rootDir>/(test|src)/**/*(*.)@(spec|test).ts?(x)"
+      "<rootDir>/(test|src)/**/?(*.)+(spec|test).ts?(x)"
     ],
     "clearMocks": true,
     "collectCoverage": true,
