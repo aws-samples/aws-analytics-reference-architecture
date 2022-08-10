@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { CfnWorkGroup } from 'aws-cdk-lib/aws-athena';
-import {Bucket} from 'aws-cdk-lib/aws-s3';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { AraBucket } from './ara-bucket';
 
@@ -35,6 +35,7 @@ export class AthenaDemoSetup extends Construct {
       name: 'demo',
       recursiveDeleteOption: true,
       workGroupConfiguration: {
+        requesterPaysEnabled: true,
         publishCloudWatchMetricsEnabled: false,
         resultConfiguration: {
           outputLocation: this.resultBucket.s3UrlForObject('athena-console-results'),
@@ -44,3 +45,4 @@ export class AthenaDemoSetup extends Construct {
 
   }
 }
+
