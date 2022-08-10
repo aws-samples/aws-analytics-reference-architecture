@@ -59,7 +59,6 @@ export interface EmrManagedEndpointProviderProps {
 export class EmrManagedEndpointProvider extends Construct {
   /**
    * The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources
-   * @private
    */
   public readonly provider: Provider;
 
