@@ -123,6 +123,9 @@
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/emr-eks-platform/resources lib/emr-eks-platform"
         },
         {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/lake-formation/resources lib/lake-formation"
+        },
+        {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/notebook-platform/resources lib/notebook-platform"
         },
         {
@@ -247,6 +250,9 @@
         },
         {
           "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/nodegroup-asg-tag/requirements.txt --target lib/emr-eks-platform/resources/lambdas/nodegroup-asg-tag --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/lake-formation/resources/lambdas/admin/requirements.txt --target lib/lake-formation/resources/lambdas/admin --upgrade"
         },
         {
           "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas --upgrade"

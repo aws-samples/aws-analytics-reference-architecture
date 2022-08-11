@@ -20,4 +20,4 @@ export { TrackedConstruct, TrackedConstructProps } from './common/tracked-constr
 export { SingletonGlueDatabase } from './singleton-glue-database';
 export { SingletonKey } from './singleton-kms-key';
 export { SingletonCfnLaunchTemplate } from './singleton-launch-template';
-export { DataDomain, DataDomainPros, DataProduct, DataProductProps, DataDomainWorkflow, DataDomainWorkflowProps, CentralGovernance, CentralGovernanceProps } from './data-mesh';
+export { DataDomain, DataDomainPros, DataProduct, DataProductProps, DataDomainWorkflow, DataDomainWorkflowProps, CentralGovernance } from './data-mesh';

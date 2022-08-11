@@ -1,0 +1,1 @@
+export { LakeFormationAdminProps, LakeFormationAdmin } from './lake-formation-admin';

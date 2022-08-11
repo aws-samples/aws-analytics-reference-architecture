@@ -3,7 +3,7 @@
 
 import { DefaultStackSynthesizer, RemovalPolicy } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
-import { IRole, Policy, PolicyStatement, Effect, CompositePrincipal, ServicePrincipal, Role, ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import { StateMachine, JsonPath, TaskInput, Map, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
 import { CfnEventBusPolicy, EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
@@ -12,8 +12,9 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
 
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
 import { DataDomain } from './data-domain';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { LakeformationS3Location } from '../lf-s3-location';
+import { LakeFormationAdmin } from '../lake-formation';
+import { Database } from '@aws-cdk/aws-glue-alpha';
 
 /**
  * This CDK Construct creates a Data Product registration workflow and resources for the Central Governance account.
@@ -65,6 +66,9 @@ export class CentralGovernance extends Construct {
 
     // Makes the CDK execution role LF admin so we can create databases
     const cdkRole = Role.fromRoleArn(this, 'cdkRole', DefaultStackSynthesizer.DEFAULT_CLOUDFORMATION_ROLE_ARN);
+    new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
+      principal: cdkRole,
+    });
 
     // Event Bridge event bus for the Central Governance account
     this.eventBus = new EventBus(this, 'centralEventBus');
@@ -292,7 +296,10 @@ export class CentralGovernance extends Construct {
     })
 
     // Create the database in Glue with datadomain prefix+bucket
-
+    new Database(this, 'DataDomainDB'+ domain.accountId, {
+      databaseName: 'data-domain-' + domain.accountId,
+      locationUri: domain.dataProductsBucket.s3UrlForObject(domain.dataProductsPrefix),
+    });
 
     const dataDomainBusArn = domain.eventBus.eventBusArn;
 

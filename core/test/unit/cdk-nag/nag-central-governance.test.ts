@@ -19,7 +19,7 @@ const mockApp = new App();
 const centralGovStack = new Stack(mockApp, 'CentralGovernanceStack');
 const dataDomainStack = new Stack(mockApp, 'DataDomainStack');
 
-const governance = new CentralGovernance(centralGovStack, 'CentralGovernance', {});
+const governance = new CentralGovernance(centralGovStack, 'CentralGovernance');
 
 const domain = new DataDomain(dataDomainStack, 'Domain', {
   centralAccountId: '1234567891011',
