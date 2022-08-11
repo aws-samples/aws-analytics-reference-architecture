@@ -342,22 +342,6 @@
         }
       ]
     },
-    "test:integ/data-lake": {
-      "name": "test:integ/data-lake",
-      "steps": [
-        {
-          "exec": "jest --group=integ/data-lake"
-        }
-      ]
-    },
-    "test:integ/redshift": {
-      "name": "test:integ/redshift",
-      "steps": [
-        {
-          "exec": "jest --group=integ/redshift"
-        }
-      ]
-    },
     "test:unit": {
       "name": "test:unit",
       "steps": [

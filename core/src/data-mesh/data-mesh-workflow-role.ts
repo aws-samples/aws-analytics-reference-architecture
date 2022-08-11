@@ -6,7 +6,7 @@ import { Construct } from 'constructs';
  * Construct extending IAM Role with managed and inline policies for LF admin. Adds this role as LF admin.
  */
 
-export class LfAdminRole extends Role {
+export class DataMeshWorkflowRole extends Role {
 
   /**
    * Constructs a new instance of the LfAdminRole class.
@@ -89,9 +89,10 @@ export class LfAdminRole extends Role {
       roles: [this],
     })
 
-    this.grantPassRole(this);
+    // this.grantPassRole(this);
 
     // Add this role to LF admins
+    // TODO replace by idempotent Construct LakeFormationAdmin (from feature/lf-tags branch)
     new CfnDataLakeSettings(this, 'AddLfAdmin', {
       admins: [{ dataLakePrincipalIdentifier: this.roleArn }],
     });

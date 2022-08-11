@@ -20,7 +20,7 @@ const dataDomainStack = new Stack(mockApp, 'dataDomain');
 
 new DataDomain(dataDomainStack, 'myDataDomain', {
   centralAccountId: '1234567891011',
-  crawlerWorkflow: false,
+  crawlerWorkflow: true,
 })
 
 Aspects.of(dataDomainStack).add(new AwsSolutionsChecks());
@@ -40,19 +40,25 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/WorkflowRole/Resource',
+  'dataDomain/myDataDomain/DataDomainCrawler/S3AccessPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Permissions are scoped down with resource tags' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/DataDomainCrawler/UpdateTableSchemas/Resource',
+  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the DataDomainCrawler construct.' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/WorkflowRole/LFAdminPolicy/Resource',
   [{
-    id: 'AwsSolutions-IAM4',
-    reason: 'The purpose of the LfAdminRole construct is to use an AWS Managed Policy.'
+    id: 'AwsSolutions-IAM5',
+    reason: 'We cannot scope down to the Glue resources because they are resolved dynamically during the workflow execution and we cannot tag Glue resources',
   }],
 );
 
-
-// NagSuppressions.addResourceSuppressionsByPath(
-//   dataDomainStack,
-//   'dataDomain/myDataDomain/DataLakeAccess/Resource',
-//   [{ id: 'AwsSolutions-IAM5', reason: 'The LF admin role needs access to all the objects under the prefix' }],
-// );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
