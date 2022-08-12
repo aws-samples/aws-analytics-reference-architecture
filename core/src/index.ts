@@ -3,7 +3,7 @@
 
 export { DataLakeStorageProps, DataLakeStorage } from './data-lake-storage';
 export { SynchronousCrawlerProps, SynchronousCrawler } from './synchronous-crawler';
-export { BatchReplayerProps, BatchReplayer, PreparedDatasetProps, PreparedDataset  } from './data-generator';
+export { BatchReplayerProps, BatchReplayer, PreparedDatasetProps, PreparedDataset } from './data-generator';
 export { SynchronousAthenaQueryProps, SynchronousAthenaQuery } from './synchronous-athena-query';
 export { AraBucket, AraBucketProps } from './ara-bucket';
 export { Ec2SsmRole } from './ec2-ssm-role';
@@ -20,4 +20,4 @@ export { TrackedConstruct, TrackedConstructProps } from './common/tracked-constr
 export { SingletonGlueDatabase } from './singleton-glue-database';
 export { SingletonKey } from './singleton-kms-key';
 export { SingletonCfnLaunchTemplate } from './singleton-launch-template';
-export { DataDomain, DataDomainPros, DataProduct, DataProductProps, DataDomainWorkflow, DataDomainWorkflowProps, CentralGovernance } from './data-mesh';
+export { DataDomain, DataDomainPros, DataDomainWorkflow, DataDomainWorkflowProps, CentralGovernance } from './data-mesh';

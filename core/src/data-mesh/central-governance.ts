@@ -34,14 +34,8 @@ import { Database } from '@aws-cdk/aws-glue-alpha';
  * const exampleApp = new App();
  * const stack = new Stack(exampleApp, 'DataProductStack');
  * 
- * // Optional role
- * const lfAdminRole = new Role(stack, 'myLFAdminRole', {
- *  assumedBy: ...
- * });
  * 
- * const governance = new CentralGovernance(stack, 'myCentralGov', {
- *  lfAdminRole: lfAdminRole
- * });
+ * const governance = new CentralGovernance(stack, 'myCentralGov');
  * 
  * const domain = new DataDomain(...);
  * 
@@ -76,10 +70,10 @@ export class CentralGovernance extends Construct {
 
     // Workflow role that is LF admin, used by the state machine
     this.workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole', {
-        assumedBy: new CompositePrincipal(
-          new ServicePrincipal('states.amazonaws.com'),
-        ),
-      });
+      assumedBy: new CompositePrincipal(
+        new ServicePrincipal('states.amazonaws.com'),
+      ),
+    });
 
     this.workflowRole.attachInlinePolicy(new Policy(this, 'sendEvents', {
       statements: [
@@ -289,14 +283,14 @@ export class CentralGovernance extends Construct {
   public registerDataDomain(id: string, domain: DataDomain) {
 
     // register the S3 location in Lake Formation and create data access role
-    new LakeformationS3Location(this, 'LFLocation'+ domain.accountId, {
+    new LakeformationS3Location(this, 'LFLocation' + domain.accountId, {
       s3Bucket: domain.dataProductsBucket,
       s3ObjectKey: domain.dataProductsPrefix,
       kmsKey: domain.dataProductsKmsKey,
     })
 
     // Create the database in Glue with datadomain prefix+bucket
-    new Database(this, 'DataDomainDB'+ domain.accountId, {
+    new Database(this, 'DataDomainDB' + domain.accountId, {
       databaseName: 'data-domain-' + domain.accountId,
       locationUri: domain.dataProductsBucket.s3UrlForObject(domain.dataProductsPrefix),
     });
