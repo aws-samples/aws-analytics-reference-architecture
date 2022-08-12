@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { DefaultStackSynthesizer, RemovalPolicy } from 'aws-cdk-lib';;
+import { DefaultStackSynthesizer, RemovalPolicy, Fn } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
 import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
@@ -13,7 +13,8 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
 import { DataDomain } from './data-domain';
 import { LakeformationS3Location } from '../lf-s3-location';
-import { LakeFormationAdmin } from '../lake-formation';
+// import { LakeFormationAdmin } from '../lake-formation';
+import { CfnDataLakeSettings } from 'aws-cdk-lib/aws-lakeformation';
 import { Database } from '@aws-cdk/aws-glue-alpha';
 
 /**
@@ -58,11 +59,24 @@ export class CentralGovernance extends Construct {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
+
+    // Constructs the CDK execution role ARN
+    const cdkExecutionRoleArn = Fn.sub(
+      DefaultStackSynthesizer.DEFAULT_CLOUDFORMATION_ROLE_ARN,
+      {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        Qualifier: DefaultStackSynthesizer.DEFAULT_QUALIFIER,
+      },
+    );
     // Makes the CDK execution role LF admin so we can create databases
-    const cdkRole = Role.fromRoleArn(this, 'cdkRole', DefaultStackSynthesizer.DEFAULT_CLOUDFORMATION_ROLE_ARN);
-    new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
-      principal: cdkRole,
+    const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkExecutionRoleArn);
+    new CfnDataLakeSettings(this, 'AddLfAdmin', {
+      admins: [{ dataLakePrincipalIdentifier: cdkRole.roleArn }],
     });
+    // TODO test LakeFormationAdmin construct
+    // new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
+    //   principal: cdkRole,
+    // });
 
     // Event Bridge event bus for the Central Governance account
     this.eventBus = new EventBus(this, 'centralEventBus');
@@ -283,7 +297,7 @@ export class CentralGovernance extends Construct {
   public registerDataDomain(id: string, domain: DataDomain) {
 
     // register the S3 location in Lake Formation and create data access role
-    new LakeformationS3Location(this, 'LFLocation' + domain.accountId, {
+    new LakeformationS3Location(this, 'LFLocation' + domain.node.id, {
       s3Bucket: domain.dataProductsBucket,
       s3ObjectKey: domain.dataProductsPrefix,
       kmsKey: domain.dataProductsKmsKey,
