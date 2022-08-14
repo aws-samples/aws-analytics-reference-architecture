@@ -36,7 +36,7 @@ Aspects.of(lfS3LocationStack).add(new AwsSolutionsChecks());
 NagSuppressions.addResourceSuppressionsByPath(
   lfS3LocationStack,
   'LfS3LocationStack/LfS3Location/LFS3AccessRole/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The S3 location role needs access to all the objects under the prefix' }],
+  [{ id: 'AwsSolutions-IAM5', reason: 'The S3 location role needs access to all the objects under the prefix. GenerateData* is a shortcut' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(

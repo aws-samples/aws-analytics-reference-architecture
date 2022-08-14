@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { IKey } from 'aws-cdk-lib/aws-kms';
 import * as lakeformation from 'aws-cdk-lib/aws-lakeformation';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
@@ -71,45 +71,45 @@ export class LakeformationS3Location extends Construct {
 
     const objectKey = props.s3ObjectKey ? props.s3ObjectKey + '/*' : '*';
     //add policy to access S3 for Read and Write
-    this.dataAccessRole.addToPolicy(
-      new PolicyStatement({
-        resources: [
-          props.s3Bucket.arnForObjects(objectKey),
-          props.s3Bucket.bucketArn,
-        ],
-        actions: [
-          "s3:GetObject*",
-          "s3:GetBucket*",
-          "s3:List*",
-          "s3:DeleteObject*",
-          "s3:PutObject",
-          "s3:PutObjectLegalHold",
-          "s3:PutObjectRetention",
-          "s3:PutObjectTagging",
-          "s3:PutObjectVersionTagging",
-          "s3:Abort*",
-        ],
-      }),
-    );
+    // this.dataAccessRole.addToPolicy(
+    //   new PolicyStatement({
+    //     resources: [
+    //       props.s3Bucket.arnForObjects(objectKey),
+    //       props.s3Bucket.bucketArn,
+    //     ],
+    //     actions: [
+    //       "s3:GetObject*",
+    //       "s3:GetBucket*",
+    //       "s3:List*",
+    //       "s3:DeleteObject*",
+    //       "s3:PutObject",
+    //       "s3:PutObjectLegalHold",
+    //       "s3:PutObjectRetention",
+    //       "s3:PutObjectTagging",
+    //       "s3:PutObjectVersionTagging",
+    //       "s3:Abort*",
+    //     ],
+    //   }),
+    // );
 
-    // add policy to access KMS key used for the bucket encryption
-    if (props.kmsKey) {
-      this.dataAccessRole.addToPolicy(
-        new PolicyStatement({
-          resources: [
-            props.kmsKey?.keyArn,
-          ],
-          actions: [
-            'kms:Encrypt*',
-            'kms:Decrypt*',
-            'kms:ReEncrypt*',
-            'kms:GenerateDataKey*',
-            'kms:Describe*',
-          ],
-        }),
-      );
-    }
-    //props.s3Bucket.grantReadWrite(this.dataAccessRole, objectKey);
+    // // add policy to access KMS key used for the bucket encryption
+    // if (props.kmsKey) {
+    //   this.dataAccessRole.addToPolicy(
+    //     new PolicyStatement({
+    //       resources: [
+    //         props.kmsKey?.keyArn,
+    //       ],
+    //       actions: [
+    //         'kms:Encrypt*',
+    //         'kms:Decrypt*',
+    //         'kms:ReEncrypt*',
+    //         'kms:GenerateDataKey*',
+    //         'kms:Describe*',
+    //       ],
+    //     }),
+    //   );
+    // }
+    props.s3Bucket.grantReadWrite(this.dataAccessRole, objectKey);
 
     new lakeformation.CfnResource(this, 'MyCfnResource', {
       resourceArn: props.s3Bucket.arnForObjects(objectKey),

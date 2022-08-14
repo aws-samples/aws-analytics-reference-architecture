@@ -42,21 +42,84 @@ NagSuppressions.addResourceSuppressionsByPath(
   }],
 );
 
+// NagSuppressions.addResourceSuppressionsByPath(
+//   centralGovStack,
+//   'CentralGovernanceStack/CentralGovernance/S3AccessPolicy/Resource',
+//   [{
+//     id: 'AwsSolutions-IAM5',
+//     reason: 'Permissions are scoped down with resource tags'
+//   }],
+// );
+
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/S3AccessPolicy/Resource',
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/Resource',
   [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Permissions are scoped down with resource tags'
+    id: 'AwsSolutions-L1',
+    reason: 'Custom Resource Provider is provided by CDK and cannot be changed to latest runtime.'
   }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/WorkflowRole/Resource',
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateFn/Resource',
+  [{
+    id: 'AwsSolutions-L1',
+    reason: 'Custom Resource Provider is provided by CDK and cannot be changed to latest runtime.'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LogRetentionLambdaExecutionRoleCdkLakeFormationAdminlfAdminCreateFn/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LogRetentionLambdaExecutionRolePolicyCdkLakeFormationAdminlfAdminCreateFn/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LambdaExecutionRolePolicyCdkLakeFormationAdminlfAdminCreateFn/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Custom Resource Provider is provided by CDK and using wildcards permissions.'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/Resource',
   [{
     id: 'AwsSolutions-IAM4',
-    reason: 'The purpose of the LfAdminRole construct is to use an AWS Managed Policy.'
+    reason: 'Custom Resource Provider is provided by CDK and using managed policies.'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/WorkflowRole/WorkflowRolePolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Needs all ram:Get, ram:List and lakeformation permissions. Needs wildcard resources because there are only known during workflow execution.'
   }],
 );
 
@@ -64,6 +127,12 @@ NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
   'CentralGovernanceStack/CentralGovernance/sendEvents/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The LF admin role needs all events:Put actions (PutEvents, PutPermission, PutRule, PutTargets), hence Put:* for this specific Event Bus.' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/Domain1LFLocation/LFS3AccessRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Permissions given by grantReadWrite() method. Permissions given to all subfolder objects.' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(

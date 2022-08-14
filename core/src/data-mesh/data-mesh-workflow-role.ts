@@ -19,7 +19,7 @@ export class DataMeshWorkflowRole extends Role {
   constructor(scope: Construct, id: string, props: RoleProps) {
     super(scope, id, props);
 
-    new ManagedPolicy(this, 'LFAdminPolicy', {
+    new ManagedPolicy(this, 'WorkflowRolePolicy', {
       statements: [
         new PolicyStatement({
           actions: [

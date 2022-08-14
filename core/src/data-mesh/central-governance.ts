@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { DefaultStackSynthesizer, RemovalPolicy } from 'aws-cdk-lib';;
+import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
 import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
@@ -16,6 +16,7 @@ import { LakeformationS3Location } from '../lf-s3-location';
 import { LakeFormationAdmin } from '../lake-formation';
 import { Database } from '@aws-cdk/aws-glue-alpha';
 
+
 /**
  * This CDK Construct creates a Data Product registration workflow and resources for the Central Governance account.
  * It uses AWS Step Functions state machine to orchestrate the workflow:
@@ -24,6 +25,8 @@ import { Database } from '@aws-cdk/aws-glue-alpha';
  * * shares tables to Data Product owner account (Producer)
  * 
  * This construct also creates an Amazon EventBridge Event Bus to enable communication with Data Domain accounts (Producer/Consumer).
+ * 
+ * This construct requires to use the default [CDK qualifier](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) generated with the standard CDK bootstrap stack.
  * 
  * Usage example:
  * ```typescript
@@ -65,7 +68,9 @@ export class CentralGovernance extends Construct {
     super(scope, id);
 
     // Makes the CDK execution role LF admin so we can create databases
-    const cdkRole = Role.fromRoleArn(this, 'cdkRole', DefaultStackSynthesizer.DEFAULT_CLOUDFORMATION_ROLE_ARN);
+    const qualifier =  this.node.tryGetContext(BOOTSTRAP_QUALIFIER_CONTEXT) ?? DefaultStackSynthesizer.DEFAULT_QUALIFIER
+    const cdkRoleArn = `arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-${qualifier}-cfn-exec-role-${Aws.ACCOUNT_ID}-${Aws.REGION}`;
+    const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkRoleArn);
     new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
       principal: cdkRole,
     });
@@ -289,14 +294,14 @@ export class CentralGovernance extends Construct {
   public registerDataDomain(id: string, domain: DataDomain) {
 
     // register the S3 location in Lake Formation and create data access role
-    new LakeformationS3Location(this, 'LFLocation'+ domain.accountId, {
+    new LakeformationS3Location(this, `${id}LFLocation`, {
       s3Bucket: domain.dataProductsBucket,
       s3ObjectKey: domain.dataProductsPrefix,
       kmsKey: domain.dataProductsKmsKey,
     })
 
     // Create the database in Glue with datadomain prefix+bucket
-    new Database(this, 'DataDomainDB'+ domain.accountId, {
+    new Database(this, `${id}DataDomainDatabase`, {
       databaseName: 'data-domain-' + domain.accountId,
       locationUri: domain.dataProductsBucket.s3UrlForObject(domain.dataProductsPrefix),
     });
