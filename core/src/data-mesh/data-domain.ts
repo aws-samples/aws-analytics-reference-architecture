@@ -154,6 +154,8 @@ export class DataDomain extends Construct {
     if (props.crawlerWorkflow) {
       const workflow = new DataDomainCrawler(this, 'DataDomainCrawler', {
         workflowRole: workflowRole,
+        dataProductsBucket: this.dataProductsBucket,
+        dataProductsPrefix: this.dataProductsPrefix
       });
 
       new Rule(this, 'TriggerUpdateTableSchemasRule', {

@@ -1,7 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
+// import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
+import { DefaultStackSynthesizer, RemovalPolicy, Fn } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
 import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
@@ -13,7 +14,8 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
 import { DataDomain } from './data-domain';
 import { LakeformationS3Location } from '../lf-s3-location';
-import { LakeFormationAdmin } from '../lake-formation';
+// import { LakeFormationAdmin } from '../lake-formation';
+import { CfnDataLakeSettings } from 'aws-cdk-lib/aws-lakeformation';
 import { Database } from '@aws-cdk/aws-glue-alpha';
 
 
@@ -37,14 +39,8 @@ import { Database } from '@aws-cdk/aws-glue-alpha';
  * const exampleApp = new App();
  * const stack = new Stack(exampleApp, 'DataProductStack');
  * 
- * // Optional role
- * const lfAdminRole = new Role(stack, 'myLFAdminRole', {
- *  assumedBy: ...
- * });
  * 
- * const governance = new CentralGovernance(stack, 'myCentralGov', {
- *  lfAdminRole: lfAdminRole
- * });
+ * const governance = new CentralGovernance(stack, 'myCentralGov');
  * 
  * const domain = new DataDomain(...);
  * 
@@ -67,12 +63,26 @@ export class CentralGovernance extends Construct {
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
+
+    // Constructs the CDK execution role ARN
+    const cdkExecutionRoleArn = Fn.sub(
+      DefaultStackSynthesizer.DEFAULT_CLOUDFORMATION_ROLE_ARN,
+      {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        Qualifier: DefaultStackSynthesizer.DEFAULT_QUALIFIER,
+      },
+    );
     // Makes the CDK execution role LF admin so we can create databases
-    const qualifier =  this.node.tryGetContext(BOOTSTRAP_QUALIFIER_CONTEXT) ?? DefaultStackSynthesizer.DEFAULT_QUALIFIER
-    const cdkRoleArn = `arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-${qualifier}-cfn-exec-role-${Aws.ACCOUNT_ID}-${Aws.REGION}`;
-    const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkRoleArn);
-    new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
-      principal: cdkRole,
+    // const qualifier =  this.node.tryGetContext(BOOTSTRAP_QUALIFIER_CONTEXT) ?? DefaultStackSynthesizer.DEFAULT_QUALIFIER
+    // const cdkRoleArn = `arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-${qualifier}-cfn-exec-role-${Aws.ACCOUNT_ID}-${Aws.REGION}`;
+    // const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkRoleArn);
+    // new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
+    //   principal: cdkRole,
+    // });
+
+    const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkExecutionRoleArn);
+    new CfnDataLakeSettings(this, 'AddLfAdmin', {
+      admins: [{ dataLakePrincipalIdentifier: cdkRole.roleArn }],
     });
 
     // Event Bridge event bus for the Central Governance account
@@ -81,10 +91,10 @@ export class CentralGovernance extends Construct {
 
     // Workflow role that is LF admin, used by the state machine
     this.workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole', {
-        assumedBy: new CompositePrincipal(
-          new ServicePrincipal('states.amazonaws.com'),
-        ),
-      });
+      assumedBy: new CompositePrincipal(
+        new ServicePrincipal('states.amazonaws.com'),
+      ),
+    });
 
     this.workflowRole.attachInlinePolicy(new Policy(this, 'sendEvents', {
       statements: [
@@ -94,62 +104,6 @@ export class CentralGovernance extends Construct {
         }),
       ],
     }));
-
-    // Grant Data Location access to Workflow role
-    // const grantLfAdminAccess = new CallAwsService(this, 'grantLfAdminAccess', {
-    //   service: 'lakeformation',
-    //   action: 'grantPermissions',
-    //   iamResources: ['*'],
-    //   parameters: {
-    //     'Permissions': [
-    //       'DATA_LOCATION_ACCESS'
-    //     ],
-    //     'Principal': {
-    //       'DataLakePrincipalIdentifier': this.workflowRole.roleArn
-    //     },
-    //     'Resource': {
-    //       'DataLocation': {
-    //         'ResourceArn.$': "States.Format('arn:aws:s3:::{}', $.data_product_s3)"
-    //       }
-    //     }
-    //   },
-    //   resultPath: JsonPath.DISCARD
-    // });
-
-    // Grant Data Location access to Data Domain account
-    // const grantProducerAccess = new CallAwsService(this, 'grantProducerAccess', {
-    //   service: 'lakeformation',
-    //   action: 'grantPermissions',
-    //   iamResources: ['*'],
-    //   parameters: {
-    //     'Permissions': [
-    //       'DATA_LOCATION_ACCESS'
-    //     ],
-    //     'Principal': {
-    //       'DataLakePrincipalIdentifier.$': '$.producer_acc_id'
-    //     },
-    //     'Resource': {
-    //       'DataLocation': {
-    //         'ResourceArn.$': "States.Format('arn:aws:s3:::{}', $.data_product_s3)"
-    //       }
-    //     }
-    //   },
-    //   resultPath: JsonPath.DISCARD
-    // });
-
-    // Task to create a database
-    // const createDatabase = new CallAwsService(this, 'createDatabase', {
-    //   service: 'glue',
-    //   action: 'createDatabase',
-    //   iamResources: ['*'],
-    //   parameters: {
-    //     'DatabaseInput': {
-    //       'Name.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
-    //       'Description': "States.Format('Data product for {} in Producer account {}', $.data_product_s3, $.producer_acc_id)",
-    //     },
-    //   },
-    //   resultPath: JsonPath.DISCARD,
-    // });
 
     // Task to create a table
     const createTable = new CallAwsService(this, 'createTable', {
@@ -231,41 +185,12 @@ export class CentralGovernance extends Construct {
       resultPath: '$.map_result',
     });
 
-    // const updateDatabaseOwnerMetadata = new CallAwsService(this, 'updateDatabaseOwnerMetadata', {
-    //   service: 'glue',
-    //   action: 'updateDatabase',
-    //   iamResources: ['*'],
-    //   parameters: {
-    //     'Name.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
-    //     'DatabaseInput': {
-    //       'Name.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
-    //       'Parameters': {
-    //         'data_owner.$': '$.producer_acc_id',
-    //         'data_owner_name.$': "$.product_owner_name",
-    //         'pii_flag.$': '$.product_pii_flag'
-    //       }
-    //     }
-    //   },
-    //   resultPath: JsonPath.DISCARD
-    // });
-
     tablesMapTask.iterator(
       createTable.addCatch(grantTablePermissions, {
         errors: ['Glue.AlreadyExistsException'],
         resultPath: '$.CreateTableException',
       }).next(grantTablePermissions)
     ).next(triggerProducer);
-
-    // createDatabase.addCatch(updateDatabaseOwnerMetadata, {
-    //   errors: ['Glue.AlreadyExistsException'], resultPath: '$.Exception'
-    // }).next(updateDatabaseOwnerMetadata).next(tablesMapTask);
-
-    // registerS3Location.addCatch(grantLfAdminAccess, {
-    //   errors: [
-    //     'LakeFormation.AlreadyExistsException'
-    //   ],
-    //   resultPath: '$.Exception'
-    // }).next(grantLfAdminAccess).next(grantProducerAccess).next(createDatabase);
 
     // Create Log group for this state machine
     const logGroup = new LogGroup(this, 'centralGov-stateMachine');
