@@ -6,6 +6,7 @@ import { IKey } from 'aws-cdk-lib/aws-kms';
 import * as lakeformation from 'aws-cdk-lib/aws-lakeformation';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
+import { PhysicalName } from 'aws-cdk-lib';
 
 /**
 * The props for LF-S3-Location Construct.
@@ -66,6 +67,7 @@ export class LakeformationS3Location extends Construct {
 
     // Create an Amazon IAM Role used by Lakeformation to register S3 location
     this.dataAccessRole = new Role(this, 'LFS3AccessRole', {
+      roleName: PhysicalName.GENERATE_IF_NEEDED,
       assumedBy: new ServicePrincipal('lakeformation.amazonaws.com'),
     });
 
