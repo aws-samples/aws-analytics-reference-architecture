@@ -127,7 +127,7 @@ export class DataDomainCrawler extends Construct {
 
     const grantOnTarget = new CallAwsService(this, 'grantOnTarget', {
       service: 'lakeformation',
-      action: 'BatchGrantPermissions',
+      action: 'batchGrantPermissions',
       iamResources: ['*'],
       parameters: {
         'Entries': [

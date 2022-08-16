@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Construct } from 'constructs';
-import { Aws, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, RemovalPolicy, PhysicalName } from 'aws-cdk-lib';
 import { Policy, PolicyStatement, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { DataLakeStorage } from '../data-lake-storage';
 import { DataDomainWorkflow } from './data-domain-workflow';
@@ -109,7 +109,9 @@ export class DataDomain extends Construct {
     });
 
     // Event Bridge event bus for data domain account
-    this.eventBus = new EventBus(this, 'dataDomainEventBus');
+    this.eventBus = new EventBus(this, 'dataDomainEventBus', {
+      eventBusName: PhysicalName.GENERATE_IF_NEEDED,
+    });
     this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Cross-account policy to allow the central account to send events to data domain's bus

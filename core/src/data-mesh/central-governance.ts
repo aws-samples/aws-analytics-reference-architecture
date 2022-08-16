@@ -14,8 +14,8 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
 import { DataDomain } from './data-domain';
 import { LakeformationS3Location } from '../lf-s3-location';
-// import { LakeFormationAdmin } from '../lake-formation';
-import { CfnDataLakeSettings } from 'aws-cdk-lib/aws-lakeformation';
+import { LakeFormationAdmin } from '../lake-formation';
+// import { CfnDataLakeSettings } from 'aws-cdk-lib/aws-lakeformation';
 import { Database } from '@aws-cdk/aws-glue-alpha';
 
 
@@ -56,13 +56,11 @@ export class CentralGovernance extends Construct {
    * Construct a new instance of CentralGovernance.
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {CentralGovernanceProps} props the CentralGovernanceProps properties
    * @access public
    */
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
-
 
     // Constructs the CDK execution role ARN
     const cdkExecutionRoleArn = Fn.sub(
@@ -73,16 +71,12 @@ export class CentralGovernance extends Construct {
       },
     );
     // Makes the CDK execution role LF admin so we can create databases
-    // const qualifier =  this.node.tryGetContext(BOOTSTRAP_QUALIFIER_CONTEXT) ?? DefaultStackSynthesizer.DEFAULT_QUALIFIER
-    // const cdkRoleArn = `arn:${Aws.PARTITION}:iam::${Aws.ACCOUNT_ID}:role/cdk-${qualifier}-cfn-exec-role-${Aws.ACCOUNT_ID}-${Aws.REGION}`;
-    // const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkRoleArn);
-    // new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
-    //   principal: cdkRole,
-    // });
-
     const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkExecutionRoleArn);
-    new CfnDataLakeSettings(this, 'AddLfAdmin', {
-      admins: [{ dataLakePrincipalIdentifier: cdkRole.roleArn }],
+    // new CfnDataLakeSettings(this, 'AddLfAdmin', {
+    //   admins: [{ dataLakePrincipalIdentifier: cdkRole.roleArn }],
+    // });
+    new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
+      principal: cdkRole,
     });
 
     // Event Bridge event bus for the Central Governance account
@@ -210,6 +204,7 @@ export class CentralGovernance extends Construct {
   /**
    * Registers a new Data Domain account in Central Governance account. 
    * It includes creating a cross-account policy for Amazon EventBridge Event Bus to enable Data Domain to send events to Central Gov. account. 
+   * It creates a Glue Catalog Database to hold Data Products for this Data Domain.
    * It also creates a Rule to forward events to target Data Domain account. 
    * Each Data Domain account {@link DataDomain} has to be registered in Central Gov. account before it can participate in a mesh.
    * @param {string} id the ID of the CDK Construct
