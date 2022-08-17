@@ -67,10 +67,7 @@ export interface DataDomainPros {
 export class DataDomain extends Construct {
 
   public static readonly DATA_PRODUCTS_KEY: string = 'data-products';
-  public static readonly DATA_BUCKET_SECRET: string = 'data-domain-bucket-';
-  public static readonly DATA_PREFIX_SECRET: string = 'data-domain-prefix-';
-  public static readonly DATA_KEY_SECRET: string = 'data-domain-key-';
-  public static readonly EVENT_BUS_SECRET: string = 'data-domain-bus-';
+  public static readonly DOMAIN_CONFIG_SECRET: string = 'domain-config';
 
 
 
@@ -198,6 +195,7 @@ export class DataDomain extends Construct {
     secretKey.grantDecrypt(centralGovAccount);
     const domainConfigSecret = new Secret(this, 'DomainBucketSecret',{
       secretObjectValue: secretObject,
+      secretName: DataDomain.DOMAIN_CONFIG_SECRET,
     })
     domainConfigSecret.grantRead(centralGovAccount);
   }

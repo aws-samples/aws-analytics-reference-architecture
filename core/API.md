@@ -1894,41 +1894,8 @@ public readonly dataProductsKmsKey: IKey;
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_BUCKET_SECRET">DATA_BUCKET_SECRET</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_KEY_SECRET">DATA_KEY_SECRET</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_PREFIX_SECRET">DATA_PREFIX_SECRET</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_PRODUCTS_KEY">DATA_PRODUCTS_KEY</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.EVENT_BUS_SECRET">EVENT_BUS_SECRET</a></code> | <code>string</code> | *No description.* |
-
----
-
-##### `DATA_BUCKET_SECRET`<sup>Required</sup> <a name="DATA_BUCKET_SECRET" id="aws-analytics-reference-architecture.DataDomain.property.DATA_BUCKET_SECRET"></a>
-
-```typescript
-public readonly DATA_BUCKET_SECRET: string;
-```
-
-- *Type:* string
-
----
-
-##### `DATA_KEY_SECRET`<sup>Required</sup> <a name="DATA_KEY_SECRET" id="aws-analytics-reference-architecture.DataDomain.property.DATA_KEY_SECRET"></a>
-
-```typescript
-public readonly DATA_KEY_SECRET: string;
-```
-
-- *Type:* string
-
----
-
-##### `DATA_PREFIX_SECRET`<sup>Required</sup> <a name="DATA_PREFIX_SECRET" id="aws-analytics-reference-architecture.DataDomain.property.DATA_PREFIX_SECRET"></a>
-
-```typescript
-public readonly DATA_PREFIX_SECRET: string;
-```
-
-- *Type:* string
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DOMAIN_CONFIG_SECRET">DOMAIN_CONFIG_SECRET</a></code> | <code>string</code> | *No description.* |
 
 ---
 
@@ -1942,10 +1909,10 @@ public readonly DATA_PRODUCTS_KEY: string;
 
 ---
 
-##### `EVENT_BUS_SECRET`<sup>Required</sup> <a name="EVENT_BUS_SECRET" id="aws-analytics-reference-architecture.DataDomain.property.EVENT_BUS_SECRET"></a>
+##### `DOMAIN_CONFIG_SECRET`<sup>Required</sup> <a name="DOMAIN_CONFIG_SECRET" id="aws-analytics-reference-architecture.DataDomain.property.DOMAIN_CONFIG_SECRET"></a>
 
 ```typescript
-public readonly EVENT_BUS_SECRET: string;
+public readonly DOMAIN_CONFIG_SECRET: string;
 ```
 
 - *Type:* string

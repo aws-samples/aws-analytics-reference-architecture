@@ -223,7 +223,7 @@ export class CentralGovernance extends Construct {
             service: 'secretsmanager',
             account: domainId,
             region: Aws.REGION,
-            resourceName: DataDomain.DATA_BUCKET_SECRET,
+            resourceName: DataDomain.DOMAIN_CONFIG_SECRET,
           }, Stack.of(this)),
         },
         physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
