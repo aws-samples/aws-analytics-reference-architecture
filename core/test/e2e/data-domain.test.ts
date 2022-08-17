@@ -12,14 +12,18 @@ import { deployStack, destroyStack } from './utils';
 
 import { DataDomain } from '../../src/data-mesh';
 
-jest.setTimeout(100000);
+jest.setTimeout(600000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'DataDomainE2eTest');
 
+const domain = new DataDomain(stack, 'DataDomain', {
+  centralAccountId: '628862645339',
+  crawlerWorkflow: true,
+});
 
 new cdk.CfnOutput(stack, 'BucketName', {
-  value: '',
+  value: domain.dataLake.cleanBucket.bucketName,
   exportName: 'bucketName',
 });
 
@@ -29,7 +33,7 @@ describe('deploy succeed', () => {
     const deployResult = await deployStack(integTestApp, stack);
 
     // THEN
-    expect(deployResult.outputs.BucketName).toContain('my-ara-bucket-');
+    expect(deployResult.outputs.BucketName).toContain('clean-');
   }, 9000000);
 });
 

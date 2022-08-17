@@ -17,10 +17,11 @@ jest.setTimeout(100000);
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'CentralGovernanceE2eTest');
 
+const central = new CentralGovernance(stack, 'CentralGovernance');
 
-new cdk.CfnOutput(stack, 'BucketName', {
-  value: '',
-  exportName: 'bucketName',
+new cdk.CfnOutput(stack, 'EventBusName', {
+  value: central.eventBus.eventBusName,
+  exportName: 'eventBusName',
 });
 
 describe('deploy succeed', () => {
@@ -29,7 +30,7 @@ describe('deploy succeed', () => {
     const deployResult = await deployStack(integTestApp, stack);
 
     // THEN
-    expect(deployResult.outputs.BucketName).toContain('my-ara-bucket-');
+    expect(deployResult.outputs.EventBusName).toContain('central');
   }, 9000000);
 });
 

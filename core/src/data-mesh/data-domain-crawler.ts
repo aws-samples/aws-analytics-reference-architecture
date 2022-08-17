@@ -7,7 +7,7 @@ import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Choice, Condition, JsonPath, Map, StateMachine, Wait, WaitTime, LogLevel } from 'aws-cdk-lib/aws-stepfunctions';
 import { CallAwsService } from 'aws-cdk-lib/aws-stepfunctions-tasks';
-import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 
 /**
@@ -78,8 +78,21 @@ export class DataDomainCrawler extends Construct {
     // Grant Workflow role to pass crawlerRole
     this.crawlerRole.grantPassRole(props.workflowRole);
 
-    new ManagedPolicy(this, 'S3AccessPolicy', {
-      statements: [
+    const statements = [ new PolicyStatement({
+      actions: [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*",
+      ],
+      resources: [
+        props.dataProductsBucket.bucketArn,
+        `${props.dataProductsBucket.bucketArn}/${props.dataProductsPrefix}/*`
+      ],
+      effect: Effect.ALLOW,
+    })];
+
+    if (props.dataProductsBucket.encryptionKey) {
+      statements.concat([
         new PolicyStatement({
           actions: [
             'kms:Decrypt*',
@@ -87,20 +100,12 @@ export class DataDomainCrawler extends Construct {
           ],
           resources: [props.dataProductsBucket.encryptionKey!.keyArn],
           effect: Effect.ALLOW,
-        }),
-        new PolicyStatement({
-          actions: [
-            "s3:GetObject*",
-            "s3:GetBucket*",
-            "s3:List*",
-          ],
-          resources: [
-            props.dataProductsBucket.bucketArn,
-            `${props.dataProductsBucket.bucketArn}/${props.dataProductsPrefix}/*`
-          ],
-          effect: Effect.ALLOW,
-        }),
-      ],
+        })
+      ]);
+    }
+
+    new ManagedPolicy(this, 'S3AccessPolicy', {
+      statements: statements,
       roles: [this.crawlerRole],
     });
 
@@ -237,7 +242,9 @@ export class DataDomainCrawler extends Construct {
     initState.next(traverseTableArray);
 
     // Create Log group for this state machine
-    const logGroup = new LogGroup(this, 'CrawlerWorkflowStateMachine');
+    const logGroup = new LogGroup(this, 'CrawlerWorkflowStateMachine', {
+      retention: RetentionDays.ONE_WEEK,
+    });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     const updateTableSchemasStateMachine = new StateMachine(this, 'UpdateTableSchemas', {

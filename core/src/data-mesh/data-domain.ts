@@ -3,7 +3,7 @@
 
 import { Construct } from 'constructs';
 import { Aws, CfnOutput, RemovalPolicy, SecretValue } from 'aws-cdk-lib';
-import { Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, AccountPrincipal } from 'aws-cdk-lib/aws-iam';
+import { Policy, PolicyStatement, AccountPrincipal } from 'aws-cdk-lib/aws-iam';
 import { DataLakeStorage } from '../data-lake-storage';
 import { DataDomainWorkflow } from './data-domain-workflow';
 import { DataDomainCrawler } from './data-domain-crawler';
@@ -67,7 +67,7 @@ export class DataDomain extends Construct {
    * Construct a new instance of DataDomain.
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {DataDomainProps} props the DataDomainPros properties
+   * @param {DataDomainProps} props the DataDomainProps properties
    * @access public
    */
 
@@ -86,11 +86,7 @@ export class DataDomain extends Construct {
     })
 
     // Workflow role used by the state machine
-    const workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole', {
-      assumedBy: new CompositePrincipal(
-        new ServicePrincipal('states.amazonaws.com'),
-      ),
-    });
+    const workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole');
 
     // Event Bridge event bus for data domain account
     const eventBus = new EventBus(this, 'dataDomainEventBus', {
@@ -108,7 +104,7 @@ export class DataDomain extends Construct {
     crossAccountBusPolicy.node.addDependency(eventBus);
 
     const dataDomainWorkflow = new DataDomainWorkflow(this, 'DataDomainWorkflow', {
-      workflowRole: workflowRole,
+      workflowRole: workflowRole.role,
       centralAccountId: props.centralAccountId,
       eventBus: eventBus,
     });
@@ -128,7 +124,7 @@ export class DataDomain extends Construct {
     rule.node.addDependency(eventBus);
 
     // Allow the workflow role to send events to data domain event bus
-    workflowRole.attachInlinePolicy(new Policy(this, 'SendEvents', {
+    workflowRole.role.attachInlinePolicy(new Policy(this, 'SendEvents', {
       statements: [
         new PolicyStatement({
           actions: ['events:Put*'],
@@ -140,13 +136,13 @@ export class DataDomain extends Construct {
     // create a workflow to update data products schemas on registration
     if (props.crawlerWorkflow) {
       const workflow = new DataDomainCrawler(this, 'DataDomainCrawler', {
-        workflowRole: workflowRole,
+        workflowRole: workflowRole.role,
         dataProductsBucket: this.dataLake.cleanBucket,
         dataProductsPrefix: DataDomain.DATA_PRODUCTS_PREFIX
       });
 
       // add a rule to trigger the workflow from the event bus
-      new Rule(this, 'TriggerUpdateTableSchemasRule', {
+      const crawlerRule = new Rule(this, 'TriggerUpdateTableSchemasRule', {
         eventBus: eventBus,
         targets: [
           workflow.stateMachine,
@@ -156,6 +152,7 @@ export class DataDomain extends Construct {
           detailType: ['triggerCrawler'],
         }
       });
+      crawlerRule.applyRemovalPolicy(RemovalPolicy.DESTROY);
     }
 
     // create the data domain configuration object (in JSON) to be passed to the central governance account 

@@ -4,11 +4,11 @@
 // import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
 import { DefaultStackSynthesizer, RemovalPolicy, Fn } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
-import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
+import { IRole, Policy, PolicyStatement, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
 import { StateMachine, JsonPath, TaskInput, Map, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
 import { CfnEventBusPolicy, EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
-import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
@@ -16,8 +16,6 @@ import { LakeFormationS3Location } from '../lake-formation';
 import { LakeFormationAdmin } from '../lake-formation';
 import { Database } from '@aws-cdk/aws-glue-alpha';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
-import { DataDomain } from './data-domain';
-
 
 /**
  * This CDK Construct creates a Data Product registration workflow and resources for the Central Governance account.
@@ -82,11 +80,7 @@ export class CentralGovernance extends Construct {
     this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Workflow role used by the state machine
-    this.workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole', {
-      assumedBy: new CompositePrincipal(
-        new ServicePrincipal('states.amazonaws.com'),
-      ),
-    });
+    this.workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole').role;
 
     this.workflowRole.attachInlinePolicy(new Policy(this, 'sendEvents', {
       statements: [
@@ -186,7 +180,9 @@ export class CentralGovernance extends Construct {
     ).next(triggerProducer);
 
     // Create Log group for this state machine
-    const logGroup = new LogGroup(this, 'centralGov-stateMachine');
+    const logGroup = new LogGroup(this, 'centralGov-stateMachine', {
+      retention: RetentionDays.ONE_WEEK,
+    });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // State machine to register data product from Data Domain

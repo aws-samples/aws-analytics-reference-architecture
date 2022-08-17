@@ -1,12 +1,14 @@
-import { Role, RoleProps, ManagedPolicy, PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
-import { CfnDataLakeSettings } from 'aws-cdk-lib/aws-lakeformation';
+import { Role, ManagedPolicy, PolicyStatement, Effect, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
+import { LakeFormationAdmin } from '../lake-formation';
 
 /**
  * Construct extending IAM Role with managed and inline policies for LF admin. Adds this role as LF admin.
  */
 
-export class DataMeshWorkflowRole extends Role {
+export class DataMeshWorkflowRole extends Construct {
+
+  public readonly role: Role;
 
   /**
    * Constructs a new instance of the LfAdminRole class.
@@ -16,8 +18,14 @@ export class DataMeshWorkflowRole extends Role {
    * @access public
    */
 
-  constructor(scope: Construct, id: string, props: RoleProps) {
-    super(scope, id, props);
+  constructor(scope: Construct, id: string) {
+    super(scope, id);
+
+    this.role = new Role(this, 'Role', {
+      assumedBy: new CompositePrincipal(
+        new ServicePrincipal('states.amazonaws.com'),
+      )
+    });
 
     new ManagedPolicy(this, 'WorkflowRolePolicy', {
       statements: [
@@ -77,15 +85,15 @@ export class DataMeshWorkflowRole extends Role {
           effect: Effect.ALLOW,
         }),
       ],
-      roles: [this],
+      roles: [this.role],
     })
 
     // this.grantPassRole(this);
 
     // Add this role to LF admins
     // TODO replace by idempotent Construct LakeFormationAdmin (from feature/lf-tags branch)
-    new CfnDataLakeSettings(this, 'AddLfAdmin', {
-      admins: [{ dataLakePrincipalIdentifier: this.roleArn }],
+    new LakeFormationAdmin(this, 'LfAdmin', {
+      principal: this.role,
     });
   }
 }
