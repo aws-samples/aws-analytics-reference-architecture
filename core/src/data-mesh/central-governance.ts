@@ -16,7 +16,6 @@ import { LakeFormationS3Location } from '../lake-formation';
 import { LakeFormationAdmin } from '../lake-formation';
 import { Database } from '@aws-cdk/aws-glue-alpha';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
-import { DataDomain } from './data-domain';
 
 
 /**
@@ -236,7 +235,6 @@ export class CentralGovernance extends Construct {
     const domainKey = domainSecret.secretValueFromJson('KmsKeyId').unsafeUnwrap();
     const domainBus = domainSecret.secretValueFromJson('EventBusName').unsafeUnwrap();
 
-
     // register the S3 location in Lake Formation and create data access role
     new LakeFormationS3Location(this, `${id}LFLocation`, {
       s3Location: {
@@ -247,10 +245,12 @@ export class CentralGovernance extends Construct {
     });
 
     // Create the database in Glue with datadomain prefix+bucket
-    new Database(this, `${id}DataDomainDatabase`, {
+    const database = new Database(this, `${id}DataDomainDatabase`, {
       databaseName: 'data-domain-' + domainId,
       locationUri: `s3://${domainBucket}/${domainPrefix}`,
     });
+    // Make sure CDK execution role is an LF admin before it creates a new database
+    database.node.addDependency(this.node.findChild('CdkLakeFormationAdmin'));
 
     // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
     new CfnEventBusPolicy(this, `${id}Policy`, {

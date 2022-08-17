@@ -167,7 +167,7 @@ export class DataDomain extends Construct {
 
     // if the data product bucket is encrypted, add the key ID
     if (this.dataLake.cleanBucket.encryptionKey) {
-      secretObject =  { 
+      secretObject = {
         ...secretObject,
         ...{ KmsKeyId: SecretValue.unsafePlainText(this.dataLake.cleanBucket.encryptionKey.keyId) }
       };
@@ -179,9 +179,9 @@ export class DataDomain extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
     });
     secretKey.grantDecrypt(centralGovAccount);
-    
+
     // create the secret containing the data domain configuration object
-    const domainConfigSecret = new Secret(this, 'DomainBucketSecret',{
+    const domainConfigSecret = new Secret(this, 'DomainBucketSecret', {
       secretObjectValue: secretObject,
       secretName: DataDomain.DOMAIN_CONFIG_SECRET,
       encryptionKey: secretKey,
@@ -191,6 +191,7 @@ export class DataDomain extends Construct {
     // output the full ARN of the secret to be passed when registring the data domain
     new CfnOutput(this, 'DomainSecretArnOutput', {
       value: domainConfigSecret.secretArn,
+      exportName: `${Aws.ACCOUNT_ID}SecretArn`,
     })
   }
 }
