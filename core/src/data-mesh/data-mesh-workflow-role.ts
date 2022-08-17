@@ -26,8 +26,6 @@ export class DataMeshWorkflowRole extends Role {
             'lakeformation:*',
             'glue:GetDatabase',
             'glue:GetDatabases',
-            'glue:CreateDatabase',
-            'glue:UpdateDatabase',
             'glue:GetTable',
             'glue:GetTables',
             'glue:CreateTable',
@@ -36,13 +34,6 @@ export class DataMeshWorkflowRole extends Role {
           ],
           resources: ['*'],
           effect: Effect.ALLOW,
-        }),
-        new PolicyStatement({
-          actions: [
-            'lakeformation:PutDataLakeSettings'
-          ],
-          resources: ['*'],
-          effect: Effect.DENY,
         }),
         new PolicyStatement({
           actions: [

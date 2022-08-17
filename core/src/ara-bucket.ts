@@ -16,7 +16,7 @@ import {
   LifecycleRule,
   ObjectOwnership,
 } from 'aws-cdk-lib/aws-s3';
-import { Duration, RemovalPolicy, Stack, PhysicalName } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy, Stack, Aws } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { SingletonKey } from './singleton-kms-key';
 
@@ -212,7 +212,7 @@ export class AraBucket extends Bucket {
     let bucketEncryptionKey: IKey | undefined = BucketEncryption.KMS == props.encryption ? props.encryptionKey || SingletonKey.getOrCreate(scope, 'DefaultKmsKey') : undefined;
 
     // If the bucket is for s3 access logs, we remove the bucketname to ensure uniqueness across stacks
-    let bucketName = (props.bucketName == 's3-access-logs') ? undefined : PhysicalName.GENERATE_IF_NEEDED;
+    let bucketName = (props.bucketName == 's3-access-logs') ? undefined : `${props.bucketName}-${Aws.ACCOUNT_ID}-${Aws.REGION}`;
     // set the right default parameters in the S3 bucket props
     const bucketProps = {
       ...props,

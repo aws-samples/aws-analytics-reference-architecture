@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 // import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
-import { DefaultStackSynthesizer, RemovalPolicy, Fn } from 'aws-cdk-lib';;
+import { DefaultStackSynthesizer, RemovalPolicy, Fn, Arn, Aws, Stack } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
 import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
@@ -12,11 +12,11 @@ import { LogGroup } from 'aws-cdk-lib/aws-logs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
-import { DataDomain } from './data-domain';
-import { LakeformationS3Location } from '../lf-s3-location';
+import { LakeFormationS3Location } from '../lake-formation';
 import { LakeFormationAdmin } from '../lake-formation';
-// import { CfnDataLakeSettings } from 'aws-cdk-lib/aws-lakeformation';
 import { Database } from '@aws-cdk/aws-glue-alpha';
+import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
+import { DataDomain } from './data-domain';
 
 
 /**
@@ -208,48 +208,74 @@ export class CentralGovernance extends Construct {
    * It also creates a Rule to forward events to target Data Domain account. 
    * Each Data Domain account {@link DataDomain} has to be registered in Central Gov. account before it can participate in a mesh.
    * @param {string} id the ID of the CDK Construct
-   * @param {DataDomain} domain the Data Domain to register
+   * @param {string} domainId the account ID of the DataDomain to register
    * @access public
    */
-  public registerDataDomain(id: string, domain: DataDomain) {
+  public registerDataDomain(id: string, domainId: string) {
+
+    const getDomainConfig =  new AwsCustomResource(this, 'GetDomainBucketCr', {
+      onUpdate: {
+        service: 'SecretsManager',
+        action: 'getSecretValue',
+        parameters: {
+          SecretId:  Arn.format({
+            resource: 'secret',
+            service: 'secretsmanager',
+            account: domainId,
+            region: Aws.REGION,
+            resourceName: DataDomain.DATA_BUCKET_SECRET,
+          }, Stack.of(this)),
+        },
+        physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
+      },
+      policy: AwsCustomResourcePolicy.fromSdkCalls({
+        resources: AwsCustomResourcePolicy.ANY_RESOURCE,
+      })
+    })
+    
+    const domainBucket = getDomainConfig.getResponseField('SecretString.BucketName').toString();
+    const domainPrefix = getDomainConfig.getResponseField('SecretString.Prefix').toString();
+    const domainKey = getDomainConfig.getResponseField('SecretString.KmsKeyId').toString();
+    const domainBus = getDomainConfig.getResponseField('SecretString.EventBusName').toString();
+
 
     // register the S3 location in Lake Formation and create data access role
-    new LakeformationS3Location(this, `${id}LFLocation`, {
-      s3Bucket: domain.dataProductsBucket,
-      s3ObjectKey: domain.dataProductsPrefix,
-      kmsKey: domain.dataProductsKmsKey,
-    })
+    new LakeFormationS3Location(this, `${id}LFLocation`, {
+      s3Location: {
+        bucketName: domainBucket,
+        objectKey: domainPrefix,
+      },
+      kmsKeyId: domainKey,
+    });
 
     // Create the database in Glue with datadomain prefix+bucket
     new Database(this, `${id}DataDomainDatabase`, {
-      databaseName: 'data-domain-' + domain.accountId,
-      locationUri: domain.dataProductsBucket.s3UrlForObject(domain.dataProductsPrefix),
+      databaseName: 'data-domain-' + domainId,
+      locationUri: `s3://${domainBucket}/${domainPrefix}`,
     });
-
-    const dataDomainBusArn = domain.eventBus.eventBusArn;
 
     // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
     new CfnEventBusPolicy(this, `${id}Policy`, {
       eventBusName: this.eventBus.eventBusName,
-      statementId: `AllowDataDomainAccToPutEvents_${domain.accountId}`,
+      statementId: `AllowDataDomainAccToPutEvents_${domainId}`,
       action: 'events:PutEvents',
-      principal: domain.accountId,
+      principal: domainId,
     });
 
     // Event Bridge Rule to trigger createResourceLinks workflow in target Data Domain account
     const rule = new Rule(this, `${id}Rule`, {
       eventPattern: {
         source: ['com.central.stepfunction'],
-        detailType: [`${domain.accountId}_createResourceLinks`],
+        detailType: [`${domainId}_createResourceLinks`],
       },
       eventBus: this.eventBus,
     });
 
     rule.addTarget(new targets.EventBus(
-      (domain.eventBus) ? domain.eventBus : EventBus.fromEventBusArn(
+      EventBus.fromEventBusName(
         this,
         `${id}DomainEventBus`,
-        dataDomainBusArn,
+        domainBus,
       )),
     );
     rule.applyRemovalPolicy(RemovalPolicy.DESTROY);

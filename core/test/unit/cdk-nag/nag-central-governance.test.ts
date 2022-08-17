@@ -21,11 +21,11 @@ const dataDomainStack = new Stack(mockApp, 'DataDomainStack');
 
 const governance = new CentralGovernance(centralGovStack, 'CentralGovernance');
 
-const domain = new DataDomain(dataDomainStack, 'Domain', {
+new DataDomain(dataDomainStack, 'Domain', {
   centralAccountId: '1234567891011',
 })
 
-governance.registerDataDomain('Domain1', domain);
+governance.registerDataDomain('Domain1', '11111111111111' );
 
 Aspects.of(centralGovStack).add(new AwsSolutionsChecks());
 
@@ -42,77 +42,95 @@ NagSuppressions.addResourceSuppressionsByPath(
   }],
 );
 
-// NagSuppressions.addResourceSuppressionsByPath(
-//   centralGovStack,
-//   'CentralGovernanceStack/CentralGovernance/S3AccessPolicy/Resource',
-//   [{
-//     id: 'AwsSolutions-IAM5',
-//     reason: 'Permissions are scoped down with resource tags'
-//   }],
-// );
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/Resource',
+  [{
+    id: 'AwsSolutions-L1',
+    reason: 'Custom Resource Provider is provided by CDK and cannot be changed to latest runtime.'
+  }],
+);
 
-// NagSuppressions.addResourceSuppressionsByPath(
-//   centralGovStack,
-//   'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/Resource',
-//   [{
-//     id: 'AwsSolutions-L1',
-//     reason: 'Custom Resource Provider is provided by CDK and cannot be changed to latest runtime.'
-//   }],
-// );
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/GetDomainBucketCr/CustomResourcePolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'AWS Custom Resource policy is provided by CDK.'
+  }],
+);
 
-// NagSuppressions.addResourceSuppressionsByPath(
-//   centralGovStack,
-//   'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateFn/Resource',
-//   [{
-//     id: 'AwsSolutions-L1',
-//     reason: 'Custom Resource Provider is provided by CDK and cannot be changed to latest runtime.'
-//   }],
-// );
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'AWS Custom Resource lambda function role is provided by CDK.'
+  }],
+);
 
-// NagSuppressions.addResourceSuppressionsByPath(
-//   centralGovStack,
-//   'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LogRetentionLambdaExecutionRoleCdkLakeFormationAdminlfAdminCreateFn/DefaultPolicy/Resource',
-//   [{
-//     id: 'AwsSolutions-IAM5',
-//     reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
-//   }],
-// );
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateFn/Resource',
+  [{
+    id: 'AwsSolutions-L1',
+    reason: 'Custom Resource Provider is provided by CDK and cannot be changed to latest runtime.'
+  }],
+);
 
-// NagSuppressions.addResourceSuppressionsByPath(
-//   centralGovStack,
-//   'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LogRetentionLambdaExecutionRolePolicyCdkLakeFormationAdminlfAdminCreateFn/Resource',
-//   [{
-//     id: 'AwsSolutions-IAM5',
-//     reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
-//   }],
-// );
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/AWS679f53fac002430cb0da5b7982bd2287/Resource',
+  [{
+    id: 'AwsSolutions-L1',
+    reason: 'AWS Custom Resource lambda function is provided by CDK and cannot be changed to latest runtime.'
+  }],
+);
 
-// NagSuppressions.addResourceSuppressionsByPath(
-//   centralGovStack,
-//   'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LambdaExecutionRolePolicyCdkLakeFormationAdminlfAdminCreateFn/Resource',
-//   [{
-//     id: 'AwsSolutions-IAM5',
-//     reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
-//   }],
-// );
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LogRetentionLambdaExecutionRoleCdkLakeFormationAdminlfAdminCreateFn/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
+  }],
+);
 
-// NagSuppressions.addResourceSuppressionsByPath(
-//   centralGovStack,
-//   'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
-//   [{
-//     id: 'AwsSolutions-IAM5',
-//     reason: 'Custom Resource Provider is provided by CDK and using wildcards permissions.'
-//   }],
-// );
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LogRetentionLambdaExecutionRolePolicyCdkLakeFormationAdminlfAdminCreateFn/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
+  }],
+);
 
-// NagSuppressions.addResourceSuppressionsByPath(
-//   centralGovStack,
-//   'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/Resource',
-//   [{
-//     id: 'AwsSolutions-IAM4',
-//     reason: 'Custom Resource Provider is provided by CDK and using managed policies.'
-//   }],
-// );
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LambdaExecutionRolePolicyCdkLakeFormationAdminlfAdminCreateFn/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Custom Resource Provider is provided by CDK and using wildcards permissions.'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'Custom Resource Provider is provided by CDK and using managed policies.'
+  }],
+);
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
@@ -139,26 +157,6 @@ NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
   'CentralGovernanceStack/CentralGovernance/RegisterDataProduct/Resource',
   [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the CentralGovernance construct.' }],
-);
-
-NagSuppressions.addStackSuppressions(
-  dataDomainStack,
-  [{ id: 'AwsSolutions-IAM5', reason: 'NAG testing doesn\'t target DataDomain Construct' }],
-);
-
-NagSuppressions.addStackSuppressions(
-  dataDomainStack,
-  [{ id: 'AwsSolutions-IAM4', reason: 'NAG testing doesn\'t target DataDomain Construct' }],
-);
-
-NagSuppressions.addStackSuppressions(
-  dataDomainStack,
-  [{ id: 'AwsSolutions-SF2', reason: 'NAG testing doesn\'t target DataDomain Construct' }],
-);
-
-NagSuppressions.addStackSuppressions(
-  dataDomainStack,
-  [{ id: 'AwsSolutions-S1', reason: 'NAG testing doesn\'t target DataDomain Construct' }],
 );
 
 test('No unsuppressed Warnings', () => {

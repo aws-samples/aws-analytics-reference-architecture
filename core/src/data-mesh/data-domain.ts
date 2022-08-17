@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Construct } from 'constructs';
-import { Aws, RemovalPolicy, PhysicalName } from 'aws-cdk-lib';
-import { Policy, PolicyStatement, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Aws, RemovalPolicy, SecretValue } from 'aws-cdk-lib';
+import { Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, AccountPrincipal } from 'aws-cdk-lib/aws-iam';
 import { DataLakeStorage } from '../data-lake-storage';
 import { DataDomainWorkflow } from './data-domain-workflow';
 import { DataDomainCrawler } from './data-domain-crawler';
@@ -13,7 +13,8 @@ import * as targets from 'aws-cdk-lib/aws-events-targets';
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { S3CrossAccount } from '../s3-cross-account';
-import { IKey } from 'aws-cdk-lib/aws-kms';
+import { IKey, Key } from 'aws-cdk-lib/aws-kms';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 
 /**
  * Properties for the DataDomain Construct
@@ -66,6 +67,13 @@ export interface DataDomainPros {
 export class DataDomain extends Construct {
 
   public static readonly DATA_PRODUCTS_KEY: string = 'data-products';
+  public static readonly DATA_BUCKET_SECRET: string = 'data-domain-bucket-';
+  public static readonly DATA_PREFIX_SECRET: string = 'data-domain-prefix-';
+  public static readonly DATA_KEY_SECRET: string = 'data-domain-key-';
+  public static readonly EVENT_BUS_SECRET: string = 'data-domain-bus-';
+
+
+
   public readonly dataLake: DataLakeStorage;
   // TODO what are the resources required to be accessible from outside the object?
   // public readonly dataDomainWorkflow: DataDomainWorkflow;
@@ -110,7 +118,7 @@ export class DataDomain extends Construct {
 
     // Event Bridge event bus for data domain account
     this.eventBus = new EventBus(this, 'dataDomainEventBus', {
-      eventBusName: PhysicalName.GENERATE_IF_NEEDED,
+      eventBusName: 'data-mesh-bus',
     });
     this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
@@ -171,5 +179,26 @@ export class DataDomain extends Construct {
         }
       });
     }
+
+    var secretObject = {
+      BucketName: SecretValue.unsafePlainText(this.dataProductsBucket.bucketName),
+      Prefix: SecretValue.unsafePlainText(this.dataProductsPrefix),
+      EventBusName: SecretValue.unsafePlainText(this.eventBus.eventBusName),
+    }
+
+    if (this.dataProductsKmsKey) {
+      secretObject =  { 
+        ...secretObject,
+        ... { KmsKeyId: SecretValue.unsafePlainText(this.dataProductsKmsKey.keyId) }
+      };
+    }
+
+    const centralGovAccount = new AccountPrincipal(props.centralAccountId);
+    const secretKey = new Key(this, 'SecretKey');
+    secretKey.grantDecrypt(centralGovAccount);
+    const domainConfigSecret = new Secret(this, 'DomainBucketSecret',{
+      secretObjectValue: secretObject,
+    })
+    domainConfigSecret.grantRead(centralGovAccount);
   }
 }

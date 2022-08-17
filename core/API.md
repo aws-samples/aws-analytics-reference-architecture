@@ -45,6 +45,7 @@ new AraBucket(stack, {
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.addObjectRemovedNotification">addObjectRemovedNotification</a></code> | Subscribes a destination to receive notifications when an object is removed from the bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.addToResourcePolicy">addToResourcePolicy</a></code> | Adds a statement to the resource policy for a principal (i.e. account/role/service) to perform actions on this bucket and/or its contents. Use `bucketArn` and `arnForObjects(keys)` to obtain ARNs for this bucket or objects. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.arnForObjects">arnForObjects</a></code> | Returns an ARN that represents all objects within the bucket that match the key pattern specified. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.enableEventBridgeNotification">enableEventBridgeNotification</a></code> | Enables event bridge notification, causing all events below to be sent to EventBridge:. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.grantDelete">grantDelete</a></code> | Grants s3:DeleteObject* permission to an IAM principal for objects in this bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.grantPublicAccess">grantPublicAccess</a></code> | Allows unrestricted access to objects from this bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.grantPut">grantPut</a></code> | Grants s3:PutObject* and s3:Abort* permissions for this bucket to an IAM principal. |
@@ -238,6 +239,25 @@ If you need to specify a keyPattern with multiple components, concatenate them i
 - *Type:* string
 
 ---
+
+##### `enableEventBridgeNotification` <a name="enableEventBridgeNotification" id="aws-analytics-reference-architecture.AraBucket.enableEventBridgeNotification"></a>
+
+```typescript
+public enableEventBridgeNotification(): void
+```
+
+Enables event bridge notification, causing all events below to be sent to EventBridge:.
+
+Object Deleted (DeleteObject)
+- Object Deleted (Lifecycle expiration)
+- Object Restore Initiated
+- Object Restore Completed
+- Object Restore Expired
+- Object Storage Class Changed
+- Object Access Tier Changed
+- Object ACL Updated
+- Object Tags Added
+- Object Tags Deleted
 
 ##### `grantDelete` <a name="grantDelete" id="aws-analytics-reference-architecture.AraBucket.grantDelete"></a>
 
@@ -719,6 +739,7 @@ The metric configuration to add.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.isOwnedResource">isOwnedResource</a></code> | Returns true if the construct was created by CDK, and false otherwise. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketArn">fromBucketArn</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketAttributes">fromBucketAttributes</a></code> | Creates a Bucket construct that represents an external bucket. |
@@ -757,6 +778,22 @@ this type-testing method instead.
 - *Type:* any
 
 Any object.
+
+---
+
+##### `isOwnedResource` <a name="isOwnedResource" id="aws-analytics-reference-architecture.AraBucket.isOwnedResource"></a>
+
+```typescript
+import { AraBucket } from 'aws-analytics-reference-architecture'
+
+AraBucket.isOwnedResource(construct: IConstruct)
+```
+
+Returns true if the construct was created by CDK, and false otherwise.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.AraBucket.isOwnedResource.parameter.construct"></a>
+
+- *Type:* constructs.IConstruct
 
 ---
 
@@ -1453,12 +1490,13 @@ Sink object key where the batch replayer will put data in.
 This CDK Construct creates a Data Product registration workflow and resources for the Central Governance account.
 
 It uses AWS Step Functions state machine to orchestrate the workflow:
-* registers an S3 location for a new Data Product (location in Data Domain account)
-* creates a database and tables in AWS Glue Data Catalog
+* creates tables in AWS Glue Data Catalog
 * grants permissions to LF Admin role
 * shares tables to Data Product owner account (Producer)
 
 This construct also creates an Amazon EventBridge Event Bus to enable communication with Data Domain accounts (Producer/Consumer).
+
+This construct requires to use the default [CDK qualifier](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) generated with the standard CDK bootstrap stack.
 
 Usage example:
 ```typescript
@@ -1469,14 +1507,8 @@ import { CentralGovernance } from 'aws-analytics-reference-architecture';
 const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
-// Optional role
-const lfAdminRole = new Role(stack, 'myLFAdminRole', {
-  assumedBy: ...
-});
 
-const governance = new CentralGovernance(stack, 'myCentralGov', {
-  lfAdminRole: lfAdminRole
-});
+const governance = new CentralGovernance(stack, 'myCentralGov');
 
 const domain = new DataDomain(...);
 
@@ -1488,14 +1520,13 @@ governance.registerDataDomain('Domain1', domain);
 ```typescript
 import { CentralGovernance } from 'aws-analytics-reference-architecture'
 
-new CentralGovernance(scope: Construct, id: string, props: CentralGovernanceProps)
+new CentralGovernance(scope: Construct, id: string)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.CentralGovernance.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.CentralGovernanceProps">CentralGovernanceProps</a></code> | the CentralGovernanceProps properties. |
 
 ---
 
@@ -1512,14 +1543,6 @@ the Scope of the CDK Construct.
 - *Type:* string
 
 the ID of the CDK Construct.
-
----
-
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.CentralGovernance.Initializer.parameter.props"></a>
-
-- *Type:* <a href="#aws-analytics-reference-architecture.CentralGovernanceProps">CentralGovernanceProps</a>
-
-the CentralGovernanceProps properties.
 
 ---
 
@@ -1543,12 +1566,13 @@ Returns a string representation of this construct.
 ##### `registerDataDomain` <a name="registerDataDomain" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain"></a>
 
 ```typescript
-public registerDataDomain(id: string, domain: DataDomain): void
+public registerDataDomain(id: string, domainId: string): void
 ```
 
 Registers a new Data Domain account in Central Governance account.
 
 It includes creating a cross-account policy for Amazon EventBridge Event Bus to enable Data Domain to send events to Central Gov. account. 
+It creates a Glue Catalog Database to hold Data Products for this Data Domain.
 It also creates a Rule to forward events to target Data Domain account. 
 Each Data Domain account {@link DataDomain} has to be registered in Central Gov. account before it can participate in a mesh.
 
@@ -1560,11 +1584,11 @@ the ID of the CDK Construct.
 
 ---
 
-###### `domain`<sup>Required</sup> <a name="domain" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain.parameter.domain"></a>
+###### `domainId`<sup>Required</sup> <a name="domainId" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain.parameter.domainId"></a>
 
-- *Type:* <a href="#aws-analytics-reference-architecture.DataDomain">DataDomain</a>
+- *Type:* string
 
-the Data Domain to register.
+the account ID of the DataDomain to register.
 
 ---
 
@@ -1613,7 +1637,6 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
-| <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.dataAccessRole">dataAccessRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.IEventBus</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.workflowRole">workflowRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | *No description.* |
 
@@ -1628,16 +1651,6 @@ public readonly node: Node;
 - *Type:* constructs.Node
 
 The tree node.
-
----
-
-##### `dataAccessRole`<sup>Required</sup> <a name="dataAccessRole" id="aws-analytics-reference-architecture.CentralGovernance.property.dataAccessRole"></a>
-
-```typescript
-public readonly dataAccessRole: IRole;
-```
-
-- *Type:* aws-cdk-lib.aws_iam.IRole
 
 ---
 
@@ -1797,10 +1810,11 @@ Any object.
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.accountId">accountId</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataDomainWorkflow">dataDomainWorkflow</a></code> | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow">DataDomainWorkflow</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataLake">dataLake</a></code> | <code><a href="#aws-analytics-reference-architecture.DataLakeStorage">DataLakeStorage</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataProductsBucket">dataProductsBucket</a></code> | <code>aws-cdk-lib.aws_s3.IBucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataProductsPrefix">dataProductsPrefix</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.EventBus</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.workflowRole">workflowRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataProductsKmsKey">dataProductsKmsKey</a></code> | <code>aws-cdk-lib.aws_kms.IKey</code> | *No description.* |
 
 ---
 
@@ -1826,16 +1840,6 @@ public readonly accountId: string;
 
 ---
 
-##### `dataDomainWorkflow`<sup>Required</sup> <a name="dataDomainWorkflow" id="aws-analytics-reference-architecture.DataDomain.property.dataDomainWorkflow"></a>
-
-```typescript
-public readonly dataDomainWorkflow: DataDomainWorkflow;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.DataDomainWorkflow">DataDomainWorkflow</a>
-
----
-
 ##### `dataLake`<sup>Required</sup> <a name="dataLake" id="aws-analytics-reference-architecture.DataDomain.property.dataLake"></a>
 
 ```typescript
@@ -1843,6 +1847,26 @@ public readonly dataLake: DataLakeStorage;
 ```
 
 - *Type:* <a href="#aws-analytics-reference-architecture.DataLakeStorage">DataLakeStorage</a>
+
+---
+
+##### `dataProductsBucket`<sup>Required</sup> <a name="dataProductsBucket" id="aws-analytics-reference-architecture.DataDomain.property.dataProductsBucket"></a>
+
+```typescript
+public readonly dataProductsBucket: IBucket;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.IBucket
+
+---
+
+##### `dataProductsPrefix`<sup>Required</sup> <a name="dataProductsPrefix" id="aws-analytics-reference-architecture.DataDomain.property.dataProductsPrefix"></a>
+
+```typescript
+public readonly dataProductsPrefix: string;
+```
+
+- *Type:* string
 
 ---
 
@@ -1856,16 +1880,77 @@ public readonly eventBus: EventBus;
 
 ---
 
-##### `workflowRole`<sup>Required</sup> <a name="workflowRole" id="aws-analytics-reference-architecture.DataDomain.property.workflowRole"></a>
+##### `dataProductsKmsKey`<sup>Optional</sup> <a name="dataProductsKmsKey" id="aws-analytics-reference-architecture.DataDomain.property.dataProductsKmsKey"></a>
 
 ```typescript
-public readonly workflowRole: IRole;
+public readonly dataProductsKmsKey: IKey;
 ```
 
-- *Type:* aws-cdk-lib.aws_iam.IRole
+- *Type:* aws-cdk-lib.aws_kms.IKey
 
 ---
 
+#### Constants <a name="Constants" id="Constants"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_BUCKET_SECRET">DATA_BUCKET_SECRET</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_KEY_SECRET">DATA_KEY_SECRET</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_PREFIX_SECRET">DATA_PREFIX_SECRET</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_PRODUCTS_KEY">DATA_PRODUCTS_KEY</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.EVENT_BUS_SECRET">EVENT_BUS_SECRET</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `DATA_BUCKET_SECRET`<sup>Required</sup> <a name="DATA_BUCKET_SECRET" id="aws-analytics-reference-architecture.DataDomain.property.DATA_BUCKET_SECRET"></a>
+
+```typescript
+public readonly DATA_BUCKET_SECRET: string;
+```
+
+- *Type:* string
+
+---
+
+##### `DATA_KEY_SECRET`<sup>Required</sup> <a name="DATA_KEY_SECRET" id="aws-analytics-reference-architecture.DataDomain.property.DATA_KEY_SECRET"></a>
+
+```typescript
+public readonly DATA_KEY_SECRET: string;
+```
+
+- *Type:* string
+
+---
+
+##### `DATA_PREFIX_SECRET`<sup>Required</sup> <a name="DATA_PREFIX_SECRET" id="aws-analytics-reference-architecture.DataDomain.property.DATA_PREFIX_SECRET"></a>
+
+```typescript
+public readonly DATA_PREFIX_SECRET: string;
+```
+
+- *Type:* string
+
+---
+
+##### `DATA_PRODUCTS_KEY`<sup>Required</sup> <a name="DATA_PRODUCTS_KEY" id="aws-analytics-reference-architecture.DataDomain.property.DATA_PRODUCTS_KEY"></a>
+
+```typescript
+public readonly DATA_PRODUCTS_KEY: string;
+```
+
+- *Type:* string
+
+---
+
+##### `EVENT_BUS_SECRET`<sup>Required</sup> <a name="EVENT_BUS_SECRET" id="aws-analytics-reference-architecture.DataDomain.property.EVENT_BUS_SECRET"></a>
+
+```typescript
+public readonly EVENT_BUS_SECRET: string;
+```
+
+- *Type:* string
+
+---
 
 ### DataDomainWorkflow <a name="DataDomainWorkflow" id="aws-analytics-reference-architecture.DataDomainWorkflow"></a>
 
@@ -2499,150 +2584,6 @@ public readonly transformBucket: Bucket;
 ---
 
 
-### DataProduct <a name="DataProduct" id="aws-analytics-reference-architecture.DataProduct"></a>
-
-This CDK Construct enables creation of a new Data Product in Data Domain account by granting cross-account access to Central Gov.
-
-account.
-It relies on S3CrossAccount Construct.
-Currently, this construct adds no extra functionality compared to S3CrossAccount. It only provides API in data mesh specific context.
-Therefore, one can use either {@link S3CrossAccount} or DataProduct to grant cross account permissions on an Amazon S3 location.
-In the future, this construct will also trigger a process to register new Data Product when UI is not used.
-
-Usage example:
-```typescript
-import { App, Stack } from 'aws-cdk-lib';
-import { DataProduct, DataLakeStorage } from 'aws-analytics-reference-architecture';
-
-const exampleApp = new App();
-const stack = new Stack(exampleApp, 'DataProductStack');
-
-const myBucket = new DataLakeStorage(stack, 'MyDataLakeStorage');
-
-new DataProduct(stack, 'MyDataProduct', { crossAccountAccessProps: {
-  bucket: myBucket.cleanBucket,
-  objectKey: 'my-data'
-  accountId: '1234567891011'
-}});
-```
-
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DataProduct.Initializer"></a>
-
-```typescript
-import { DataProduct } from 'aws-analytics-reference-architecture'
-
-new DataProduct(scope: Construct, id: string, props: DataProductProps)
-```
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataProduct.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataProduct.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataProduct.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataProductProps">DataProductProps</a></code> | the DataProductProps properties. |
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.DataProduct.Initializer.parameter.scope"></a>
-
-- *Type:* constructs.Construct
-
-the Scope of the CDK Construct.
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.DataProduct.Initializer.parameter.id"></a>
-
-- *Type:* string
-
-the ID of the CDK Construct.
-
----
-
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.DataProduct.Initializer.parameter.props"></a>
-
-- *Type:* <a href="#aws-analytics-reference-architecture.DataProductProps">DataProductProps</a>
-
-the DataProductProps properties.
-
----
-
-#### Methods <a name="Methods" id="Methods"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataProduct.toString">toString</a></code> | Returns a string representation of this construct. |
-
----
-
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.DataProduct.toString"></a>
-
-```typescript
-public toString(): string
-```
-
-Returns a string representation of this construct.
-
-#### Static Functions <a name="Static Functions" id="Static Functions"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataProduct.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
-
----
-
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.DataProduct.isConstruct"></a>
-
-```typescript
-import { DataProduct } from 'aws-analytics-reference-architecture'
-
-DataProduct.isConstruct(x: any)
-```
-
-Checks if `x` is a construct.
-
-Use this method instead of `instanceof` to properly detect `Construct`
-instances, even when the construct library is symlinked.
-
-Explanation: in JavaScript, multiple copies of the `constructs` library on
-disk are seen as independent, completely different libraries. As a
-consequence, the class `Construct` in each copy of the `constructs` library
-is seen as a different class, and an instance of one class will not test as
-`instanceof` the other class. `npm install` will not create installations
-like this, but users may manually symlink construct libraries together or
-use a monorepo tool: in those cases, multiple copies of the `constructs`
-library can be accidentally installed, and `instanceof` will behave
-unpredictably. It is safest to avoid using `instanceof`, and using
-this type-testing method instead.
-
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.DataProduct.isConstruct.parameter.x"></a>
-
-- *Type:* any
-
-Any object.
-
----
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataProduct.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
-
----
-
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataProduct.property.node"></a>
-
-```typescript
-public readonly node: Node;
-```
-
-- *Type:* constructs.Node
-
-The tree node.
-
----
-
-
 ### Ec2SsmRole <a name="Ec2SsmRole" id="aws-analytics-reference-architecture.Ec2SsmRole"></a>
 
 Construct extending IAM Role with AmazonSSMManagedInstanceCore managed policy.
@@ -2871,6 +2812,7 @@ Role's policies yourself.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isOwnedResource">isOwnedResource</a></code> | Returns true if the construct was created by CDK, and false otherwise. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleArn">fromRoleArn</a></code> | Import an external role by ARN. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleName">fromRoleName</a></code> | Import an external role by name. |
@@ -2906,6 +2848,22 @@ this type-testing method instead.
 - *Type:* any
 
 Any object.
+
+---
+
+##### `isOwnedResource` <a name="isOwnedResource" id="aws-analytics-reference-architecture.Ec2SsmRole.isOwnedResource"></a>
+
+```typescript
+import { Ec2SsmRole } from 'aws-analytics-reference-architecture'
+
+Ec2SsmRole.isOwnedResource(construct: IConstruct)
+```
+
+Returns true if the construct was created by CDK, and false otherwise.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.Ec2SsmRole.isOwnedResource.parameter.construct"></a>
+
+- *Type:* constructs.IConstruct
 
 ---
 
@@ -2981,7 +2939,7 @@ allow customizing the behavior of the returned role.
 ```typescript
 import { Ec2SsmRole } from 'aws-analytics-reference-architecture'
 
-Ec2SsmRole.fromRoleName(scope: Construct, id: string, roleName: string)
+Ec2SsmRole.fromRoleName(scope: Construct, id: string, roleName: string, options?: FromRoleNameOptions)
 ```
 
 Import an external role by name.
@@ -2993,17 +2951,31 @@ the scope's containing Stack is being deployed to.
 
 - *Type:* constructs.Construct
 
+construct scope.
+
 ---
 
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.Ec2SsmRole.fromRoleName.parameter.id"></a>
 
 - *Type:* string
 
+construct id.
+
 ---
 
 ###### `roleName`<sup>Required</sup> <a name="roleName" id="aws-analytics-reference-architecture.Ec2SsmRole.fromRoleName.parameter.roleName"></a>
 
 - *Type:* string
+
+the name of the role to import.
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.Ec2SsmRole.fromRoleName.parameter.options"></a>
+
+- *Type:* aws-cdk-lib.aws_iam.FromRoleNameOptions
+
+allow customizing the behavior of the returned role.
 
 ---
 
@@ -3873,7 +3845,155 @@ public readonly iamRole: Role;
 ---
 
 
-### LakeformationS3Location <a name="LakeformationS3Location" id="aws-analytics-reference-architecture.LakeformationS3Location"></a>
+### LakeFormationAdmin <a name="LakeFormationAdmin" id="aws-analytics-reference-architecture.LakeFormationAdmin"></a>
+
+An AWS Lake Formation administrator with privileges to do all the administration tasks in AWS Lake Formation.
+
+The principal is an Amazon IAM user or role and is added/removed to the list of AWS Lake Formation administrator
+via the Data Lake Settings API.
+Creation/deleting first retrieves the current list of administrators and then add/remove the principal to this list.
+These steps are done outside of any transaction. Concurrent modifications between retrieving and updating can lead to inconsistent results.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.LakeFormationAdmin.Initializer"></a>
+
+```typescript
+import { LakeFormationAdmin } from 'aws-analytics-reference-architecture'
+
+new LakeFormationAdmin(scope: Construct, id: string, props: LakeFormationAdminProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.LakeFormationAdminProps">LakeFormationAdminProps</a></code> | the LakeFormationAdminProps properties. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.LakeFormationAdmin.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.LakeFormationAdmin.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.LakeFormationAdmin.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.LakeFormationAdminProps">LakeFormationAdminProps</a>
+
+the LakeFormationAdminProps properties.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.LakeFormationAdmin.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.LakeFormationAdmin.isConstruct"></a>
+
+```typescript
+import { LakeFormationAdmin } from 'aws-analytics-reference-architecture'
+
+LakeFormationAdmin.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.LakeFormationAdmin.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.property.catalogId">catalogId</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.property.principal">principal</a></code> | <code>aws-cdk-lib.aws_iam.IRole \| aws-cdk-lib.aws_iam.IUser</code> | *No description.* |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.LakeFormationAdmin.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `catalogId`<sup>Required</sup> <a name="catalogId" id="aws-analytics-reference-architecture.LakeFormationAdmin.property.catalogId"></a>
+
+```typescript
+public readonly catalogId: string;
+```
+
+- *Type:* string
+
+---
+
+##### `principal`<sup>Required</sup> <a name="principal" id="aws-analytics-reference-architecture.LakeFormationAdmin.property.principal"></a>
+
+```typescript
+public readonly principal: IRole | IUser;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.IRole | aws-cdk-lib.aws_iam.IUser
+
+---
+
+
+### LakeFormationS3Location <a name="LakeFormationS3Location" id="aws-analytics-reference-architecture.LakeFormationS3Location"></a>
 
 This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
 
@@ -3905,35 +4025,35 @@ new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
 });
 ```
 
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.LakeformationS3Location.Initializer"></a>
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.LakeFormationS3Location.Initializer"></a>
 
 ```typescript
-import { LakeformationS3Location } from 'aws-analytics-reference-architecture'
+import { LakeFormationS3Location } from 'aws-analytics-reference-architecture'
 
-new LakeformationS3Location(scope: Construct, id: string, props: LakeFormationS3LocationProps)
+new LakeFormationS3Location(scope: Construct, id: string, props: LakeFormationS3LocationProps)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps">LakeFormationS3LocationProps</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3Location.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3Location.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3Location.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps">LakeFormationS3LocationProps</a></code> | *No description.* |
 
 ---
 
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.scope"></a>
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.LakeFormationS3Location.Initializer.parameter.scope"></a>
 
 - *Type:* constructs.Construct
 
 ---
 
-##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.id"></a>
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.LakeFormationS3Location.Initializer.parameter.id"></a>
 
 - *Type:* string
 
 ---
 
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.LakeformationS3Location.Initializer.parameter.props"></a>
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.LakeFormationS3Location.Initializer.parameter.props"></a>
 
 - *Type:* <a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps">LakeFormationS3LocationProps</a>
 
@@ -3943,11 +4063,11 @@ new LakeformationS3Location(scope: Construct, id: string, props: LakeFormationS3
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3Location.toString">toString</a></code> | Returns a string representation of this construct. |
 
 ---
 
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.LakeformationS3Location.toString"></a>
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.LakeFormationS3Location.toString"></a>
 
 ```typescript
 public toString(): string
@@ -3959,16 +4079,16 @@ Returns a string representation of this construct.
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3Location.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 
 ---
 
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.LakeformationS3Location.isConstruct"></a>
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.LakeFormationS3Location.isConstruct"></a>
 
 ```typescript
-import { LakeformationS3Location } from 'aws-analytics-reference-architecture'
+import { LakeFormationS3Location } from 'aws-analytics-reference-architecture'
 
-LakeformationS3Location.isConstruct(x: any)
+LakeFormationS3Location.isConstruct(x: any)
 ```
 
 Checks if `x` is a construct.
@@ -3987,7 +4107,7 @@ library can be accidentally installed, and `instanceof` will behave
 unpredictably. It is safest to avoid using `instanceof`, and using
 this type-testing method instead.
 
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.LakeformationS3Location.isConstruct.parameter.x"></a>
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.LakeFormationS3Location.isConstruct.parameter.x"></a>
 
 - *Type:* any
 
@@ -3999,12 +4119,12 @@ Any object.
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
-| <code><a href="#aws-analytics-reference-architecture.LakeformationS3Location.property.dataAccessRole">dataAccessRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3Location.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3Location.property.dataAccessRole">dataAccessRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
 
 ---
 
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.LakeformationS3Location.property.node"></a>
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.LakeFormationS3Location.property.node"></a>
 
 ```typescript
 public readonly node: Node;
@@ -4016,7 +4136,7 @@ The tree node.
 
 ---
 
-##### `dataAccessRole`<sup>Required</sup> <a name="dataAccessRole" id="aws-analytics-reference-architecture.LakeformationS3Location.property.dataAccessRole"></a>
+##### `dataAccessRole`<sup>Required</sup> <a name="dataAccessRole" id="aws-analytics-reference-architecture.LakeFormationS3Location.property.dataAccessRole"></a>
 
 ```typescript
 public readonly dataAccessRole: Role;
@@ -4237,6 +4357,8 @@ It uses a bucket policy and an Amazon KMS Key policy if the bucket is encrypted 
 The cross account permission is granted to the entire account and not to a specific principal in this account.
 It's the responsibility of the target account to grant permissions to the relevant principals.
 
+Note that it uses a Bucket object and not an IBucket because CDK can only add policies to objects managed in the CDK stack.
+
 Usage example:
 ```typescript
 import * as cdk from 'aws-cdk-lib';
@@ -4374,7 +4496,7 @@ An Amazon S3 Bucket implementing the singleton pattern.
 ```typescript
 import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
 
-new SingletonCfnLaunchTemplate(scope: Construct, id: string, props?: CfnLaunchTemplateProps)
+new SingletonCfnLaunchTemplate(scope: Construct, id: string, props: CfnLaunchTemplateProps)
 ```
 
 | **Name** | **Type** | **Description** |
@@ -4401,7 +4523,7 @@ scoped id of the resource.
 
 ---
 
-##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props"></a>
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props"></a>
 
 - *Type:* aws-cdk-lib.aws_ec2.CfnLaunchTemplateProps
 
@@ -4642,7 +4764,12 @@ CDK application or because you've made a change that requires the resource
 to be replaced.
 
 The resource can be deleted (`RemovalPolicy.DESTROY`), or left in your AWS
-account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
+account for data recovery and cleanup later (`RemovalPolicy.RETAIN`). In some
+cases, a snapshot can be taken of the resource prior to deletion
+(`RemovalPolicy.SNAPSHOT`). A list of resources that support this policy
+can be found in the following link:
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-deletionpolicy.html#aws-attribute-deletionpolicy-options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-deletionpolicy.html#aws-attribute-deletionpolicy-options)
 
 ###### `policy`<sup>Optional</sup> <a name="policy" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy.parameter.policy"></a>
 
@@ -4956,7 +5083,7 @@ The latest version of the launch template, such as `5` .
 
 ---
 
-##### `launchTemplateData`<sup>Optional</sup> <a name="launchTemplateData" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData"></a>
+##### `launchTemplateData`<sup>Required</sup> <a name="launchTemplateData" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData"></a>
 
 ```typescript
 public readonly launchTemplateData: LaunchTemplateDataProperty | IResolvable;
@@ -5100,6 +5227,7 @@ account for data recovery and cleanup later (`RemovalPolicy.RETAIN`).
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isOwnedResource">isOwnedResource</a></code> | Returns true if the construct was created by CDK, and false otherwise. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.fromDatabaseArn">fromDatabaseArn</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.SingletonGlueDatabase.getOrCreate">getOrCreate</a></code> | *No description.* |
@@ -5135,6 +5263,22 @@ this type-testing method instead.
 - *Type:* any
 
 Any object.
+
+---
+
+##### `isOwnedResource` <a name="isOwnedResource" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isOwnedResource"></a>
+
+```typescript
+import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
+
+SingletonGlueDatabase.isOwnedResource(construct: IConstruct)
+```
+
+Returns true if the construct was created by CDK, and false otherwise.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonGlueDatabase.isOwnedResource.parameter.construct"></a>
+
+- *Type:* constructs.IConstruct
 
 ---
 
@@ -5529,6 +5673,7 @@ Grant encryption and decryption permissions using this key to the given principa
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.isOwnedResource">isOwnedResource</a></code> | Returns true if the construct was created by CDK, and false otherwise. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromCfnKey">fromCfnKey</a></code> | Create a mutable {@link IKey} based on a low-level {@link CfnKey}. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromKeyArn">fromKeyArn</a></code> | Import an externally defined KMS Key using its ARN. |
@@ -5566,6 +5711,22 @@ this type-testing method instead.
 - *Type:* any
 
 Any object.
+
+---
+
+##### `isOwnedResource` <a name="isOwnedResource" id="aws-analytics-reference-architecture.SingletonKey.isOwnedResource"></a>
+
+```typescript
+import { SingletonKey } from 'aws-analytics-reference-architecture'
+
+SingletonKey.isOwnedResource(construct: IConstruct)
+```
+
+Returns true if the construct was created by CDK, and false otherwise.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonKey.isOwnedResource.parameter.construct"></a>
+
+- *Type:* constructs.IConstruct
 
 ---
 
@@ -6564,39 +6725,6 @@ The S3 object key sink where the BatchReplayer writes data.
 
 ---
 
-### CentralGovernanceProps <a name="CentralGovernanceProps" id="aws-analytics-reference-architecture.CentralGovernanceProps"></a>
-
-Properties for the CentralGovernance Construct.
-
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.CentralGovernanceProps.Initializer"></a>
-
-```typescript
-import { CentralGovernanceProps } from 'aws-analytics-reference-architecture'
-
-const centralGovernanceProps: CentralGovernanceProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.CentralGovernanceProps.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
-
----
-
-##### `lfAdminRole`<sup>Optional</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.CentralGovernanceProps.property.lfAdminRole"></a>
-
-```typescript
-public readonly lfAdminRole: IRole;
-```
-
-- *Type:* aws-cdk-lib.aws_iam.IRole
-- *Default:* A new role is created
-
-Lake Formation admin role.
-
----
-
 ### DataDomainPros <a name="DataDomainPros" id="aws-analytics-reference-architecture.DataDomainPros"></a>
 
 Properties for the DataDomain Construct.
@@ -6615,7 +6743,6 @@ const dataDomainPros: DataDomainPros = { ... }
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.crawlerWorkflow">crawlerWorkflow</a></code> | <code>boolean</code> | Flag to create a Crawler workflow in Data Domain account. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole">lfAdminRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
 
 ---
 
@@ -6640,19 +6767,6 @@ public readonly crawlerWorkflow: boolean;
 - *Type:* boolean
 
 Flag to create a Crawler workflow in Data Domain account.
-
----
-
-##### `lfAdminRole`<sup>Optional</sup> <a name="lfAdminRole" id="aws-analytics-reference-architecture.DataDomainPros.property.lfAdminRole"></a>
-
-```typescript
-public readonly lfAdminRole: IRole;
-```
-
-- *Type:* aws-cdk-lib.aws_iam.IRole
-- *Default:* A new role is created
-
-Lake Formation admin role.
 
 ---
 
@@ -6931,38 +7045,6 @@ public readonly transformInfrequentAccessDelay: number;
 - *Default:* Move objects to Infrequent Access after 90 days
 
 Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access storage class).
-
----
-
-### DataProductProps <a name="DataProductProps" id="aws-analytics-reference-architecture.DataProductProps"></a>
-
-Properties for the DataProduct Construct.
-
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DataProductProps.Initializer"></a>
-
-```typescript
-import { DataProductProps } from 'aws-analytics-reference-architecture'
-
-const dataProductProps: DataProductProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataProductProps.property.crossAccountAccessProps">crossAccountAccessProps</a></code> | <code><a href="#aws-analytics-reference-architecture.S3CrossAccountProps">S3CrossAccountProps</a></code> | S3CrossAccountProps for S3CrossAccount construct. |
-
----
-
-##### `crossAccountAccessProps`<sup>Required</sup> <a name="crossAccountAccessProps" id="aws-analytics-reference-architecture.DataProductProps.property.crossAccountAccessProps"></a>
-
-```typescript
-public readonly crossAccountAccessProps: S3CrossAccountProps;
-```
-
-- *Type:* <a href="#aws-analytics-reference-architecture.S3CrossAccountProps">S3CrossAccountProps</a>
-
-S3CrossAccountProps for S3CrossAccount construct.
 
 ---
 
@@ -7680,6 +7762,52 @@ Example:
 
 ---
 
+### LakeFormationAdminProps <a name="LakeFormationAdminProps" id="aws-analytics-reference-architecture.LakeFormationAdminProps"></a>
+
+Properties for the lakeFormationAdmin Construct.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.LakeFormationAdminProps.Initializer"></a>
+
+```typescript
+import { LakeFormationAdminProps } from 'aws-analytics-reference-architecture'
+
+const lakeFormationAdminProps: LakeFormationAdminProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdminProps.property.principal">principal</a></code> | <code>aws-cdk-lib.aws_iam.IRole \| aws-cdk-lib.aws_iam.IUser</code> | The principal to declare as an AWS Lake Formation administrator. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdminProps.property.catalogId">catalogId</a></code> | <code>string</code> | The catalog ID to create the administrator in. |
+
+---
+
+##### `principal`<sup>Required</sup> <a name="principal" id="aws-analytics-reference-architecture.LakeFormationAdminProps.property.principal"></a>
+
+```typescript
+public readonly principal: IRole | IUser;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.IRole | aws-cdk-lib.aws_iam.IUser
+
+The principal to declare as an AWS Lake Formation administrator.
+
+---
+
+##### `catalogId`<sup>Optional</sup> <a name="catalogId" id="aws-analytics-reference-architecture.LakeFormationAdminProps.property.catalogId"></a>
+
+```typescript
+public readonly catalogId: string;
+```
+
+- *Type:* string
+- *Default:* The account ID
+
+The catalog ID to create the administrator in.
+
+---
+
 ### LakeFormationS3LocationProps <a name="LakeFormationS3LocationProps" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps"></a>
 
 The props for LF-S3-Location Construct.
@@ -7696,47 +7824,47 @@ const lakeFormationS3LocationProps: LakeFormationS3LocationProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket">s3Bucket</a></code> | <code>aws-cdk-lib.aws_s3.IBucket</code> | S3 Bucket to be registered with Lakeformation. |
-| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.kmsKey">kmsKey</a></code> | <code>aws-cdk-lib.aws_kms.IKey</code> | KMS key used to encrypt the S3 Location. |
-| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3ObjectKey">s3ObjectKey</a></code> | <code>string</code> | S3 object key to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.kmsKeyId">kmsKeyId</a></code> | <code>string</code> | KMS key used to encrypt the S3 Location. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Location">s3Location</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | S3 location to be registered with Lakeformation. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.accountId">accountId</a></code> | <code>string</code> | Account ID owning the S3 location. |
 
 ---
 
-##### `s3Bucket`<sup>Required</sup> <a name="s3Bucket" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Bucket"></a>
+##### `kmsKeyId`<sup>Required</sup> <a name="kmsKeyId" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.kmsKeyId"></a>
 
 ```typescript
-public readonly s3Bucket: IBucket;
+public readonly kmsKeyId: string;
 ```
 
-- *Type:* aws-cdk-lib.aws_s3.IBucket
-
-S3 Bucket to be registered with Lakeformation.
-
----
-
-##### `kmsKey`<sup>Optional</sup> <a name="kmsKey" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.kmsKey"></a>
-
-```typescript
-public readonly kmsKey: IKey;
-```
-
-- *Type:* aws-cdk-lib.aws_kms.IKey
+- *Type:* string
 - *Default:* No encryption is used
 
 KMS key used to encrypt the S3 Location.
 
 ---
 
-##### `s3ObjectKey`<sup>Optional</sup> <a name="s3ObjectKey" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3ObjectKey"></a>
+##### `s3Location`<sup>Required</sup> <a name="s3Location" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.s3Location"></a>
 
 ```typescript
-public readonly s3ObjectKey: string;
+public readonly s3Location: Location;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Location
+
+S3 location to be registered with Lakeformation.
+
+---
+
+##### `accountId`<sup>Optional</sup> <a name="accountId" id="aws-analytics-reference-architecture.LakeFormationS3LocationProps.property.accountId"></a>
+
+```typescript
+public readonly accountId: string;
 ```
 
 - *Type:* string
-- *Default:* The entire bucket is registered
+- *Default:* Current account is used
 
-S3 object key to be registered with Lakeformation.
+Account ID owning the S3 location.
 
 ---
 

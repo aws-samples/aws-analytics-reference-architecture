@@ -7,7 +7,7 @@
  * @group unit/lakeformation/s3-location
  */
 
-import { LakeformationS3Location } from '../../src/lf-s3-location';
+import { LakeFormationS3Location } from '../../src/lake-formation';
 
 import { Stack } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
@@ -17,12 +17,17 @@ import { Key } from 'aws-cdk-lib/aws-kms';
 describe('LakeFormationS3Location test', () => {
 
   const lfS3Stack = new Stack();  
-  const bucket = new Bucket(lfS3Stack, 'Bucket');
   const key = new Key(lfS3Stack, 'Key');
-  new LakeformationS3Location(lfS3Stack, 'S3Location', {
-    s3Bucket: bucket,
-    s3ObjectKey: 'test',
-    kmsKey: key,
+  const bucket = new Bucket(lfS3Stack, 'Bucket', {
+    encryptionKey: key,
+  });
+  new LakeFormationS3Location(lfS3Stack, 'S3Location', {
+    s3Location: {
+      bucketName: bucket.bucketName,
+      objectKey: 'test'
+    },
+    kmsKeyId: key.keyId,
+    accountId: '123456789010',
   });
   
   const template = Template.fromStack(lfS3Stack);
@@ -36,6 +41,15 @@ describe('LakeFormationS3Location test', () => {
           "Fn::Join": [
             "",
             [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":s3:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":123456789010:",
               Match.anyValue(),
               "/test/*"
             ]
@@ -69,15 +83,35 @@ describe('LakeFormationS3Location test', () => {
                   "Fn::Join": [
                     "",
                     [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":123456789010:",
                       Match.anyValue(),
                       "/test/*"
                     ]
                   ]
                 },
                 {
-                  "Fn::GetAtt": [
-                    Match.anyValue(),
-                    "Arn"
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      ":123456789010:",
+                      Match.anyValue(),
+                    ]
                   ]
                 }
               ])
@@ -92,9 +126,20 @@ describe('LakeFormationS3Location test', () => {
               ],
               Effect: 'Allow',
               Resource:  {
-                "Fn::GetAtt": [
-                  Match.anyValue(),
-                  "Arn"
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":kms:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":123456789010:key/",
+                    Match.anyValue(),
+                  ]
                 ]
               }
             }

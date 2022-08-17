@@ -40,6 +40,33 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
+  'dataDomain/myDataDomain/WorkflowRole/WorkflowRolePolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Needs all ram:Get, ram:List and lakeformation permissions. Needs wildcard resources because there are only known during workflow execution.'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/SecretKey/Resource',
+  [{
+    id: 'AwsSolutions-KMS5',
+    reason: 'The KMS key encrypt a secret used for sharing references between environments and doesn\'t store sensitive data'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/DomainBucketSecret/Resource',
+  [{
+    id: 'AwsSolutions-SMG4',
+    reason: 'The secret is used for sharing references between environments and doesn\'t store sensitive data'
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
   'dataDomain/myDataDomain/DataDomainCrawler/S3AccessPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Permissions are scoped down with resource tags' }],
 );
@@ -48,15 +75,6 @@ NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
   'dataDomain/myDataDomain/DataDomainCrawler/UpdateTableSchemas/Resource',
   [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the DataDomainCrawler construct.' }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  dataDomainStack,
-  'dataDomain/myDataDomain/WorkflowRole/LFAdminPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'We cannot scope down to the Glue resources because they are resolved dynamically during the workflow execution and we cannot tag Glue resources',
-  }],
 );
 
 
