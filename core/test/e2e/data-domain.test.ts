@@ -18,7 +18,7 @@ const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'DataDomainE2eTest');
 
 const domain = new DataDomain(stack, 'DataDomain', {
-  centralAccountId: '628862645339',
+  centralAccountId: '1234567891011',
   crawlerWorkflow: true,
 });
 
