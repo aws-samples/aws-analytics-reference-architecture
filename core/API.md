@@ -1566,7 +1566,7 @@ Returns a string representation of this construct.
 ##### `registerDataDomain` <a name="registerDataDomain" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain"></a>
 
 ```typescript
-public registerDataDomain(id: string, domainId: string): void
+public registerDataDomain(id: string, domainId: string, domainSecretArn: string): void
 ```
 
 Registers a new Data Domain account in Central Governance account.
@@ -1589,6 +1589,14 @@ the ID of the CDK Construct.
 - *Type:* string
 
 the account ID of the DataDomain to register.
+
+---
+
+###### `domainSecretArn`<sup>Required</sup> <a name="domainSecretArn" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain.parameter.domainSecretArn"></a>
+
+- *Type:* string
+
+the full ARN of the secret used by producers to share references with the central governance.
 
 ---
 
@@ -1680,12 +1688,10 @@ public readonly workflowRole: IRole;
 This CDK Construct creates all required resources for data mesh in Data Domain account.
 
 It creates the following:
-* data lake storage layers (Raw, Cleaned, Transformed) using {@link DataLakeStorage} construct
-* an inline policy for provided LF Admin role to enable access to Raw bucket
-* an inline policy to enable decryption of bucket's KMS key
-* Amazon EventBridge Event Bus and Rules to enable Central Gov. account to send events to Data Domain account
-* Data Domain Workflow {@link DataDomainWorkflow}
-* optional Crawler workflow {@link DataDomainCrawler}
+* A data lake with multiple layers (Raw, Cleaned, Transformed) using {@link DataLakeStorage} construct
+* An mazon EventBridge Event Bus and Rules to enable Central Governance account to send events to Data Domain account
+* A Data Domain Workflow {@link DataDomainWorkflow} responsible for creating resources in the data domain via a Step Functions state machine
+* An optional Crawler workflow {@link DataDomainCrawler} responsible for updating the data product schema after registration via a Step Functions state machine
 
 Usage example:
 ```typescript
@@ -1809,12 +1815,7 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.accountId">accountId</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataLake">dataLake</a></code> | <code><a href="#aws-analytics-reference-architecture.DataLakeStorage">DataLakeStorage</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataProductsBucket">dataProductsBucket</a></code> | <code>aws-cdk-lib.aws_s3.IBucket</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataProductsPrefix">dataProductsPrefix</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.EventBus</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataProductsKmsKey">dataProductsKmsKey</a></code> | <code>aws-cdk-lib.aws_kms.IKey</code> | *No description.* |
 
 ---
 
@@ -1830,16 +1831,6 @@ The tree node.
 
 ---
 
-##### `accountId`<sup>Required</sup> <a name="accountId" id="aws-analytics-reference-architecture.DataDomain.property.accountId"></a>
-
-```typescript
-public readonly accountId: string;
-```
-
-- *Type:* string
-
----
-
 ##### `dataLake`<sup>Required</sup> <a name="dataLake" id="aws-analytics-reference-architecture.DataDomain.property.dataLake"></a>
 
 ```typescript
@@ -1850,59 +1841,19 @@ public readonly dataLake: DataLakeStorage;
 
 ---
 
-##### `dataProductsBucket`<sup>Required</sup> <a name="dataProductsBucket" id="aws-analytics-reference-architecture.DataDomain.property.dataProductsBucket"></a>
-
-```typescript
-public readonly dataProductsBucket: IBucket;
-```
-
-- *Type:* aws-cdk-lib.aws_s3.IBucket
-
----
-
-##### `dataProductsPrefix`<sup>Required</sup> <a name="dataProductsPrefix" id="aws-analytics-reference-architecture.DataDomain.property.dataProductsPrefix"></a>
-
-```typescript
-public readonly dataProductsPrefix: string;
-```
-
-- *Type:* string
-
----
-
-##### `eventBus`<sup>Required</sup> <a name="eventBus" id="aws-analytics-reference-architecture.DataDomain.property.eventBus"></a>
-
-```typescript
-public readonly eventBus: EventBus;
-```
-
-- *Type:* aws-cdk-lib.aws_events.EventBus
-
----
-
-##### `dataProductsKmsKey`<sup>Optional</sup> <a name="dataProductsKmsKey" id="aws-analytics-reference-architecture.DataDomain.property.dataProductsKmsKey"></a>
-
-```typescript
-public readonly dataProductsKmsKey: IKey;
-```
-
-- *Type:* aws-cdk-lib.aws_kms.IKey
-
----
-
 #### Constants <a name="Constants" id="Constants"></a>
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_PRODUCTS_KEY">DATA_PRODUCTS_KEY</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_PRODUCTS_PREFIX">DATA_PRODUCTS_PREFIX</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DOMAIN_CONFIG_SECRET">DOMAIN_CONFIG_SECRET</a></code> | <code>string</code> | *No description.* |
 
 ---
 
-##### `DATA_PRODUCTS_KEY`<sup>Required</sup> <a name="DATA_PRODUCTS_KEY" id="aws-analytics-reference-architecture.DataDomain.property.DATA_PRODUCTS_KEY"></a>
+##### `DATA_PRODUCTS_PREFIX`<sup>Required</sup> <a name="DATA_PRODUCTS_PREFIX" id="aws-analytics-reference-architecture.DataDomain.property.DATA_PRODUCTS_PREFIX"></a>
 
 ```typescript
-public readonly DATA_PRODUCTS_KEY: string;
+public readonly DATA_PRODUCTS_PREFIX: string;
 ```
 
 - *Type:* string

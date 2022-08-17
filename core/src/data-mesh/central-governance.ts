@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 // import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
-import { DefaultStackSynthesizer, RemovalPolicy, Fn, Arn, Aws, Stack } from 'aws-cdk-lib';;
+import { DefaultStackSynthesizer, RemovalPolicy, Fn } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
 import { IRole, Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
@@ -15,7 +15,7 @@ import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
 import { LakeFormationS3Location } from '../lake-formation';
 import { LakeFormationAdmin } from '../lake-formation';
 import { Database } from '@aws-cdk/aws-glue-alpha';
-import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { DataDomain } from './data-domain';
 
 
@@ -23,12 +23,16 @@ import { DataDomain } from './data-domain';
  * This CDK Construct creates a Data Product registration workflow and resources for the Central Governance account.
  * It uses AWS Step Functions state machine to orchestrate the workflow:
  * * creates tables in AWS Glue Data Catalog
- * * grants permissions to LF Admin role
  * * shares tables to Data Product owner account (Producer)
  * 
  * This construct also creates an Amazon EventBridge Event Bus to enable communication with Data Domain accounts (Producer/Consumer).
  * 
  * This construct requires to use the default [CDK qualifier](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) generated with the standard CDK bootstrap stack.
+ * It ensures the right CDK execution role is used and granted Lake Formation administrator permissions so CDK can create Glue databases when registring a DataDomain.
+ * 
+ * To register a DataDomain, the following information are required:
+ * * The account Id of the DataDomain
+ * * The secret ARN for the domain configuration available as a CloudFormation output when creating a {@link DataDomain}
  * 
  * Usage example:
  * ```typescript
@@ -39,12 +43,9 @@ import { DataDomain } from './data-domain';
  * const exampleApp = new App();
  * const stack = new Stack(exampleApp, 'DataProductStack');
  * 
- * 
  * const governance = new CentralGovernance(stack, 'myCentralGov');
  * 
- * const domain = new DataDomain(...);
- * 
- * governance.registerDataDomain('Domain1', domain);
+ * governance.registerDataDomain('Domain1', <DOMAIN_ACCOUNT_ID>, <DOMAIN_CONFIG_SECRET_ARN>);
  * ```
  */
 export class CentralGovernance extends Construct {
@@ -70,11 +71,8 @@ export class CentralGovernance extends Construct {
         Qualifier: DefaultStackSynthesizer.DEFAULT_QUALIFIER,
       },
     );
-    // Makes the CDK execution role LF admin so we can create databases
+    // Makes the CDK execution role LF admin so it can create databases
     const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkExecutionRoleArn);
-    // new CfnDataLakeSettings(this, 'AddLfAdmin', {
-    //   admins: [{ dataLakePrincipalIdentifier: cdkRole.roleArn }],
-    // });
     new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
       principal: cdkRole,
     });
@@ -83,7 +81,7 @@ export class CentralGovernance extends Construct {
     this.eventBus = new EventBus(this, 'centralEventBus');
     this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
-    // Workflow role that is LF admin, used by the state machine
+    // Workflow role used by the state machine
     this.workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole', {
       assumedBy: new CompositePrincipal(
         new ServicePrincipal('states.amazonaws.com'),
@@ -117,7 +115,7 @@ export class CentralGovernance extends Construct {
       resultPath: JsonPath.DISCARD,
     });
 
-    // Grant SUPER permissions on product database and tables to Data Domain account
+    // Grant SUPER permissions (and grantable) on product database and tables to Data Domain account
     const grantTablePermissions = new CallAwsService(this, 'grantTablePermissionsToProducer', {
       service: 'lakeformation',
       action: 'grantPermissions',
@@ -165,6 +163,7 @@ export class CentralGovernance extends Construct {
       }]
     });
 
+    // iterate over multiple tables in parallel
     const tablesMapTask = new Map(this, 'forEachTable', {
       itemsPath: '$.tables',
       parameters: {
@@ -202,41 +201,40 @@ export class CentralGovernance extends Construct {
   }
 
   /**
-   * Registers a new Data Domain account in Central Governance account. 
-   * It includes creating a cross-account policy for Amazon EventBridge Event Bus to enable Data Domain to send events to Central Gov. account. 
-   * It creates a Glue Catalog Database to hold Data Products for this Data Domain.
-   * It also creates a Rule to forward events to target Data Domain account. 
+   * Registers a new Data Domain account in Central Governance account.
    * Each Data Domain account {@link DataDomain} has to be registered in Central Gov. account before it can participate in a mesh.
+   * 
+   * It creates:
+   * * A cross-account policy for Amazon EventBridge Event Bus to enable Data Domain to send events to Central Gov. account
+   * * A Lake Formation data access role scoped down to the data domain products bucket
+   * * A Glue Catalog Database to hold Data Products for this Data Domain
+   * * A Rule to forward events to target Data Domain account.
+   * 
+   * Object references are passed from the DataDomain account to the CentralGovernance account via a AWS Secret Manager secret and cross account access.
+   * It includes the following JSON object:
+   * ```json
+   * {
+   *   BucketName: 'clean-<ACCOUNT_ID>-<REGION>',
+   *   Prefix: 'data-products',
+   *   KmsKeyId: '<KMS_ID>,
+   *   EventBusName: 'data-domain-bus'
+   * }
+   * ```
+   * 
    * @param {string} id the ID of the CDK Construct
    * @param {string} domainId the account ID of the DataDomain to register
+   * @param {string} domainSecretArn the full ARN of the secret used by producers to share references with the central governance
    * @access public
    */
-  public registerDataDomain(id: string, domainId: string) {
+  public registerDataDomain(id: string, domainId: string, domainSecretArn: string) {
 
-    const getDomainConfig =  new AwsCustomResource(this, 'GetDomainBucketCr', {
-      onUpdate: {
-        service: 'SecretsManager',
-        action: 'getSecretValue',
-        parameters: {
-          SecretId:  Arn.format({
-            resource: 'secret',
-            service: 'secretsmanager',
-            account: domainId,
-            region: Aws.REGION,
-            resourceName: DataDomain.DOMAIN_CONFIG_SECRET,
-          }, Stack.of(this)),
-        },
-        physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
-      },
-      policy: AwsCustomResourcePolicy.fromSdkCalls({
-        resources: AwsCustomResourcePolicy.ANY_RESOURCE,
-      })
-    })
-    
-    const domainBucket = getDomainConfig.getResponseField('SecretString.BucketName').toString();
-    const domainPrefix = getDomainConfig.getResponseField('SecretString.Prefix').toString();
-    const domainKey = getDomainConfig.getResponseField('SecretString.KmsKeyId').toString();
-    const domainBus = getDomainConfig.getResponseField('SecretString.EventBusName').toString();
+    // Import the data domain secret from it's full ARN
+    const domainSecret = Secret.fromSecretCompleteArn(this, 'DomainSecret', domainSecretArn);
+    // Extract data domain references
+    const domainBucket = domainSecret.secretValueFromJson('BucketName').unsafeUnwrap();
+    const domainPrefix = domainSecret.secretValueFromJson('Prefix').unsafeUnwrap();
+    const domainKey = domainSecret.secretValueFromJson('KmsKeyId').unsafeUnwrap();
+    const domainBus = domainSecret.secretValueFromJson('EventBusName').unsafeUnwrap();
 
 
     // register the S3 location in Lake Formation and create data access role

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Construct } from 'constructs';
-import { Aws, RemovalPolicy, SecretValue } from 'aws-cdk-lib';
+import { Aws, CfnOutput, RemovalPolicy, SecretValue } from 'aws-cdk-lib';
 import { Policy, PolicyStatement, CompositePrincipal, ServicePrincipal, AccountPrincipal } from 'aws-cdk-lib/aws-iam';
 import { DataLakeStorage } from '../data-lake-storage';
 import { DataDomainWorkflow } from './data-domain-workflow';
@@ -11,9 +11,8 @@ import { CfnEventBusPolicy, Rule, EventBus } from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
-import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { S3CrossAccount } from '../s3-cross-account';
-import { IKey, Key } from 'aws-cdk-lib/aws-kms';
+import { Key } from 'aws-cdk-lib/aws-kms';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 
 /**
@@ -35,12 +34,11 @@ export interface DataDomainPros {
  * This CDK Construct creates all required resources for data mesh in Data Domain account.
  * 
  * It creates the following:
- * * data lake storage layers (Raw, Cleaned, Transformed) using {@link DataLakeStorage} construct
- * * an inline policy for provided LF Admin role to enable access to Raw bucket
- * * an inline policy to enable decryption of bucket's KMS key
- * * Amazon EventBridge Event Bus and Rules to enable Central Gov. account to send events to Data Domain account
- * * Data Domain Workflow {@link DataDomainWorkflow}
- * * optional Crawler workflow {@link DataDomainCrawler}
+ * * A data lake with multiple layers (Raw, Cleaned, Transformed) using {@link DataLakeStorage} construct
+ * * An mazon EventBridge Event Bus and Rules to enable Central Governance account to send events to Data Domain account
+ * * An AWS Secret Manager secret encrypted via AWS KMS and used to share references with the central governance account
+ * * A Data Domain Workflow {@link DataDomainWorkflow} responsible for creating resources in the data domain via a Step Functions state machine
+ * * An optional Crawler workflow {@link DataDomainCrawler} responsible for updating the data product schema after registration via a Step Functions state machine
  * 
  * Usage example:
  * ```typescript
@@ -51,62 +49,43 @@ export interface DataDomainPros {
  * const exampleApp = new App();
  * const stack = new Stack(exampleApp, 'DataProductStack');
  * 
- * // Optional role
- * const lfAdminRole = new Role(stack, 'myLFAdminRole', {
- *  assumedBy: ...
- * });
- * 
  * new DataDomain(stack, 'myDataDomain', {
- *  lfAdminRole: lfAdminRole,
  *  centralAccountId: '1234567891011',
- *  crawlerWorkflow: false,
+ *  crawlerWorkflow: true,
  * });
  * ```
- * 
  */
 export class DataDomain extends Construct {
 
-  public static readonly DATA_PRODUCTS_KEY: string = 'data-products';
+  public static readonly DATA_PRODUCTS_PREFIX: string = 'data-products';
   public static readonly DOMAIN_CONFIG_SECRET: string = 'domain-config';
 
-
-
   public readonly dataLake: DataLakeStorage;
-  // TODO what are the resources required to be accessible from outside the object?
-  // public readonly dataDomainWorkflow: DataDomainWorkflow;
-  public readonly eventBus: EventBus;
-  // public readonly workflowRole: IRole;
-  public readonly accountId: string;
-  public readonly dataProductsBucket: IBucket;
-  public readonly dataProductsPrefix: string;
-  public readonly dataProductsKmsKey?: IKey;
+
 
   /**
    * Construct a new instance of DataDomain.
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {DataDomainPros} props the DataDomainPros properties
+   * @param {DataDomainProps} props the DataDomainPros properties
    * @access public
    */
 
   constructor(scope: Construct, id: string, props: DataDomainPros) {
     super(scope, id);
 
-    this.accountId = Aws.ACCOUNT_ID;
+    // The data lake used by the Data Domain
     this.dataLake = new DataLakeStorage(this, 'dataLakeStorage');
-    this.dataProductsBucket = this.dataLake.cleanBucket;
-    this.dataProductsPrefix = DataDomain.DATA_PRODUCTS_KEY;
-    this.dataProductsKmsKey = this.dataLake.cleanBucket.encryptionKey;
 
     // Using the Bucket object and not the IBucket because CDK needs to change the bucket policy
     // KMS key is automatically discovered from the Bucket object and key policy is updated
     new S3CrossAccount(this, 'DataProductsPathCrossAccount', {
       accountId: props.centralAccountId,
       s3Bucket: this.dataLake.cleanBucket,
-      s3ObjectKey: DataDomain.DATA_PRODUCTS_KEY,
+      s3ObjectKey: DataDomain.DATA_PRODUCTS_PREFIX,
     })
 
-    // Workflow role that is LF admin, used by the state machine
+    // Workflow role used by the state machine
     const workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole', {
       assumedBy: new CompositePrincipal(
         new ServicePrincipal('states.amazonaws.com'),
@@ -114,24 +93,24 @@ export class DataDomain extends Construct {
     });
 
     // Event Bridge event bus for data domain account
-    this.eventBus = new EventBus(this, 'dataDomainEventBus', {
+    const eventBus = new EventBus(this, 'dataDomainEventBus', {
       eventBusName: 'data-mesh-bus',
     });
-    this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Cross-account policy to allow the central account to send events to data domain's bus
     const crossAccountBusPolicy = new CfnEventBusPolicy(this, 'crossAccountBusPolicy', {
-      eventBusName: this.eventBus.eventBusName,
+      eventBusName: eventBus.eventBusName,
       statementId: 'AllowCentralAccountToPutEvents',
       action: 'events:PutEvents',
       principal: props.centralAccountId,
     });
-    crossAccountBusPolicy.node.addDependency(this.eventBus);
+    crossAccountBusPolicy.node.addDependency(eventBus);
 
     const dataDomainWorkflow = new DataDomainWorkflow(this, 'DataDomainWorkflow', {
       workflowRole: workflowRole,
       centralAccountId: props.centralAccountId,
-      eventBus: this.eventBus,
+      eventBus: eventBus,
     });
 
     // Event Bridge Rule to trigger this worklfow upon event from the central account
@@ -141,32 +120,34 @@ export class DataDomain extends Construct {
         account: [props.centralAccountId],
         detailType: [`${Aws.ACCOUNT_ID}_createResourceLinks`],
       },
-      eventBus: this.eventBus,
+      eventBus: eventBus,
     });
 
     rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
     rule.addTarget(new targets.SfnStateMachine(dataDomainWorkflow.stateMachine));
-    rule.node.addDependency(this.eventBus);
+    rule.node.addDependency(eventBus);
 
-    // Allow LF admin role to send events to data domain event bus
+    // Allow the workflow role to send events to data domain event bus
     workflowRole.attachInlinePolicy(new Policy(this, 'SendEvents', {
       statements: [
         new PolicyStatement({
           actions: ['events:Put*'],
-          resources: [this.eventBus.eventBusArn],
+          resources: [eventBus.eventBusArn],
         }),
       ],
     }));
 
+    // create a workflow to update data products schemas on registration
     if (props.crawlerWorkflow) {
       const workflow = new DataDomainCrawler(this, 'DataDomainCrawler', {
         workflowRole: workflowRole,
-        dataProductsBucket: this.dataProductsBucket,
-        dataProductsPrefix: this.dataProductsPrefix
+        dataProductsBucket: this.dataLake.cleanBucket,
+        dataProductsPrefix: DataDomain.DATA_PRODUCTS_PREFIX
       });
 
+      // add a rule to trigger the workflow from the event bus
       new Rule(this, 'TriggerUpdateTableSchemasRule', {
-        eventBus: this.eventBus,
+        eventBus: eventBus,
         targets: [
           workflow.stateMachine,
         ],
@@ -177,26 +158,39 @@ export class DataDomain extends Construct {
       });
     }
 
+    // create the data domain configuration object (in JSON) to be passed to the central governance account 
     var secretObject = {
-      BucketName: SecretValue.unsafePlainText(this.dataProductsBucket.bucketName),
-      Prefix: SecretValue.unsafePlainText(this.dataProductsPrefix),
-      EventBusName: SecretValue.unsafePlainText(this.eventBus.eventBusName),
+      BucketName: SecretValue.unsafePlainText(this.dataLake.cleanBucket.bucketName),
+      Prefix: SecretValue.unsafePlainText(DataDomain.DATA_PRODUCTS_PREFIX),
+      EventBusName: SecretValue.unsafePlainText(eventBus.eventBusName),
     }
 
-    if (this.dataProductsKmsKey) {
+    // if the data product bucket is encrypted, add the key ID
+    if (this.dataLake.cleanBucket.encryptionKey) {
       secretObject =  { 
         ...secretObject,
-        ... { KmsKeyId: SecretValue.unsafePlainText(this.dataProductsKmsKey.keyId) }
+        ...{ KmsKeyId: SecretValue.unsafePlainText(this.dataLake.cleanBucket.encryptionKey.keyId) }
       };
     }
 
     const centralGovAccount = new AccountPrincipal(props.centralAccountId);
-    const secretKey = new Key(this, 'SecretKey');
+    // create a KMS key for encrypting the secret. It's required for cross account secret access
+    const secretKey = new Key(this, 'SecretKey', {
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
     secretKey.grantDecrypt(centralGovAccount);
+    
+    // create the secret containing the data domain configuration object
     const domainConfigSecret = new Secret(this, 'DomainBucketSecret',{
       secretObjectValue: secretObject,
       secretName: DataDomain.DOMAIN_CONFIG_SECRET,
+      encryptionKey: secretKey,
     })
     domainConfigSecret.grantRead(centralGovAccount);
+
+    // output the full ARN of the secret to be passed when registring the data domain
+    new CfnOutput(this, 'DomainSecretArnOutput', {
+      value: domainConfigSecret.secretArn,
+    })
   }
 }

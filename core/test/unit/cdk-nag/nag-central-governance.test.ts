@@ -25,7 +25,7 @@ new DataDomain(dataDomainStack, 'Domain', {
   centralAccountId: '1234567891011',
 })
 
-governance.registerDataDomain('Domain1', '11111111111111' );
+governance.registerDataDomain('Domain1', '11111111111111', 'arn:aws:secretsmanager:us-east-1:668876353122:secret:domain-config' );
 
 Aspects.of(centralGovStack).add(new AwsSolutionsChecks());
 
@@ -53,37 +53,10 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/GetDomainBucketCr/CustomResourcePolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'AWS Custom Resource policy is provided by CDK.'
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  centralGovStack,
-  'CentralGovernanceStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource',
-  [{
-    id: 'AwsSolutions-IAM4',
-    reason: 'AWS Custom Resource lambda function role is provided by CDK.'
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  centralGovStack,
   'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateFn/Resource',
   [{
     id: 'AwsSolutions-L1',
     reason: 'Custom Resource Provider is provided by CDK and cannot be changed to latest runtime.'
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  centralGovStack,
-  'CentralGovernanceStack/AWS679f53fac002430cb0da5b7982bd2287/Resource',
-  [{
-    id: 'AwsSolutions-L1',
-    reason: 'AWS Custom Resource lambda function is provided by CDK and cannot be changed to latest runtime.'
   }],
 );
 

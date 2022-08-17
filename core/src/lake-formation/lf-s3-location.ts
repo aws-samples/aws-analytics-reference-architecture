@@ -49,11 +49,17 @@ export interface LakeFormationS3LocationProps {
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
  *
- * const myBucket = new Bucket(stack, 'MyBucket')
+ * const myKey = new Key(stack, 'MyKey')
+ * const myBucket = new Bucket(stack, 'MyBucket', {
+ *   encryptionKey: myKey,
+ * })
  *
- * new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
- *   bucketName: myBucket,
- *   objectKey: 'my-prefix',
+ * new LakeFormationS3Location(stack, 'MyLakeformationS3Location', {
+ *   s3Location: {
+ *     bucketName: myBucket.bucketName,
+ *     objectKey: 'my-prefix',
+ *   },
+ *   kmsKeyId: myBucket.encryptionKey.keyId,
  * });
  * ```
  */
@@ -66,7 +72,6 @@ export class LakeFormationS3Location extends Construct {
 
     // Create an Amazon IAM Role used by Lakeformation to register S3 location
     this.dataAccessRole = new Role(this, 'LFS3AccessRole', {
-      // roleName: PhysicalName.GENERATE_IF_NEEDED,
       assumedBy: new ServicePrincipal('lakeformation.amazonaws.com'),
     });
     
@@ -124,7 +129,6 @@ export class LakeFormationS3Location extends Construct {
         }),
       );
     }
-    // props.s3Bucket.grantReadWrite(this.dataAccessRole, objectKey);
 
     new lakeformation.CfnResource(this, 'MyCfnResource', {
       resourceArn: Arn.format({
