@@ -10,6 +10,7 @@ import { StateMachine, JsonPath, TaskInput, Map, LogLevel } from "aws-cdk-lib/aw
 import { CfnEventBusPolicy, EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
+import * as lakeformation from 'aws-cdk-lib/aws-lakeformation';
 
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
 import { LakeFormationS3Location } from '../lake-formation';
@@ -49,6 +50,7 @@ import { DataDomain } from './data-domain';
  */
 export class CentralGovernance extends Construct {
 
+  public static readonly DOMAIN_DATABASE_PREFIX: string = 'data-domain-';
   public readonly workflowRole: IRole;
   public readonly eventBus: IEventBus;
 
@@ -98,7 +100,7 @@ export class CentralGovernance extends Construct {
       action: 'createTable',
       iamResources: ['*'],
       parameters: {
-        'DatabaseName.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
+        'DatabaseName.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
         'TableInput': {
           'Name.$': '$.tables.name',
           'Owner.$': '$.producer_acc_id',
@@ -127,7 +129,7 @@ export class CentralGovernance extends Construct {
         },
         'Resource': {
           'Table': {
-            'DatabaseName.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
+            'DatabaseName.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
             'Name.$': '$.tables.name',
           },
         },
@@ -141,12 +143,12 @@ export class CentralGovernance extends Construct {
       entries: [{
         detail: TaskInput.fromObject({
           'central_database_name': JsonPath.format(
-            "{}_{}",
-            JsonPath.stringAt("$.producer_acc_id"),
-            JsonPath.stringAt("$.database_name")
+            "{}{}",
+            CentralGovernance.DOMAIN_DATABASE_PREFIX,
+            JsonPath.stringAt("$.producer_acc_id")
           ),
           'producer_acc_id': JsonPath.stringAt("$.producer_acc_id"),
-          'database_name': JsonPath.stringAt("$.database_name"),
+          'database_name': "data-products",
           'table_names': JsonPath.stringAt("$.map_result.flatten"),
         }),
         detailType: JsonPath.format(
@@ -162,9 +164,7 @@ export class CentralGovernance extends Construct {
     const tablesMapTask = new Map(this, 'forEachTable', {
       itemsPath: '$.tables',
       parameters: {
-        'data_product_s3.$': '$.data_product_s3',
         'producer_acc_id.$': '$.producer_acc_id',
-        'database_name.$': '$.database_name',
         'tables.$': '$$.Map.Item.Value',
       },
       resultSelector: {
@@ -243,12 +243,25 @@ export class CentralGovernance extends Construct {
     });
 
     // Create the database in Glue with datadomain prefix+bucket
-    const database = new Database(this, `${id}DataDomainDatabase`, {
-      databaseName: 'data-domain-' + domainId,
+    new Database(this, `${id}DataDomainDatabase`, {
+      databaseName: CentralGovernance.DOMAIN_DATABASE_PREFIX + domainId,
       locationUri: `s3://${domainBucket}/${domainPrefix}`,
-    });
-    // Make sure CDK execution role is an LF admin before it creates a new database
-    database.node.addDependency(this.node.findChild('CdkLakeFormationAdmin'));
+    }).node.addDependency(this.node.findChild('CdkLakeFormationAdmin'));
+
+    // Grant workflow role permissions to domain database
+    new lakeformation.CfnPrincipalPermissions(this, `${id}WorkflowRoleDbAccess`, {
+      permissions: ['ALL'],
+      permissionsWithGrantOption: [],
+      principal: {
+        dataLakePrincipalIdentifier: this.workflowRole.roleArn,
+      },
+      resource: {
+        database: {
+          catalogId: Aws.ACCOUNT_ID,
+          name: CentralGovernance.DOMAIN_DATABASE_PREFIX + domainId,
+        }
+      },
+    }).node.addDependency(this.node.findChild(`${id}DataDomainDatabase`));
 
     // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
     new CfnEventBusPolicy(this, `${id}Policy`, {

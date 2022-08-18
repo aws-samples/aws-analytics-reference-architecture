@@ -88,10 +88,7 @@ export class DataMeshWorkflowRole extends Construct {
       roles: [this.role],
     })
 
-    // this.grantPassRole(this);
-
     // Add this role to LF admins
-    // TODO replace by idempotent Construct LakeFormationAdmin (from feature/lf-tags branch)
     new LakeFormationAdmin(this, 'LfAdmin', {
       principal: this.role,
     });
