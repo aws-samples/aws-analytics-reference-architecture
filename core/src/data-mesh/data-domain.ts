@@ -59,7 +59,7 @@ export class DataDomain extends Construct {
 
   public static readonly DATA_PRODUCTS_PREFIX: string = 'data-products';
   public static readonly DOMAIN_CONFIG_SECRET: string = 'domain-config';
-
+  public static readonly DOMAIN_BUS_NAME: string = 'data-mesh-bus';
   public readonly dataLake: DataLakeStorage;
 
 
@@ -90,7 +90,7 @@ export class DataDomain extends Construct {
 
     // Event Bridge event bus for data domain account
     const eventBus = new EventBus(this, 'dataDomainEventBus', {
-      eventBusName: 'data-mesh-bus',
+      eventBusName: DataDomain.DOMAIN_BUS_NAME,
     });
     eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 

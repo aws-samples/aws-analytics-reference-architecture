@@ -16,6 +16,7 @@ import { LakeFormationS3Location } from '../lake-formation';
 import { LakeFormationAdmin } from '../lake-formation';
 import { Database } from '@aws-cdk/aws-glue-alpha';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { DataDomain } from './data-domain';
 
 /**
  * This CDK Construct creates a Data Product registration workflow and resources for the Central Governance account.
@@ -230,7 +231,7 @@ export class CentralGovernance extends Construct {
     const domainPrefix = domainSecret.secretValueFromJson('Prefix').unsafeUnwrap();
     const domainKey = domainSecret.secretValueFromJson('KmsKeyId').unsafeUnwrap();
     // Construct domain event bus ARN
-    const dataDomainBusArn = `arn:aws:events:${Aws.REGION}:${domainId}:event-bus/data-mesh-bus`;
+    const dataDomainBusArn = `arn:aws:events:${Aws.REGION}:${domainId}:event-bus/${DataDomain.DOMAIN_BUS_NAME}`;
 
     // register the S3 location in Lake Formation and create data access role
     new LakeFormationS3Location(this, `${id}LFLocation`, {

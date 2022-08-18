@@ -18,7 +18,7 @@ describe('DataMeshWorkflowRoleTests', () => {
   
   new DataMeshWorkflowRole(dataMeshWorkflowRoleStack, 'DataMeshWorkflowRole',);
   
-  const template = Template.fromStack(dataMeshWorkflowRole);
+  const template = Template.fromStack(dataMeshWorkflowRoleStack);
   // console.log(JSON.stringify(template.toJSON(),null, 2));
 
   test('should provision the proper workflow role', () => {

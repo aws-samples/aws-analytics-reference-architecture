@@ -1587,7 +1587,6 @@ It includes the following JSON object:
    BucketName: 'clean-<ACCOUNT_ID>-<REGION>',
    Prefix: 'data-products',
    KmsKeyId: '<KMS_ID>,
-   EventBusName: 'data-domain-bus'
 }
 ```
 
@@ -1729,14 +1728,14 @@ new DataDomain(stack, 'myDataDomain', {
 ```typescript
 import { DataDomain } from 'aws-analytics-reference-architecture'
 
-new DataDomain(scope: Construct, id: string, props: DataDomainPros)
+new DataDomain(scope: Construct, id: string, props: DataDomainProps)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataDomainPros">DataDomainPros</a></code> | the DataDomainProps properties. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataDomainProps">DataDomainProps</a></code> | the DataDomainProps properties. |
 
 ---
 
@@ -1758,7 +1757,7 @@ the ID of the CDK Construct.
 
 ##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.DataDomain.Initializer.parameter.props"></a>
 
-- *Type:* <a href="#aws-analytics-reference-architecture.DataDomainPros">DataDomainPros</a>
+- *Type:* <a href="#aws-analytics-reference-architecture.DataDomainProps">DataDomainProps</a>
 
 the DataDomainProps properties.
 
@@ -1856,6 +1855,7 @@ public readonly dataLake: DataLakeStorage;
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DATA_PRODUCTS_PREFIX">DATA_PRODUCTS_PREFIX</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DOMAIN_BUS_NAME">DOMAIN_BUS_NAME</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.DOMAIN_CONFIG_SECRET">DOMAIN_CONFIG_SECRET</a></code> | <code>string</code> | *No description.* |
 
 ---
@@ -1864,6 +1864,16 @@ public readonly dataLake: DataLakeStorage;
 
 ```typescript
 public readonly DATA_PRODUCTS_PREFIX: string;
+```
+
+- *Type:* string
+
+---
+
+##### `DOMAIN_BUS_NAME`<sup>Required</sup> <a name="DOMAIN_BUS_NAME" id="aws-analytics-reference-architecture.DataDomain.property.DOMAIN_BUS_NAME"></a>
+
+```typescript
+public readonly DOMAIN_BUS_NAME: string;
 ```
 
 - *Type:* string
@@ -1879,167 +1889,6 @@ public readonly DOMAIN_CONFIG_SECRET: string;
 - *Type:* string
 
 ---
-
-### DataDomainWorkflow <a name="DataDomainWorkflow" id="aws-analytics-reference-architecture.DataDomainWorkflow"></a>
-
-This CDK Construct creates a workflow for Producer/Consumer account.
-
-It is based on an AWS Step Functions state machine. It has the following steps:
-* checks for AWS RAM invitations
-* accepts RAM invitations if the source is Central Gov. account
-* creates AWS Glue Data Catalog Database and tables
-* creates Resource-Link(s) for created tables
-
-This Step Functions state machine is invoked from the Central Gov. account via EventBridge Event Bus.
-It is initiatated in {@link DataDomain}, but can be used as a standalone construct.
-
-Usage example:
-```typescript
-import { App, Stack } from 'aws-cdk-lib';
-import { Role } from 'aws-cdk-lib/aws-iam';
-import { DataDomain } from 'aws-analytics-reference-architecture';
-
-const exampleApp = new App();
-const stack = new Stack(exampleApp, 'DataProductStack');
-
-const workflowRole = new Role(stack, 'myWorkflowRole', {
-  assumedBy: ...
-});
-
-new DataDomainWorkflow(this, 'DataDomainWorkflow', {
-  eventBus: eventBus,
-  workflowRole: workflowRole,
-  centralAccountId: '1234567891011',
-});
-```
-
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DataDomainWorkflow.Initializer"></a>
-
-```typescript
-import { DataDomainWorkflow } from 'aws-analytics-reference-architecture'
-
-new DataDomainWorkflow(scope: Construct, id: string, props: DataDomainWorkflowProps)
-```
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps">DataDomainWorkflowProps</a></code> | the DataDomainWorkflowProps properties. |
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.DataDomainWorkflow.Initializer.parameter.scope"></a>
-
-- *Type:* constructs.Construct
-
-the Scope of the CDK Construct.
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.DataDomainWorkflow.Initializer.parameter.id"></a>
-
-- *Type:* string
-
-the ID of the CDK Construct.
-
----
-
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.DataDomainWorkflow.Initializer.parameter.props"></a>
-
-- *Type:* <a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps">DataDomainWorkflowProps</a>
-
-the DataDomainWorkflowProps properties.
-
----
-
-#### Methods <a name="Methods" id="Methods"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow.toString">toString</a></code> | Returns a string representation of this construct. |
-
----
-
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.DataDomainWorkflow.toString"></a>
-
-```typescript
-public toString(): string
-```
-
-Returns a string representation of this construct.
-
-#### Static Functions <a name="Static Functions" id="Static Functions"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
-
----
-
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.DataDomainWorkflow.isConstruct"></a>
-
-```typescript
-import { DataDomainWorkflow } from 'aws-analytics-reference-architecture'
-
-DataDomainWorkflow.isConstruct(x: any)
-```
-
-Checks if `x` is a construct.
-
-Use this method instead of `instanceof` to properly detect `Construct`
-instances, even when the construct library is symlinked.
-
-Explanation: in JavaScript, multiple copies of the `constructs` library on
-disk are seen as independent, completely different libraries. As a
-consequence, the class `Construct` in each copy of the `constructs` library
-is seen as a different class, and an instance of one class will not test as
-`instanceof` the other class. `npm install` will not create installations
-like this, but users may manually symlink construct libraries together or
-use a monorepo tool: in those cases, multiple copies of the `constructs`
-library can be accidentally installed, and `instanceof` will behave
-unpredictably. It is safest to avoid using `instanceof`, and using
-this type-testing method instead.
-
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.DataDomainWorkflow.isConstruct.parameter.x"></a>
-
-- *Type:* any
-
-Any object.
-
----
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflow.property.stateMachine">stateMachine</a></code> | <code>aws-cdk-lib.aws_stepfunctions.StateMachine</code> | *No description.* |
-
----
-
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DataDomainWorkflow.property.node"></a>
-
-```typescript
-public readonly node: Node;
-```
-
-- *Type:* constructs.Node
-
-The tree node.
-
----
-
-##### `stateMachine`<sup>Required</sup> <a name="stateMachine" id="aws-analytics-reference-architecture.DataDomainWorkflow.property.stateMachine"></a>
-
-```typescript
-public readonly stateMachine: StateMachine;
-```
-
-- *Type:* aws-cdk-lib.aws_stepfunctions.StateMachine
-
----
-
 
 ### DataLakeCatalog <a name="DataLakeCatalog" id="aws-analytics-reference-architecture.DataLakeCatalog"></a>
 
@@ -6659,28 +6508,28 @@ The S3 object key sink where the BatchReplayer writes data.
 
 ---
 
-### DataDomainPros <a name="DataDomainPros" id="aws-analytics-reference-architecture.DataDomainPros"></a>
+### DataDomainProps <a name="DataDomainProps" id="aws-analytics-reference-architecture.DataDomainProps"></a>
 
 Properties for the DataDomain Construct.
 
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DataDomainPros.Initializer"></a>
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DataDomainProps.Initializer"></a>
 
 ```typescript
-import { DataDomainPros } from 'aws-analytics-reference-architecture'
+import { DataDomainProps } from 'aws-analytics-reference-architecture'
 
-const dataDomainPros: DataDomainPros = { ... }
+const dataDomainProps: DataDomainProps = { ... }
 ```
 
 #### Properties <a name="Properties" id="Properties"></a>
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainPros.property.crawlerWorkflow">crawlerWorkflow</a></code> | <code>boolean</code> | Flag to create a Crawler workflow in Data Domain account. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainProps.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainProps.property.crawlerWorkflow">crawlerWorkflow</a></code> | <code>boolean</code> | Flag to create a Crawler workflow in Data Domain account. |
 
 ---
 
-##### `centralAccountId`<sup>Required</sup> <a name="centralAccountId" id="aws-analytics-reference-architecture.DataDomainPros.property.centralAccountId"></a>
+##### `centralAccountId`<sup>Required</sup> <a name="centralAccountId" id="aws-analytics-reference-architecture.DataDomainProps.property.centralAccountId"></a>
 
 ```typescript
 public readonly centralAccountId: string;
@@ -6692,7 +6541,7 @@ Central Governance account Id.
 
 ---
 
-##### `crawlerWorkflow`<sup>Optional</sup> <a name="crawlerWorkflow" id="aws-analytics-reference-architecture.DataDomainPros.property.crawlerWorkflow"></a>
+##### `crawlerWorkflow`<sup>Optional</sup> <a name="crawlerWorkflow" id="aws-analytics-reference-architecture.DataDomainProps.property.crawlerWorkflow"></a>
 
 ```typescript
 public readonly crawlerWorkflow: boolean;
@@ -6701,64 +6550,6 @@ public readonly crawlerWorkflow: boolean;
 - *Type:* boolean
 
 Flag to create a Crawler workflow in Data Domain account.
-
----
-
-### DataDomainWorkflowProps <a name="DataDomainWorkflowProps" id="aws-analytics-reference-architecture.DataDomainWorkflowProps"></a>
-
-Properties for the DataDomainWorkflow Construct.
-
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.Initializer"></a>
-
-```typescript
-import { DataDomainWorkflowProps } from 'aws-analytics-reference-architecture'
-
-const dataDomainWorkflowProps: DataDomainWorkflowProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.IEventBus</code> | Event Bus in Data Domain. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomainWorkflowProps.property.workflowRole">workflowRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | Lake Formation admin role. |
-
----
-
-##### `centralAccountId`<sup>Required</sup> <a name="centralAccountId" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.property.centralAccountId"></a>
-
-```typescript
-public readonly centralAccountId: string;
-```
-
-- *Type:* string
-
-Central Governance account Id.
-
----
-
-##### `eventBus`<sup>Required</sup> <a name="eventBus" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.property.eventBus"></a>
-
-```typescript
-public readonly eventBus: IEventBus;
-```
-
-- *Type:* aws-cdk-lib.aws_events.IEventBus
-
-Event Bus in Data Domain.
-
----
-
-##### `workflowRole`<sup>Required</sup> <a name="workflowRole" id="aws-analytics-reference-architecture.DataDomainWorkflowProps.property.workflowRole"></a>
-
-```typescript
-public readonly workflowRole: IRole;
-```
-
-- *Type:* aws-cdk-lib.aws_iam.IRole
-
-Lake Formation admin role.
 
 ---
 
