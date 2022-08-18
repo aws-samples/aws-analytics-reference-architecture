@@ -162,7 +162,6 @@ export class DataDomain extends Construct {
     var secretObject = {
       BucketName: SecretValue.unsafePlainText(this.dataLake.cleanBucket.bucketName),
       Prefix: SecretValue.unsafePlainText(DataDomain.DATA_PRODUCTS_PREFIX),
-      EventBusName: SecretValue.unsafePlainText(eventBus.eventBusName),
     }
 
     // if the data product bucket is encrypted, add the key ID
