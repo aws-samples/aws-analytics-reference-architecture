@@ -7610,9 +7610,9 @@ const notebookManagedEndpointOptions: NotebookManagedEndpointOptions = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.executionPolicy">executionPolicy</a></code> | <code>aws-cdk-lib.aws_iam.ManagedPolicy</code> | The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>any</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json). |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code>string</code> | The version of Amazon EMR to deploy. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name. |
 
 ---
 
@@ -7625,6 +7625,18 @@ public readonly executionPolicy: ManagedPolicy;
 - *Type:* aws-cdk-lib.aws_iam.ManagedPolicy
 
 The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog.
+
+---
+
+##### `managedEndpointName`<sup>Required</sup> <a name="managedEndpointName" id="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName"></a>
+
+```typescript
+public readonly managedEndpointName: string;
+```
+
+- *Type:* string
+
+The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name.
 
 ---
 
@@ -7649,18 +7661,6 @@ public readonly emrOnEksVersion: string;
 - *Type:* string
 
 The version of Amazon EMR to deploy.
-
----
-
-##### `managedEndpointName`<sup>Optional</sup> <a name="managedEndpointName" id="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName"></a>
-
-```typescript
-public readonly managedEndpointName: string;
-```
-
-- *Type:* string
-
-The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name.
 
 ---
 

@@ -55,6 +55,7 @@ describe ('AthenaDemoSetup', () => {
       Match.objectLike({
         Name: 'demo',
         WorkGroupConfiguration: {
+          RequesterPaysEnabled: true,
           PublishCloudWatchMetricsEnabled: false,
           ResultConfiguration: {
             OutputLocation: {

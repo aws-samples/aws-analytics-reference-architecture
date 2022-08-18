@@ -370,13 +370,7 @@ export class NotebookPlatform extends TrackedConstruct {
       //For each policy create a role and then pass it to addManageEndpoint to create an endpoint
       user.notebookManagedEndpoints.forEach( (notebookManagedEndpoint, index) => {
 
-        //Check if the managedendpoint is already used in role which is created for a managed endpoint
-        //if there is no managedendpointArn create a new managedendpoint
-        //else get managedendpoint and push it to  @managedEndpointArns
-        // eslint-disable-next-line max-len
-        let endpointName: string = notebookManagedEndpoint.managedEndpointName ? notebookManagedEndpoint.managedEndpointName : notebookManagedEndpoint.executionPolicy.managedPolicyName;
-
-        if (!this.managedEndpointExecutionPolicyArnMapping.has(endpointName)) {
+        if (!this.managedEndpointExecutionPolicyArnMapping.has(notebookManagedEndpoint.managedEndpointName)) {
 
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
@@ -386,16 +380,16 @@ export class NotebookPlatform extends TrackedConstruct {
 
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this,
-            `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.executionPolicy.managedPolicyName)}`,
+            `${this.studioName}${Utils.stringSanitizer(notebookManagedEndpoint.managedEndpointName)}`,
             {
-              managedEndpointName: `${this.studioName}-${endpointName}`,
+              managedEndpointName: `${this.studioName}-${notebookManagedEndpoint.managedEndpointName}`,
               virtualClusterId: this.emrVirtCluster.attrId,
               executionRole: this.emrEks.createExecutionRole(
                 this,
                 `${user.identityName}${index}`,
                 notebookManagedEndpoint.executionPolicy,
                 this.vcNamespace,
-                `${endpointName}-execRole`,
+                `${notebookManagedEndpoint.managedEndpointName}-execRole`,
               ),
               emrOnEksVersion: emrOnEksVersion ? emrOnEksVersion : NotebookPlatform.DEFAULT_EMR_VERSION,
               configurationOverrides: configOverride ? configOverride : undefined,
@@ -429,12 +423,12 @@ export class NotebookPlatform extends TrackedConstruct {
           //This is to avoid the creation an endpoint with the same policy twice
           //Save resources and reduce the deployment time
           // TODO check the emr version is the same => to be fixed on a later commit need to solve adding a tuple to a JS map
-          this.managedEndpointExecutionPolicyArnMapping.set(endpointName, managedEndpoint.getAttString('arn'));
+          this.managedEndpointExecutionPolicyArnMapping.set(notebookManagedEndpoint.managedEndpointName, managedEndpoint.getAttString('arn'));
 
           //Push the managedendpoint arn to be used in to build the policy to attach to it
           managedEndpointArns.push(managedEndpoint.getAttString('arn'));
         } else {
-          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(endpointName));
+          managedEndpointArns.push(<string> this.managedEndpointExecutionPolicyArnMapping.get(notebookManagedEndpoint.managedEndpointName));
         }
       });
 
