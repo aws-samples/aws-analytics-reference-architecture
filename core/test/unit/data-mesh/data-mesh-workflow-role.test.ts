@@ -10,13 +10,13 @@
 
 import { Stack } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
-import { DataMeshWorkflowRole } from '../../../src/data-mesh';
+import { DataMeshWorkflowRole } from '../../../src/data-mesh/data-mesh-workflow-role';
 
 describe('DataMeshWorkflowRoleTests', () => {
   
-  const dataMeshWorkflowRole = new Stack();
+  const dataMeshWorkflowRoleStack = new Stack();
   
-  new DataMeshWorkflowRole(dataMeshWorkflowRole, 'DataMeshWorkflowRoleStack',);
+  new DataMeshWorkflowRole(dataMeshWorkflowRoleStack, 'DataMeshWorkflowRole',);
   
   const template = Template.fromStack(dataMeshWorkflowRole);
   // console.log(JSON.stringify(template.toJSON(),null, 2));

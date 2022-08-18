@@ -45,11 +45,7 @@ describe('LakeFormationS3Location test', () => {
               {
                 "Ref": "AWS::Partition"
               },
-              ":s3:",
-              {
-                "Ref": "AWS::Region"
-              },
-              ":123456789010:",
+              ":s3:::",
               Match.anyValue(),
               "/test/*"
             ]
@@ -87,11 +83,7 @@ describe('LakeFormationS3Location test', () => {
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":123456789010:",
+                      ":s3:::",
                       Match.anyValue(),
                       "/test/*"
                     ]
@@ -105,11 +97,7 @@ describe('LakeFormationS3Location test', () => {
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":s3:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":123456789010:",
+                      ":s3:::",
                       Match.anyValue(),
                     ]
                   ]

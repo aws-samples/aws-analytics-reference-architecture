@@ -10,7 +10,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { deployStack, destroyStack } from './utils';
 
-import { DataDomain } from '../../src/data-mesh';
+import { DataDomain } from '../../src';
 
 jest.setTimeout(600000);
 // GIVEN
@@ -18,7 +18,7 @@ const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'DataDomainE2eTest');
 
 const domain = new DataDomain(stack, 'DataDomain', {
-  centralAccountId: '1234567891011',
+  centralAccountId: '628862645339',
   crawlerWorkflow: true,
 });
 

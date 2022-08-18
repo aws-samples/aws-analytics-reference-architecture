@@ -59,7 +59,7 @@ export class LakeFormationAdmin extends Construct {
 
     // AWS Lambda function for the AWS CDK Custom Resource responsible for creating the AWS Lake Formation tag
     const createLfAdminFn = new PreBundledFunction(this, 'lfAdminCreateFn', {
-      runtime: Runtime.PYTHON_3_8,
+      runtime: Runtime.PYTHON_3_9,
       codePath: 'lake-formation/resources/lambdas/admin',
       handler: 'lambda.on_event',
       logRetention: RetentionDays.ONE_DAY,

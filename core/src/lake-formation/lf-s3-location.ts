@@ -74,21 +74,23 @@ export class LakeFormationS3Location extends Construct {
     this.dataAccessRole = new Role(this, 'LFS3AccessRole', {
       assumedBy: new ServicePrincipal('lakeformation.amazonaws.com'),
     });
-    
+
     // add policy to access S3 for Read and Write
     this.dataAccessRole.addToPolicy(
       new PolicyStatement({
         resources: [
           Arn.format({
+            account: '',
+            region: '',
             resource: props.s3Location.bucketName,
             service: 's3',
-            account: props.accountId ? props.accountId : Aws.ACCOUNT_ID,
             resourceName: props.s3Location.objectKey ? props.s3Location.objectKey + '/*' : '*',
           }, Stack.of(this)),
           Arn.format({
+            account: '',
+            region: '',
             resource: props.s3Location.bucketName,
             service: 's3',
-            account: props.accountId ? props.accountId : Aws.ACCOUNT_ID,
           }, Stack.of(this)),
         ],
         actions: [
@@ -132,9 +134,10 @@ export class LakeFormationS3Location extends Construct {
 
     new lakeformation.CfnResource(this, 'MyCfnResource', {
       resourceArn: Arn.format({
+        account: '',
+        region: '',
         resource: props.s3Location.bucketName,
         service: 's3',
-        account: props.accountId ? props.accountId : Aws.ACCOUNT_ID,
         resourceName: props.s3Location.objectKey ? props.s3Location.objectKey + '/*' : '*',
       }, Stack.of(this)),
       useServiceLinkedRole: false,

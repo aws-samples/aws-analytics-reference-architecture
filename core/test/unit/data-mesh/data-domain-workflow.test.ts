@@ -12,7 +12,7 @@ import { Stack } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { EventBus } from 'aws-cdk-lib/aws-events';
 import { CompositePrincipal, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { DataDomainWorkflow } from '../../../src';
+import { DataDomainWorkflow } from '../../../src/data-mesh/data-domain-workflow';
 
 describe('DataDomainWorkflowTests', () => {
   

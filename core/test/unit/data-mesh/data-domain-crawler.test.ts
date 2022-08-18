@@ -12,7 +12,7 @@ import { Stack } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { Role, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
-import { DataDomainCrawler } from '../../../src/data-mesh';
+import { DataDomainCrawler } from '../../../src/data-mesh/data-domain-crawler';
 
 describe('DataDomainCrawlerTests', () => {
   

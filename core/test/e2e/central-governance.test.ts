@@ -10,9 +10,9 @@
 import * as cdk from 'aws-cdk-lib';
 import { deployStack, destroyStack } from './utils';
 
-import { CentralGovernance } from '../../src/data-mesh';
+import { CentralGovernance } from '../../src';
 
-jest.setTimeout(100000);
+jest.setTimeout(600000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'CentralGovernanceE2eTest');

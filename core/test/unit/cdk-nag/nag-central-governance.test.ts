@@ -11,7 +11,7 @@ import { Annotations, Match } from 'aws-cdk-lib/assertions';
 import { App, Stack, Aspects } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { CentralGovernance, DataDomain } from '../../../src/data-mesh'
+import { CentralGovernance, DataDomain } from '../../../src'
 
 
 const mockApp = new App();
@@ -29,89 +29,74 @@ governance.registerDataDomain('Domain1', '11111111111111', 'arn:aws:secretsmanag
 
 Aspects.of(centralGovStack).add(new AwsSolutionsChecks());
 
-// See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions_tasks.CallAwsService.html#iamresources 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/WorkflowRole/DefaultPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Step Function CallAWSService requires iamResources to allow it to make API calls. ' +
-      'For each API call required, there is a wildcard on resource as resources are not known before Step Function execution. ' +
-      'Granular access controls are added to the role that Step Function assumes during execution. ' +
-      'Additionally, wildcard is added for Log group by default. See: https://github.com/aws/aws-cdk/issues/7158'
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/Resource',
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin',
   [{
     id: 'AwsSolutions-L1',
-    reason: 'Custom Resource Provider is provided by CDK and cannot be changed to latest runtime.'
+    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
   }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateFn/Resource',
-  [{
-    id: 'AwsSolutions-L1',
-    reason: 'Custom Resource Provider is provided by CDK and cannot be changed to latest runtime.'
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LogRetentionLambdaExecutionRoleCdkLakeFormationAdminlfAdminCreateFn/DefaultPolicy/Resource',
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin',
   [{
     id: 'AwsSolutions-IAM5',
-    reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
+    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
   }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LogRetentionLambdaExecutionRolePolicyCdkLakeFormationAdminlfAdminCreateFn/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/LambdaExecutionRolePolicyCdkLakeFormationAdminlfAdminCreateFn/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Custom Resource Provider is provided by CDK and is using wildcards permissions.'
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Custom Resource Provider is provided by CDK and using wildcards permissions.'
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/Resource',
+  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin',
   [{
     id: 'AwsSolutions-IAM4',
-    reason: 'Custom Resource Provider is provided by CDK and using managed policies.'
+    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
   }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/WorkflowRole/WorkflowRolePolicy/Resource',
+  'CentralGovernanceStack/CentralGovernance/WorkflowRole',
   [{
     id: 'AwsSolutions-IAM5',
-    reason: 'Needs all ram:Get, ram:List and lakeformation permissions. Needs wildcard resources because there are only known during workflow execution.'
+    reason: 'Not the purpose of this NAG to test DataMeshWorkflowRole construct'
   }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/WorkflowRole',
+  [{
+    id: 'AwsSolutions-L1',
+    reason: 'Not the purpose of this NAG to test DataMeshWorkflowRole construct'
+  }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/WorkflowRole',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'Not the purpose of this NAG to test DataMeshWorkflowRole construct'
+  }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CentralGovernance/Domain1LFLocation',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Not the purpose of this NAG to test LakeFormationS3Location construct'
+  }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
@@ -122,14 +107,8 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/Domain1LFLocation/LFS3AccessRole/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Permissions given by grantReadWrite() method. Permissions given to all subfolder objects.' }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  centralGovStack,
   'CentralGovernanceStack/CentralGovernance/RegisterDataProduct/Resource',
-  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the CentralGovernance construct.' }],
+  [{ id: 'AwsSolutions-SF2', reason: 'X-ray not required for the CentralGovernance workflow' }],
 );
 
 test('No unsuppressed Warnings', () => {

@@ -25,26 +25,25 @@ new DataDomain(dataDomainStack, 'myDataDomain', {
 
 Aspects.of(dataDomainStack).add(new AwsSolutionsChecks());
 
-// See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions_tasks.CallAwsService.html#iamresources 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/WorkflowRole/DefaultPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Step Function CallAWSService requires iamResources to allow it to make API calls. ' +
-      'For each API call required, there is a wildcard on resource as resources are not known before Step Function execution. ' +
-      'Granular access controls are added to the role that Step Function assumes during execution. ' +
-      'Additionally, wildcard is added for Log group by default. See: https://github.com/aws/aws-cdk/issues/7158'
-  }],
+  'dataDomain/myDataDomain/WorkflowRole',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/WorkflowRole/WorkflowRolePolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Needs all ram:Get, ram:List and lakeformation permissions. Needs wildcard resources because there are only known during workflow execution.'
-  }],
+  'dataDomain/myDataDomain/WorkflowRole',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/WorkflowRole',
+  [{ id: 'AwsSolutions-L1', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
@@ -67,16 +66,17 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/DataDomainCrawler/S3AccessPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'Permissions are scoped down with resource tags' }],
+  'dataDomain/myDataDomain/DataDomainCrawler',
+  [{ id: 'AwsSolutions-IAM5', reason: 'DataDomainCrawler construct not in the scope of this NAG test' }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/DataDomainCrawler/UpdateTableSchemas/Resource',
-  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the DataDomainCrawler construct.' }],
+  'dataDomain/myDataDomain/DataDomainCrawler',
+  [{ id: 'AwsSolutions-SF2', reason: 'DataDomainCrawler construct not in the scope of this NAG test' }],
+  true,
 );
-
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
@@ -86,8 +86,9 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/DataDomainWorkflow/CrossAccStateMachine/Resource',
-  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the DataDomain construct.' }],
+  'dataDomain/myDataDomain/DataDomainWorkflow',
+  [{ id: 'AwsSolutions-SF2', reason: 'DataDomainWorflow construct not in the scope of this NAG test' }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(

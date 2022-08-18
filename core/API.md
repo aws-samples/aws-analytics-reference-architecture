@@ -1491,12 +1491,16 @@ This CDK Construct creates a Data Product registration workflow and resources fo
 
 It uses AWS Step Functions state machine to orchestrate the workflow:
 * creates tables in AWS Glue Data Catalog
-* grants permissions to LF Admin role
 * shares tables to Data Product owner account (Producer)
 
 This construct also creates an Amazon EventBridge Event Bus to enable communication with Data Domain accounts (Producer/Consumer).
 
 This construct requires to use the default [CDK qualifier](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) generated with the standard CDK bootstrap stack.
+It ensures the right CDK execution role is used and granted Lake Formation administrator permissions so CDK can create Glue databases when registring a DataDomain.
+
+To register a DataDomain, the following information are required:
+* The account Id of the DataDomain
+* The secret ARN for the domain configuration available as a CloudFormation output when creating a {@link DataDomain}
 
 Usage example:
 ```typescript
@@ -1507,12 +1511,9 @@ import { CentralGovernance } from 'aws-analytics-reference-architecture';
 const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
-
 const governance = new CentralGovernance(stack, 'myCentralGov');
 
-const domain = new DataDomain(...);
-
-governance.registerDataDomain('Domain1', domain);
+governance.registerDataDomain('Domain1', <DOMAIN_ACCOUNT_ID>, <DOMAIN_CONFIG_SECRET_ARN>);
 ```
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.CentralGovernance.Initializer"></a>
@@ -1571,10 +1572,24 @@ public registerDataDomain(id: string, domainId: string, domainSecretArn: string)
 
 Registers a new Data Domain account in Central Governance account.
 
-It includes creating a cross-account policy for Amazon EventBridge Event Bus to enable Data Domain to send events to Central Gov. account. 
-It creates a Glue Catalog Database to hold Data Products for this Data Domain.
-It also creates a Rule to forward events to target Data Domain account. 
 Each Data Domain account {@link DataDomain} has to be registered in Central Gov. account before it can participate in a mesh.
+
+It creates:
+* A cross-account policy for Amazon EventBridge Event Bus to enable Data Domain to send events to Central Gov. account
+* A Lake Formation data access role scoped down to the data domain products bucket
+* A Glue Catalog Database to hold Data Products for this Data Domain
+* A Rule to forward events to target Data Domain account.
+
+Object references are passed from the DataDomain account to the CentralGovernance account via a AWS Secret Manager secret and cross account access.
+It includes the following JSON object:
+```json
+{
+   BucketName: 'clean-<ACCOUNT_ID>-<REGION>',
+   Prefix: 'data-products',
+   KmsKeyId: '<KMS_ID>,
+   EventBusName: 'data-domain-bus'
+}
+```
 
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain.parameter.id"></a>
 
@@ -1690,6 +1705,7 @@ This CDK Construct creates all required resources for data mesh in Data Domain a
 It creates the following:
 * A data lake with multiple layers (Raw, Cleaned, Transformed) using {@link DataLakeStorage} construct
 * An mazon EventBridge Event Bus and Rules to enable Central Governance account to send events to Data Domain account
+* An AWS Secret Manager secret encrypted via AWS KMS and used to share references with the central governance account
 * A Data Domain Workflow {@link DataDomainWorkflow} responsible for creating resources in the data domain via a Step Functions state machine
 * An optional Crawler workflow {@link DataDomainCrawler} responsible for updating the data product schema after registration via a Step Functions state machine
 
@@ -1702,15 +1718,9 @@ import { DataDomain } from 'aws-analytics-reference-architecture';
 const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
-// Optional role
-const lfAdminRole = new Role(stack, 'myLFAdminRole', {
-  assumedBy: ...
-});
-
 new DataDomain(stack, 'myDataDomain', {
-  lfAdminRole: lfAdminRole,
   centralAccountId: '1234567891011',
-  crawlerWorkflow: false,
+  crawlerWorkflow: true,
 });
 ```
 
@@ -1726,7 +1736,7 @@ new DataDomain(scope: Construct, id: string, props: DataDomainPros)
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
-| <code><a href="#aws-analytics-reference-architecture.DataDomain.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataDomainPros">DataDomainPros</a></code> | the DataDomainPros properties. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DataDomainPros">DataDomainPros</a></code> | the DataDomainProps properties. |
 
 ---
 
@@ -1750,7 +1760,7 @@ the ID of the CDK Construct.
 
 - *Type:* <a href="#aws-analytics-reference-architecture.DataDomainPros">DataDomainPros</a>
 
-the DataDomainPros properties.
+the DataDomainProps properties.
 
 ---
 
@@ -3935,11 +3945,17 @@ import { LakeformationS3Location } from 'aws-analytics-reference-architecture';
 const exampleApp = new cdk.App();
 const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
 
-const myBucket = new Bucket(stack, 'MyBucket')
+const myKey = new Key(stack, 'MyKey')
+const myBucket = new Bucket(stack, 'MyBucket', {
+   encryptionKey: myKey,
+})
 
-new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
-   bucketName: myBucket,
-   objectKey: 'my-prefix',
+new LakeFormationS3Location(stack, 'MyLakeformationS3Location', {
+   s3Location: {
+     bucketName: myBucket.bucketName,
+     objectKey: 'my-prefix',
+   },
+   kmsKeyId: myBucket.encryptionKey.keyId,
 });
 ```
 
