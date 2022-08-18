@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 // import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
-import { DefaultStackSynthesizer, RemovalPolicy, Fn } from 'aws-cdk-lib';;
+import { Aws, DefaultStackSynthesizer, RemovalPolicy, Fn } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
 import { IRole, Policy, PolicyStatement, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
@@ -213,7 +213,6 @@ export class CentralGovernance extends Construct {
    *   BucketName: 'clean-<ACCOUNT_ID>-<REGION>',
    *   Prefix: 'data-products',
    *   KmsKeyId: '<KMS_ID>,
-   *   EventBusName: 'data-domain-bus'
    * }
    * ```
    * 
@@ -230,7 +229,8 @@ export class CentralGovernance extends Construct {
     const domainBucket = domainSecret.secretValueFromJson('BucketName').unsafeUnwrap();
     const domainPrefix = domainSecret.secretValueFromJson('Prefix').unsafeUnwrap();
     const domainKey = domainSecret.secretValueFromJson('KmsKeyId').unsafeUnwrap();
-    const domainBus = domainSecret.secretValueFromJson('EventBusName').unsafeUnwrap();
+    // Construct domain event bus ARN
+    const dataDomainBusArn = `arn:aws:events:${Aws.REGION}:${domainId}:event-bus/data-mesh-bus`;
 
     // register the S3 location in Lake Formation and create data access role
     new LakeFormationS3Location(this, `${id}LFLocation`, {
@@ -267,10 +267,10 @@ export class CentralGovernance extends Construct {
     });
 
     rule.addTarget(new targets.EventBus(
-      EventBus.fromEventBusName(
+      EventBus.fromEventBusArn(
         this,
-        `${id}DomainEventBus`,
-        domainBus,
+        '${id}DomainEventBus',
+        dataDomainBusArn
       )),
     );
     rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
