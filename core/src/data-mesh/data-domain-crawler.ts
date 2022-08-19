@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
@@ -9,6 +9,7 @@ import { Choice, Condition, JsonPath, Map, StateMachine, Wait, WaitTime, LogLeve
 import { CallAwsService } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
+import { CentralGovernance } from './central-governance';
 
 /**
  * Properties for the DataDomainCrawler Construct
@@ -78,23 +79,38 @@ export class DataDomainCrawler extends Construct {
     // Grant Workflow role to pass crawlerRole
     this.crawlerRole.grantPassRole(props.workflowRole);
 
-    const s3Statements = [ new PolicyStatement({
-      actions: [
-        "s3:GetObject*",
-        "s3:GetBucket*",
-        "s3:List*",
-      ],
-      resources: [
-        props.dataProductsBucket.bucketArn,
-        `${props.dataProductsBucket.bucketArn}/${props.dataProductsPrefix}/*`
-      ],
-      effect: Effect.ALLOW,
-    })];
-
+    const baseStatements = [
+      new PolicyStatement({
+        actions: [
+          "s3:GetObject*",
+          "s3:GetBucket*",
+          "s3:List*",
+        ],
+        resources: [
+          props.dataProductsBucket.bucketArn,
+          `${props.dataProductsBucket.bucketArn}/${props.dataProductsPrefix}/*`
+        ],
+        effect: Effect.ALLOW,
+      }),
+      new PolicyStatement({
+        actions: ["glue:*"],
+        resources: ["*"],
+        effect: Effect.ALLOW,
+      }),
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        resources: ["arn:aws:logs:*:*:/aws-glue/*"],
+        effect: Effect.ALLOW,
+      }),
+    ];
     var statements: PolicyStatement[];
 
     if (props.dataProductsBucket.encryptionKey) {
-      statements = s3Statements.concat([
+      statements = baseStatements.concat([
         new PolicyStatement({
           actions: [
             'kms:Decrypt*',
@@ -104,7 +120,7 @@ export class DataDomainCrawler extends Construct {
           effect: Effect.ALLOW,
         })
       ]);
-    } else { statements = s3Statements ; }
+    } else { statements = baseStatements ; }
 
     new ManagedPolicy(this, 'S3AccessPolicy', {
       statements: statements,
@@ -145,9 +161,9 @@ export class DataDomainCrawler extends Construct {
             },
             'Resource': {
               'Table': {
-                'DatabaseName': "States.Format('{}_{}', $.centralAccountId, $.databaseName)",
-                'Name': '$.tableName',
-                'CatalogId': '$.centralAccountId'
+                'DatabaseName': `${CentralGovernance.DOMAIN_DATABASE_PREFIX}${Aws.ACCOUNT_ID}`,
+                'Name.$': '$.tableName',
+                'CatalogId.$': '$.centralAccountId'
               }
             }
           }
@@ -163,7 +179,7 @@ export class DataDomainCrawler extends Construct {
         'tableName.$': "$$.Map.Item.Value",
         'rlName.$': "States.Format('rl-{}', $$.Map.Item.Value)",
         'databaseName.$': '$.detail.database_name',
-        'centralAccountId.$': '$.account'
+        'centralAccountId.$': '$.detail.central_account_id'
       },
       resultPath: JsonPath.DISCARD
     });

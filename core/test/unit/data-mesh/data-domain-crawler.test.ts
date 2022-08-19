@@ -211,6 +211,20 @@ describe('DataDomainCrawlerTests', () => {
               ]
             },
             {
+              "Action": "glue:*",
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Effect": "Allow",
+              "Resource": "arn:aws:logs:*:*:/aws-glue/*"
+            },
+            {
               "Action": [
                 "kms:Decrypt*",
                 "kms:Describe*"

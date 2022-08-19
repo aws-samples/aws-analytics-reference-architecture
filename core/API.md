@@ -1696,6 +1696,23 @@ public readonly workflowRole: IRole;
 
 ---
 
+#### Constants <a name="Constants" id="Constants"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.DOMAIN_DATABASE_PREFIX">DOMAIN_DATABASE_PREFIX</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `DOMAIN_DATABASE_PREFIX`<sup>Required</sup> <a name="DOMAIN_DATABASE_PREFIX" id="aws-analytics-reference-architecture.CentralGovernance.property.DOMAIN_DATABASE_PREFIX"></a>
+
+```typescript
+public readonly DOMAIN_DATABASE_PREFIX: string;
+```
+
+- *Type:* string
+
+---
 
 ### DataDomain <a name="DataDomain" id="aws-analytics-reference-architecture.DataDomain"></a>
 

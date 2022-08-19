@@ -132,7 +132,7 @@ export class LakeFormationS3Location extends Construct {
       );
     }
 
-    new lakeformation.CfnResource(this, 'MyCfnResource', {
+    new lakeformation.CfnResource(this, 'RegisterLocation', {
       resourceArn: Arn.format({
         account: '',
         region: '',
