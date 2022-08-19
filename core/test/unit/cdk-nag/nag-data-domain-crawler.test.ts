@@ -68,7 +68,7 @@ dataDomainCrawlerStack,
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainCrawlerStack,
     'DataDomainCrawlerStack/DataDomainCrawler/S3AccessPolicy/Resource',
-    [{ id: 'AwsSolutions-IAM5', reason: 'Crawler needs GetObject*, List* and GetBucket* on the data product S3 path and all objects under it' }],
+    [{ id: 'AwsSolutions-IAM5', reason: 'Crawler needs GetObject*, List* and GetBucket* and Glue:*' }],
     true,
   );
 

@@ -242,5 +242,4 @@ describe('DataDomainCrawlerTests', () => {
       })
     )
   });
-
 }); 
