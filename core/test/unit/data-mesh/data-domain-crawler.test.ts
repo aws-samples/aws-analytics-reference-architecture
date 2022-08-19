@@ -11,6 +11,7 @@
 import { Stack } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { Role, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Key } from 'aws-cdk-lib/aws-kms';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { DataDomainCrawler } from '../../../src/data-mesh/data-domain-crawler';
 
@@ -24,7 +25,11 @@ describe('DataDomainCrawlerTests', () => {
     ),
   });
 
-  const bucket = new Bucket(dataDomainCrawlerStack, 'Bucket');
+  const key = new Key(dataDomainCrawlerStack, 'Key');
+
+  const bucket = new Bucket(dataDomainCrawlerStack, 'Bucket', {
+    encryptionKey: key,
+  });
 
   new DataDomainCrawler(dataDomainCrawlerStack, 'DataDomainCrawlerStack', {
     workflowRole: workflowRole,
@@ -33,7 +38,7 @@ describe('DataDomainCrawlerTests', () => {
   });
   
   const template = Template.fromStack(dataDomainCrawlerStack);
-  // console.log(JSON.stringify(template.toJSON(),null, 2));
+  console.log(JSON.stringify(template.toJSON(),null, 2));
 
   test('should provision the proper workflow default policy', () => {
     template.hasResourceProperties('AWS::IAM::Policy', 
@@ -204,6 +209,19 @@ describe('DataDomainCrawlerTests', () => {
                   ]
                 }
               ]
+            },
+            {
+              "Action": [
+                "kms:Decrypt*",
+                "kms:Describe*"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  Match.anyValue(),
+                  "Arn"
+                ]
+              }
             }
           ],
         },

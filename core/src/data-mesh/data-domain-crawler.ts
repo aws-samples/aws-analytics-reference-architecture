@@ -78,7 +78,7 @@ export class DataDomainCrawler extends Construct {
     // Grant Workflow role to pass crawlerRole
     this.crawlerRole.grantPassRole(props.workflowRole);
 
-    const statements = [ new PolicyStatement({
+    const s3Statements = [ new PolicyStatement({
       actions: [
         "s3:GetObject*",
         "s3:GetBucket*",
@@ -91,8 +91,10 @@ export class DataDomainCrawler extends Construct {
       effect: Effect.ALLOW,
     })];
 
+    var statements: PolicyStatement[];
+
     if (props.dataProductsBucket.encryptionKey) {
-      statements.concat([
+      statements = s3Statements.concat([
         new PolicyStatement({
           actions: [
             'kms:Decrypt*',
@@ -102,7 +104,7 @@ export class DataDomainCrawler extends Construct {
           effect: Effect.ALLOW,
         })
       ]);
-    }
+    } else { statements = s3Statements ; }
 
     new ManagedPolicy(this, 'S3AccessPolicy', {
       statements: statements,
