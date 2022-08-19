@@ -240,7 +240,7 @@ export class DataDomainWorkflow extends Construct {
     }).next(grantCreateTable).next(ramMapTask);
 
     // Create Log group for this state machine
-    const logGroup = new LogGroup(this, 'StateMachineLogGroup', {
+    const logGroup = new LogGroup(this, 'Workflow', {
       retention: RetentionDays.ONE_WEEK,
     });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);

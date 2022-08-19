@@ -107,10 +107,11 @@ export class DataDomainCrawler extends Construct {
         effect: Effect.ALLOW,
       }),
     ];
-    var statements: PolicyStatement[];
 
+    var statements: PolicyStatement[];
     if (props.dataProductsBucket.encryptionKey) {
       statements = baseStatements.concat([
+
         new PolicyStatement({
           actions: [
             'kms:Decrypt*',
@@ -120,7 +121,7 @@ export class DataDomainCrawler extends Construct {
           effect: Effect.ALLOW,
         })
       ]);
-    } else { statements = baseStatements ; }
+    } else { statements = baseStatements; }
 
     new ManagedPolicy(this, 'S3AccessPolicy', {
       statements: statements,
@@ -242,6 +243,7 @@ export class DataDomainCrawler extends Construct {
       },
       resultPath: JsonPath.DISCARD
     });
+
     deleteCrawler.endStates;
 
     checkCrawlerStatusChoice
@@ -250,7 +252,9 @@ export class DataDomainCrawler extends Construct {
 
     createCrawlerForTable.next(startCrawler).next(waitForCrawler).next(getCrawler).next(checkCrawlerStatusChoice);
     grantOnTarget.next(createCrawlerForTable)
-    grantOnResourceLink.next(grantOnTarget)
+    grantOnResourceLink.next(new Wait(this, 'WaitGrantCall', {
+      time: WaitTime.duration(Duration.seconds(15))
+    })).next(grantOnTarget);
     traverseTableArray.iterator(grantOnResourceLink).endStates;
 
     const initState = new Wait(this, 'WaitForMetadata', {
@@ -260,7 +264,7 @@ export class DataDomainCrawler extends Construct {
     initState.next(traverseTableArray);
 
     // Create Log group for this state machine
-    const logGroup = new LogGroup(this, 'CrawlerWorkflowStateMachine', {
+    const logGroup = new LogGroup(this, 'Crawler', {
       retention: RetentionDays.ONE_WEEK,
     });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);

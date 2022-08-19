@@ -142,7 +142,7 @@ export class DataDomain extends Construct {
       });
 
       // add a rule to trigger the workflow from the event bus
-      const crawlerRule = new Rule(this, 'TriggerUpdateTableSchemasRule', {
+      const crawlerRule = new Rule(this, 'TriggerCrawler', {
         eventBus: eventBus,
         targets: [
           workflow.stateMachine,

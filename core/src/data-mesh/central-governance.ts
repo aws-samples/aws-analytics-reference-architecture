@@ -138,6 +138,25 @@ export class CentralGovernance extends Construct {
       resultPath: JsonPath.DISCARD
     });
 
+    // Update database metadata for the UI -> TODO move this to registerDataDomain
+    const updateDatabaseOwnerMetadata = new CallAwsService(this, 'updateDatabaseOwnerMetadata', {
+      service: 'glue',
+      action: 'updateDatabase',
+      iamResources: ['*'],
+      parameters: {
+        'Name.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
+        'DatabaseInput': {
+          'Name.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
+          'Parameters': {
+            'data_owner.$': '$.producer_acc_id',
+            'data_owner_name.$': "$.product_owner_name",
+            'pii_flag.$': '$.product_pii_flag'
+          }
+        }
+      },
+      resultPath: JsonPath.DISCARD
+    });
+
     // Trigger workflow in Data Domain account via Event Bridge
     const triggerProducer = new EventBridgePutEvents(this, 'triggerCreateResourceLinks', {
       entries: [{
@@ -178,7 +197,7 @@ export class CentralGovernance extends Construct {
         errors: ['Glue.AlreadyExistsException'],
         resultPath: '$.CreateTableException',
       }).next(grantTablePermissions)
-    ).next(triggerProducer);
+    ).next(updateDatabaseOwnerMetadata).next(triggerProducer);
 
     // Create Log group for this state machine
     const logGroup = new LogGroup(this, 'centralGov-stateMachine', {
