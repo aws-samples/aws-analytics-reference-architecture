@@ -266,6 +266,7 @@ export class DataDomainCrawler extends Construct {
     // Create Log group for this state machine
     const logGroup = new LogGroup(this, 'Crawler', {
       retention: RetentionDays.ONE_WEEK,
+      logGroupName: '/aws/vendedlogs/data-mesh/crawler',
     });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 

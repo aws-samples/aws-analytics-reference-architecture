@@ -25,7 +25,7 @@ new DataDomain(dataDomainStack, 'Domain', {
   centralAccountId: '1234567891011',
 })
 
-governance.registerDataDomain('Domain1', '11111111111111', 'arn:aws:secretsmanager:us-east-1:668876353122:secret:domain-config' );
+governance.registerDataDomain('Domain1', '11111111111111', 'Domain1Name', 'arn:aws:secretsmanager:us-east-1:668876353122:secret:domain-config');
 
 Aspects.of(centralGovStack).add(new AwsSolutionsChecks());
 

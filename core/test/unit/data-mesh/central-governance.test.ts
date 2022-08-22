@@ -12,14 +12,14 @@ import { Stack } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { CentralGovernance } from '../../../src';
 
-describe('DataDomainTests', () => {
+describe('CentralGovTests', () => {
 
   const centralGovernanceStack = new Stack();
 
   new CentralGovernance(centralGovernanceStack, 'CentralGovernance');
 
   const template = Template.fromStack(centralGovernanceStack);
-  console.log(JSON.stringify(template.toJSON(),null, 2));
+  console.log(JSON.stringify(template.toJSON(), null, 2));
 
   test('should provision the proper event bus', () => {
     template.hasResource('AWS::Events::EventBus',

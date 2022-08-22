@@ -1567,7 +1567,7 @@ Returns a string representation of this construct.
 ##### `registerDataDomain` <a name="registerDataDomain" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain"></a>
 
 ```typescript
-public registerDataDomain(id: string, domainId: string, domainSecretArn: string): void
+public registerDataDomain(id: string, domainId: string, domainName: string, domainSecretArn: string): void
 ```
 
 Registers a new Data Domain account in Central Governance account.
@@ -1603,6 +1603,14 @@ the ID of the CDK Construct.
 - *Type:* string
 
 the account ID of the DataDomain to register.
+
+---
+
+###### `domainName`<sup>Required</sup> <a name="domainName" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain.parameter.domainName"></a>
+
+- *Type:* string
+
+the name of the DataDomain, i.e. Line of Business name.
 
 ---
 

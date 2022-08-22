@@ -21,12 +21,4 @@ export class Utils {
   public static randomize(name: string) {
     return `${name}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
   }
-
-  /**
-   * Escape reserved characters in intrinsic functions for Amazon State Language
-   * @param {string} toEscape the string for which to escape reserved characters
-   */
-  public static intrinsicReplacer(toEscape: string) {
-    return toEscape.replace(/[{]/g, '\\{').replace(/[}]/g, '\\}').replace(/<interpolated_value>/g, '{}');
-  }
 }

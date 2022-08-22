@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 // import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
-import { Aws, DefaultStackSynthesizer, RemovalPolicy, Fn } from 'aws-cdk-lib';;
+import { Aws, DefaultStackSynthesizer, Fn, RemovalPolicy, aws_glue as glue } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
 import { IRole, Policy, PolicyStatement, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
@@ -15,7 +15,6 @@ import * as lakeformation from 'aws-cdk-lib/aws-lakeformation';
 import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
 import { LakeFormationS3Location } from '../lake-formation';
 import { LakeFormationAdmin } from '../lake-formation';
-import { Database } from '@aws-cdk/aws-glue-alpha';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { DataDomain } from './data-domain';
 
@@ -138,25 +137,6 @@ export class CentralGovernance extends Construct {
       resultPath: JsonPath.DISCARD
     });
 
-    // Update database metadata for the UI -> TODO move this to registerDataDomain
-    const updateDatabaseOwnerMetadata = new CallAwsService(this, 'updateDatabaseOwnerMetadata', {
-      service: 'glue',
-      action: 'updateDatabase',
-      iamResources: ['*'],
-      parameters: {
-        'Name.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
-        'DatabaseInput': {
-          'Name.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
-          'Parameters': {
-            'data_owner.$': '$.producer_acc_id',
-            'data_owner_name.$': "$.product_owner_name",
-            'pii_flag.$': '$.product_pii_flag'
-          }
-        }
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
     // Trigger workflow in Data Domain account via Event Bridge
     const triggerProducer = new EventBridgePutEvents(this, 'triggerCreateResourceLinks', {
       entries: [{
@@ -197,11 +177,12 @@ export class CentralGovernance extends Construct {
         errors: ['Glue.AlreadyExistsException'],
         resultPath: '$.CreateTableException',
       }).next(grantTablePermissions)
-    ).next(updateDatabaseOwnerMetadata).next(triggerProducer);
+    ).next(triggerProducer);
 
     // Create Log group for this state machine
     const logGroup = new LogGroup(this, 'centralGov-stateMachine', {
       retention: RetentionDays.ONE_WEEK,
+      logGroupName: '/aws/vendedlogs/data-mesh/workflow',
     });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
@@ -238,10 +219,11 @@ export class CentralGovernance extends Construct {
    * 
    * @param {string} id the ID of the CDK Construct
    * @param {string} domainId the account ID of the DataDomain to register
+   * @param {string} domainName the name of the DataDomain, i.e. Line of Business name
    * @param {string} domainSecretArn the full ARN of the secret used by producers to share references with the central governance
    * @access public
    */
-  public registerDataDomain(id: string, domainId: string, domainSecretArn: string) {
+  public registerDataDomain(id: string, domainId: string, domainName: string, domainSecretArn: string) {
 
     // Import the data domain secret from it's full ARN
     const domainSecret = Secret.fromSecretCompleteArn(this, 'DomainSecret', domainSecretArn);
@@ -261,10 +243,19 @@ export class CentralGovernance extends Construct {
       kmsKeyId: domainKey,
     });
 
-    // Create the database in Glue with datadomain prefix+bucket
-    new Database(this, `${id}DataDomainDatabase`, {
-      databaseName: CentralGovernance.DOMAIN_DATABASE_PREFIX + domainId,
-      locationUri: `s3://${domainBucket}/${domainPrefix}`,
+    // Create the database in Glue with datadomain prefix+bucket, and metadata parameters
+    new glue.CfnDatabase(this, `${id}DataDomainDatabase`, {
+      catalogId: Aws.ACCOUNT_ID,
+      databaseInput: {
+        description: `Database for data products in ${domainName} data domain. Account id: ${domainId}`,
+        name: CentralGovernance.DOMAIN_DATABASE_PREFIX + domainId,
+        locationUri: `s3://${domainBucket}/${domainPrefix}`,
+        parameters: {
+          'data_owner': domainId,
+          'data_owner_name': domainName,
+          'pii_flag': false,
+        }
+      }
     }).node.addDependency(this.node.findChild('CdkLakeFormationAdmin'));
 
     // Grant workflow role permissions to domain database

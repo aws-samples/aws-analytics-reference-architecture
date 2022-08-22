@@ -242,6 +242,7 @@ export class DataDomainWorkflow extends Construct {
     // Create Log group for this state machine
     const logGroup = new LogGroup(this, 'Workflow', {
       retention: RetentionDays.ONE_WEEK,
+      logGroupName: '/aws/vendedlogs/data-mesh/workflow',
     });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
