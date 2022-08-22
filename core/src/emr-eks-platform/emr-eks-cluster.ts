@@ -378,7 +378,7 @@ export class EmrEksCluster extends TrackedConstruct {
     // store the OIDC provider for creating execution roles later
     this.eksOidcProvider = new FederatedPrincipal(
       this.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
-      [],
+      {...[]},
       'sts:AssumeRoleWithWebIdentity',
     );
 

@@ -8,58 +8,69 @@
  */
 
 import { Annotations, Match } from 'aws-cdk-lib/assertions';
-import { Role, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { EventBus } from 'aws-cdk-lib/aws-events';
-import { App, Stack, Aspects, RemovalPolicy, Aws } from 'aws-cdk-lib';
+import { App, Stack, Aspects } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { DataDomainCrawler } from '../../../src/data-mesh'
+import { DataDomainCrawler } from '../../../src/data-mesh/data-domain-crawler';
+import { Role, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 
 
 const mockApp = new App();
 
-const dataDomainCrawlerStack = new Stack(mockApp, 'dataDomainCrawler');
+const dataDomainCrawlerStack = new Stack(mockApp, 'DataDomainCrawlerStack');
+  
+  const workflowRole = new Role(dataDomainCrawlerStack, 'CrawlerWorkflowRole', {
+    assumedBy: new CompositePrincipal(
+      new ServicePrincipal('states.amazonaws.com'),
+    ),
+  });
 
-const workflowRole = new Role(dataDomainCrawlerStack, 'myRole', {
-  assumedBy: new CompositePrincipal(
-    new ServicePrincipal('glue.amazonaws.com'),
-    new ServicePrincipal('lakeformation.amazonaws.com'),
-    new ServicePrincipal('states.amazonaws.com')
-  ),
-});
-workflowRole.applyRemovalPolicy(RemovalPolicy.DESTROY)
+  const bucket = new Bucket(dataDomainCrawlerStack, 'Bucket');
 
-const eventBus = new EventBus(dataDomainCrawlerStack, 'dataDomainEventBus', {
-  eventBusName: `${Aws.ACCOUNT_ID}_dataDomainEventBus`,
-});
-eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
-
-new DataDomainCrawler(dataDomainCrawlerStack, 'myDataDomainCrawler', {
-  workflowRole,
-  eventBus,
-  dataDomainWorkflowArn: "arn-test"
-});
+  new DataDomainCrawler(dataDomainCrawlerStack, 'DataDomainCrawler', {
+    workflowRole: workflowRole,
+    dataProductsBucket: bucket,
+    dataProductsPrefix: 'test',
+  });
 
 Aspects.of(dataDomainCrawlerStack).add(new AwsSolutionsChecks());
 
-// See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions_tasks.CallAwsService.html#iamresources 
 NagSuppressions.addResourceSuppressionsByPath(
-  dataDomainCrawlerStack,
-  'dataDomainCrawler/myRole/DefaultPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Step Function CallAWSService requires iamResources to allow it to make API calls. ' +
-      'For each API call required, there is a wildcard on resource as resources are not known before Step Function execution. ' +
-      'Granular access controls are added to the role that Step Function assumes during execution. ' +
-      'Additionally, wildcard is added for Log group by default. See: https://github.com/aws/aws-cdk/issues/7158'
-  }],
+dataDomainCrawlerStack,
+  'DataDomainCrawlerStack/CrawlerWorkflowRole',
+  [
+    { id: 'AwsSolutions-IAM5', reason: 'Not the purpose of this NAG to test the Crawler Workflow Role' }
+  ],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainCrawlerStack,
-  'dataDomainCrawler/myDataDomainCrawler/UpdateTableSchemas/Resource',
-  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the DataDomainCrawler construct.' }],
+    'DataDomainCrawlerStack/Bucket/Resource',
+    [
+      { id: 'AwsSolutions-S10', reason: 'Not the purpose of this NAG to test the IAM Role' },
+      { id: 'AwsSolutions-S2', reason: 'Not the purpose of this NAG to test the IAM Role' },
+      { id: 'AwsSolutions-S1', reason: 'Not the purpose of this NAG to test the IAM Role' },
+      { id: 'AwsSolutions-S3', reason: 'Not the purpose of this NAG to test the IAM Role' },
+      { id: 'AwsSolutions-IAM5', reason: 'Not the purpose of this NAG to test the IAM Role' }
+    ],
+    true,
+  );
+
+NagSuppressions.addResourceSuppressionsByPath(
+dataDomainCrawlerStack,
+  'DataDomainCrawlerStack/DataDomainCrawler/UpdateTableSchemas/Resource',
+  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function doesn\'t need X-ray' }],
+  true,
 );
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainCrawlerStack,
+    'DataDomainCrawlerStack/DataDomainCrawler/S3AccessPolicy/Resource',
+    [{ id: 'AwsSolutions-IAM5', reason: 'Crawler needs GetObject*, List* and GetBucket* and Glue:*' }],
+    true,
+  );
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(dataDomainCrawlerStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));

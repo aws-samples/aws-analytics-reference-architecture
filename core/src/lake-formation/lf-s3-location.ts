@@ -1,10 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+import { Arn, Aws, Stack } from 'aws-cdk-lib';
 import { PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { IKey } from 'aws-cdk-lib/aws-kms';
 import * as lakeformation from 'aws-cdk-lib/aws-lakeformation';
-import { IBucket } from 'aws-cdk-lib/aws-s3';
+import { Location } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
 /**
@@ -12,19 +12,19 @@ import { Construct } from 'constructs';
 */
 export interface LakeFormationS3LocationProps {
   /**
-   * S3 Bucket to be registered with Lakeformation
+   * S3 location to be registered with Lakeformation
    */
-  readonly s3Bucket: IBucket;
-  /**
-   * S3 object key to be registered with Lakeformation
-   * @default - The entire bucket is registered
-   */
-  readonly s3ObjectKey?: string;
+  readonly s3Location: Location;
   /**
    * KMS key used to encrypt the S3 Location
    * @default - No encryption is used
    */
-  readonly kmsKey?: IKey;
+  readonly kmsKeyId: string;
+  /**
+   * Account ID owning the S3 location
+   * @default - Current account is used
+   */
+  readonly accountId?: string;
 }
 
 /**
@@ -49,15 +49,21 @@ export interface LakeFormationS3LocationProps {
  * const exampleApp = new cdk.App();
  * const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
  *
- * const myBucket = new Bucket(stack, 'MyBucket')
+ * const myKey = new Key(stack, 'MyKey')
+ * const myBucket = new Bucket(stack, 'MyBucket', {
+ *   encryptionKey: myKey,
+ * })
  *
- * new LakeformationS3Location(stack, 'MyLakeformationS3Location', {
- *   bucketName: myBucket,
- *   objectKey: 'my-prefix',
+ * new LakeFormationS3Location(stack, 'MyLakeformationS3Location', {
+ *   s3Location: {
+ *     bucketName: myBucket.bucketName,
+ *     objectKey: 'my-prefix',
+ *   },
+ *   kmsKeyId: myBucket.encryptionKey.keyId,
  * });
  * ```
  */
-export class LakeformationS3Location extends Construct {
+export class LakeFormationS3Location extends Construct {
 
   public readonly dataAccessRole: Role;
 
@@ -69,13 +75,23 @@ export class LakeformationS3Location extends Construct {
       assumedBy: new ServicePrincipal('lakeformation.amazonaws.com'),
     });
 
-    const objectKey = props.s3ObjectKey ? props.s3ObjectKey + '/*' : '*';
-    //add policy to access S3 for Read and Write
+    // add policy to access S3 for Read and Write
     this.dataAccessRole.addToPolicy(
       new PolicyStatement({
         resources: [
-          props.s3Bucket.arnForObjects(objectKey),
-          props.s3Bucket.bucketArn,
+          Arn.format({
+            account: '',
+            region: '',
+            resource: props.s3Location.bucketName,
+            service: 's3',
+            resourceName: props.s3Location.objectKey ? props.s3Location.objectKey + '/*' : '*',
+          }, Stack.of(this)),
+          Arn.format({
+            account: '',
+            region: '',
+            resource: props.s3Location.bucketName,
+            service: 's3',
+          }, Stack.of(this)),
         ],
         actions: [
           "s3:GetObject*",
@@ -93,11 +109,17 @@ export class LakeformationS3Location extends Construct {
     );
 
     // add policy to access KMS key used for the bucket encryption
-    if (props.kmsKey) {
+    if (props.kmsKeyId) {
       this.dataAccessRole.addToPolicy(
         new PolicyStatement({
           resources: [
-            props.kmsKey?.keyArn,
+            Arn.format({
+              region: Aws.REGION,
+              resource: 'key',
+              service: 'kms',
+              account: props.accountId ? props.accountId : Aws.ACCOUNT_ID,
+              resourceName: props.kmsKeyId,
+            }, Stack.of(this))
           ],
           actions: [
             'kms:Encrypt*',
@@ -109,10 +131,15 @@ export class LakeformationS3Location extends Construct {
         }),
       );
     }
-    //props.s3Bucket.grantReadWrite(this.dataAccessRole, objectKey);
 
-    new lakeformation.CfnResource(this, 'MyCfnResource', {
-      resourceArn: props.s3Bucket.arnForObjects(objectKey),
+    new lakeformation.CfnResource(this, 'RegisterLocation', {
+      resourceArn: Arn.format({
+        account: '',
+        region: '',
+        resource: props.s3Location.bucketName,
+        service: 's3',
+        resourceName: props.s3Location.objectKey ? props.s3Location.objectKey + '/*' : '*',
+      }, Stack.of(this)),
       useServiceLinkedRole: false,
       roleArn: this.dataAccessRole.roleArn,
     });

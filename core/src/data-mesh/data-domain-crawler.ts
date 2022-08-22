@@ -1,33 +1,34 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { Rule, EventBus } from 'aws-cdk-lib/aws-events';
 import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
-import { IRole } from 'aws-cdk-lib/aws-iam';
+import { Effect, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Choice, Condition, JsonPath, Map, StateMachine, Wait, WaitTime, LogLevel } from 'aws-cdk-lib/aws-stepfunctions';
 import { CallAwsService } from 'aws-cdk-lib/aws-stepfunctions-tasks';
-import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { IBucket } from 'aws-cdk-lib/aws-s3';
+import { CentralGovernance } from './central-governance';
 
 /**
  * Properties for the DataDomainCrawler Construct
  */
 export interface DataDomainCrawlerProps {
   /**
-  * ARN of DataDomainWorkflow State Machine
-  */
-  readonly dataDomainWorkflowArn: string;
-
-  /**
-  * Event Bus in Data Domain account
-  */
-  readonly eventBus: EventBus;
-
-  /**
-  * LF Admin Role
-  */
+   * LF Admin Role
+   */
   readonly workflowRole: IRole;
+
+  /**
+   * Data Products S3 bucket
+   */
+  readonly dataProductsBucket: IBucket;
+
+  /**
+   * Data Products S3 bucket prefix
+   */
+  readonly dataProductsPrefix: string;
 }
 
 /**
@@ -49,14 +50,17 @@ export interface DataDomainCrawlerProps {
  * # See {@link DataDomain}
  * 
  * new DataDomainCrawler(this, 'DataDomainCrawler', {
- *  eventBus: eventBus,
  *  workflowRole: workflowRole,
- *  dataDomainWorkflowArn: dataDomainWorkflow.stateMachine.stateMachineArn,
+ *  dataProductsBucket: dataProductsBucket
  * });
  * ```
  * 
  */
 export class DataDomainCrawler extends Construct {
+
+  public readonly stateMachine: SfnStateMachine;
+  public readonly crawlerRole: IRole;
+
   /**
    * Construct a new instance of DataDomainCrawler.
    * @param {Construct} scope the Scope of the CDK Construct
@@ -68,12 +72,115 @@ export class DataDomainCrawler extends Construct {
   constructor(scope: Construct, id: string, props: DataDomainCrawlerProps) {
     super(scope, id);
 
+    this.crawlerRole = new Role(this, 'CrawlerRole', {
+      assumedBy: new ServicePrincipal('glue.amazonaws.com'),
+    })
+
+    // Grant Workflow role to pass crawlerRole
+    this.crawlerRole.grantPassRole(props.workflowRole);
+
+    const baseStatements = [
+      new PolicyStatement({
+        actions: [
+          "s3:GetObject*",
+          "s3:GetBucket*",
+          "s3:List*",
+        ],
+        resources: [
+          props.dataProductsBucket.bucketArn,
+          `${props.dataProductsBucket.bucketArn}/${props.dataProductsPrefix}/*`
+        ],
+        effect: Effect.ALLOW,
+      }),
+      new PolicyStatement({
+        actions: ["glue:*"],
+        resources: ["*"],
+        effect: Effect.ALLOW,
+      }),
+      new PolicyStatement({
+        actions: [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        resources: ["arn:aws:logs:*:*:/aws-glue/*"],
+        effect: Effect.ALLOW,
+      }),
+    ];
+
+    var statements: PolicyStatement[];
+    if (props.dataProductsBucket.encryptionKey) {
+      statements = baseStatements.concat([
+
+        new PolicyStatement({
+          actions: [
+            'kms:Decrypt*',
+            'kms:Describe*',
+          ],
+          resources: [props.dataProductsBucket.encryptionKey!.keyArn],
+          effect: Effect.ALLOW,
+        })
+      ]);
+    } else { statements = baseStatements; }
+
+    new ManagedPolicy(this, 'S3AccessPolicy', {
+      statements: statements,
+      roles: [this.crawlerRole],
+    });
+
+    const grantOnResourceLink = new CallAwsService(this, 'grantOnResourceLink', {
+      service: 'lakeformation',
+      action: 'grantPermissions',
+      iamResources: ['*'],
+      parameters: {
+        'Permissions': [
+          'ALL'
+        ],
+        'Principal': {
+          'DataLakePrincipalIdentifier': this.crawlerRole.roleArn
+        },
+        'Resource': {
+          'Table': {
+            'DatabaseName.$': '$.databaseName',
+            'Name.$': '$.rlName'
+          },
+        }
+      },
+      resultPath: JsonPath.DISCARD
+    });
+
+    const grantOnTarget = new CallAwsService(this, 'grantOnTarget', {
+      service: 'lakeformation',
+      action: 'batchGrantPermissions',
+      iamResources: ['*'],
+      parameters: {
+        'Entries': [
+          {
+            'Permissions': ['SELECT', 'INSERT', 'DROP', 'ALTER'],
+            'Principal': {
+              'DataLakePrincipalIdentifier': this.crawlerRole.roleArn
+            },
+            'Resource': {
+              'Table': {
+                'DatabaseName': `${CentralGovernance.DOMAIN_DATABASE_PREFIX}${Aws.ACCOUNT_ID}`,
+                'Name.$': '$.tableName',
+                'CatalogId.$': '$.centralAccountId'
+              }
+            }
+          }
+        ],
+      },
+      resultPath: JsonPath.DISCARD
+    });
+
     const traverseTableArray = new Map(this, 'TraverseTableArray', {
       itemsPath: '$.detail.table_names',
       maxConcurrency: 2,
       parameters: {
-        'tableName.$': "States.Format('rl-{}', $$.Map.Item.Value)",
-        'databaseName.$': '$.detail.database_name'
+        'tableName.$': "$$.Map.Item.Value",
+        'rlName.$': "States.Format('rl-{}', $$.Map.Item.Value)",
+        'databaseName.$': '$.detail.database_name',
+        'centralAccountId.$': '$.detail.central_account_id'
       },
       resultPath: JsonPath.DISCARD
     });
@@ -83,13 +190,13 @@ export class DataDomainCrawler extends Construct {
       action: 'createCrawler',
       iamResources: ['*'],
       parameters: {
-        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)",
-        'Role': props.workflowRole.roleArn,
+        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.rlName)",
+        'Role': this.crawlerRole.roleArn,
         'Targets': {
           'CatalogTargets': [
             {
               'DatabaseName.$': '$.databaseName',
-              'Tables.$': 'States.Array($.tableName)'
+              'Tables.$': 'States.Array($.rlName)'
             }
           ]
         },
@@ -106,7 +213,7 @@ export class DataDomainCrawler extends Construct {
       action: 'startCrawler',
       iamResources: ['*'],
       parameters: {
-        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
+        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.rlName)"
       },
       resultPath: JsonPath.DISCARD
     });
@@ -120,7 +227,7 @@ export class DataDomainCrawler extends Construct {
       action: 'getCrawler',
       iamResources: ['*'],
       parameters: {
-        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
+        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.rlName)"
       },
       resultPath: '$.crawlerInfo'
     });
@@ -132,22 +239,23 @@ export class DataDomainCrawler extends Construct {
       action: 'deleteCrawler',
       iamResources: ['*'],
       parameters: {
-        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
+        'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.rlName)"
       },
       resultPath: JsonPath.DISCARD
     });
+
     deleteCrawler.endStates;
 
     checkCrawlerStatusChoice
       .when(Condition.stringEquals("$.crawlerInfo.Crawler.State", "READY"), deleteCrawler)
       .otherwise(waitForCrawler);
 
-    getCrawler.next(checkCrawlerStatusChoice);
-    waitForCrawler.next(getCrawler);
-    startCrawler.next(waitForCrawler);
-    createCrawlerForTable.next(startCrawler);
-
-    traverseTableArray.iterator(createCrawlerForTable).endStates;
+    createCrawlerForTable.next(startCrawler).next(waitForCrawler).next(getCrawler).next(checkCrawlerStatusChoice);
+    grantOnTarget.next(createCrawlerForTable)
+    grantOnResourceLink.next(new Wait(this, 'WaitGrantCall', {
+      time: WaitTime.duration(Duration.seconds(15))
+    })).next(grantOnTarget);
+    traverseTableArray.iterator(grantOnResourceLink).endStates;
 
     const initState = new Wait(this, 'WaitForMetadata', {
       time: WaitTime.duration(Duration.seconds(15))
@@ -156,7 +264,10 @@ export class DataDomainCrawler extends Construct {
     initState.next(traverseTableArray);
 
     // Create Log group for this state machine
-    const logGroup = new LogGroup(this, 'centralGov-stateMachine');
+    const logGroup = new LogGroup(this, 'Crawler', {
+      retention: RetentionDays.ONE_WEEK,
+      logGroupName: '/aws/vendedlogs/data-mesh/crawler',
+    });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     const updateTableSchemasStateMachine = new StateMachine(this, 'UpdateTableSchemas', {
@@ -168,15 +279,6 @@ export class DataDomainCrawler extends Construct {
       },
     });
 
-    new Rule(this, 'TriggerUpdateTableSchemasRule', {
-      eventBus: props.eventBus,
-      targets: [
-        new SfnStateMachine(updateTableSchemasStateMachine)
-      ],
-      eventPattern: {
-        source: ['com.central.stepfunction'],
-        detailType: ['triggerCrawler'],
-      }
-    });
+    this.stateMachine = new SfnStateMachine(updateTableSchemasStateMachine);
   }
 }

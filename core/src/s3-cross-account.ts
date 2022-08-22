@@ -29,10 +29,12 @@ export interface S3CrossAccountProps {
 }
 
 /**
- * This CDK construct grants cross account permissions on an Amazon S3 location.
+ * This CDK construct grants cross account permissions on an Amazon S3 location. 
  * It uses a bucket policy and an Amazon KMS Key policy if the bucket is encrypted with KMS.
  * The cross account permission is granted to the entire account and not to a specific principal in this account.
  * It's the responsibility of the target account to grant permissions to the relevant principals.
+ * 
+ * Note that it uses a Bucket object and not an IBucket because CDK can only add policies to objects managed in the CDK stack.
  *
  * Usage example:
  * ```typescript
@@ -84,8 +86,11 @@ export class S3CrossAccount extends Construct {
     // // If the bucket is encrypted with a custom KMS key, attach a policy to the key to grant encrypt and decrypt
     // if (props.bucket.encryptionKey)  props.bucket.encryptionKey.grantEncryptDecrypt(targetAccount);
 
-    const objectKey = props.s3ObjectKey ? props.s3ObjectKey + '/*' : '*';
-    props.s3Bucket.grantReadWrite(targetAccount, objectKey);
+    if (props.s3ObjectKey === undefined)
+      props.s3Bucket.grantReadWrite(targetAccount);
+    else
+      props.s3Bucket.grantReadWrite(targetAccount, props.s3ObjectKey);
+      props.s3Bucket.grantReadWrite(targetAccount, props.s3ObjectKey + '/*');
 
     // Grant target account access to encryption configuration of an S3 bucket
     props.s3Bucket.addToResourcePolicy(

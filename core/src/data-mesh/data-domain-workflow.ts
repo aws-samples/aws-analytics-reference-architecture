@@ -6,7 +6,7 @@ import { Construct } from 'constructs';
 import { IRole } from 'aws-cdk-lib/aws-iam';
 import { IEventBus } from 'aws-cdk-lib/aws-events';
 import { CallAwsService, EventBridgePutEvents } from 'aws-cdk-lib/aws-stepfunctions-tasks';
-import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import {
   StateMachine,
   JsonPath,
@@ -168,6 +168,7 @@ export class DataDomainWorkflow extends Construct {
         detail: TaskInput.fromObject({
           'database_name': JsonPath.stringAt("$.database_name"),
           'table_names': JsonPath.stringAt("$.table_names"),
+          'central_account_id': JsonPath.stringAt("$.central_account_id"),
         }),
         detailType: 'triggerCrawler',
         eventBus: props.eventBus,
@@ -239,7 +240,10 @@ export class DataDomainWorkflow extends Construct {
     }).next(grantCreateTable).next(ramMapTask);
 
     // Create Log group for this state machine
-    const logGroup = new LogGroup(this, 'centralGov-stateMachine');
+    const logGroup = new LogGroup(this, 'Workflow', {
+      retention: RetentionDays.ONE_WEEK,
+      logGroupName: '/aws/vendedlogs/data-mesh/workflow',
+    });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // State Machine workflow to accept RAM share and create resource-link for a shared table

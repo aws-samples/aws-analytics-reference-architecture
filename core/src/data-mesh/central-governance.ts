@@ -1,36 +1,37 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';;
+// import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
+import { Aws, DefaultStackSynthesizer, Fn, RemovalPolicy, aws_glue as glue } from 'aws-cdk-lib';;
 import { Construct } from 'constructs';
-import { IRole, Policy, PolicyStatement, PolicyDocument, Effect, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { IRole, Policy, PolicyStatement, Role } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
-import { StateMachine, JsonPath, TaskInput, Map, Wait, WaitTime, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
-import { EventBus } from 'aws-cdk-lib/aws-events';
-import { LogGroup } from 'aws-cdk-lib/aws-logs';
+import { StateMachine, JsonPath, TaskInput, Map, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
+import { CfnEventBusPolicy, EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
+import * as lakeformation from 'aws-cdk-lib/aws-lakeformation';
 
-import { LfAdminRole } from './lf-admin-role';
-import { Utils } from '../utils';
-
-/**
- * Properties for the CentralGovernance Construct
- */
-export interface CentralGovernanceProps {
-  /**
-  * Lake Formation admin role
-  */
-  readonly lfAdminRole?: IRole;
-}
+import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
+import { LakeFormationS3Location } from '../lake-formation';
+import { LakeFormationAdmin } from '../lake-formation';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { DataDomain } from './data-domain';
 
 /**
  * This CDK Construct creates a Data Product registration workflow and resources for the Central Governance account.
  * It uses AWS Step Functions state machine to orchestrate the workflow:
- * * registers an S3 location for a new Data Product (location in Data Domain account)
- * * creates a database and tables in AWS Glue Data Catalog
- * * grants permissions to LF Admin role
+ * * creates tables in AWS Glue Data Catalog
  * * shares tables to Data Product owner account (Producer)
  * 
  * This construct also creates an Amazon EventBridge Event Bus to enable communication with Data Domain accounts (Producer/Consumer).
+ * 
+ * This construct requires to use the default [CDK qualifier](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) generated with the standard CDK bootstrap stack.
+ * It ensures the right CDK execution role is used and granted Lake Formation administrator permissions so CDK can create Glue databases when registring a DataDomain.
+ * 
+ * To register a DataDomain, the following information are required:
+ * * The account Id of the DataDomain
+ * * The secret ARN for the domain configuration available as a CloudFormation output when creating a {@link DataDomain}
  * 
  * Usage example:
  * ```typescript
@@ -41,219 +42,56 @@ export interface CentralGovernanceProps {
  * const exampleApp = new App();
  * const stack = new Stack(exampleApp, 'DataProductStack');
  * 
- * // Optional role
- * const lfAdminRole = new Role(stack, 'myLFAdminRole', {
- *  assumedBy: ...
- * });
+ * const governance = new CentralGovernance(stack, 'myCentralGov');
  * 
- * new CentralGovernance(stack, 'myCentralGov', {
- *  lfAdminRole: lfAdminRole
- * });
+ * governance.registerDataDomain('Domain1', <DOMAIN_ACCOUNT_ID>, <DOMAIN_CONFIG_SECRET_ARN>);
  * ```
- * 
  */
 export class CentralGovernance extends Construct {
 
+  public static readonly DOMAIN_DATABASE_PREFIX: string = 'data-domain-';
   public readonly workflowRole: IRole;
+  public readonly eventBus: IEventBus;
 
   /**
    * Construct a new instance of CentralGovernance.
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {CentralGovernanceProps} props the CentralGovernanceProps properties
    * @access public
    */
 
-  constructor(scope: Construct, id: string, props: CentralGovernanceProps) {
+  constructor(scope: Construct, id: string) {
     super(scope, id);
 
-    // Event Bridge event bus for the Central Governance account
-    const eventBus = new EventBus(this, 'centralEventBus', {
-      eventBusName: `${Aws.ACCOUNT_ID}_centralEventBus`,
+    // Constructs the CDK execution role ARN
+    const cdkExecutionRoleArn = Fn.sub(
+      DefaultStackSynthesizer.DEFAULT_CLOUDFORMATION_ROLE_ARN,
+      {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        Qualifier: DefaultStackSynthesizer.DEFAULT_QUALIFIER,
+      },
+    );
+    // Makes the CDK execution role LF admin so it can create databases
+    const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkExecutionRoleArn);
+    new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
+      principal: cdkRole,
     });
-    eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
-    // Workflow role that is LF admin, used by the state machine
-    this.workflowRole = props.lfAdminRole ||
-      new LfAdminRole(this, 'WorkflowRole', {
-        assumedBy: new CompositePrincipal(
-          new ServicePrincipal('glue.amazonaws.com'),
-          new ServicePrincipal('lakeformation.amazonaws.com'),
-          new ServicePrincipal('states.amazonaws.com'),
-        ),
-      });
+    // Event Bridge event bus for the Central Governance account
+    this.eventBus = new EventBus(this, 'centralEventBus');
+    this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+    // Workflow role used by the state machine
+    this.workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole').role;
 
     this.workflowRole.attachInlinePolicy(new Policy(this, 'sendEvents', {
       statements: [
         new PolicyStatement({
           actions: ['events:Put*'],
-          resources: [eventBus.eventBusArn],
+          resources: [this.eventBus.eventBusArn],
         }),
       ],
     }));
-
-    // This policy adds permission to perform GetEncryptionConfiguration on target S3 bucket
-    const bucketEncryPolicyDocument = new PolicyDocument({
-      statements: [
-        new PolicyStatement({
-          actions: ['s3:GetEncryptionConfiguration'],
-          resources: ['arn:aws:s3:::<interpolated_value>'],
-          effect: Effect.ALLOW,
-        }),
-      ]
-    });
-
-    // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
-    const bucketEncryPolicy = Utils.intrinsicReplacer(JSON.stringify(bucketEncryPolicyDocument.toJSON()));
-
-    // This task adds policy bucketEncryPolicyDocument to workflowRole
-    const addBucketEncryPolicy = new CallAwsService(this, 'addBucketEncryPolicy', {
-      service: 'iam',
-      action: 'putRolePolicy',
-      iamResources: ['*'],
-      parameters: {
-        'PolicyDocument.$': `States.Format('${bucketEncryPolicy}', $.data_product_s3)`,
-        'PolicyName.$': "States.Format('getEncryption-{}', $.data_product_s3)",
-        'RoleName': this.workflowRole.roleName,
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
-    // This task obtains bucket's encryption configuration
-    const getBucketEncryption = new CallAwsService(this, 'getBucketEncryption', {
-      service: 's3',
-      action: 'getBucketEncryption',
-      iamResources: ['*'],
-      parameters: {
-        'Bucket.$': '$.data_product_s3'
-      },
-      resultPath: '$.kms',
-      resultSelector: {
-        'arn.$': '$..KmsMasterKeyID'
-      }
-    });
-
-    // This policy grants decrypt on KMS Key in Producer account. Interpolated value is added at runtime
-    const kmsPolicyDocument = new PolicyDocument({
-      statements: [
-        new PolicyStatement({
-          actions: ['kms:Decrypt', 'kms:DescribeKey'],
-          resources: ["<interpolated_value>"],
-          effect: Effect.ALLOW,
-        }),
-      ]
-    });
-
-    // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
-    const kmsPolicy = Utils.intrinsicReplacer(JSON.stringify(kmsPolicyDocument.toJSON()));
-
-    // This task adds policy kmsPolicyDocument to workflowRole 
-    const addKmsPolicy = new CallAwsService(this, 'addKmsPolicy', {
-      service: 'iam',
-      action: 'putRolePolicy',
-      iamResources: ['*'],
-      parameters: {
-        'PolicyDocument.$': `States.Format('${kmsPolicy}', $.kms.arn[0])`,
-        'RoleName': this.workflowRole.roleName,
-        'PolicyName.$': "States.Format('kms-{}-{}', $.producer_acc_id, $.data_product_s3)",
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
-    // This Policy allows access to S3 of a newly registered Data Product. Interpolated value is added at runtime 
-    const bucketPolicyDocument = new PolicyDocument({
-      statements: [
-        new PolicyStatement({
-          actions: ['s3:GetObject', 's3:ListBucket'],
-          resources: ['arn:aws:s3:::<interpolated_value>', 'arn:aws:s3:::<interpolated_value>*'],
-          effect: Effect.ALLOW,
-        }),
-      ]
-    });
-
-    // Escape reserved characters in this policy document to be a valid input for States.Format intrinsic function
-    const bucketPolicy = Utils.intrinsicReplacer(JSON.stringify(bucketPolicyDocument.toJSON()));
-
-    // This task adds policy bucketPolicyDocument to workflowRole
-    const addBucketPolicy = new CallAwsService(this, 'addBucketPolicy', {
-      service: 'iam',
-      action: 'putRolePolicy',
-      iamResources: ['*'],
-      parameters: {
-        'PolicyDocument.$': `States.Format('${bucketPolicy}', $.data_product_s3, $.tables.location_key)`,
-        'PolicyName.$': "States.Format('dataProductPolicy-{}', $.tables.name)",
-        'RoleName': this.workflowRole.roleName,
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
-    // This task registers new s3 location in Lake Formation
-    const registerS3Location = new CallAwsService(this, 'registerS3Location', {
-      service: 'lakeformation',
-      action: 'registerResource',
-      iamResources: ['*'],
-      parameters: {
-        'ResourceArn.$': "States.Format('arn:aws:s3:::{}', $.data_product_s3)",
-        'RoleArn': this.workflowRole.roleArn,
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
-    // Grant Data Location access to Workflow role
-    const grantLfAdminAccess = new CallAwsService(this, 'grantLfAdminAccess', {
-      service: 'lakeformation',
-      action: 'grantPermissions',
-      iamResources: ['*'],
-      parameters: {
-        'Permissions': [
-          'DATA_LOCATION_ACCESS'
-        ],
-        'Principal': {
-          'DataLakePrincipalIdentifier': this.workflowRole.roleArn
-        },
-        'Resource': {
-          'DataLocation': {
-            'ResourceArn.$': "States.Format('arn:aws:s3:::{}', $.data_product_s3)"
-          }
-        }
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
-    // Grant Data Location access to Data Domain account
-    const grantProducerAccess = new CallAwsService(this, 'grantProducerAccess', {
-      service: 'lakeformation',
-      action: 'grantPermissions',
-      iamResources: ['*'],
-      parameters: {
-        'Permissions': [
-          'DATA_LOCATION_ACCESS'
-        ],
-        'Principal': {
-          'DataLakePrincipalIdentifier.$': '$.producer_acc_id'
-        },
-        'Resource': {
-          'DataLocation': {
-            'ResourceArn.$': "States.Format('arn:aws:s3:::{}', $.data_product_s3)"
-          }
-        }
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
-    // Task to create a database
-    const createDatabase = new CallAwsService(this, 'createDatabase', {
-      service: 'glue',
-      action: 'createDatabase',
-      iamResources: ['*'],
-      parameters: {
-        'DatabaseInput': {
-          'Name.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
-          'Description': "States.Format('Data product for {} in Producer account {}', $.data_product_s3, $.producer_acc_id)",
-        },
-      },
-      resultPath: JsonPath.DISCARD,
-    });
 
     // Task to create a table
     const createTable = new CallAwsService(this, 'createTable', {
@@ -261,7 +99,7 @@ export class CentralGovernance extends Construct {
       action: 'createTable',
       iamResources: ['*'],
       parameters: {
-        'DatabaseName.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
+        'DatabaseName.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
         'TableInput': {
           'Name.$': '$.tables.name',
           'Owner.$': '$.producer_acc_id',
@@ -273,7 +111,7 @@ export class CentralGovernance extends Construct {
       resultPath: JsonPath.DISCARD,
     });
 
-    // Grant SUPER permissions on product database and tables to Data Domain account
+    // Grant SUPER permissions (and grantable) on product database and tables to Data Domain account
     const grantTablePermissions = new CallAwsService(this, 'grantTablePermissionsToProducer', {
       service: 'lakeformation',
       action: 'grantPermissions',
@@ -290,7 +128,7 @@ export class CentralGovernance extends Construct {
         },
         'Resource': {
           'Table': {
-            'DatabaseName.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
+            'DatabaseName.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
             'Name.$': '$.tables.name',
           },
         },
@@ -304,29 +142,28 @@ export class CentralGovernance extends Construct {
       entries: [{
         detail: TaskInput.fromObject({
           'central_database_name': JsonPath.format(
-            "{}_{}",
-            JsonPath.stringAt("$.producer_acc_id"),
-            JsonPath.stringAt("$.database_name")
+            "{}{}",
+            CentralGovernance.DOMAIN_DATABASE_PREFIX,
+            JsonPath.stringAt("$.producer_acc_id")
           ),
           'producer_acc_id': JsonPath.stringAt("$.producer_acc_id"),
-          'database_name': JsonPath.stringAt("$.database_name"),
+          'database_name': "data-products",
           'table_names': JsonPath.stringAt("$.map_result.flatten"),
         }),
         detailType: JsonPath.format(
           "{}_createResourceLinks",
           JsonPath.stringAt("$.producer_acc_id")
         ),
-        eventBus: eventBus,
+        eventBus: this.eventBus,
         source: 'com.central.stepfunction'
       }]
     });
 
+    // iterate over multiple tables in parallel
     const tablesMapTask = new Map(this, 'forEachTable', {
       itemsPath: '$.tables',
       parameters: {
-        'data_product_s3.$': '$.data_product_s3',
         'producer_acc_id.$': '$.producer_acc_id',
-        'database_name.$': '$.database_name',
         'tables.$': '$$.Map.Item.Value',
       },
       resultSelector: {
@@ -335,74 +172,131 @@ export class CentralGovernance extends Construct {
       resultPath: '$.map_result',
     });
 
-    const updateDatabaseOwnerMetadata = new CallAwsService(this, 'updateDatabaseOwnerMetadata', {
-      service: 'glue',
-      action: 'updateDatabase',
-      iamResources: ['*'],
-      parameters: {
-        'Name.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
-        'DatabaseInput': {
-          'Name.$': "States.Format('{}_{}', $.producer_acc_id, $.database_name)",
-          'Parameters': {
-            'data_owner.$': '$.producer_acc_id',
-            'data_owner_name.$': "$.product_owner_name",
-            'pii_flag.$': '$.product_pii_flag'
-          }
-        }
-      },
-      resultPath: JsonPath.DISCARD
-    });
-
     tablesMapTask.iterator(
-      addBucketPolicy.next(
-        createTable.addCatch(grantTablePermissions, {
-          errors: ['Glue.AlreadyExistsException'],
-          resultPath: '$.CreateTableException',
-        })
-      ).next(grantTablePermissions)
-    );
-
-    // State machine dependencies
-    tablesMapTask.next(triggerProducer);
-
-    createDatabase.addCatch(updateDatabaseOwnerMetadata, {
-      errors: ['Glue.AlreadyExistsException'], resultPath: '$.Exception'
-    }).next(updateDatabaseOwnerMetadata).next(tablesMapTask);
-
-    grantProducerAccess.next(createDatabase);
-    grantLfAdminAccess.next(grantProducerAccess);
-
-    registerS3Location.addCatch(grantLfAdminAccess, {
-      errors: [
-        'LakeFormation.AlreadyExistsException'
-      ],
-      resultPath: '$.Exception'
-    }).next(grantLfAdminAccess);
-
-    addKmsPolicy.next(registerS3Location);
-    getBucketEncryption.next(addKmsPolicy);
-
-    // Avoid sync issues with IAM when adding policy
-    const waitForIam = new Wait(this, 'WaitForIam', {
-      time: WaitTime.duration(Duration.seconds(10))
-    });
-
-    // Add bucket policy and add delay before the next API call
-    waitForIam.next(getBucketEncryption);
-    addBucketEncryPolicy.next(waitForIam);
+      createTable.addCatch(grantTablePermissions, {
+        errors: ['Glue.AlreadyExistsException'],
+        resultPath: '$.CreateTableException',
+      }).next(grantTablePermissions)
+    ).next(triggerProducer);
 
     // Create Log group for this state machine
-    const logGroup = new LogGroup(this, 'centralGov-stateMachine');
+    const logGroup = new LogGroup(this, 'centralGov-stateMachine', {
+      retention: RetentionDays.ONE_WEEK,
+      logGroupName: '/aws/vendedlogs/data-mesh/workflow',
+    });
     logGroup.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // State machine to register data product from Data Domain
     new StateMachine(this, 'RegisterDataProduct', {
-      definition: addBucketEncryPolicy,
+      definition: tablesMapTask,
       role: this.workflowRole,
       logs: {
         destination: logGroup,
         level: LogLevel.ALL,
       },
     });
+  }
+
+  /**
+   * Registers a new Data Domain account in Central Governance account.
+   * Each Data Domain account {@link DataDomain} has to be registered in Central Gov. account before it can participate in a mesh.
+   * 
+   * It creates:
+   * * A cross-account policy for Amazon EventBridge Event Bus to enable Data Domain to send events to Central Gov. account
+   * * A Lake Formation data access role scoped down to the data domain products bucket
+   * * A Glue Catalog Database to hold Data Products for this Data Domain
+   * * A Rule to forward events to target Data Domain account.
+   * 
+   * Object references are passed from the DataDomain account to the CentralGovernance account via a AWS Secret Manager secret and cross account access.
+   * It includes the following JSON object:
+   * ```json
+   * {
+   *   BucketName: 'clean-<ACCOUNT_ID>-<REGION>',
+   *   Prefix: 'data-products',
+   *   KmsKeyId: '<KMS_ID>,
+   * }
+   * ```
+   * 
+   * @param {string} id the ID of the CDK Construct
+   * @param {string} domainId the account ID of the DataDomain to register
+   * @param {string} domainName the name of the DataDomain, i.e. Line of Business name
+   * @param {string} domainSecretArn the full ARN of the secret used by producers to share references with the central governance
+   * @access public
+   */
+  public registerDataDomain(id: string, domainId: string, domainName: string, domainSecretArn: string) {
+
+    // Import the data domain secret from it's full ARN
+    const domainSecret = Secret.fromSecretCompleteArn(this, 'DomainSecret', domainSecretArn);
+    // Extract data domain references
+    const domainBucket = domainSecret.secretValueFromJson('BucketName').unsafeUnwrap();
+    const domainPrefix = domainSecret.secretValueFromJson('Prefix').unsafeUnwrap();
+    const domainKey = domainSecret.secretValueFromJson('KmsKeyId').unsafeUnwrap();
+    // Construct domain event bus ARN
+    const dataDomainBusArn = `arn:aws:events:${Aws.REGION}:${domainId}:event-bus/${DataDomain.DOMAIN_BUS_NAME}`;
+
+    // register the S3 location in Lake Formation and create data access role
+    new LakeFormationS3Location(this, `${id}LFLocation`, {
+      s3Location: {
+        bucketName: domainBucket,
+        objectKey: domainPrefix,
+      },
+      kmsKeyId: domainKey,
+    });
+
+    // Create the database in Glue with datadomain prefix+bucket, and metadata parameters
+    new glue.CfnDatabase(this, `${id}DataDomainDatabase`, {
+      catalogId: Aws.ACCOUNT_ID,
+      databaseInput: {
+        description: `Database for data products in ${domainName} data domain. Account id: ${domainId}`,
+        name: CentralGovernance.DOMAIN_DATABASE_PREFIX + domainId,
+        locationUri: `s3://${domainBucket}/${domainPrefix}`,
+        parameters: {
+          'data_owner': domainId,
+          'data_owner_name': domainName,
+          'pii_flag': false,
+        }
+      }
+    }).node.addDependency(this.node.findChild('CdkLakeFormationAdmin'));
+
+    // Grant workflow role permissions to domain database
+    new lakeformation.CfnPrincipalPermissions(this, `${id}WorkflowRoleDbAccess`, {
+      permissions: ['ALL'],
+      permissionsWithGrantOption: [],
+      principal: {
+        dataLakePrincipalIdentifier: this.workflowRole.roleArn,
+      },
+      resource: {
+        database: {
+          catalogId: Aws.ACCOUNT_ID,
+          name: CentralGovernance.DOMAIN_DATABASE_PREFIX + domainId,
+        }
+      },
+    }).node.addDependency(this.node.findChild(`${id}DataDomainDatabase`));
+
+    // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
+    new CfnEventBusPolicy(this, `${id}Policy`, {
+      eventBusName: this.eventBus.eventBusName,
+      statementId: `AllowDataDomainAccToPutEvents_${domainId}`,
+      action: 'events:PutEvents',
+      principal: domainId,
+    });
+
+    // Event Bridge Rule to trigger createResourceLinks workflow in target Data Domain account
+    const rule = new Rule(this, `${id}Rule`, {
+      eventPattern: {
+        source: ['com.central.stepfunction'],
+        detailType: [`${domainId}_createResourceLinks`],
+      },
+      eventBus: this.eventBus,
+    });
+
+    rule.addTarget(new targets.EventBus(
+      EventBus.fromEventBusArn(
+        this,
+        '${id}DomainEventBus',
+        dataDomainBusArn
+      )),
+    );
+    rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
   }
 }

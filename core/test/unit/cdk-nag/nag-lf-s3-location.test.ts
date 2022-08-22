@@ -12,7 +12,7 @@ import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { App, Aspects, Stack } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { LakeformationS3Location } from '../../../src/lf-s3-location';
+import { LakeFormationS3Location } from '../../../src/lake-formation';
 import { Key } from 'aws-cdk-lib/aws-kms';
 
 const mockApp = new App();
@@ -25,18 +25,20 @@ const bucket = new Bucket(lfS3LocationStack, 'Bucket', {
 });
 
 // Instantiate LakeFormationS3Location Construct
-new LakeformationS3Location(lfS3LocationStack, 'LfS3Location', {
-  s3Bucket: bucket,
-  s3ObjectKey: 'test',
-  kmsKey: key,
+new LakeFormationS3Location(lfS3LocationStack, 'S3Location', {
+  s3Location: {
+    bucketName: bucket.bucketName,
+    objectKey: 'test'
+  },
+  kmsKeyId: key.keyId,
 });
 
 Aspects.of(lfS3LocationStack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   lfS3LocationStack,
-  'LfS3LocationStack/LfS3Location/LFS3AccessRole/DefaultPolicy/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The S3 location role needs access to all the objects under the prefix' }],
+  'LfS3LocationStack/S3Location/LFS3AccessRole/DefaultPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'The S3 location role needs access to all the objects under the prefix. GenerateData* is a shortcut' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(

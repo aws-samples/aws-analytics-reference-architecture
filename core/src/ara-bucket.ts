@@ -16,7 +16,7 @@ import {
   LifecycleRule,
   ObjectOwnership,
 } from 'aws-cdk-lib/aws-s3';
-import { Aws, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { Duration, RemovalPolicy, Stack, Aws } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { SingletonKey } from './singleton-kms-key';
 
