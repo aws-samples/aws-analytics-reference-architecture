@@ -50,6 +50,10 @@ df = spark\
     .read.option("header","true")\
     .format(input_format).path("s3://"+s3_input_bucket+"/"+ s3_input_prefix)
 
+
+# updating Null and wrong format to current timestamp
+df=df.withColumn(datetime_column, F.coalesce(F.to_timestamp(F.col(datetime_column)), F.lit(F.current_timestamp())))
+
 # Adding the column with the right time based partition
 df2 = df.withColumn("time_range", F.window(F.col(datetime_column), +partition_range+" minutes"))\
     .withColumn("time_range_start",F.unix_timestamp(F.col("time_range.start")))\
