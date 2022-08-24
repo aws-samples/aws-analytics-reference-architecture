@@ -293,7 +293,7 @@ export class CentralGovernance extends Construct {
     rule.addTarget(new targets.EventBus(
       EventBus.fromEventBusArn(
         this,
-        '${id}DomainEventBus',
+        `${id}DomainEventBus`,
         dataDomainBusArn
       )),
     );
