@@ -240,6 +240,7 @@ export class CentralGovernance extends Construct {
         bucketName: domainBucket,
         objectKey: domainPrefix,
       },
+      accountId: domainId,
       kmsKeyId: domainKey,
     });
 
