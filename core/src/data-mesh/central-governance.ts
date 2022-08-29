@@ -226,7 +226,7 @@ export class CentralGovernance extends Construct {
   public registerDataDomain(id: string, domainId: string, domainName: string, domainSecretArn: string) {
 
     // Import the data domain secret from it's full ARN
-    const domainSecret = Secret.fromSecretCompleteArn(this, 'DomainSecret', domainSecretArn);
+    const domainSecret = Secret.fromSecretCompleteArn(this, `${id}DomainSecret`, domainSecretArn);
     // Extract data domain references
     const domainBucket = domainSecret.secretValueFromJson('BucketName').unsafeUnwrap();
     const domainPrefix = domainSecret.secretValueFromJson('Prefix').unsafeUnwrap();
@@ -240,6 +240,7 @@ export class CentralGovernance extends Construct {
         bucketName: domainBucket,
         objectKey: domainPrefix,
       },
+      accountId: domainId,
       kmsKeyId: domainKey,
     });
 
@@ -293,7 +294,7 @@ export class CentralGovernance extends Construct {
     rule.addTarget(new targets.EventBus(
       EventBus.fromEventBusArn(
         this,
-        '${id}DomainEventBus',
+        `${id}DomainEventBus`,
         dataDomainBusArn
       )),
     );
