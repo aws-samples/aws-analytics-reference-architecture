@@ -11,7 +11,7 @@ import { Key } from 'aws-cdk-lib/aws-kms';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
 import { deployStack, destroyStack } from './utils';
-import { LakeformationS3Location } from '../../src/lf-s3-location';
+import { LakeFormationS3Location } from '../../src/lake-formation';
 
 jest.setTimeout(100000);
 // GIVEN
@@ -27,10 +27,12 @@ const myBucket = new Bucket(stack, 'MyBucket', {
   autoDeleteObjects: true,
 });
 
-const s3Location = new LakeformationS3Location(stack, 'S3Location', {
-  s3Bucket: myBucket,
-  s3ObjectKey: 'test',
-  kmsKey: myKey,
+const s3Location = new LakeFormationS3Location(stack, 'S3Location', {
+  s3Location: {
+    bucketName: myBucket.bucketName,
+    objectKey: 'test'
+  },
+  kmsKeyId: myKey.keyId,
 });
 
 new cdk.CfnOutput(stack, 'BucketPolicy', {

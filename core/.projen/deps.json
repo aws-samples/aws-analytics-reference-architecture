@@ -1,13 +1,23 @@
 {
   "dependencies": [
     {
+      "name": "@aws-cdk/aws-glue-alpha",
+      "version": "2.35.0-alpha.0",
+      "type": "build"
+    },
+    {
+      "name": "@aws-cdk/aws-redshift-alpha",
+      "version": "2.35.0-alpha.0",
+      "type": "build"
+    },
+    {
       "name": "@aws-cdk/cloudformation-diff",
-      "version": "2.27.0",
+      "version": "2.35.0",
       "type": "build"
     },
     {
       "name": "@aws-cdk/cx-api",
-      "version": "2.27.0",
+      "version": "2.35.0",
       "type": "build"
     },
     {
@@ -41,17 +51,17 @@
     },
     {
       "name": "aws-cdk-lib",
-      "version": "2.27.0",
+      "version": "2.35.0",
       "type": "build"
     },
     {
       "name": "aws-cdk",
-      "version": "2.27.0",
+      "version": "2.35.0",
       "type": "build"
     },
     {
       "name": "cdk-assets",
-      "version": "2.27.0",
+      "version": "2.35.0",
       "type": "build"
     },
     {
@@ -61,7 +71,7 @@
     },
     {
       "name": "constructs",
-      "version": "10.1.38",
+      "version": "10.1.66",
       "type": "build"
     },
     {
@@ -176,32 +186,32 @@
     },
     {
       "name": "@aws-cdk/aws-glue-alpha",
-      "version": "2.27.0-alpha.0",
+      "version": "2.35.0-alpha.0",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-redshift-alpha",
-      "version": "2.27.0-alpha.0",
+      "version": "2.35.0-alpha.0",
       "type": "peer"
     },
     {
       "name": "aws-cdk-lib",
-      "version": "2.27.0",
+      "version": "2.35.0",
       "type": "peer"
     },
     {
       "name": "constructs",
-      "version": "^10.1.38",
+      "version": "^10.1.66",
       "type": "peer"
     },
     {
       "name": "@aws-cdk/aws-glue-alpha",
-      "version": "2.27.0-alpha.0",
+      "version": "2.35.0-alpha.0",
       "type": "runtime"
     },
     {
       "name": "@aws-cdk/aws-redshift-alpha",
-      "version": "2.27.0-alpha.0",
+      "version": "2.35.0-alpha.0",
       "type": "runtime"
     },
     {

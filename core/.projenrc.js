@@ -8,7 +8,7 @@ const glob = require('glob');
 
 const { awscdk } = require('projen');
 
-const CDK_VERSION = '2.27.0';
+const CDK_VERSION = '2.35.0';
 const project = new awscdk.AwsCdkConstructLibrary({
   majorVersion: 2,
   authorName: 'Amazon Web Services',
@@ -25,7 +25,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
   ],
 
   cdkVersion: CDK_VERSION,
-  constructsVersion: '10.1.38',
+  constructsVersion: '10.1.66',
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',
@@ -65,6 +65,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'proxy-agent',
     'glob',
     '@types/prettier@2.6.0',
+    `@aws-cdk/aws-redshift-alpha@${CDK_VERSION}-alpha.0`,
+    `@aws-cdk/aws-glue-alpha@${CDK_VERSION}-alpha.0`,
   ],
 
   peerDeps: [
@@ -117,14 +119,6 @@ project.addTask('test:unit', {
 
 project.addTask('test:integ', {
   exec: 'jest --group=integ',
-});
-
-project.addTask('test:integ/data-lake', {
-  exec: 'jest --group=integ/data-lake',
-});
-
-project.addTask('test:integ/redshift', {
-  exec: 'jest --group=integ/redshift',
 });
 
 const testDeploy = project.addTask('test:deploy', {

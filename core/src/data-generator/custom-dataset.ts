@@ -2,14 +2,18 @@
 // SPDX-License-Identifier: MIT-0
 
 import { PreBundledPysparkJobExecutable } from '../common/pre-bundled-pyspark-job-executable';
-import { GlueVersion, Job, PythonVersion } from '@aws-cdk/aws-glue-alpha';
+import { GlueVersion, PythonVersion, WorkerType } from '@aws-cdk/aws-glue-alpha';
 import { PreparedDataset } from './prepared-dataset';
 import { Construct } from 'constructs';
-import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Bucket, Location } from 'aws-cdk-lib/aws-s3';
 import { AraBucket } from '../ara-bucket';
 import { SynchronousGlueJob } from '../synchronous-glue-job';
- 
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
+import { Duration } from 'aws-cdk-lib';
+import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
+
+
 /**
  * The properties for the Bring Your Own Data generator
  */
@@ -31,12 +35,17 @@ export interface CustomDatasetProps {
    */
   readonly datetimeColumnsToAdjust: string[];
   /**
-   * The interval to partition data and optimize the data generation
+   * The interval to partition data and optimize the data generation in Minutes
    */
-  readonly partitionRange: number;
+  readonly partitionRange: Duration;
+  /**
+   * Approximate data size (in GB) of the custom dataset. 
+   * @default - The Glue job responsible for preparing the data uses autoscaling with a maximum of 100 workers
+   */
+  readonly approximateDataSize?: number;
 }
 
-enum CustomDatasetInputFormat {
+export enum CustomDatasetInputFormat {
   CSV = 'csv',
   PARQUET = 'parquet',
   JSON = 'json',
@@ -45,6 +54,7 @@ enum CustomDatasetInputFormat {
 /**
  * A CustomDataset is a dataset that you need to prepare for the [BatchReplayer](@link BatchReplayer) to generate data.
  * The dataset is transformed into a [PreparedDataset](@link PreparedDataset) by a Glue Job that runs synchronously during the CDK deploy.
+ * The Glue job is sized based on the approximate size of the input data or uses autoscaling (max 100) if no data size is provided.
  * 
  * The Glue job is applying the following transformations to the input dataset:
  * 1. Read the input dataset based on its format. Currently, it supports data in CSV, JSON and Parquet
@@ -83,29 +93,64 @@ export class CustomDataset extends Construct {
     const glueRole = new Role(scope, 'CustomDatasetRole', {
       assumedBy: new ServicePrincipal('glue.amazonaws.com'),
     });
-    sourceBucket.grantRead(glueRole, props.s3Location.objectKey + '/*');
-    outputBucket.grantReadWrite(glueRole, props.s3Location.objectKey + '/*');
-    outputBucket.grantReadWrite(glueRole, props.s3Location.objectKey + '_manifest');
-    outputBucket.grantReadWrite(glueRole, props.s3Location.objectKey + '-manifest.csv');
-    
+    sourceBucket.grantRead(glueRole, props.s3Location.objectKey + '*');
+    outputBucket.grantReadWrite(glueRole, props.s3Location.objectKey + '*');
+
+    // the SSM parameter used to stored the output of the Glue job
+    const ssm = new StringParameter(this, 'JobOutputParameter', {
+      stringValue: 'minDatetime',    
+    });
+    ssm.grantWrite(glueRole);
+
+    glueRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSGlueServiceRole'));
+
+    // calculate the size of the Glue job based on input data size (1 + 1 DPU per 2GB)
+    var workerNum = 9;
+    if (props.approximateDataSize !== undefined && props.approximateDataSize > 16){
+      workerNum = Math.ceil(props.approximateDataSize / 2) + 1;
+    }
+
     // Glue job to prepare the dataset
-    new SynchronousGlueJob(scope, 'CustomDatasetJob', {
+    const glueJob = new SynchronousGlueJob(scope, 'CustomDatasetJob', {
       executable: PreBundledPysparkJobExecutable.pythonEtl({
         glueVersion: GlueVersion.V3_0,
         pythonVersion: PythonVersion.THREE,
         codePath: 'data-generator/resources/glue/custom-dataset/script.py',
       }),
       defaultArguments: {
-        s3_input_bucket: props.s3Location.bucketName,
-        s3_input_prefix: props.s3Location.objectKey,
-        s3_output_bucket: outputBucket.bucketName,
-        s3_output_prefix: props.s3Location.objectKey,
-        input_format: props.inputFormat,
-        datetime_column: props.datetimeColumn,
-        partition_range: props.partitionRange.toString(),
+        '--s3_input_path': `s3://${props.s3Location.bucketName}/${props.s3Location.objectKey}`,
+        '--s3_output_path': `s3://${outputBucket.bucketName}/${props.s3Location.objectKey}`,
+        '--input_format': props.inputFormat,
+        '--datetime_column': props.datetimeColumn,
+        '--partition_range': props.partitionRange.toMinutes().toString(),
+        '--ssm_parameter': ssm.parameterName,
+        '--enable-auto-scaling': 'true',
       },
       role: glueRole,
+      workerCount: props.approximateDataSize ? workerNum : 100,
+      workerType: WorkerType.G_1X,
+      continuousLogging:{
+        enabled: true,
+      },
     });
+
+    // Get the offset value calculated in the SynchronousGlueJob
+    // We cannot rely on the SSM parameter resource created previously because the offset is generated during deploy time
+    const getParameter = new AwsCustomResource(this, 'GetParameter', {
+      onCreate: {
+        service: 'SSM',
+        action: 'getParameter',
+        parameters: {
+          Name: ssm.parameterName,          
+        },
+        physicalResourceId: PhysicalResourceId.of(Date.now().toString()),
+      },
+      policy: AwsCustomResourcePolicy.fromSdkCalls({
+        resources: [ssm.parameterArn],
+      })
+    });
+    // Add a dependency on the synchronous glue job to only get the value after processing
+    getParameter.node.addDependency(glueJob);
 
     // Create a prepared dataset based on the output of the Glue job
     this.preparedDataset = new PreparedDataset({
@@ -113,10 +158,10 @@ export class CustomDataset extends Construct {
         bucketName: outputBucket.bucketName,
         objectKey: props.s3Location.objectKey,
       },
-      startDatetime: '',
+      offset: getParameter.getResponseField('Parameter.Value'),
       manifestLocation: {
         bucketName: outputBucket.bucketName,
-        objectKey: props.s3Location.objectKey,
+        objectKey: props.s3Location.objectKey+'-manifest.csv',
       },
       dateTimeColumnToFilter: props.datetimeColumn,
       dateTimeColumnsToAdjust: props.datetimeColumnsToAdjust,

@@ -106,7 +106,7 @@ export class DataLakeStorage extends TrackedConstruct {
 
   constructor(scope: Construct, id: string, props?: DataLakeStorageProps) {
 
-    const trackedConstructProps : TrackedConstructProps = {
+    const trackedConstructProps: TrackedConstructProps = {
       trackingCode: ContextOptions.DATA_LAKE_ID,
     };
 
@@ -121,42 +121,42 @@ export class DataLakeStorage extends TrackedConstruct {
 
     if (props) {
       if (props.rawInfrequentAccessDelay) {
-        if (props.rawInfrequentAccessDelay < 30 ) {
+        if (props.rawInfrequentAccessDelay < 30) {
           throw new Error('Transitioning to infrequent access storage class cannot be done before 30 days');
         } else {
           rawInfrequentAccessDelay = props.rawInfrequentAccessDelay;
         }
       }
       if (props.rawArchiveDelay) {
-        if (props.rawArchiveDelay < 90 ) {
+        if (props.rawArchiveDelay < 90) {
           throw new Error('Archiving to glacier storage class cannot be done before 90 days');
         } else {
           rawArchiveDelay = props.rawArchiveDelay;
         }
       }
       if (props.cleanInfrequentAccessDelay) {
-        if (props.cleanInfrequentAccessDelay < 30 ) {
+        if (props.cleanInfrequentAccessDelay < 30) {
           throw new Error('Transitioning to infrequent access storage class cannot be done before 30 days');
         } else {
           cleanInfrequentAccessDelay = props.cleanInfrequentAccessDelay;
         }
       }
       if (props.cleanArchiveDelay) {
-        if (props.cleanArchiveDelay < 90 ) {
+        if (props.cleanArchiveDelay < 90) {
           throw new Error('Archiving to glacier storage class cannot be done before 90 days');
         } else {
           cleanArchiveDelay = props.cleanArchiveDelay;
         }
       }
       if (props.transformInfrequentAccessDelay) {
-        if (props.transformInfrequentAccessDelay < 30 ) {
+        if (props.transformInfrequentAccessDelay < 30) {
           throw new Error('Transitioning to infrequent access storage class cannot be done before 30 days');
         } else {
           transformInfrequentAccessDelay = props.transformInfrequentAccessDelay;
         }
       }
       if (props.transformArchiveDelay) {
-        if (props.transformArchiveDelay < 90 ) {
+        if (props.transformArchiveDelay < 90) {
           throw new Error('Archiving to glacier storage class cannot be done before 90 days');
         } else {
           transformArchiveDelay = props.transformArchiveDelay;
@@ -196,7 +196,7 @@ export class DataLakeStorage extends TrackedConstruct {
         transitionAfter: Duration.days(cleanInfrequentAccessDelay),
       },
     ];
-    if ( cleanArchiveDelay ) {
+    if (cleanArchiveDelay) {
       cleanTransitions.push(
         {
           storageClass: StorageClass.GLACIER,
@@ -225,7 +225,7 @@ export class DataLakeStorage extends TrackedConstruct {
         transitionAfter: Duration.days(transformInfrequentAccessDelay),
       },
     ];
-    if ( transformArchiveDelay ) {
+    if (transformArchiveDelay) {
       transformTransitions.push(
         {
           storageClass: StorageClass.GLACIER,

@@ -30,5 +30,5 @@ export interface NotebookManagedEndpointOptions {
    * The name of the managed endpoint
    * if no name is provided then the name of the policy associated with managed endpoint will be used as a name
    * */
-  readonly managedEndpointName?: string;
+  readonly managedEndpointName: string;
 }

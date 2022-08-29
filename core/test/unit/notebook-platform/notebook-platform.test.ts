@@ -191,6 +191,7 @@ const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {
       notebookManagedEndpoints: [
         {
           executionPolicy: policySSO,
+          managedEndpointName: 'ssoRole',
         },
       ],
     },
@@ -200,6 +201,7 @@ const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {
       notebookManagedEndpoints: [
         {
           executionPolicy: policySSO,
+          managedEndpointName: 'ssoRole',
         },
       ],
     },
@@ -219,6 +221,7 @@ const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {
       notebookManagedEndpoints: [
         {
           executionPolicy: policyIAMFed,
+          managedEndpointName: 'iamFedRole',
         },
       ],
     },
@@ -230,6 +233,7 @@ const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {
       notebookManagedEndpoints: [
         {
           executionPolicy: policyIAMAuth,
+          managedEndpointName: 'iamAuthRole',
         },
       ],
     },
@@ -256,6 +260,6 @@ const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {
   iamAuthNotebook.addUser(userList_IAMAuth);
 
   const stackiamauthTemplate = Template.fromStack(stackiamauth);
-  
+
   stackiamauthTemplate.resourceCountIs('AWS::IAM::User', 1);
 });

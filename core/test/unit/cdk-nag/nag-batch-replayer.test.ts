@@ -9,7 +9,7 @@
 
 import { Annotations, Match } from 'aws-cdk-lib/assertions';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
-import { App, Aspects, Stack } from 'aws-cdk-lib';
+import { App, Aspects, Duration, Stack } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { BatchReplayer, PreparedDataset } from '../../../src';
@@ -21,7 +21,7 @@ const sinkBucket = new Bucket(batchReplayerStack, 'SinkBucket');
 // Instantiate a DataGenerator
 const batchReplayer = new BatchReplayer(batchReplayerStack, 'TestBatchReplayer', {
   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
-  frequency: 120,
+  frequency: Duration.seconds(120),
   sinkBucket: sinkBucket,
   sinkObjectKey: 'test',
 });

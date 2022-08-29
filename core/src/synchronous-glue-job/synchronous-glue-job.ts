@@ -22,7 +22,7 @@ export class SynchronousGlueJob extends Construct {
    * Constructs a new instance of the DataGenerator class
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
-   * @param {SynchronousGlueJobProps} props the SynchronousGlueJob [properties]{@link SynchronousGlueJobProps}
+   * @param {JobProps} props the SynchronousGlueJob properties
    * @access public
    */
 
@@ -85,11 +85,14 @@ export class SynchronousGlueJob extends Construct {
     });
 
     // Create an AWS CDK Custom Resource for starting the source crawler and waiting for completion
-    new CustomResource(this, 'SynchronousGlueJobCR', {
+    const customResource = new CustomResource(this, 'SynchronousGlueJobCR', {
       serviceToken: glueJobStartWaitCRP.serviceToken,
       properties: {
         JobName: glueJob.jobName,
       },
     });
+
+    // Force the dependency because jobName could be known at synth time
+    customResource.node.addDependency(glueJob);
   }
 }

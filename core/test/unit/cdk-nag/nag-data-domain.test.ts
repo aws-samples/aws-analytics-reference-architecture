@@ -20,38 +20,62 @@ const dataDomainStack = new Stack(mockApp, 'dataDomain');
 
 new DataDomain(dataDomainStack, 'myDataDomain', {
   centralAccountId: '1234567891011',
-  crawlerWorkflow: false,
+  crawlerWorkflow: true,
 })
 
 Aspects.of(dataDomainStack).add(new AwsSolutionsChecks());
 
-// See https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_stepfunctions_tasks.CallAwsService.html#iamresources 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/WorkflowRole/DefaultPolicy/Resource',
+  'dataDomain/myDataDomain/WorkflowRole',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/WorkflowRole',
+  [{ id: 'AwsSolutions-IAM4', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/WorkflowRole',
+  [{ id: 'AwsSolutions-L1', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/SecretKey/Resource',
   [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Step Function CallAWSService requires iamResources to allow it to make API calls. ' +
-      'For each API call required, there is a wildcard on resource as resources are not known before Step Function execution. ' +
-      'Granular access controls are added to the role that Step Function assumes during execution. ' +
-      'Additionally, wildcard is added for Log group by default. See: https://github.com/aws/aws-cdk/issues/7158'
+    id: 'AwsSolutions-KMS5',
+    reason: 'The KMS key encrypt a secret used for sharing references between environments and doesn\'t store sensitive data'
   }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/WorkflowRole/Resource',
+  'dataDomain/myDataDomain/DomainBucketSecret/Resource',
   [{
-    id: 'AwsSolutions-IAM4',
-    reason: 'The purpose of the LfAdminRole construct is to use an AWS Managed Policy.'
+    id: 'AwsSolutions-SMG4',
+    reason: 'The secret is used for sharing references between environments and doesn\'t store sensitive data'
   }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/DataDomainCrawler',
+  [{ id: 'AwsSolutions-IAM5', reason: 'DataDomainCrawler construct not in the scope of this NAG test' }],
+  true,
+);
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/DataLakeAccess/Resource',
-  [{ id: 'AwsSolutions-IAM5', reason: 'The LF admin role needs access to all the objects under the prefix' }],
+  'dataDomain/myDataDomain/DataDomainCrawler',
+  [{ id: 'AwsSolutions-SF2', reason: 'DataDomainCrawler construct not in the scope of this NAG test' }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
@@ -62,8 +86,9 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/DataDomainWorkflow/CrossAccStateMachine/Resource',
-  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function X-Ray tracing is outside the scope of the DataDomain construct.' }],
+  'dataDomain/myDataDomain/DataDomainWorkflow',
+  [{ id: 'AwsSolutions-SF2', reason: 'DataDomainWorflow construct not in the scope of this NAG test' }],
+  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(

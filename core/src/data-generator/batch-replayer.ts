@@ -24,10 +24,10 @@ export interface BatchReplayerProps {
    */
   readonly dataset: PreparedDataset;
   /**
-   * The frequency of the replay in seconds
+   * The frequency of the replay
    * @default - The BatchReplayer is triggered every 60 seconds
    */
-  readonly frequency?: number;
+  readonly frequency?: Duration;
   /**
    * The S3 Bucket sink where the BatchReplayer writes data.
    * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
@@ -115,7 +115,7 @@ export class BatchReplayer extends Construct {
     super(scope, id);
 
     this.dataset = props.dataset;
-    this.frequency = props.frequency || 60;
+    this.frequency = props.frequency?.toSeconds() || 60;
     this.sinkBucket = props.sinkBucket;
     this.sinkObjectKey = props.sinkObjectKey;
     this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
@@ -162,7 +162,7 @@ export class BatchReplayer extends Construct {
         manifestFileBucket: manifestBucketName,
         manifestFileKey: manifestObjectKey,
         triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
-        offset: '' + this.dataset.offset,
+        offset: this.dataset.offset,
       }),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
       retryOnServiceExceptions: true,
@@ -211,7 +211,7 @@ export class BatchReplayer extends Construct {
         // For calculating the start/end time
         frequency: this.frequency,
         triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
-        offset: '' + this.dataset.offset,
+        offset: this.dataset.offset,
 
         // For file processing
         dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
