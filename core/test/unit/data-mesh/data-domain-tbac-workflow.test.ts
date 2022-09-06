@@ -3,42 +3,43 @@
 
 
 /**
- * Tests DataDomain construct
+ * Tests DataDomainTbacWorkflow construct
  *
- * @group unit/data-domain-workflow
+ * @group unit/data-domain-tbac-workflow
  */
 
 import { Stack } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { EventBus } from 'aws-cdk-lib/aws-events';
 import { CompositePrincipal, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { DataDomainWorkflow } from '../../../src/data-mesh/data-domain-workflow';
+import { DataDomainTbacWorkflow } from '../../../src/data-mesh/data-domain-tbac-workflow';
 
-describe('DataDomainWorkflowTests', () => {
-  
-  const dataDomainWorkflowStack = new Stack();
-  
-  const workflowRole = new Role(dataDomainWorkflowStack, 'WorkflowRole', {
+describe('DataDomainTbacWorkflow', () => {
+
+  const dataDomainTbacWorkflow = new Stack();
+
+  const workflowRole = new Role(dataDomainTbacWorkflow, 'WorkflowRole', {
     assumedBy: new CompositePrincipal(
       new ServicePrincipal('states.amazonaws.com'),
     ),
   });
 
-  const eventBus = new EventBus(dataDomainWorkflowStack, 'dataDomainEventBus', {
+  const eventBus = new EventBus(dataDomainTbacWorkflow, 'dataDomainEventBus', {
     eventBusName: 'data-mesh-bus',
   });
-  
-  new DataDomainWorkflow(dataDomainWorkflowStack, 'DataDomainWorflow', {
+
+  new DataDomainTbacWorkflow(dataDomainTbacWorkflow, 'DataDomainWorflow', {
     workflowRole: workflowRole,
     centralAccountId: '11111111111111',
+    domainName: 'Data1Domain',
     eventBus: eventBus,
   });
 
-  const template = Template.fromStack(dataDomainWorkflowStack);
-  // console.log(JSON.stringify(template.toJSON(),null, 2));
+  const template = Template.fromStack(dataDomainTbacWorkflow);
+  // console.log(JSON.stringify(template.toJSON(), null, 2));
 
   test('should provision the proper workflow log group', () => {
-    template.hasResource('AWS::Logs::LogGroup', 
+    template.hasResource('AWS::Logs::LogGroup',
       Match.objectLike({
         Properties: {
           RetentionInDays: 7
@@ -73,17 +74,7 @@ describe('DataDomainWorkflowTests', () => {
               Resource: "*"
             },
             {
-              Action: "ram:getResourceShareInvitations",
-              Effect: "Allow",
-              Resource: "*"
-            },
-            {
               Action: "glue:createDatabase",
-              Effect: "Allow",
-              Resource: "*"
-            },
-            {
-              Action: "lakeformation:grantPermissions",
               Effect: "Allow",
               Resource: "*"
             },
@@ -92,16 +83,6 @@ describe('DataDomainWorkflowTests', () => {
               Effect: "Allow",
               Resource: Match.anyValue()
             },
-            {
-              Action: "glue:createTable",
-              Effect: "Allow",
-              Resource: "*"
-            },
-            {
-              Action: "ram:acceptResourceShareInvitation",
-              Effect: "Allow",
-              Resource: "*"
-            }
           ]
         }
       })

@@ -19,25 +19,26 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 const mockApp = new App();
 
 const dataDomainCrawlerStack = new Stack(mockApp, 'DataDomainCrawlerStack');
-  
-  const workflowRole = new Role(dataDomainCrawlerStack, 'CrawlerWorkflowRole', {
-    assumedBy: new CompositePrincipal(
-      new ServicePrincipal('states.amazonaws.com'),
-    ),
-  });
 
-  const bucket = new Bucket(dataDomainCrawlerStack, 'Bucket');
+const workflowRole = new Role(dataDomainCrawlerStack, 'CrawlerWorkflowRole', {
+  assumedBy: new CompositePrincipal(
+    new ServicePrincipal('states.amazonaws.com'),
+  ),
+});
 
-  new DataDomainCrawler(dataDomainCrawlerStack, 'DataDomainCrawler', {
-    workflowRole: workflowRole,
-    dataProductsBucket: bucket,
-    dataProductsPrefix: 'test',
-  });
+const bucket = new Bucket(dataDomainCrawlerStack, 'Bucket');
+
+new DataDomainCrawler(dataDomainCrawlerStack, 'DataDomainCrawler', {
+  workflowRole: workflowRole,
+  dataProductsBucket: bucket,
+  dataProductsPrefix: 'test',
+  domainName: 'Domain1Name',
+});
 
 Aspects.of(dataDomainCrawlerStack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
-dataDomainCrawlerStack,
+  dataDomainCrawlerStack,
   'DataDomainCrawlerStack/CrawlerWorkflowRole',
   [
     { id: 'AwsSolutions-IAM5', reason: 'Not the purpose of this NAG to test the Crawler Workflow Role' }
@@ -47,19 +48,19 @@ dataDomainCrawlerStack,
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainCrawlerStack,
-    'DataDomainCrawlerStack/Bucket/Resource',
-    [
-      { id: 'AwsSolutions-S10', reason: 'Not the purpose of this NAG to test the IAM Role' },
-      { id: 'AwsSolutions-S2', reason: 'Not the purpose of this NAG to test the IAM Role' },
-      { id: 'AwsSolutions-S1', reason: 'Not the purpose of this NAG to test the IAM Role' },
-      { id: 'AwsSolutions-S3', reason: 'Not the purpose of this NAG to test the IAM Role' },
-      { id: 'AwsSolutions-IAM5', reason: 'Not the purpose of this NAG to test the IAM Role' }
-    ],
-    true,
-  );
+  'DataDomainCrawlerStack/Bucket/Resource',
+  [
+    { id: 'AwsSolutions-S10', reason: 'Not the purpose of this NAG to test the IAM Role' },
+    { id: 'AwsSolutions-S2', reason: 'Not the purpose of this NAG to test the IAM Role' },
+    { id: 'AwsSolutions-S1', reason: 'Not the purpose of this NAG to test the IAM Role' },
+    { id: 'AwsSolutions-S3', reason: 'Not the purpose of this NAG to test the IAM Role' },
+    { id: 'AwsSolutions-IAM5', reason: 'Not the purpose of this NAG to test the IAM Role' }
+  ],
+  true,
+);
 
 NagSuppressions.addResourceSuppressionsByPath(
-dataDomainCrawlerStack,
+  dataDomainCrawlerStack,
   'DataDomainCrawlerStack/DataDomainCrawler/UpdateTableSchemas/Resource',
   [{ id: 'AwsSolutions-SF2', reason: 'The Step Function doesn\'t need X-ray' }],
   true,
@@ -67,10 +68,10 @@ dataDomainCrawlerStack,
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainCrawlerStack,
-    'DataDomainCrawlerStack/DataDomainCrawler/S3AccessPolicy/Resource',
-    [{ id: 'AwsSolutions-IAM5', reason: 'Crawler needs GetObject*, List* and GetBucket* and Glue:*' }],
-    true,
-  );
+  'DataDomainCrawlerStack/DataDomainCrawler/S3AccessPolicy/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'Crawler needs GetObject*, List* and GetBucket* and Glue:*' }],
+  true,
+);
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(dataDomainCrawlerStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
