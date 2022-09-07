@@ -1722,6 +1722,150 @@ public readonly DOMAIN_DATABASE_PREFIX: string;
 
 ---
 
+### CustomDataset <a name="CustomDataset" id="aws-analytics-reference-architecture.CustomDataset"></a>
+
+A CustomDataset is a dataset that you need to prepare for the [BatchReplayer](@link BatchReplayer) to generate data.
+
+The dataset is transformed into a [PreparedDataset](@link PreparedDataset) by a Glue Job that runs synchronously during the CDK deploy.
+The Glue job is sized based on the approximate size of the input data or uses autoscaling (max 100) if no data size is provided.
+
+The Glue job is applying the following transformations to the input dataset:
+1. Read the input dataset based on its format. Currently, it supports data in CSV, JSON and Parquet
+2. Group rows into tumbling windows based on the partition range parameter provided. 
+The partition range should be adapted to the data volume and the total dataset time range
+3. Write data into the output bucket partitioned by the tumbling window time. For example, one partition for every 5 minutes
+4. Generate a manifest file based on the previous output to be used by the BatchReplayer for generating data
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.CustomDataset.Initializer"></a>
+
+```typescript
+import { CustomDataset } from 'aws-analytics-reference-architecture'
+
+new CustomDataset(scope: Construct, id: string, props: CustomDatasetProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps">CustomDatasetProps</a></code> | the CustomDataset [properties]{@link CustomDatasetProps}. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.CustomDatasetProps">CustomDatasetProps</a>
+
+the CustomDataset [properties]{@link CustomDatasetProps}.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.CustomDataset.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.CustomDataset.isConstruct"></a>
+
+```typescript
+import { CustomDataset } from 'aws-analytics-reference-architecture'
+
+CustomDataset.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.CustomDataset.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.property.preparedDataset">preparedDataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The prepared dataset generated from the custom dataset. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.CustomDataset.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `preparedDataset`<sup>Required</sup> <a name="preparedDataset" id="aws-analytics-reference-architecture.CustomDataset.property.preparedDataset"></a>
+
+```typescript
+public readonly preparedDataset: PreparedDataset;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
+
+The prepared dataset generated from the custom dataset.
+
+---
+
+
 ### DataDomain <a name="DataDomain" id="aws-analytics-reference-architecture.DataDomain"></a>
 
 This CDK Construct creates all required resources for data mesh in Data Domain account.
@@ -6654,6 +6798,104 @@ The S3 object key sink where the BatchReplayer writes data.
 
 ---
 
+### CustomDatasetProps <a name="CustomDatasetProps" id="aws-analytics-reference-architecture.CustomDatasetProps"></a>
+
+The properties for the Bring Your Own Data generator.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.CustomDatasetProps.Initializer"></a>
+
+```typescript
+import { CustomDatasetProps } from 'aws-analytics-reference-architecture'
+
+const customDatasetProps: CustomDatasetProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.datetimeColumn">datetimeColumn</a></code> | <code>string</code> | The datetime column to use for data generation as the time reference. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.datetimeColumnsToAdjust">datetimeColumnsToAdjust</a></code> | <code>string[]</code> | The datetime columns to use for data generation. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.inputFormat">inputFormat</a></code> | <code><a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat">CustomDatasetInputFormat</a></code> | The format of the input data. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.partitionRange">partitionRange</a></code> | <code>aws-cdk-lib.Duration</code> | The interval to partition data and optimize the data generation in Minutes. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.s3Location">s3Location</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The S3 location of the input data. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.approximateDataSize">approximateDataSize</a></code> | <code>number</code> | Approximate data size (in GB) of the custom dataset. |
+
+---
+
+##### `datetimeColumn`<sup>Required</sup> <a name="datetimeColumn" id="aws-analytics-reference-architecture.CustomDatasetProps.property.datetimeColumn"></a>
+
+```typescript
+public readonly datetimeColumn: string;
+```
+
+- *Type:* string
+
+The datetime column to use for data generation as the time reference.
+
+---
+
+##### `datetimeColumnsToAdjust`<sup>Required</sup> <a name="datetimeColumnsToAdjust" id="aws-analytics-reference-architecture.CustomDatasetProps.property.datetimeColumnsToAdjust"></a>
+
+```typescript
+public readonly datetimeColumnsToAdjust: string[];
+```
+
+- *Type:* string[]
+
+The datetime columns to use for data generation.
+
+---
+
+##### `inputFormat`<sup>Required</sup> <a name="inputFormat" id="aws-analytics-reference-architecture.CustomDatasetProps.property.inputFormat"></a>
+
+```typescript
+public readonly inputFormat: CustomDatasetInputFormat;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat">CustomDatasetInputFormat</a>
+
+The format of the input data.
+
+---
+
+##### `partitionRange`<sup>Required</sup> <a name="partitionRange" id="aws-analytics-reference-architecture.CustomDatasetProps.property.partitionRange"></a>
+
+```typescript
+public readonly partitionRange: Duration;
+```
+
+- *Type:* aws-cdk-lib.Duration
+
+The interval to partition data and optimize the data generation in Minutes.
+
+---
+
+##### `s3Location`<sup>Required</sup> <a name="s3Location" id="aws-analytics-reference-architecture.CustomDatasetProps.property.s3Location"></a>
+
+```typescript
+public readonly s3Location: Location;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Location
+
+The S3 location of the input data.
+
+---
+
+##### `approximateDataSize`<sup>Optional</sup> <a name="approximateDataSize" id="aws-analytics-reference-architecture.CustomDatasetProps.property.approximateDataSize"></a>
+
+```typescript
+public readonly approximateDataSize: number;
+```
+
+- *Type:* number
+- *Default:* The Glue job responsible for preparing the data uses autoscaling with a maximum of 100 workers
+
+Approximate data size (in GB) of the custom dataset.
+
+---
+
 ### DataDomainProps <a name="DataDomainProps" id="aws-analytics-reference-architecture.DataDomainProps"></a>
 
 Properties for the DataDomain Construct.
@@ -8885,6 +9127,33 @@ The BatchReplayer adds two columns ingestion_start and ingestion_end
 
 
 ## Enums <a name="Enums" id="Enums"></a>
+
+### CustomDatasetInputFormat <a name="CustomDatasetInputFormat" id="aws-analytics-reference-architecture.CustomDatasetInputFormat"></a>
+
+#### Members <a name="Members" id="Members"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat.CSV">CSV</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat.PARQUET">PARQUET</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat.JSON">JSON</a></code> | *No description.* |
+
+---
+
+##### `CSV` <a name="CSV" id="aws-analytics-reference-architecture.CustomDatasetInputFormat.CSV"></a>
+
+---
+
+
+##### `PARQUET` <a name="PARQUET" id="aws-analytics-reference-architecture.CustomDatasetInputFormat.PARQUET"></a>
+
+---
+
+
+##### `JSON` <a name="JSON" id="aws-analytics-reference-architecture.CustomDatasetInputFormat.JSON"></a>
+
+---
+
 
 ### SSOIdentityType <a name="SSOIdentityType" id="aws-analytics-reference-architecture.SSOIdentityType"></a>
 

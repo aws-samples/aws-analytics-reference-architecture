@@ -2,16 +2,17 @@
 // SPDX-License-Identifier: MIT-0
 
 import { PreBundledPysparkJobExecutable } from '../common/pre-bundled-pyspark-job-executable';
-import { GlueVersion, PythonVersion, WorkerType } from '@aws-cdk/aws-glue-alpha';
+import { CloudWatchEncryptionMode, GlueVersion, JobBookmarksEncryptionMode, PythonVersion, S3EncryptionMode, SecurityConfiguration, WorkerType } from '@aws-cdk/aws-glue-alpha';
 import { PreparedDataset } from './prepared-dataset';
 import { Construct } from 'constructs';
-import { ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Bucket, Location } from 'aws-cdk-lib/aws-s3';
 import { AraBucket } from '../ara-bucket';
 import { SynchronousGlueJob } from '../synchronous-glue-job';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { Duration } from 'aws-cdk-lib';
+import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
+import { Key } from 'aws-cdk-lib/aws-kms';
 
 
 /**
@@ -88,11 +89,29 @@ export class CustomDataset extends Construct {
     // the sink bucket used by the Glue job to write the prepared dataset
     const outputBucket = AraBucket.getOrCreate(scope, {
       bucketName: 'custom-dataset',
+      serverAccessLogsPrefix: 'custom-dataset',
     });
 
     const glueRole = new Role(scope, 'CustomDatasetRole', {
       assumedBy: new ServicePrincipal('glue.amazonaws.com'),
+      // add inline policy to encrypt logs
+      inlinePolicies: {
+        SecurityConfig: new PolicyDocument({
+          statements: [
+            new PolicyStatement({
+              actions: [
+                "logs:AssociateKmsKey"
+              ],
+              resources: [
+                "arn:aws:logs:us-east-1:668876353122:log-group:/aws-glue/jobs/*"
+              ],
+            })
+          ]
+        })
+      }
     });
+  
+    // grant permissions on the eS3 buckets to the glue job role
     sourceBucket.grantRead(glueRole, props.s3Location.objectKey + '*');
     outputBucket.grantReadWrite(glueRole, props.s3Location.objectKey + '*');
 
@@ -103,6 +122,43 @@ export class CustomDataset extends Construct {
     ssm.grantWrite(glueRole);
 
     glueRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSGlueServiceRole'));
+
+    // create a KMS key for the Glue security configureation
+    const glueKey = new Key(this, 'GlueKey', {
+      removalPolicy: RemovalPolicy.DESTROY,
+    })
+    
+    // We add a resource policy so the key can be used in Cloudwatch logs
+    glueKey.addToResourcePolicy(new PolicyStatement({
+      principals: [
+        new ServicePrincipal(`logs.${Aws.REGION}.amazonaws.com`)
+      ],
+      actions: [
+        "kms:Encrypt*",
+        "kms:Decrypt*",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*",
+        "kms:Describe*"
+      ],
+      resources: ["*"],
+      conditions: { ArnLike: { "kms:EncryptionContext:aws:logs:arn": `arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:*` } },
+    }))
+
+    // the Glue job security configuration following best practices
+    const conf = new SecurityConfiguration(this, 'SecurityConfiguration', {
+      securityConfigurationName: id,
+      cloudWatchEncryption: {
+        mode: CloudWatchEncryptionMode.KMS,
+        kmsKey: glueKey,
+      },
+      jobBookmarksEncryption: {
+        mode: JobBookmarksEncryptionMode.CLIENT_SIDE_KMS,
+        kmsKey: glueKey,
+      },
+      s3Encryption: {
+        mode: S3EncryptionMode.S3_MANAGED,
+      }
+    });
 
     // calculate the size of the Glue job based on input data size (1 + 1 DPU per 2GB)
     var workerNum = 9;
@@ -132,6 +188,7 @@ export class CustomDataset extends Construct {
       continuousLogging:{
         enabled: true,
       },
+      securityConfiguration: conf,
     });
 
     // Get the offset value calculated in the SynchronousGlueJob
