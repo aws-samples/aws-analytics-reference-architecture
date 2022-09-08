@@ -19,5 +19,5 @@ export { TrackedConstruct, TrackedConstructProps } from './common/tracked-constr
 export { SingletonGlueDatabase } from './singleton-glue-database';
 export { SingletonKey } from './singleton-kms-key';
 export { SingletonCfnLaunchTemplate } from './singleton-launch-template';
-export { DataDomain, DataDomainProps, CentralGovernance } from './data-mesh';
+export { CentralGovernance, CentralGovernanceProps, DataDomain, DataDomainProps, LfAccessControlMode, LfTag } from './data-mesh';
 export { LakeFormationAdmin, LakeFormationAdminProps, LakeFormationS3Location, LakeFormationS3LocationProps } from './lake-formation';

@@ -6,7 +6,7 @@ import { Stack } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
 /**
- * An Amazon S3 Bucket implementing the singleton pattern
+ * AWS Glue Database implementing the singleton pattern
  */
 export class SingletonGlueDatabase extends Database {
 

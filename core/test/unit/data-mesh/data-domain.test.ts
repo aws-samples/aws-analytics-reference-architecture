@@ -13,14 +13,15 @@ import { Match, Template } from 'aws-cdk-lib/assertions';
 import { DataDomain } from '../../../src';
 
 describe('DataDomainTests', () => {
-  
+
   const dataDomainStack = new Stack();
-  
+
   new DataDomain(dataDomainStack, 'DataDomain', {
+    domainName: 'Domain1Name',
     centralAccountId: '1234567891011',
     crawlerWorkflow: true,
   });
-  
+
   const template = Template.fromStack(dataDomainStack);
   // console.log(JSON.stringify(template.toJSON(),null, 2));
 

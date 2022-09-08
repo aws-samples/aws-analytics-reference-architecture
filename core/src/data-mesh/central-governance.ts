@@ -1,12 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-// import { Aws, RemovalPolicy, BOOTSTRAP_QUALIFIER_CONTEXT, DefaultStackSynthesizer } from 'aws-cdk-lib';;
-import { Aws, DefaultStackSynthesizer, Fn, RemovalPolicy, aws_glue as glue } from 'aws-cdk-lib';;
-import { Construct } from 'constructs';
-import { IRole, Policy, PolicyStatement, Role } from 'aws-cdk-lib/aws-iam';
+import { Aws, RemovalPolicy, aws_glue as glue } from 'aws-cdk-lib';;
+import { Construct, DependencyGroup } from 'constructs';
+import { IRole, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
-import { StateMachine, JsonPath, TaskInput, Map, LogLevel } from "aws-cdk-lib/aws-stepfunctions";
+import { Choice, Condition, StateMachine, JsonPath, TaskInput, Map, LogLevel, Pass } from "aws-cdk-lib/aws-stepfunctions";
 import { CfnEventBusPolicy, EventBus, IEventBus, Rule } from 'aws-cdk-lib/aws-events';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
@@ -17,6 +16,32 @@ import { LakeFormationS3Location } from '../lake-formation';
 import { LakeFormationAdmin } from '../lake-formation';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { DataDomain } from './data-domain';
+
+/**
+ * Enum to define access control mode in Lake Formation
+ */
+export enum LfAccessControlMode {
+  NRAC = 'nrac',
+  TBAC = 'tbac',
+}
+
+/**
+ * LF Tag interface
+ */
+export interface LfTag {
+  readonly key: string;
+  readonly values: string[];
+}
+
+/**
+ * Properties for the CentralGovernance Construct
+ */
+export interface CentralGovernanceProps {
+  /**
+   * LF tags
+   */
+  readonly lfTags?: LfTag[];
+}
 
 /**
  * This CDK Construct creates a Data Product registration workflow and resources for the Central Governance account.
@@ -37,49 +62,54 @@ import { DataDomain } from './data-domain';
  * ```typescript
  * import { App, Stack } from 'aws-cdk-lib';
  * import { Role } from 'aws-cdk-lib/aws-iam';
- * import { CentralGovernance } from 'aws-analytics-reference-architecture';
+ * import { CentralGovernance, LfTag } from 'aws-analytics-reference-architecture';
  * 
  * const exampleApp = new App();
- * const stack = new Stack(exampleApp, 'DataProductStack');
+ * const stack = new Stack(exampleApp, 'CentralGovStack');
  * 
- * const governance = new CentralGovernance(stack, 'myCentralGov');
+ * const tags: LfTag[] = [{key: 'tag1': values:['LfTagValue1', 'LfTagValue2']}]
+ * const governance = new CentralGovernance(stack, 'myCentralGov', { tags });
  * 
- * governance.registerDataDomain('Domain1', <DOMAIN_ACCOUNT_ID>, <DOMAIN_CONFIG_SECRET_ARN>);
+ * governance.registerDataDomain('Domain1', 'domain1Name', <DOMAIN_CONFIG_SECRET_ARN>);
  * ```
  */
 export class CentralGovernance extends Construct {
 
-  public static readonly DOMAIN_DATABASE_PREFIX: string = 'data-domain-';
+  public static readonly DOMAIN_DATABASE_PREFIX: string = 'data-domain';
+  public static readonly DOMAIN_TAG_KEY: string = 'LoB';
   public readonly workflowRole: IRole;
   public readonly eventBus: IEventBus;
+  private readonly cdkLfAdmin: LakeFormationAdmin;
+  private lfTags: LfTag[] = [];
 
   /**
    * Construct a new instance of CentralGovernance.
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
+   * @param {CentralGovernanceProps} props the CentralGovernance properties
    * @access public
    */
 
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, props?: CentralGovernanceProps) {
     super(scope, id);
-
-    // Constructs the CDK execution role ARN
-    const cdkExecutionRoleArn = Fn.sub(
-      DefaultStackSynthesizer.DEFAULT_CLOUDFORMATION_ROLE_ARN,
-      {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        Qualifier: DefaultStackSynthesizer.DEFAULT_QUALIFIER,
-      },
-    );
-    // Makes the CDK execution role LF admin so it can create databases
-    const cdkRole = Role.fromRoleArn(this, 'cdkRole', cdkExecutionRoleArn);
-    new LakeFormationAdmin(this, 'CdkLakeFormationAdmin', {
-      principal: cdkRole,
-    });
 
     // Event Bridge event bus for the Central Governance account
     this.eventBus = new EventBus(this, 'centralEventBus');
     this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    this.cdkLfAdmin = LakeFormationAdmin.addCdkExecRole(scope, 'CdkLfAdmin');
+
+    // Create LF tags in Central Governance account
+    if (props) {
+      if (props.lfTags) {
+        this.lfTags = props.lfTags;
+        this.lfTags.forEach(tag =>
+          new lakeformation.CfnTag(this, `CentralLfTag${tag.key}`, {
+            tagKey: tag.key,
+            tagValues: tag.values,
+          }).node.addDependency(this.cdkLfAdmin)
+        );
+      }
+    }
 
     // Workflow role used by the state machine
     this.workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole').role;
@@ -99,7 +129,7 @@ export class CentralGovernance extends Construct {
       action: 'createTable',
       iamResources: ['*'],
       parameters: {
-        'DatabaseName.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
+        'DatabaseName.$': `States.Format('{}-${CentralGovernance.DOMAIN_DATABASE_PREFIX}-{}', $.lf_access_mode, $.producer_acc_id)`,
         'TableInput': {
           'Name.$': '$.tables.name',
           'Owner.$': '$.producer_acc_id',
@@ -128,7 +158,7 @@ export class CentralGovernance extends Construct {
         },
         'Resource': {
           'Table': {
-            'DatabaseName.$': `States.Format('${CentralGovernance.DOMAIN_DATABASE_PREFIX}{}', $.producer_acc_id)`,
+            'DatabaseName.$': `States.Format('{}-${CentralGovernance.DOMAIN_DATABASE_PREFIX}-{}', $.lf_access_mode ,$.producer_acc_id)`,
             'Name.$': '$.tables.name',
           },
         },
@@ -142,13 +172,20 @@ export class CentralGovernance extends Construct {
       entries: [{
         detail: TaskInput.fromObject({
           'central_database_name': JsonPath.format(
-            "{}{}",
+            "{}-{}-{}",
+            JsonPath.stringAt("$.lf_access_mode"),
             CentralGovernance.DOMAIN_DATABASE_PREFIX,
             JsonPath.stringAt("$.producer_acc_id")
           ),
+          'central_account_id': Aws.ACCOUNT_ID,
           'producer_acc_id': JsonPath.stringAt("$.producer_acc_id"),
-          'database_name': "data-products",
+          'database_name': JsonPath.format(
+            "{}-{}",
+            JsonPath.stringAt("$.lf_access_mode"),
+            CentralGovernance.DOMAIN_DATABASE_PREFIX,
+          ),
           'table_names': JsonPath.stringAt("$.map_result.flatten"),
+          'lf_access_mode': JsonPath.stringAt("$.lf_access_mode"),
         }),
         detailType: JsonPath.format(
           "{}_createResourceLinks",
@@ -159,12 +196,13 @@ export class CentralGovernance extends Construct {
       }]
     });
 
-    // iterate over multiple tables in parallel
+    // Iterate over multiple tables in parallel
     const tablesMapTask = new Map(this, 'forEachTable', {
       itemsPath: '$.tables',
       parameters: {
         'producer_acc_id.$': '$.producer_acc_id',
         'tables.$': '$$.Map.Item.Value',
+        'lf_access_mode.$': '$.lf_access_mode',
       },
       resultSelector: {
         'flatten.$': '$[*]'
@@ -172,12 +210,21 @@ export class CentralGovernance extends Construct {
       resultPath: '$.map_result',
     });
 
+    // Check if LF access mode is NRAC
+    const checkModeTask = new Choice(this, 'isModeNRAC')
+      .when(Condition.stringEquals('$.lf_access_mode', LfAccessControlMode.NRAC), grantTablePermissions)
+      .otherwise(new Pass(this, 'Pass', {
+        outputPath: '$.tables.name',
+        resultPath: JsonPath.DISCARD
+      }));
+
     tablesMapTask.iterator(
-      createTable.addCatch(grantTablePermissions, {
+      createTable.addCatch(checkModeTask, {
         errors: ['Glue.AlreadyExistsException'],
         resultPath: '$.CreateTableException',
-      }).next(grantTablePermissions)
-    ).next(triggerProducer);
+      }).next(checkModeTask),
+    );
+    tablesMapTask.next(triggerProducer);
 
     // Create Log group for this state machine
     const logGroup = new LogGroup(this, 'centralGov-stateMachine', {
@@ -221,9 +268,10 @@ export class CentralGovernance extends Construct {
    * @param {string} domainId the account ID of the DataDomain to register
    * @param {string} domainName the name of the DataDomain, i.e. Line of Business name
    * @param {string} domainSecretArn the full ARN of the secret used by producers to share references with the central governance
+   * @param {LfAccessControlMode} lfAccessControlMode Lake Formation Access Control mode for the DataDomain
    * @access public
    */
-  public registerDataDomain(id: string, domainId: string, domainName: string, domainSecretArn: string) {
+  public registerDataDomain(id: string, domainId: string, domainName: string, domainSecretArn: string, lfAccessControlMode?: LfAccessControlMode) {
 
     // Import the data domain secret from it's full ARN
     const domainSecret = Secret.fromSecretCompleteArn(this, `${id}DomainSecret`, domainSecretArn);
@@ -233,6 +281,40 @@ export class CentralGovernance extends Construct {
     const domainKey = domainSecret.secretValueFromJson('KmsKeyId').unsafeUnwrap();
     // Construct domain event bus ARN
     const dataDomainBusArn = `arn:aws:events:${Aws.REGION}:${domainId}:event-bus/${DataDomain.DOMAIN_BUS_NAME}`;
+
+    const lfModes = lfAccessControlMode ? [lfAccessControlMode] : [LfAccessControlMode.NRAC, LfAccessControlMode.TBAC];
+    lfModes.forEach(mode => {
+      // Create the database in Glue with datadomain mode+prefix+bucket, and metadata parameters
+      new glue.CfnDatabase(this, `${id}DataDomainDatabase-${mode}`, {
+        catalogId: Aws.ACCOUNT_ID,
+        databaseInput: {
+          description: `Database for data products in ${domainName} data domain. Account id: ${domainId}. LF Access Control mode: ${mode}`,
+          name: mode + '-' + CentralGovernance.DOMAIN_DATABASE_PREFIX + '-' + domainId,
+          locationUri: `s3://${domainBucket}/${domainPrefix}`,
+          parameters: {
+            'data_owner': domainId,
+            'data_owner_name': domainName,
+            'pii_flag': false,
+            'access_mode': mode,
+          }
+        }
+      }).node.addDependency(this.cdkLfAdmin);
+
+      // Grant workflow role permissions to domain database
+      new lakeformation.CfnPrincipalPermissions(this, `${id}WorkflowRoleDbAccess-${mode}`, {
+        permissions: ['ALL'],
+        permissionsWithGrantOption: [],
+        principal: {
+          dataLakePrincipalIdentifier: this.workflowRole.roleArn,
+        },
+        resource: {
+          database: {
+            catalogId: Aws.ACCOUNT_ID,
+            name: mode + '-' + CentralGovernance.DOMAIN_DATABASE_PREFIX + '-' + domainId,
+          }
+        },
+      }).node.addDependency(this.node.findChild(`${id}DataDomainDatabase-${mode}`));
+    });
 
     // register the S3 location in Lake Formation and create data access role
     new LakeFormationS3Location(this, `${id}LFLocation`, {
@@ -244,38 +326,109 @@ export class CentralGovernance extends Construct {
       kmsKeyId: domainKey,
     });
 
-    // Create the database in Glue with datadomain prefix+bucket, and metadata parameters
-    new glue.CfnDatabase(this, `${id}DataDomainDatabase`, {
-      catalogId: Aws.ACCOUNT_ID,
-      databaseInput: {
-        description: `Database for data products in ${domainName} data domain. Account id: ${domainId}`,
-        name: CentralGovernance.DOMAIN_DATABASE_PREFIX + domainId,
-        locationUri: `s3://${domainBucket}/${domainPrefix}`,
-        parameters: {
-          'data_owner': domainId,
-          'data_owner_name': domainName,
-          'pii_flag': false,
-        }
+    if (lfModes.includes(LfAccessControlMode.TBAC)) {
+      const mode = LfAccessControlMode.TBAC;
+      // Create LF tag for data domain
+      new lakeformation.CfnTag(this, `${id}LfTag`, {
+        tagKey: CentralGovernance.DOMAIN_TAG_KEY,
+        tagValues: [domainName],
+      }).node.addDependency(this.node.findChild(`${id}DataDomainDatabase-${mode}`));
+
+      // Associate LF tag with data domain database
+      new lakeformation.CfnTagAssociation(this, `${id}DbTagAssoc`, {
+        resource: {
+          database: {
+            catalogId: Aws.ACCOUNT_ID,
+            name: mode + '-' + CentralGovernance.DOMAIN_DATABASE_PREFIX + '-' + domainId,
+          }
+        },
+        lfTags: [
+          {
+            catalogId: Aws.ACCOUNT_ID,
+            tagKey: CentralGovernance.DOMAIN_TAG_KEY,
+            tagValues: [domainName],
+          }
+        ],
+      }).node.addDependency(this.node.findChild(`${id}LfTag`));
+
+      // share data domain tag with domainId account
+      new lakeformation.CfnPrincipalPermissions(this, `grantDataDomainTag`, {
+        permissions: ['ASSOCIATE'],
+        permissionsWithGrantOption: ['ASSOCIATE'],
+        principal: {
+          dataLakePrincipalIdentifier: domainId,
+        },
+        resource: {
+          lfTag: {
+            catalogId: Aws.ACCOUNT_ID,
+            tagKey: CentralGovernance.DOMAIN_TAG_KEY,
+            tagValues: [domainName]
+          }
+        },
+      }).node.addDependency(this.node.findChild(`${id}LfTag`));
+
+      // create LF tag policy for table resource
+      new lakeformation.CfnPrincipalPermissions(this, `LFPolicyTable`, {
+        permissions: ['ALL'],
+        permissionsWithGrantOption: ['ALL'],
+        principal: {
+          dataLakePrincipalIdentifier: domainId,
+        },
+        resource: {
+          lfTagPolicy: {
+            catalogId: Aws.ACCOUNT_ID,
+            resourceType: 'TABLE',
+            expression: [{
+              tagKey: CentralGovernance.DOMAIN_TAG_KEY,
+              tagValues: [domainName]
+            }]
+          }
+        },
+      }).node.addDependency(this.node.findChild(`${id}LfTag`));
+
+      // create LF tag policy for database resource
+      new lakeformation.CfnPrincipalPermissions(this, `LFPolicyDatabase`, {
+        permissions: ['CREATE_TABLE', 'DESCRIBE'],
+        permissionsWithGrantOption: ['CREATE_TABLE', 'DESCRIBE'],
+        principal: {
+          dataLakePrincipalIdentifier: domainId,
+        },
+        resource: {
+          lfTagPolicy: {
+            catalogId: Aws.ACCOUNT_ID,
+            resourceType: 'DATABASE',
+            expression: [{
+              tagKey: CentralGovernance.DOMAIN_TAG_KEY,
+              tagValues: [domainName]
+            }]
+          }
+        },
+      }).node.addDependency(this.node.findChild(`${id}LfTag`));
+
+      if (this.lfTags) {
+        var shareTagsDependency = new DependencyGroup();
+        this.lfTags.forEach(tag => shareTagsDependency.add(this.node.findChild(`CentralLfTag${tag.key}`)));
+        // Share all tags with domainId account
+        this.lfTags.forEach(tag => {
+          new lakeformation.CfnPrincipalPermissions(this, `grantDataDomainTag${tag.key}`, {
+            permissions: ['ASSOCIATE'],
+            permissionsWithGrantOption: ['ASSOCIATE'],
+            principal: {
+              dataLakePrincipalIdentifier: domainId,
+            },
+            resource: {
+              lfTag: {
+                catalogId: Aws.ACCOUNT_ID,
+                tagKey: tag.key,
+                tagValues: tag.values
+              }
+            },
+          }).node.addDependency(shareTagsDependency);
+        });
       }
-    }).node.addDependency(this.node.findChild('CdkLakeFormationAdmin'));
-
-    // Grant workflow role permissions to domain database
-    new lakeformation.CfnPrincipalPermissions(this, `${id}WorkflowRoleDbAccess`, {
-      permissions: ['ALL'],
-      permissionsWithGrantOption: [],
-      principal: {
-        dataLakePrincipalIdentifier: this.workflowRole.roleArn,
-      },
-      resource: {
-        database: {
-          catalogId: Aws.ACCOUNT_ID,
-          name: CentralGovernance.DOMAIN_DATABASE_PREFIX + domainId,
-        }
-      },
-    }).node.addDependency(this.node.findChild(`${id}DataDomainDatabase`));
-
+    }
     // Cross-account policy to allow Data Domain account to send events to Central Gov. account event bus
-    new CfnEventBusPolicy(this, `${id}Policy`, {
+    new CfnEventBusPolicy(this, `${domainName}Policy`, {
       eventBusName: this.eventBus.eventBusName,
       statementId: `AllowDataDomainAccToPutEvents_${domainId}`,
       action: 'events:PutEvents',

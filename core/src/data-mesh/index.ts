@@ -1,3 +1,2 @@
 export { DataDomain, DataDomainProps } from './data-domain';
-export { CentralGovernance } from './central-governance';
-
+export { CentralGovernance, CentralGovernanceProps, LfAccessControlMode, LfTag } from './central-governance';
