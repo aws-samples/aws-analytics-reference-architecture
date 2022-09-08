@@ -50,14 +50,12 @@ NagSuppressions.addResourceSuppressionsByPath(
   dataDomainNracWorkflowStack,
   'DataDomainNracWorkflowStack/DataDomainWorflow/nracStateMachine/Resource',
   [{ id: 'AwsSolutions-SF2', reason: 'The Step Function doesn\'t need X-ray' }],
-  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainNracWorkflowStack,
   'DataDomainNracWorkflowStack/DataDomainWorflow/nracStateMachine/Resource',
   [{ id: 'AwsSolutions-SF2', reason: 'The Step Function doesn\'t need X-ray' }],
-  true,
 );
 
 test('No unsuppressed Warnings', () => {

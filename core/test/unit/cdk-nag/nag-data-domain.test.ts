@@ -101,76 +101,17 @@ NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
   'dataDomain/myDataDomain/tbacWorkflow/tbacStateMachine/Resource',
   [{ id: 'AwsSolutions-SF2', reason: 'The Step Function doesn\'t need X-ray' }],
-  true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/CdkLfAdmin/LogRetentionLambdaExecutionRoleCdkLfAdminlfAdminCreateFn/DefaultPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM4',
-    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
-  }],
-  true,
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  dataDomainStack,
-  'dataDomain/CdkLfAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/Resource',
-  [{
-    id: 'AwsSolutions-IAM4',
-    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
-  }],
-  true,
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  dataDomainStack,
-  'dataDomain/CdkLfAdmin/LambdaExecutionRolePolicyCdkLfAdminlfAdminCreateFn/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
-  }],
-  true,
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  dataDomainStack,
-  'dataDomain/CdkLfAdmin/LogRetentionLambdaExecutionRolePolicyCdkLfAdminlfAdminCreateFn/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
-  }],
-  true,
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  dataDomainStack,
-  'dataDomain/CdkLfAdmin/LogRetentionLambdaExecutionRoleCdkLfAdminlfAdminCreateFn/DefaultPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
-  }],
-  true,
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  dataDomainStack,
-  'dataDomain/CdkLfAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
-  }],
-  true,
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  dataDomainStack,
-  'dataDomain/CdkLfAdmin/lfAdminCreateCrp/framework-onEvent/Resource',
-  [{
-    id: 'AwsSolutions-L1',
-    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
-  }],
+  'dataDomain/CdkLfAdmin',
+  [
+    { id: 'AwsSolutions-S1', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' },
+    { id: 'AwsSolutions-L1', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' },
+    { id: 'AwsSolutions-IAM4', reason: 'Not the purpose of this NAG to LakeFormationAdmin construct' },
+    { id: 'AwsSolutions-IAM5', reason: 'Not the purpose of this NAG to LakeFormationAdmin construct' }
+  ],
   true,
 );
 
