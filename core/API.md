@@ -1506,14 +1506,15 @@ Usage example:
 ```typescript
 import { App, Stack } from 'aws-cdk-lib';
 import { Role } from 'aws-cdk-lib/aws-iam';
-import { CentralGovernance } from 'aws-analytics-reference-architecture';
+import { CentralGovernance, LfTag } from 'aws-analytics-reference-architecture';
 
 const exampleApp = new App();
-const stack = new Stack(exampleApp, 'DataProductStack');
+const stack = new Stack(exampleApp, 'CentralGovStack');
 
-const governance = new CentralGovernance(stack, 'myCentralGov');
+const tags: LfTag[] = [{key: 'tag1': values:['LfTagValue1', 'LfTagValue2']}]
+const governance = new CentralGovernance(stack, 'myCentralGov', { tags });
 
-governance.registerDataDomain('Domain1', <DOMAIN_ACCOUNT_ID>, <DOMAIN_CONFIG_SECRET_ARN>);
+governance.registerDataDomain('Domain1', 'domain1Name', <DOMAIN_CONFIG_SECRET_ARN>);
 ```
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.CentralGovernance.Initializer"></a>
@@ -1521,13 +1522,14 @@ governance.registerDataDomain('Domain1', <DOMAIN_ACCOUNT_ID>, <DOMAIN_CONFIG_SEC
 ```typescript
 import { CentralGovernance } from 'aws-analytics-reference-architecture'
 
-new CentralGovernance(scope: Construct, id: string)
+new CentralGovernance(scope: Construct, id: string, props?: CentralGovernanceProps)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.CentralGovernance.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.CentralGovernanceProps">CentralGovernanceProps</a></code> | the CentralGovernance properties. |
 
 ---
 
@@ -1544,6 +1546,14 @@ the Scope of the CDK Construct.
 - *Type:* string
 
 the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.CentralGovernance.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.CentralGovernanceProps">CentralGovernanceProps</a>
+
+the CentralGovernance properties.
 
 ---
 
@@ -1567,7 +1577,7 @@ Returns a string representation of this construct.
 ##### `registerDataDomain` <a name="registerDataDomain" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain"></a>
 
 ```typescript
-public registerDataDomain(id: string, domainId: string, domainName: string, domainSecretArn: string): void
+public registerDataDomain(id: string, domainId: string, domainName: string, domainSecretArn: string, lfAccessControlMode?: LfAccessControlMode): void
 ```
 
 Registers a new Data Domain account in Central Governance account.
@@ -1619,6 +1629,14 @@ the name of the DataDomain, i.e. Line of Business name.
 - *Type:* string
 
 the full ARN of the secret used by producers to share references with the central governance.
+
+---
+
+###### `lfAccessControlMode`<sup>Optional</sup> <a name="lfAccessControlMode" id="aws-analytics-reference-architecture.CentralGovernance.registerDataDomain.parameter.lfAccessControlMode"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.LfAccessControlMode">LfAccessControlMode</a>
+
+Lake Formation Access Control mode for the DataDomain.
 
 ---
 
@@ -1709,6 +1727,7 @@ public readonly workflowRole: IRole;
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.DOMAIN_DATABASE_PREFIX">DOMAIN_DATABASE_PREFIX</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.DOMAIN_TAG_KEY">DOMAIN_TAG_KEY</a></code> | <code>string</code> | *No description.* |
 
 ---
 
@@ -1716,6 +1735,16 @@ public readonly workflowRole: IRole;
 
 ```typescript
 public readonly DOMAIN_DATABASE_PREFIX: string;
+```
+
+- *Type:* string
+
+---
+
+##### `DOMAIN_TAG_KEY`<sup>Required</sup> <a name="DOMAIN_TAG_KEY" id="aws-analytics-reference-architecture.CentralGovernance.property.DOMAIN_TAG_KEY"></a>
+
+```typescript
+public readonly DOMAIN_TAG_KEY: string;
 ```
 
 - *Type:* string
@@ -1745,6 +1774,7 @@ const stack = new Stack(exampleApp, 'DataProductStack');
 new DataDomain(stack, 'myDataDomain', {
   centralAccountId: '1234567891011',
   crawlerWorkflow: true,
+  domainName: 'domainName'
 });
 ```
 
@@ -1793,6 +1823,7 @@ the DataDomainProps properties.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.addBusRule">addBusRule</a></code> | *No description.* |
 
 ---
 
@@ -1803,6 +1834,30 @@ public toString(): string
 ```
 
 Returns a string representation of this construct.
+
+##### `addBusRule` <a name="addBusRule" id="aws-analytics-reference-architecture.DataDomain.addBusRule"></a>
+
+```typescript
+public addBusRule(id: string, mode: LfAccessControlMode, workflow: StateMachine): void
+```
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.DataDomain.addBusRule.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+###### `mode`<sup>Required</sup> <a name="mode" id="aws-analytics-reference-architecture.DataDomain.addBusRule.parameter.mode"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.LfAccessControlMode">LfAccessControlMode</a>
+
+---
+
+###### `workflow`<sup>Required</sup> <a name="workflow" id="aws-analytics-reference-architecture.DataDomain.addBusRule.parameter.workflow"></a>
+
+- *Type:* aws-cdk-lib.aws_stepfunctions.StateMachine
+
+---
 
 #### Static Functions <a name="Static Functions" id="Static Functions"></a>
 
@@ -1849,7 +1904,9 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.DataDomain.property.dataLake">dataLake</a></code> | <code><a href="#aws-analytics-reference-architecture.DataLakeStorage">DataLakeStorage</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DataDomain.property.eventBus">eventBus</a></code> | <code>aws-cdk-lib.aws_events.EventBus</code> | *No description.* |
 
 ---
 
@@ -1865,6 +1922,16 @@ The tree node.
 
 ---
 
+##### `centralAccountId`<sup>Required</sup> <a name="centralAccountId" id="aws-analytics-reference-architecture.DataDomain.property.centralAccountId"></a>
+
+```typescript
+public readonly centralAccountId: string;
+```
+
+- *Type:* string
+
+---
+
 ##### `dataLake`<sup>Required</sup> <a name="dataLake" id="aws-analytics-reference-architecture.DataDomain.property.dataLake"></a>
 
 ```typescript
@@ -1872,6 +1939,16 @@ public readonly dataLake: DataLakeStorage;
 ```
 
 - *Type:* <a href="#aws-analytics-reference-architecture.DataLakeStorage">DataLakeStorage</a>
+
+---
+
+##### `eventBus`<sup>Required</sup> <a name="eventBus" id="aws-analytics-reference-architecture.DataDomain.property.eventBus"></a>
+
+```typescript
+public readonly eventBus: EventBus;
+```
+
+- *Type:* aws-cdk-lib.aws_events.EventBus
 
 ---
 
@@ -3717,6 +3794,7 @@ Returns a string representation of this construct.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.LakeFormationAdmin.addCdkExecRole">addCdkExecRole</a></code> | Adds the CDK execution role to LF admins It requires default cdk bootstrap. |
 
 ---
 
@@ -3749,6 +3827,28 @@ this type-testing method instead.
 - *Type:* any
 
 Any object.
+
+---
+
+##### `addCdkExecRole` <a name="addCdkExecRole" id="aws-analytics-reference-architecture.LakeFormationAdmin.addCdkExecRole"></a>
+
+```typescript
+import { LakeFormationAdmin } from 'aws-analytics-reference-architecture'
+
+LakeFormationAdmin.addCdkExecRole(scope: Construct, name: string)
+```
+
+Adds the CDK execution role to LF admins It requires default cdk bootstrap.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.LakeFormationAdmin.addCdkExecRole.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.LakeFormationAdmin.addCdkExecRole.parameter.name"></a>
+
+- *Type:* string
 
 ---
 
@@ -4955,7 +5055,7 @@ The CloudFormation resource type name for this resource class.
 
 ### SingletonGlueDatabase <a name="SingletonGlueDatabase" id="aws-analytics-reference-architecture.SingletonGlueDatabase"></a>
 
-An Amazon S3 Bucket implementing the singleton pattern.
+AWS Glue Database implementing the singleton pattern.
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer"></a>
 
@@ -6533,6 +6633,38 @@ The S3 object key sink where the BatchReplayer writes data.
 
 ---
 
+### CentralGovernanceProps <a name="CentralGovernanceProps" id="aws-analytics-reference-architecture.CentralGovernanceProps"></a>
+
+Properties for the CentralGovernance Construct.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.CentralGovernanceProps.Initializer"></a>
+
+```typescript
+import { CentralGovernanceProps } from 'aws-analytics-reference-architecture'
+
+const centralGovernanceProps: CentralGovernanceProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CentralGovernanceProps.property.lfTags">lfTags</a></code> | <code><a href="#aws-analytics-reference-architecture.LfTag">LfTag</a>[]</code> | LF tags. |
+
+---
+
+##### `lfTags`<sup>Optional</sup> <a name="lfTags" id="aws-analytics-reference-architecture.CentralGovernanceProps.property.lfTags"></a>
+
+```typescript
+public readonly lfTags: LfTag[];
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.LfTag">LfTag</a>[]
+
+LF tags.
+
+---
+
 ### DataDomainProps <a name="DataDomainProps" id="aws-analytics-reference-architecture.DataDomainProps"></a>
 
 Properties for the DataDomain Construct.
@@ -6550,6 +6682,7 @@ const dataDomainProps: DataDomainProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainProps.property.centralAccountId">centralAccountId</a></code> | <code>string</code> | Central Governance account Id. |
+| <code><a href="#aws-analytics-reference-architecture.DataDomainProps.property.domainName">domainName</a></code> | <code>string</code> | Data domain name. |
 | <code><a href="#aws-analytics-reference-architecture.DataDomainProps.property.crawlerWorkflow">crawlerWorkflow</a></code> | <code>boolean</code> | Flag to create a Crawler workflow in Data Domain account. |
 
 ---
@@ -6563,6 +6696,18 @@ public readonly centralAccountId: string;
 - *Type:* string
 
 Central Governance account Id.
+
+---
+
+##### `domainName`<sup>Required</sup> <a name="domainName" id="aws-analytics-reference-architecture.DataDomainProps.property.domainName"></a>
+
+```typescript
+public readonly domainName: string;
+```
+
+- *Type:* string
+
+Data domain name.
 
 ---
 
@@ -7615,6 +7760,47 @@ public readonly accountId: string;
 - *Default:* Current account is used
 
 Account ID owning the S3 location.
+
+---
+
+### LfTag <a name="LfTag" id="aws-analytics-reference-architecture.LfTag"></a>
+
+LF Tag interface.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.LfTag.Initializer"></a>
+
+```typescript
+import { LfTag } from 'aws-analytics-reference-architecture'
+
+const lfTag: LfTag = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LfTag.property.key">key</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LfTag.property.values">values</a></code> | <code>string[]</code> | *No description.* |
+
+---
+
+##### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.LfTag.property.key"></a>
+
+```typescript
+public readonly key: string;
+```
+
+- *Type:* string
+
+---
+
+##### `values`<sup>Required</sup> <a name="values" id="aws-analytics-reference-architecture.LfTag.property.values"></a>
+
+```typescript
+public readonly values: string[];
+```
+
+- *Type:* string[]
 
 ---
 
@@ -8770,6 +8956,29 @@ Enum to define the RelayState of different IdPs Used in EMR Studio Prop in the I
 
 
 ##### `PING_ONE` <a name="PING_ONE" id="aws-analytics-reference-architecture.IdpRelayState.PING_ONE"></a>
+
+---
+
+
+### LfAccessControlMode <a name="LfAccessControlMode" id="aws-analytics-reference-architecture.LfAccessControlMode"></a>
+
+Enum to define access control mode in Lake Formation.
+
+#### Members <a name="Members" id="Members"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.LfAccessControlMode.NRAC">NRAC</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.LfAccessControlMode.TBAC">TBAC</a></code> | *No description.* |
+
+---
+
+##### `NRAC` <a name="NRAC" id="aws-analytics-reference-architecture.LfAccessControlMode.NRAC"></a>
+
+---
+
+
+##### `TBAC` <a name="TBAC" id="aws-analytics-reference-architecture.LfAccessControlMode.TBAC"></a>
 
 ---
 
