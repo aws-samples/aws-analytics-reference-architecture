@@ -16,9 +16,9 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { DataDomainCrawler } from '../../../src/data-mesh/data-domain-crawler';
 
 describe('DataDomainCrawlerTests', () => {
-  
+
   const dataDomainCrawlerStack = new Stack();
-  
+
   const workflowRole = new Role(dataDomainCrawlerStack, 'WorkflowRole', {
     assumedBy: new CompositePrincipal(
       new ServicePrincipal('states.amazonaws.com'),
@@ -35,13 +35,14 @@ describe('DataDomainCrawlerTests', () => {
     workflowRole: workflowRole,
     dataProductsBucket: bucket,
     dataProductsPrefix: 'test',
+    domainName: 'Domain1Name',
   });
-  
+
   const template = Template.fromStack(dataDomainCrawlerStack);
   // console.log(JSON.stringify(template.toJSON(),null, 2));
 
   test('should provision the proper workflow default policy', () => {
-    template.hasResourceProperties('AWS::IAM::Policy', 
+    template.hasResourceProperties('AWS::IAM::Policy',
       Match.objectLike({
         "PolicyDocument": {
           "Statement": [
@@ -75,11 +76,6 @@ describe('DataDomainCrawlerTests', () => {
               "Resource": "*"
             },
             {
-              "Action": "lakeformation:batchGrantPermissions",
-              "Effect": "Allow",
-              "Resource": "*"
-            },
-            {
               "Action": "glue:createCrawler",
               "Effect": "Allow",
               "Resource": "*"
@@ -98,6 +94,11 @@ describe('DataDomainCrawlerTests', () => {
               "Action": "glue:deleteCrawler",
               "Effect": "Allow",
               "Resource": "*"
+            },
+            {
+              "Action": "lakeformation:batchGrantPermissions",
+              "Effect": "Allow",
+              "Resource": "*"
             }
           ],
         },
@@ -106,7 +107,7 @@ describe('DataDomainCrawlerTests', () => {
   });
 
   test('should provision the proper workflow log group', () => {
-    template.hasResource('AWS::Logs::LogGroup', 
+    template.hasResource('AWS::Logs::LogGroup',
       Match.objectLike({
         Properties: {
           RetentionInDays: 7
@@ -118,7 +119,7 @@ describe('DataDomainCrawlerTests', () => {
   });
 
   test('should provision the proper workflow role', () => {
-    template.hasResourceProperties('AWS::IAM::Role', 
+    template.hasResourceProperties('AWS::IAM::Role',
       Match.objectLike({
         "AssumeRolePolicyDocument": {
           "Statement": [
@@ -136,7 +137,7 @@ describe('DataDomainCrawlerTests', () => {
   });
 
   test('should provision the proper update table schema events role', () => {
-    template.hasResourceProperties('AWS::IAM::Role', 
+    template.hasResourceProperties('AWS::IAM::Role',
       Match.objectLike({
         "AssumeRolePolicyDocument": {
           "Statement": [
@@ -154,7 +155,7 @@ describe('DataDomainCrawlerTests', () => {
   });
 
   test('should provision the proper update table schema events role policy', () => {
-    template.hasResourceProperties('AWS::IAM::Policy', 
+    template.hasResourceProperties('AWS::IAM::Policy',
       Match.objectLike({
         "PolicyDocument": {
           "Statement": [
@@ -176,7 +177,7 @@ describe('DataDomainCrawlerTests', () => {
   });
 
   test('should provision the proper crawler S3 access policy', () => {
-    template.hasResourceProperties('AWS::IAM::ManagedPolicy', 
+    template.hasResourceProperties('AWS::IAM::ManagedPolicy',
       Match.objectLike({
         "PolicyDocument": {
           "Statement": [

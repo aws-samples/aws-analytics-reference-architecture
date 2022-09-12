@@ -22,6 +22,7 @@ const dataDomainStack = new Stack(mockApp, 'DataDomainStack');
 const governance = new CentralGovernance(centralGovStack, 'CentralGovernance');
 
 new DataDomain(dataDomainStack, 'Domain', {
+  domainName: 'Domain1Name',
   centralAccountId: '1234567891011',
 })
 
@@ -31,7 +32,7 @@ Aspects.of(centralGovStack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin',
+  'CentralGovernanceStack/CdkLfAdmin/lfAdminCreateCrp/framework-onEvent/Resource',
   [{
     id: 'AwsSolutions-L1',
     reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
@@ -41,7 +42,17 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin',
+  'CentralGovernanceStack/CdkLfAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
+  }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CdkLfAdmin/LambdaExecutionRolePolicyCdkLfAdminlfAdminCreateFn/Resource',
   [{
     id: 'AwsSolutions-IAM5',
     reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
@@ -51,9 +62,49 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
-  'CentralGovernanceStack/CentralGovernance/CdkLakeFormationAdmin',
+  'CentralGovernanceStack/CdkLfAdmin/LogRetentionLambdaExecutionRolePolicyCdkLfAdminlfAdminCreateFn/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
+  }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CdkLfAdmin/LogRetentionLambdaExecutionRoleCdkLfAdminlfAdminCreateFn/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
+  }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CdkLfAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/Resource',
   [{
     id: 'AwsSolutions-IAM4',
+    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
+  }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CdkLfAdmin/lfAdminCreateCrp/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
+  }],
+  true,
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
+  'CentralGovernanceStack/CdkLfAdmin/lfAdminCreateCrp/framework-onEvent/Resource',
+  [{
+    id: 'AwsSolutions-L1',
     reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct'
   }],
   true,

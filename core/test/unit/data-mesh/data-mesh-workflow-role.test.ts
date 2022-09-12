@@ -13,16 +13,16 @@ import { Match, Template } from 'aws-cdk-lib/assertions';
 import { DataMeshWorkflowRole } from '../../../src/data-mesh/data-mesh-workflow-role';
 
 describe('DataMeshWorkflowRoleTests', () => {
-  
+
   const dataMeshWorkflowRoleStack = new Stack();
-  
+
   new DataMeshWorkflowRole(dataMeshWorkflowRoleStack, 'DataMeshWorkflowRole',);
-  
+
   const template = Template.fromStack(dataMeshWorkflowRoleStack);
   // console.log(JSON.stringify(template.toJSON(),null, 2));
 
   test('should provision the proper workflow role', () => {
-    template.hasResourceProperties('AWS::IAM::Role', 
+    template.hasResourceProperties('AWS::IAM::Role',
       Match.objectLike({
         AssumeRolePolicyDocument: {
           Statement: [
@@ -30,15 +30,7 @@ describe('DataMeshWorkflowRoleTests', () => {
               "Action": "sts:AssumeRole",
               "Effect": "Allow",
               "Principal": {
-                "Service": {
-                  "Fn::FindInMap": [
-                    "ServiceprincipalMap",
-                    {
-                      "Ref": "AWS::Region"
-                    },
-                    "states"
-                  ]
-                }
+                "Service": "lambda.amazonaws.com"
               }
             }
           ],
@@ -52,59 +44,59 @@ describe('DataMeshWorkflowRoleTests', () => {
       Match.objectLike({
         PolicyDocument: {
           Statement: [
-          {
-            Action: [
-              "lakeformation:*",
-              "glue:GetDatabase",
-              "glue:GetDatabases",
-              "glue:GetTable",
-              "glue:GetTables",
-              "glue:CreateTable",
-              "glue:UpdateTable",
-              "iam:GetRole"
-            ],
-            Effect: "Allow",
-            Resource: "*"
-          },
-          {
-            Action: "ram:CreateResourceShare",
-            Condition: {
-              StringLikeIfExists: {
-                "ram:RequestedResourceType": [
-                  "glue:Table",
-                  "glue:Database",
-                  "glue:Catalog"
-                ]
-              }
+            {
+              Action: [
+                "lakeformation:*",
+                "glue:GetDatabase",
+                "glue:GetDatabases",
+                "glue:GetTable",
+                "glue:GetTables",
+                "glue:CreateTable",
+                "glue:UpdateTable",
+                "iam:GetRole"
+              ],
+              Effect: "Allow",
+              Resource: "*"
             },
-            Effect: "Allow",
-            Resource: "*"
-          },
-          {
-            Action: [
-              "ram:UpdateResourceShare",
-              "ram:AssociateResourceShare",
-              "ram:GetResourceShares"
-            ],
-            Condition: {
-              StringLike: {
-                "ram:ResourceShareName": [
-                  "LakeFormation*"
-                ]
-              }
+            {
+              Action: "ram:CreateResourceShare",
+              Condition: {
+                StringLikeIfExists: {
+                  "ram:RequestedResourceType": [
+                    "glue:Table",
+                    "glue:Database",
+                    "glue:Catalog"
+                  ]
+                }
+              },
+              Effect: "Allow",
+              Resource: "*"
             },
-            Effect: "Allow",
-            Resource: "*"
-          },
-          {
-            Action: [
-              "glue:PutResourcePolicy",
-              "ram:Get*",
-              "ram:List*"
-            ],
-            Effect: "Allow",
-            Resource: "*"
-          }]
+            {
+              Action: [
+                "ram:UpdateResourceShare",
+                "ram:AssociateResourceShare",
+                "ram:GetResourceShares"
+              ],
+              Condition: {
+                StringLike: {
+                  "ram:ResourceShareName": [
+                    "LakeFormation*"
+                  ]
+                }
+              },
+              Effect: "Allow",
+              Resource: "*"
+            },
+            {
+              Action: [
+                "glue:PutResourcePolicy",
+                "ram:Get*",
+                "ram:List*"
+              ],
+              Effect: "Allow",
+              Resource: "*"
+            }]
         }
       })
     );

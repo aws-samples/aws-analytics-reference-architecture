@@ -102,14 +102,14 @@ export class PreBundledFunction extends Function {
       description: 'Policy similar to lambda execution role but scoped down',
     });
 
-    //Create an execution role for the lambda and attach to it a policy formed from user input
-    const lambdaExecutionRole = new Role(scope,
+    //Use role from props or create an execution role for the lambda and attach to it a policy formed from user input
+    const lambdaExecutionRole = props.role ? props.role : new Role(scope,
       'LambdaExecutionRole' + functionProps.functionName, {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       description: 'Role used by lambda in ARA',
-      managedPolicies: [lambdaExecutionRolePolicy],
       //roleName: 'LambdaExecutionRole' + functionProps.functionName,
     });
+    lambdaExecutionRole.addManagedPolicy(lambdaExecutionRolePolicy);
 
     let logRetentionLambdaPolicyStatement: PolicyStatement[] = [];
 

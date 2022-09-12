@@ -24,6 +24,7 @@ export class DataMeshWorkflowRole extends Construct {
     this.role = new Role(this, 'Role', {
       assumedBy: new CompositePrincipal(
         new ServicePrincipal('states.amazonaws.com'),
+        new ServicePrincipal('lambda.amazonaws.com'),
       )
     });
 

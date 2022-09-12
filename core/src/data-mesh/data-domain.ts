@@ -2,23 +2,36 @@
 // SPDX-License-Identifier: MIT-0
 
 import { Construct } from 'constructs';
-import { Aws, CfnOutput, RemovalPolicy, SecretValue } from 'aws-cdk-lib';
+import { Aws, Duration, CfnOutput, RemovalPolicy, SecretValue } from 'aws-cdk-lib';
 import { Policy, PolicyStatement, AccountPrincipal } from 'aws-cdk-lib/aws-iam';
-import { DataLakeStorage } from '../data-lake-storage';
-import { DataDomainWorkflow } from './data-domain-workflow';
-import { DataDomainCrawler } from './data-domain-crawler';
-import { CfnEventBusPolicy, Rule, EventBus } from 'aws-cdk-lib/aws-events';
-import * as targets from 'aws-cdk-lib/aws-events-targets';
-
-import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
-import { S3CrossAccount } from '../s3-cross-account';
 import { Key } from 'aws-cdk-lib/aws-kms';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { StateMachine } from 'aws-cdk-lib/aws-stepfunctions';
+import { CfnEventBusPolicy, Rule, EventBus } from 'aws-cdk-lib/aws-events';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
+import { PreBundledFunction } from '../common/pre-bundled-function';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+
+import { CentralGovernance, LfAccessControlMode, LfAccessControlMode as mode } from './central-governance';
+import { DataLakeStorage } from '../data-lake-storage';
+import { DataDomainNracWorkflow } from './data-domain-nrac-workflow';
+import { DataDomainTbacWorkflow } from './data-domain-tbac-workflow';
+import { DataDomainCrawler } from './data-domain-crawler';
+import { DataMeshWorkflowRole } from './data-mesh-workflow-role';
+import { LakeFormationAdmin } from '../lake-formation';
+import { S3CrossAccount } from '../s3-cross-account';
+
 
 /**
  * Properties for the DataDomain Construct
  */
 export interface DataDomainProps {
+  /**
+  * Data domain name
+  */
+  readonly domainName: string;
+
   /**
   * Central Governance account Id
   */
@@ -52,6 +65,7 @@ export interface DataDomainProps {
  * new DataDomain(stack, 'myDataDomain', {
  *  centralAccountId: '1234567891011',
  *  crawlerWorkflow: true,
+ *  domainName: 'domainName'
  * });
  * ```
  */
@@ -60,6 +74,8 @@ export class DataDomain extends Construct {
   public static readonly DATA_PRODUCTS_PREFIX: string = 'data-products';
   public static readonly DOMAIN_CONFIG_SECRET: string = 'domain-config';
   public static readonly DOMAIN_BUS_NAME: string = 'data-mesh-bus';
+  public readonly centralAccountId: string;
+  public readonly eventBus: EventBus;
   public readonly dataLake: DataLakeStorage;
 
 
@@ -76,83 +92,120 @@ export class DataDomain extends Construct {
 
     // The data lake used by the Data Domain
     this.dataLake = new DataLakeStorage(this, 'dataLakeStorage');
+    this.centralAccountId = props.centralAccountId;
+
+    // Add CDK execution role to LF admins
+    LakeFormationAdmin.addCdkExecRole(scope, 'CdkLfAdmin');
 
     // Using the Bucket object and not the IBucket because CDK needs to change the bucket policy
     // KMS key is automatically discovered from the Bucket object and key policy is updated
     new S3CrossAccount(this, 'DataProductsPathCrossAccount', {
-      accountId: props.centralAccountId,
+      accountId: this.centralAccountId,
       s3Bucket: this.dataLake.cleanBucket,
       s3ObjectKey: DataDomain.DATA_PRODUCTS_PREFIX,
     })
 
-    // Workflow role used by the state machine
+    // Workflow role used by state machine workflows
     const workflowRole = new DataMeshWorkflowRole(this, 'WorkflowRole');
 
     // Event Bridge event bus for data domain account
-    const eventBus = new EventBus(this, 'dataDomainEventBus', {
+    this.eventBus = new EventBus(this, 'dataDomainEventBus', {
       eventBusName: DataDomain.DOMAIN_BUS_NAME,
     });
-    eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Cross-account policy to allow the central account to send events to data domain's bus
     const crossAccountBusPolicy = new CfnEventBusPolicy(this, 'crossAccountBusPolicy', {
-      eventBusName: eventBus.eventBusName,
+      eventBusName: this.eventBus.eventBusName,
       statementId: 'AllowCentralAccountToPutEvents',
       action: 'events:PutEvents',
-      principal: props.centralAccountId,
+      principal: this.centralAccountId,
     });
-    crossAccountBusPolicy.node.addDependency(eventBus);
+    crossAccountBusPolicy.node.addDependency(this.eventBus);
 
-    const dataDomainWorkflow = new DataDomainWorkflow(this, 'DataDomainWorkflow', {
+    // Create NRAC workflow
+    const nracWorkflow = new DataDomainNracWorkflow(this, 'nracWorkflow', {
       workflowRole: workflowRole.role,
-      centralAccountId: props.centralAccountId,
-      eventBus: eventBus,
+      centralAccountId: this.centralAccountId,
+      eventBus: this.eventBus,
     });
 
-    // Event Bridge Rule to trigger this worklfow upon event from the central account
-    const rule = new Rule(this, 'DataDomainRule', {
-      eventPattern: {
-        source: ['com.central.stepfunction'],
-        account: [props.centralAccountId],
-        detailType: [`${Aws.ACCOUNT_ID}_createResourceLinks`],
-      },
-      eventBus: eventBus,
+    // Event Bridge Rule to trigger NRAC worklfow upon event from the central account
+    this.addBusRule('NRAC', mode.NRAC, nracWorkflow.stateMachine);
+
+    // Create TBAC workflow
+    const tbacWorkflow = new DataDomainTbacWorkflow(this, 'tbacWorkflow', {
+      domainName: props.domainName,
+      workflowRole: workflowRole.role,
+      centralAccountId: this.centralAccountId,
+      eventBus: this.eventBus,
     });
 
-    rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
-    rule.addTarget(new targets.SfnStateMachine(dataDomainWorkflow.stateMachine));
-    rule.node.addDependency(eventBus);
+    // Event Bridge Rule to trigger NRAC worklfow upon event from the central account
+    this.addBusRule('TBAC', mode.TBAC, tbacWorkflow.stateMachine);
 
     // Allow the workflow role to send events to data domain event bus
     workflowRole.role.attachInlinePolicy(new Policy(this, 'SendEvents', {
       statements: [
         new PolicyStatement({
           actions: ['events:Put*'],
-          resources: [eventBus.eventBusArn],
+          resources: [this.eventBus.eventBusArn],
         }),
       ],
     }));
 
     // create a workflow to update data products schemas on registration
     if (props.crawlerWorkflow) {
-      const workflow = new DataDomainCrawler(this, 'DataDomainCrawler', {
+      const crawlerWorkflow = new DataDomainCrawler(this, 'DataDomainCrawler', {
+        domainName: props.domainName,
         workflowRole: workflowRole.role,
         dataProductsBucket: this.dataLake.cleanBucket,
-        dataProductsPrefix: DataDomain.DATA_PRODUCTS_PREFIX
+        dataProductsPrefix: DataDomain.DATA_PRODUCTS_PREFIX,
+      });
+
+      // AWS Lambda function responsible to grant permissions on AWS Lake Formation tag to crawler role
+      const tagPermissionsFn = new PreBundledFunction(this, 'TagPermissionsFn', {
+        runtime: Runtime.PYTHON_3_9,
+        codePath: 'data-mesh/resources/lambdas/crawler-tag-permission',
+        handler: 'lambda.handler',
+        logRetention: RetentionDays.ONE_DAY,
+        timeout: Duration.seconds(20),
+        role: workflowRole.role,
+        environment: {
+          'CRAWLER_ROLE_ARN': crawlerWorkflow.crawlerRole.roleArn,
+          'CENTRAL_CATALOG_ID': props.centralAccountId,
+          'TAG_KEY': CentralGovernance.DOMAIN_TAG_KEY,
+          'DOMAIN_TAG_VALUE': props.domainName,
+        }
       });
 
       // add a rule to trigger the workflow from the event bus
-      const crawlerRule = new Rule(this, 'TriggerCrawler', {
-        eventBus: eventBus,
+      const triggerCrawlerRule = new Rule(this, 'TriggerCrawler', {
+        eventBus: this.eventBus,
         targets: [
-          workflow.stateMachine,
+          crawlerWorkflow.stateMachine,
         ],
         eventPattern: {
           source: ['com.central.stepfunction'],
           detailType: ['triggerCrawler'],
         }
       });
-      crawlerRule.applyRemovalPolicy(RemovalPolicy.DESTROY);
+      triggerCrawlerRule.applyRemovalPolicy(RemovalPolicy.DESTROY);
+
+      // add a rule to trigger the workflow from the event bus
+      const grantCrawlerPermissionRule = new Rule(this, 'grantCrawlerPermission', {
+        eventBus: this.eventBus,
+        targets: [
+          new targets.LambdaFunction(tagPermissionsFn),
+        ],
+        eventPattern: {
+          source: ['com.central.stepfunction'],
+          detailType: ['grantCrawlerPermission'],
+        }
+      });
+      grantCrawlerPermissionRule.applyRemovalPolicy(RemovalPolicy.DESTROY);
+      // allow grantCrawlerPermissionRule to invoke Lambda fn
+      targets.addLambdaPermission(grantCrawlerPermissionRule, tagPermissionsFn);
     }
 
     // create the data domain configuration object (in JSON) to be passed to the central governance account 
@@ -189,5 +242,24 @@ export class DataDomain extends Construct {
       value: domainConfigSecret.secretArn,
       exportName: `${Aws.ACCOUNT_ID}SecretArn`,
     })
+  }
+
+  public addBusRule(id: string, mode: LfAccessControlMode, workflow: StateMachine) {
+    // Create a Rule in Data Domain Event Bus
+    const rule = new Rule(this, `${id}Rule`, {
+      eventPattern: {
+        source: ['com.central.stepfunction'],
+        account: [this.centralAccountId],
+        detailType: [`${Aws.ACCOUNT_ID}_createResourceLinks`],
+        detail: {
+          'lf_access_mode': [mode],
+        },
+      },
+      eventBus: this.eventBus,
+    });
+    rule.node.addDependency(this.eventBus);
+    rule.applyRemovalPolicy(RemovalPolicy.DESTROY);
+    // Add target for this Rule
+    rule.addTarget(new targets.SfnStateMachine(workflow));
   }
 }

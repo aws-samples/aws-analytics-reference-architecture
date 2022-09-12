@@ -19,6 +19,7 @@ const mockApp = new App();
 const dataDomainStack = new Stack(mockApp, 'dataDomain');
 
 new DataDomain(dataDomainStack, 'myDataDomain', {
+  domainName: 'Domain1Name',
   centralAccountId: '1234567891011',
   crawlerWorkflow: true,
 })
@@ -86,15 +87,44 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/myDataDomain/DataDomainWorkflow',
-  [{ id: 'AwsSolutions-SF2', reason: 'DataDomainWorflow construct not in the scope of this NAG test' }],
+  'dataDomain/s3-access-logs/Resource',
+  [{ id: 'AwsSolutions-S1', reason: 'The S3 bucket used for access logs can\'t have access log enabled' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/nracWorkflow/nracStateMachine/Resource',
+  [{ id: 'AwsSolutions-SF2', reason: 'X-ray not required for the CentralGovernance workflow' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/tbacWorkflow/tbacStateMachine/Resource',
+  [{ id: 'AwsSolutions-SF2', reason: 'The Step Function doesn\'t need X-ray' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/CdkLfAdmin',
+  [
+    { id: 'AwsSolutions-S1', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' },
+    { id: 'AwsSolutions-L1', reason: 'Not the purpose of this NAG to test LakeFormationAdmin construct' },
+    { id: 'AwsSolutions-IAM4', reason: 'Not the purpose of this NAG to LakeFormationAdmin construct' },
+    { id: 'AwsSolutions-IAM5', reason: 'Not the purpose of this NAG to LakeFormationAdmin construct' }
+  ],
   true,
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   dataDomainStack,
-  'dataDomain/s3-access-logs/Resource',
-  [{ id: 'AwsSolutions-S1', reason: 'The S3 bucket used for access logs can\'t have access log enabled' }],
+  'dataDomain/myDataDomain/LogRetentionLambdaExecutionRolePolicymyDataDomainTagPermissionsFn/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/LambdaExecutionRolePolicymyDataDomainTagPermissionsFn/Resource',
+  [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
 test('No unsuppressed Warnings', () => {

@@ -10,13 +10,14 @@
 
 import { Stack } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
-import { CentralGovernance } from '../../../src';
+import { CentralGovernance, LfTag } from '../../../src';
 
 describe('CentralGovTests', () => {
 
   const centralGovernanceStack = new Stack();
 
-  new CentralGovernance(centralGovernanceStack, 'CentralGovernance');
+  const lfTags: LfTag[] = [{ key: 'LoB', values: ['Sales'] }];
+  new CentralGovernance(centralGovernanceStack, 'CentralGovernance', { lfTags });
 
   const template = Template.fromStack(centralGovernanceStack);
   // console.log(JSON.stringify(template.toJSON(), null, 2));
@@ -66,6 +67,17 @@ describe('CentralGovTests', () => {
         },
         "UpdateReplacePolicy": "Delete",
         "DeletionPolicy": "Delete"
+      })
+    );
+  });
+
+  test('should provision the proper lake formation tag', () => {
+    template.hasResource('AWS::LakeFormation::Tag',
+      Match.objectLike({
+        "Properties": {
+          "TagKey": lfTags[0].key,
+          "TagValues": lfTags[0].values,
+        },
       })
     );
   });
