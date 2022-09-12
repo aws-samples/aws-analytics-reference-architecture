@@ -129,12 +129,6 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   customDatasetStack,
-  'CustomDataset/CustomDataset/GlueKey/Resource',
-  [{ id: 'AwsSolutions-KMS5', reason: 'No need for key rotation because the key is only used one time for preparing the custom dataset' }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  customDatasetStack,
   'CustomDataset/CustomDatasetRole/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The log group name cannot be infered from the Glue job properties' }],
 );

@@ -62,11 +62,17 @@ def is_complete(event, ctx):
     log.info(response_get)
     # Possible states: STARTING | RUNNING | STOPPING | STOPPED | SUCCEEDED | FAILED | TIMEOUT | ERROR | WAITING 
     state = response_get["JobRun"]["JobRunState"]
+    log_group_name = response_get["JobRun"]["LogGroupName"]
     log.info(f"Job run {job_name} {job_run_id} is {state.lower()}.")
     if state == 'SUCCEEDED':
-        return { 'IsComplete': True }
+        return { 
+            'IsComplete': True,
+            'Data': {
+                'LogGroupName': log_group_name
+            }
+        }
     elif state in ['STOPPED', 'FAILED', 'TIMEOUT', 'ERROR']:
         raise BaseException(f'Glue job run is in {state} state')
     return {
-        'IsComplete': False
+        'IsComplete': False,
     }

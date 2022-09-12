@@ -19,6 +19,11 @@ import { Job, JobProps } from '@aws-cdk/aws-glue-alpha';
 export class SynchronousGlueJob extends Construct {
 
   /**
+   * The Glue job logstream to check potential errors
+   */
+  readonly glueJobLogStream: string;  
+
+  /**
    * Constructs a new instance of the DataGenerator class
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
@@ -49,7 +54,7 @@ export class SynchronousGlueJob extends Construct {
       actions: [
         'glue:StartJobRun',
         'glue:GetJobRun',
-        'glue:BatchStopJobRun',
+        'glue:BatchStopJobRun', 
       ],
     })];
 
@@ -91,6 +96,8 @@ export class SynchronousGlueJob extends Construct {
         JobName: glueJob.jobName,
       },
     });
+
+    this.glueJobLogStream = customResource.getAttString('LogGroupName');
 
     // Force the dependency because jobName could be known at synth time
     customResource.node.addDependency(glueJob);

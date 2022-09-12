@@ -36,6 +36,11 @@ new cdk.CfnOutput(stack, 'Offset', {
   exportName: 'offset',
 });
 
+new cdk.CfnOutput(stack, 'LogGroup', {
+  value: custom.glueJobLogGroup,
+  exportName: 'logGroup',
+});
+
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
@@ -43,6 +48,7 @@ describe('deploy succeed', () => {
     
     // THEN
     expect(deployResult.outputs.Offset).toMatch(new RegExp("^[0-9]+$"));
+    expect(deployResult.outputs.LogGroup).toContain('/aws-glue/jobs/');
 
   }, 9000000);
 });

@@ -467,7 +467,10 @@ export class PreparedDataset {
    */
   constructor(props: PreparedDatasetProps) {
     if (props.startDatetime === undefined && props.offset === undefined){
-      throw new Error('One of startDatetime or offset parameter must be passed');
+      throw new Error('[PreparedDataset] One of startDatetime or offset parameter must be passed');
+    }
+    if (props.startDatetime !== undefined && props.offset !== undefined){
+      throw new Error('[PreparedDataset] Only one of startDatetime or offset parameter must be passed');
     }
     this.startDateTime = props.startDatetime;
     this.offset = props.startDatetime ? PreparedDataset.getOffset(props.startDatetime) : props.offset;

@@ -1733,8 +1733,37 @@ The Glue job is applying the following transformations to the input dataset:
 1. Read the input dataset based on its format. Currently, it supports data in CSV, JSON and Parquet
 2. Group rows into tumbling windows based on the partition range parameter provided. 
 The partition range should be adapted to the data volume and the total dataset time range
-3. Write data into the output bucket partitioned by the tumbling window time. For example, one partition for every 5 minutes
-4. Generate a manifest file based on the previous output to be used by the BatchReplayer for generating data
+3. Convert dates from MM-dd-yyyy HH:mm:ss.SSS to MM-dd-yyyyTHH:mm:ss.SSSZ format and remove null values
+4. Write data into the output bucket partitioned by the tumbling window time. 
+For example, one partition for every 5 minutes. 
+5. Generate a manifest file based on the previous output to be used by the BatchReplayer for generating data
+
+The CloudWatch log group is stored as an object parameter to help check any error with the Glue job.
+
+Usage example:
+```typescript
+import { CustomDataset, CustomDatasetInputFormat } from './data-generator/custom-dataset';
+
+const app = new App();
+const stack = new Stack(app, 'CustomDatasetStack');
+
+const custom = new CustomDataset(stack, 'CustomDataset', {
+   s3Location: {
+     bucketName: 'aws-analytics-reference-architecture',
+     objectKey: 'datasets/custom',
+   },
+   inputFormat: CustomDatasetInputFormat.CSV,
+   datetimeColumn: 'tpep_pickup_datetime',
+   datetimeColumnsToAdjust: ['tpep_pickup_datetime'],
+   partitionRange: Duration.minutes(5),
+   approximateDataSize: 1,
+});
+
+new CfnOutput(this, 'LogGroupName', {
+   exportName: 'logGroupName,
+   value: custom.glueJobLogGroup,
+});
+```
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.CustomDataset.Initializer"></a>
 
@@ -1837,6 +1866,7 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.CustomDataset.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.property.glueJobLogGroup">glueJobLogGroup</a></code> | <code>string</code> | The location of the logs to analyze potential errors in the Glue job. |
 | <code><a href="#aws-analytics-reference-architecture.CustomDataset.property.preparedDataset">preparedDataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The prepared dataset generated from the custom dataset. |
 
 ---
@@ -1850,6 +1880,18 @@ public readonly node: Node;
 - *Type:* constructs.Node
 
 The tree node.
+
+---
+
+##### `glueJobLogGroup`<sup>Required</sup> <a name="glueJobLogGroup" id="aws-analytics-reference-architecture.CustomDataset.property.glueJobLogGroup"></a>
+
+```typescript
+public readonly glueJobLogGroup: string;
+```
+
+- *Type:* string
+
+The location of the logs to analyze potential errors in the Glue job.
 
 ---
 
@@ -6252,6 +6294,7 @@ Any object.
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.SynchronousGlueJob.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousGlueJob.property.glueJobLogStream">glueJobLogStream</a></code> | <code>string</code> | The Glue job logstream to check potential errors. |
 
 ---
 
@@ -6264,6 +6307,18 @@ public readonly node: Node;
 - *Type:* constructs.Node
 
 The tree node.
+
+---
+
+##### `glueJobLogStream`<sup>Required</sup> <a name="glueJobLogStream" id="aws-analytics-reference-architecture.SynchronousGlueJob.property.glueJobLogStream"></a>
+
+```typescript
+public readonly glueJobLogStream: string;
+```
+
+- *Type:* string
+
+The Glue job logstream to check potential errors.
 
 ---
 

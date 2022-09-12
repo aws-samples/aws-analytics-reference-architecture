@@ -10,9 +10,9 @@ import { Bucket, Location } from 'aws-cdk-lib/aws-s3';
 import { AraBucket } from '../ara-bucket';
 import { SynchronousGlueJob } from '../synchronous-glue-job';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
-import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, Duration } from 'aws-cdk-lib';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
-import { Key } from 'aws-cdk-lib/aws-kms';
+import { SingletonKey } from '../singleton-kms-key';
 
 
 /**
@@ -61,15 +61,48 @@ export enum CustomDatasetInputFormat {
  * 1. Read the input dataset based on its format. Currently, it supports data in CSV, JSON and Parquet
  * 2. Group rows into tumbling windows based on the partition range parameter provided. 
  * The partition range should be adapted to the data volume and the total dataset time range
- * 3. Write data into the output bucket partitioned by the tumbling window time. For example, one partition for every 5 minutes
- * 4. Generate a manifest file based on the previous output to be used by the BatchReplayer for generating data
+ * 3. Convert dates from MM-dd-yyyy HH:mm:ss.SSS to MM-dd-yyyyTHH:mm:ss.SSSZ format and remove null values
+ * 4. Write data into the output bucket partitioned by the tumbling window time. 
+ * For example, one partition for every 5 minutes. 
+ * 5. Generate a manifest file based on the previous output to be used by the BatchReplayer for generating data
+ * 
+ * The CloudWatch log group is stored as an object parameter to help check any error with the Glue job.
+ * 
+ * Usage example:
+ * ```typescript
+ * import { CustomDataset, CustomDatasetInputFormat } from './data-generator/custom-dataset';
+ * 
+ * const app = new App();
+ * const stack = new Stack(app, 'CustomDatasetStack');
+ * 
+ * const custom = new CustomDataset(stack, 'CustomDataset', {
+ *   s3Location: {
+ *     bucketName: 'aws-analytics-reference-architecture',
+ *     objectKey: 'datasets/custom',
+ *   },
+ *   inputFormat: CustomDatasetInputFormat.CSV,
+ *   datetimeColumn: 'tpep_pickup_datetime',
+ *   datetimeColumnsToAdjust: ['tpep_pickup_datetime'],
+ *   partitionRange: Duration.minutes(5),
+ *   approximateDataSize: 1,
+ * });
+ * 
+ * new CfnOutput(this, 'LogGroupName', {
+ *   exportName: 'logGroupName,
+ *   value: custom.glueJobLogGroup,
+ * });
+ * ```
  */
 export class CustomDataset extends Construct {
 
   /**
    * The prepared dataset generated from the custom dataset
    */
-   readonly preparedDataset: PreparedDataset;
+  readonly preparedDataset: PreparedDataset;
+  /**
+   * The location of the logs to analyze potential errors in the Glue job
+   */
+  readonly glueJobLogGroup: string;
 
   /**
    * Constructs a new instance of a CustomDataset construct that extends a PreparedDataset
@@ -103,7 +136,7 @@ export class CustomDataset extends Construct {
                 "logs:AssociateKmsKey"
               ],
               resources: [
-                "arn:aws:logs:us-east-1:668876353122:log-group:/aws-glue/jobs/*"
+                `arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:log-group:/aws-glue/jobs/*`
               ],
             })
           ]
@@ -124,9 +157,7 @@ export class CustomDataset extends Construct {
     glueRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSGlueServiceRole'));
 
     // create a KMS key for the Glue security configureation
-    const glueKey = new Key(this, 'GlueKey', {
-      removalPolicy: RemovalPolicy.DESTROY,
-    })
+    const glueKey =  SingletonKey.getOrCreate(scope, 'DefaultKmsKey')
     
     // We add a resource policy so the key can be used in Cloudwatch logs
     glueKey.addToResourcePolicy(new PolicyStatement({
@@ -190,6 +221,8 @@ export class CustomDataset extends Construct {
       },
       securityConfiguration: conf,
     });
+
+    this.glueJobLogGroup = glueJob.glueJobLogStream;
 
     // Get the offset value calculated in the SynchronousGlueJob
     // We cannot rely on the SSM parameter resource created previously because the offset is generated during deploy time
