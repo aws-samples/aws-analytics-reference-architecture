@@ -1373,9 +1373,9 @@ aws-cdk@2.35.0:
     fsevents "2.3.2"
 
 aws-sdk@^2.1093.0, aws-sdk@^2.1200.0:
-  version "2.1200.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1200.0.tgz#79d14b342bed68ea07629bbc06f05f5959e4d491"
-  integrity sha512-rS16H3j40ba2ZDFNxEdC5qzJ09gpQM0f71rYw47IAOlAycvOkCCAIL/6FqCPRWevmL5X/bkULvM+OG7s31oPrg==
+  version "2.1214.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1214.0.tgz#6a57945b5bc9db79f8ee5ed99128a06110a88f83"
+  integrity sha512-50WxqYgEDB5UxwPJ0IDFWXe3ipAHhHmqfRnMNaQaZhb2aJpprbT7c0zic8AH9E1xJ9s+6QkhYrwQf/vXEHnLwg==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
