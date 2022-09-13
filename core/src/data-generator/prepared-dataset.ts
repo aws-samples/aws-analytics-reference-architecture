@@ -9,9 +9,16 @@ import { Location } from 'aws-cdk-lib/aws-s3';
 
 export interface PreparedDatasetProps {
   /**
-   * The minimum datetime value in the dataset used to calculate time offset
+   * The minimum datetime value in the dataset used to calculate time offset.
+   * @default - The offset parameter is used.
    */
-  readonly startDatetime: string;
+  readonly startDatetime?: string;
+
+  /**
+   * The offset in seconds for replaying data. It is the difference between the `startDatetime` and now.
+   * @default - Calculate the offset from startDatetime parameter during CDK deployment
+   */
+  readonly offset?: string;
 
   /**
    * The Amazon S3 Location of the source dataset.
@@ -39,10 +46,11 @@ export interface PreparedDatasetProps {
 }
 
 /**
- * If the stack is deployed in another region than eu-west-1, data transfer costs will apply.
- * The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
- * 
  * PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets.
+ * 
+ * One of the startDatetime or offset parameter needs to be passed to the constructor: 
+ *  * StartDatetime is used for prepared datasets provided by the Analytics Reference Architecture because they are known during synthetize time.
+ *  * Offset is used when a PreparedDataset is created from a CustomDataset because the startDatetime is not known during synthetize time.
  *
  * A PreparedDataset has following properties:
  *
@@ -86,6 +94,9 @@ export interface PreparedDatasetProps {
  * 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/file2.csv
  *
  * 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
+ * 
+ * If the stack is deployed in another region than eu-west-1, data transfer costs will apply.
+ * The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
  */
 export class PreparedDataset {
 
@@ -410,19 +421,19 @@ export class PreparedDataset {
   private static getOffset(startDatetime: string) {
     const now = new Date().getTime();
     const minDatetime = new Date(startDatetime).getTime();
-    return Math.floor((now - minDatetime) / 1000);
+    return Math.floor((now - minDatetime) / 1000).toString();
   }
 
   /**
    * Start datetime replaying this dataset. Your data set may start from 1 Jan 2020
    * But you can specify this to 1 Feb 2020 to omit the first month data.
    */
-  readonly startDateTime: string;
+  readonly startDateTime?: string;
 
   /**
    * The offset of the Dataset (difference between min datetime and now) in Seconds
    */
-  readonly offset: number;
+  readonly offset?: string;
 
   /**
    * The Amazon S3 Location of the source dataset
@@ -455,8 +466,14 @@ export class PreparedDataset {
    * @access public
    */
   constructor(props: PreparedDatasetProps) {
+    if (props.startDatetime === undefined && props.offset === undefined){
+      throw new Error('[PreparedDataset] One of startDatetime or offset parameter must be passed');
+    }
+    if (props.startDatetime !== undefined && props.offset !== undefined){
+      throw new Error('[PreparedDataset] Only one of startDatetime or offset parameter must be passed');
+    }
     this.startDateTime = props.startDatetime;
-    this.offset = PreparedDataset.getOffset(props.startDatetime);
+    this.offset = props.startDatetime ? PreparedDataset.getOffset(props.startDatetime) : props.offset;
     this.location = props.location;
     this.tableName = this.sqlTable();
     this.manifestLocation = props.manifestLocation;

@@ -7,7 +7,7 @@
  * @group unit/data-generator/batch-replayer
  */
 
-import { Stack } from "aws-cdk-lib";
+import { Duration, Stack } from "aws-cdk-lib";
 
 import { BatchReplayer, PreparedDataset } from "../../../src/data-generator";
 import { Bucket } from "aws-cdk-lib/aws-s3";
@@ -23,7 +23,7 @@ beforeEach(() => {
   bucket = new Bucket(testStack, 'Bucket');
   batchReplayer = new BatchReplayer(testStack, "TestBatchReplayer", {
     dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
-    frequency: 120,
+    frequency: Duration.seconds(120),
     sinkBucket: bucket,
     sinkObjectKey: 'test'
   });

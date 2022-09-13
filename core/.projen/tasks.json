@@ -138,6 +138,9 @@
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-crawler/resources lib/synchronous-crawler"
         },
         {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-glue-job/resources lib/synchronous-glue-job"
+        },
+        {
           "exec": "perl -i -pe 's/flyway-all.jar//g' lib/db-schema-manager/resources/flyway-lambda/.gitignore"
         }
       ]
@@ -262,6 +265,9 @@
         },
         {
           "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/synchronous-glue-job/resources/lambdas/requirements.txt --target lib/synchronous-glue-job/resources/lambdas --upgrade"
         }
       ]
     },
@@ -404,19 +410,19 @@
           "exec": "yarn upgrade npm-check-updates"
         },
         {
-          "exec": "npm-check-updates --dep dev --upgrade --target=minor --reject='@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha'"
+          "exec": "npm-check-updates --dep dev --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
         },
         {
-          "exec": "npm-check-updates --dep optional --upgrade --target=minor --reject='@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha'"
+          "exec": "npm-check-updates --dep optional --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
         },
         {
-          "exec": "npm-check-updates --dep peer --upgrade --target=minor --reject='@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha'"
+          "exec": "npm-check-updates --dep peer --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
         },
         {
-          "exec": "npm-check-updates --dep prod --upgrade --target=minor --reject='@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha'"
+          "exec": "npm-check-updates --dep prod --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
         },
         {
-          "exec": "npm-check-updates --dep bundle --upgrade --target=minor --reject='@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha'"
+          "exec": "npm-check-updates --dep bundle --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
         },
         {
           "exec": "yarn install --check-files"

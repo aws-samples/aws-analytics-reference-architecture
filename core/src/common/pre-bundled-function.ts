@@ -43,7 +43,7 @@ export interface PreBundledFunctionProps extends Partial<FunctionProps> {
  *   // you can use any property available in Function CDK Construct including
  *   memorySize: 1024,
  *   runtime: Runtime.PYTHON_3_8,
- *   handler: 'lmabda-file-name.handler',
+ *   handler: 'lambda-file-name.handler',
  *   logRetention: RetentionDays.ONE_WEEK,
  *   timeout: Duration.minutes(15),
  * });

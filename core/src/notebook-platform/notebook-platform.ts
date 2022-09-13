@@ -84,19 +84,6 @@ export enum SSOIdentityType {
 }
 
 /**
- * Enum to define the RelayState of different IdPs
- * Used in EMR Studio Prop in the IAM_FEDERATED scenario
- */
-export enum IdpRelayState {
-  MICROSOFT_AZURE = 'RelayState',
-  AUTH0 = 'RelayState',
-  GOOGLE = 'RelayState',
-  OKTA = 'RelayState',
-  PING_FEDERATE = 'TargetResource',
-  PING_ONE = 'PingOne',
-}
-
-/**
  * A CDK construct to create a notebook infrastructure based on Amazon EMR Studio and assign users to it
  *
  * This construct is initialized through a constructor that takes as argument an interface defined in {@link NotebookPlatformProps}

@@ -6,6 +6,8 @@ import logging
 from dateutil import parser
 from datetime import datetime
 import awswrangler as wr
+import numpy as np
+
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
@@ -19,14 +21,22 @@ def log_file_paths(df):
     for _, r in df.iterrows():
         log.info(f'{r[START_COL]}, {r[PATH_COL]}')
 
+def find_partition_range(df):
+    df = np.sort(df[START_COL].unique())
+    partition_range = df[1] - df[0]
+    log.info("Retrieved partition range: " + str(partition_range))
+    return partition_range
+
 
 def retrieve_df_manifest(manifest_file_bucket, manifest_file_key, start_time, end_time):
     df_manifest=wr.s3.read_csv(
         path=f"s3://{manifest_file_bucket}/{manifest_file_key}",
         s3_additional_kwargs={"RequestPayer": "requester"}
     )
-    rows_in_range=df_manifest[START_COL].between(start_time, end_time, inclusive='left')
-    df_manifest=df_manifest[rows_in_range]
+    partition_range = find_partition_range(df_manifest)
+    rows_in_range = np.where((df_manifest[START_COL] < int(end_time)) & (df_manifest[START_COL] + partition_range > int(start_time)))
+    log.info("Rows in range: " + str(rows_in_range))
+    df_manifest=df_manifest.loc[rows_in_range]
     df_manifest=df_manifest.sort_values(by=[START_COL])
     return df_manifest
 

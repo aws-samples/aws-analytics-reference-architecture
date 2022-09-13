@@ -39,7 +39,7 @@ describe('DataDomainCrawlerTests', () => {
   });
 
   const template = Template.fromStack(dataDomainCrawlerStack);
-  // console.log(JSON.stringify(template.toJSON(), null, 2));
+  // console.log(JSON.stringify(template.toJSON(),null, 2));
 
   test('should provision the proper workflow default policy', () => {
     template.hasResourceProperties('AWS::IAM::Policy',

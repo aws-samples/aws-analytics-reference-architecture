@@ -65,6 +65,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'proxy-agent',
     'glob',
     '@types/prettier@2.6.0',
+    `@aws-cdk/aws-redshift-alpha@${CDK_VERSION}-alpha.0`,
+    `@aws-cdk/aws-glue-alpha@${CDK_VERSION}-alpha.0`,
   ],
 
   peerDeps: [

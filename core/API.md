@@ -1751,6 +1751,194 @@ public readonly DOMAIN_TAG_KEY: string;
 
 ---
 
+### CustomDataset <a name="CustomDataset" id="aws-analytics-reference-architecture.CustomDataset"></a>
+
+A CustomDataset is a dataset that you need to prepare for the [BatchReplayer](@link BatchReplayer) to generate data.
+
+The dataset is transformed into a [PreparedDataset](@link PreparedDataset) by a Glue Job that runs synchronously during the CDK deploy.
+The Glue job is sized based on the approximate size of the input data or uses autoscaling (max 100) if no data size is provided.
+
+The Glue job is applying the following transformations to the input dataset:
+1. Read the input dataset based on its format. Currently, it supports data in CSV, JSON and Parquet
+2. Group rows into tumbling windows based on the partition range parameter provided. 
+The partition range should be adapted to the data volume and the total dataset time range
+3. Convert dates from MM-dd-yyyy HH:mm:ss.SSS to MM-dd-yyyyTHH:mm:ss.SSSZ format and remove null values
+4. Write data into the output bucket partitioned by the tumbling window time. 
+For example, one partition for every 5 minutes. 
+5. Generate a manifest file based on the previous output to be used by the BatchReplayer for generating data
+
+The CloudWatch log group is stored as an object parameter to help check any error with the Glue job.
+
+Usage example:
+```typescript
+import { CustomDataset, CustomDatasetInputFormat } from './data-generator/custom-dataset';
+
+const app = new App();
+const stack = new Stack(app, 'CustomDatasetStack');
+
+const custom = new CustomDataset(stack, 'CustomDataset', {
+   s3Location: {
+     bucketName: 'aws-analytics-reference-architecture',
+     objectKey: 'datasets/custom',
+   },
+   inputFormat: CustomDatasetInputFormat.CSV,
+   datetimeColumn: 'tpep_pickup_datetime',
+   datetimeColumnsToAdjust: ['tpep_pickup_datetime'],
+   partitionRange: Duration.minutes(5),
+   approximateDataSize: 1,
+});
+
+new CfnOutput(this, 'LogGroupName', {
+   exportName: 'logGroupName,
+   value: custom.glueJobLogGroup,
+});
+```
+
+An example of a custom dataset that can be processed by this construct is available in s3://aws-analytics-reference-architecture/datasets/custom
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.CustomDataset.Initializer"></a>
+
+```typescript
+import { CustomDataset } from 'aws-analytics-reference-architecture'
+
+new CustomDataset(scope: Construct, id: string, props: CustomDatasetProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps">CustomDatasetProps</a></code> | the CustomDataset [properties]{@link CustomDatasetProps}. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.CustomDataset.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.CustomDatasetProps">CustomDatasetProps</a>
+
+the CustomDataset [properties]{@link CustomDatasetProps}.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.CustomDataset.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.CustomDataset.isConstruct"></a>
+
+```typescript
+import { CustomDataset } from 'aws-analytics-reference-architecture'
+
+CustomDataset.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.CustomDataset.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.property.glueJobLogGroup">glueJobLogGroup</a></code> | <code>string</code> | The location of the logs to analyze potential errors in the Glue job. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDataset.property.preparedDataset">preparedDataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The prepared dataset generated from the custom dataset. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.CustomDataset.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `glueJobLogGroup`<sup>Required</sup> <a name="glueJobLogGroup" id="aws-analytics-reference-architecture.CustomDataset.property.glueJobLogGroup"></a>
+
+```typescript
+public readonly glueJobLogGroup: string;
+```
+
+- *Type:* string
+
+The location of the logs to analyze potential errors in the Glue job.
+
+---
+
+##### `preparedDataset`<sup>Required</sup> <a name="preparedDataset" id="aws-analytics-reference-architecture.CustomDataset.property.preparedDataset"></a>
+
+```typescript
+public readonly preparedDataset: PreparedDataset;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
+
+The prepared dataset generated from the custom dataset.
+
+---
+
+
 ### DataDomain <a name="DataDomain" id="aws-analytics-reference-architecture.DataDomain"></a>
 
 This CDK Construct creates all required resources for data mesh in Data Domain account.
@@ -6103,6 +6291,140 @@ The tree node.
 ---
 
 
+### SynchronousGlueJob <a name="SynchronousGlueJob" id="aws-analytics-reference-architecture.SynchronousGlueJob"></a>
+
+SynchronousGlueJob Construct to start an AWS Glue Job execution and wait for completion during CDK deploy.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.SynchronousGlueJob.Initializer"></a>
+
+```typescript
+import { SynchronousGlueJob } from 'aws-analytics-reference-architecture'
+
+new SynchronousGlueJob(scope: Construct, id: string, props: JobProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousGlueJob.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousGlueJob.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousGlueJob.Initializer.parameter.props">props</a></code> | <code>@aws-cdk/aws-glue-alpha.JobProps</code> | the SynchronousGlueJob properties. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.SynchronousGlueJob.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.SynchronousGlueJob.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.SynchronousGlueJob.Initializer.parameter.props"></a>
+
+- *Type:* @aws-cdk/aws-glue-alpha.JobProps
+
+the SynchronousGlueJob properties.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousGlueJob.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.SynchronousGlueJob.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousGlueJob.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.SynchronousGlueJob.isConstruct"></a>
+
+```typescript
+import { SynchronousGlueJob } from 'aws-analytics-reference-architecture'
+
+SynchronousGlueJob.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SynchronousGlueJob.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousGlueJob.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.SynchronousGlueJob.property.glueJobLogStream">glueJobLogStream</a></code> | <code>string</code> | The Glue job logstream to check potential errors. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.SynchronousGlueJob.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `glueJobLogStream`<sup>Required</sup> <a name="glueJobLogStream" id="aws-analytics-reference-architecture.SynchronousGlueJob.property.glueJobLogStream"></a>
+
+```typescript
+public readonly glueJobLogStream: string;
+```
+
+- *Type:* string
+
+The Glue job logstream to check potential errors.
+
+---
+
+
 ### TrackedConstruct <a name="TrackedConstruct" id="aws-analytics-reference-architecture.TrackedConstruct"></a>
 
 A type of CDK Construct that is tracked via a unique code in Stack labels.
@@ -6562,7 +6884,7 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The [PreparedDataset]{@link PreparedDataset} used to replay data. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | The S3 Bucket sink where the BatchReplayer writes data. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>number</code> | The frequency of the replay in seconds. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>aws-cdk-lib.Duration</code> | The frequency of the replay. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | The maximum file size in Bytes written by the BatchReplayer. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | The S3 object key sink where the BatchReplayer writes data. |
 
@@ -6597,13 +6919,13 @@ The S3 Bucket sink where the BatchReplayer writes data.
 ##### `frequency`<sup>Optional</sup> <a name="frequency" id="aws-analytics-reference-architecture.BatchReplayerProps.property.frequency"></a>
 
 ```typescript
-public readonly frequency: number;
+public readonly frequency: Duration;
 ```
 
-- *Type:* number
+- *Type:* aws-cdk-lib.Duration
 - *Default:* The BatchReplayer is triggered every 60 seconds
 
-The frequency of the replay in seconds.
+The frequency of the replay.
 
 ---
 
@@ -6662,6 +6984,104 @@ public readonly lfTags: LfTag[];
 - *Type:* <a href="#aws-analytics-reference-architecture.LfTag">LfTag</a>[]
 
 LF tags.
+
+---
+
+### CustomDatasetProps <a name="CustomDatasetProps" id="aws-analytics-reference-architecture.CustomDatasetProps"></a>
+
+The properties for the Bring Your Own Data generator.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.CustomDatasetProps.Initializer"></a>
+
+```typescript
+import { CustomDatasetProps } from 'aws-analytics-reference-architecture'
+
+const customDatasetProps: CustomDatasetProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.datetimeColumn">datetimeColumn</a></code> | <code>string</code> | The datetime column to use for data generation as the time reference. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.datetimeColumnsToAdjust">datetimeColumnsToAdjust</a></code> | <code>string[]</code> | The datetime columns to use for data generation. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.inputFormat">inputFormat</a></code> | <code><a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat">CustomDatasetInputFormat</a></code> | The format of the input data. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.partitionRange">partitionRange</a></code> | <code>aws-cdk-lib.Duration</code> | The interval to partition data and optimize the data generation in Minutes. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.s3Location">s3Location</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The S3 location of the input data. |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetProps.property.approximateDataSize">approximateDataSize</a></code> | <code>number</code> | Approximate data size (in GB) of the custom dataset. |
+
+---
+
+##### `datetimeColumn`<sup>Required</sup> <a name="datetimeColumn" id="aws-analytics-reference-architecture.CustomDatasetProps.property.datetimeColumn"></a>
+
+```typescript
+public readonly datetimeColumn: string;
+```
+
+- *Type:* string
+
+The datetime column to use for data generation as the time reference.
+
+---
+
+##### `datetimeColumnsToAdjust`<sup>Required</sup> <a name="datetimeColumnsToAdjust" id="aws-analytics-reference-architecture.CustomDatasetProps.property.datetimeColumnsToAdjust"></a>
+
+```typescript
+public readonly datetimeColumnsToAdjust: string[];
+```
+
+- *Type:* string[]
+
+The datetime columns to use for data generation.
+
+---
+
+##### `inputFormat`<sup>Required</sup> <a name="inputFormat" id="aws-analytics-reference-architecture.CustomDatasetProps.property.inputFormat"></a>
+
+```typescript
+public readonly inputFormat: CustomDatasetInputFormat;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat">CustomDatasetInputFormat</a>
+
+The format of the input data.
+
+---
+
+##### `partitionRange`<sup>Required</sup> <a name="partitionRange" id="aws-analytics-reference-architecture.CustomDatasetProps.property.partitionRange"></a>
+
+```typescript
+public readonly partitionRange: Duration;
+```
+
+- *Type:* aws-cdk-lib.Duration
+
+The interval to partition data and optimize the data generation in Minutes.
+
+---
+
+##### `s3Location`<sup>Required</sup> <a name="s3Location" id="aws-analytics-reference-architecture.CustomDatasetProps.property.s3Location"></a>
+
+```typescript
+public readonly s3Location: Location;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Location
+
+The S3 location of the input data.
+
+---
+
+##### `approximateDataSize`<sup>Optional</sup> <a name="approximateDataSize" id="aws-analytics-reference-architecture.CustomDatasetProps.property.approximateDataSize"></a>
+
+```typescript
+public readonly approximateDataSize: number;
+```
+
+- *Type:* number
+- *Default:* The Glue job responsible for preparing the data uses autoscaling with a maximum of 100 workers
+
+Approximate data size (in GB) of the custom dataset.
 
 ---
 
@@ -8065,8 +8485,9 @@ const preparedDatasetProps: PreparedDatasetProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.dateTimeColumnToFilter">dateTimeColumnToFilter</a></code> | <code>string</code> | Datetime column for filtering data. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.location">location</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The Amazon S3 Location of the source dataset. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.manifestLocation">manifestLocation</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | Manifest file in csv format with two columns: start, path. |
-| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.startDatetime">startDatetime</a></code> | <code>string</code> | The minimum datetime value in the dataset used to calculate time offset. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.dateTimeColumnsToAdjust">dateTimeColumnsToAdjust</a></code> | <code>string[]</code> | Array of column names with datetime to adjust. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.offset">offset</a></code> | <code>string</code> | The offset in seconds for replaying data. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDatasetProps.property.startDatetime">startDatetime</a></code> | <code>string</code> | The minimum datetime value in the dataset used to calculate time offset. |
 
 ---
 
@@ -8108,18 +8529,6 @@ Manifest file in csv format with two columns: start, path.
 
 ---
 
-##### `startDatetime`<sup>Required</sup> <a name="startDatetime" id="aws-analytics-reference-architecture.PreparedDatasetProps.property.startDatetime"></a>
-
-```typescript
-public readonly startDatetime: string;
-```
-
-- *Type:* string
-
-The minimum datetime value in the dataset used to calculate time offset.
-
----
-
 ##### `dateTimeColumnsToAdjust`<sup>Optional</sup> <a name="dateTimeColumnsToAdjust" id="aws-analytics-reference-architecture.PreparedDatasetProps.property.dateTimeColumnsToAdjust"></a>
 
 ```typescript
@@ -8133,6 +8542,34 @@ Array of column names with datetime to adjust.
 The source data will have date in the past 2021-01-01T00:00:00 while
 the data replayer will have have the current time. The difference (aka. offset)
 must be added to all datetime columns
+
+---
+
+##### `offset`<sup>Optional</sup> <a name="offset" id="aws-analytics-reference-architecture.PreparedDatasetProps.property.offset"></a>
+
+```typescript
+public readonly offset: string;
+```
+
+- *Type:* string
+- *Default:* Calculate the offset from startDatetime parameter during CDK deployment
+
+The offset in seconds for replaying data.
+
+It is the difference between the `startDatetime` and now.
+
+---
+
+##### `startDatetime`<sup>Optional</sup> <a name="startDatetime" id="aws-analytics-reference-architecture.PreparedDatasetProps.property.startDatetime"></a>
+
+```typescript
+public readonly startDatetime: string;
+```
+
+- *Type:* string
+- *Default:* The offset parameter is used.
+
+The minimum datetime value in the dataset used to calculate time offset.
 
 ---
 
@@ -8466,11 +8903,11 @@ public readonly TOOLING_ALL: EmrEksNodegroupOptions;
 
 ### PreparedDataset <a name="PreparedDataset" id="aws-analytics-reference-architecture.PreparedDataset"></a>
 
-If the stack is deployed in another region than eu-west-1, data transfer costs will apply.
-
-The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
-
 PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets.
+
+One of the startDatetime or offset parameter needs to be passed to the constructor: 
+  * StartDatetime is used for prepared datasets provided by the Analytics Reference Architecture because they are known during synthetize time.
+  * Offset is used when a PreparedDataset is created from a CustomDataset because the startDatetime is not known during synthetize time.
 
 A PreparedDataset has following properties:
 
@@ -8515,6 +8952,9 @@ start        , path
 
 16000000600  , s3://<path>/<to>/<folder>/time_range_start=16000000600/whichever-file....csv
 
+If the stack is deployed in another region than eu-west-1, data transfer costs will apply.
+The pre-defined PreparedDataset access is recharged to the consumer via Amazon S3 Requester Pay feature.
+
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.PreparedDataset.Initializer"></a>
 
 ```typescript
@@ -8546,10 +8986,10 @@ the DatasetProps.
 | <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.dateTimeColumnToFilter">dateTimeColumnToFilter</a></code> | <code>string</code> | Datetime column for filtering data. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.location">location</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The Amazon S3 Location of the source dataset. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.manifestLocation">manifestLocation</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | Manifest file in csv format with two columns: start, path. |
-| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.offset">offset</a></code> | <code>number</code> | The offset of the Dataset (difference between min datetime and now) in Seconds. |
-| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.startDateTime">startDateTime</a></code> | <code>string</code> | Start datetime replaying this dataset. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.tableName">tableName</a></code> | <code>string</code> | The name of the SQL table extracted from path. |
 | <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.dateTimeColumnsToAdjust">dateTimeColumnsToAdjust</a></code> | <code>string[]</code> | Array of column names with datetime to adjust. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.offset">offset</a></code> | <code>string</code> | The offset of the Dataset (difference between min datetime and now) in Seconds. |
+| <code><a href="#aws-analytics-reference-architecture.PreparedDataset.property.startDateTime">startDateTime</a></code> | <code>string</code> | Start datetime replaying this dataset. |
 
 ---
 
@@ -8589,33 +9029,6 @@ Manifest file in csv format with two columns: start, path.
 
 ---
 
-##### `offset`<sup>Required</sup> <a name="offset" id="aws-analytics-reference-architecture.PreparedDataset.property.offset"></a>
-
-```typescript
-public readonly offset: number;
-```
-
-- *Type:* number
-
-The offset of the Dataset (difference between min datetime and now) in Seconds.
-
----
-
-##### `startDateTime`<sup>Required</sup> <a name="startDateTime" id="aws-analytics-reference-architecture.PreparedDataset.property.startDateTime"></a>
-
-```typescript
-public readonly startDateTime: string;
-```
-
-- *Type:* string
-
-Start datetime replaying this dataset.
-
-Your data set may start from 1 Jan 2020
-But you can specify this to 1 Feb 2020 to omit the first month data.
-
----
-
 ##### `tableName`<sup>Required</sup> <a name="tableName" id="aws-analytics-reference-architecture.PreparedDataset.property.tableName"></a>
 
 ```typescript
@@ -8637,6 +9050,33 @@ public readonly dateTimeColumnsToAdjust: string[];
 - *Type:* string[]
 
 Array of column names with datetime to adjust.
+
+---
+
+##### `offset`<sup>Optional</sup> <a name="offset" id="aws-analytics-reference-architecture.PreparedDataset.property.offset"></a>
+
+```typescript
+public readonly offset: string;
+```
+
+- *Type:* string
+
+The offset of the Dataset (difference between min datetime and now) in Seconds.
+
+---
+
+##### `startDateTime`<sup>Optional</sup> <a name="startDateTime" id="aws-analytics-reference-architecture.PreparedDataset.property.startDateTime"></a>
+
+```typescript
+public readonly startDateTime: string;
+```
+
+- *Type:* string
+
+Start datetime replaying this dataset.
+
+Your data set may start from 1 Jan 2020
+But you can specify this to 1 Feb 2020 to omit the first month data.
 
 ---
 
@@ -8931,31 +9371,29 @@ The BatchReplayer adds two columns ingestion_start and ingestion_end
 
 ## Enums <a name="Enums" id="Enums"></a>
 
-### IdpRelayState <a name="IdpRelayState" id="aws-analytics-reference-architecture.IdpRelayState"></a>
-
-Enum to define the RelayState of different IdPs Used in EMR Studio Prop in the IAM_FEDERATED scenario.
+### CustomDatasetInputFormat <a name="CustomDatasetInputFormat" id="aws-analytics-reference-architecture.CustomDatasetInputFormat"></a>
 
 #### Members <a name="Members" id="Members"></a>
 
 | **Name** | **Description** |
 | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.IdpRelayState.MICROSOFT_AZURE">MICROSOFT_AZURE</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.IdpRelayState.PING_FEDERATE">PING_FEDERATE</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.IdpRelayState.PING_ONE">PING_ONE</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat.CSV">CSV</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat.PARQUET">PARQUET</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.CustomDatasetInputFormat.JSON">JSON</a></code> | *No description.* |
 
 ---
 
-##### `MICROSOFT_AZURE` <a name="MICROSOFT_AZURE" id="aws-analytics-reference-architecture.IdpRelayState.MICROSOFT_AZURE"></a>
-
----
-
-
-##### `PING_FEDERATE` <a name="PING_FEDERATE" id="aws-analytics-reference-architecture.IdpRelayState.PING_FEDERATE"></a>
+##### `CSV` <a name="CSV" id="aws-analytics-reference-architecture.CustomDatasetInputFormat.CSV"></a>
 
 ---
 
 
-##### `PING_ONE` <a name="PING_ONE" id="aws-analytics-reference-architecture.IdpRelayState.PING_ONE"></a>
+##### `PARQUET` <a name="PARQUET" id="aws-analytics-reference-architecture.CustomDatasetInputFormat.PARQUET"></a>
+
+---
+
+
+##### `JSON` <a name="JSON" id="aws-analytics-reference-architecture.CustomDatasetInputFormat.JSON"></a>
 
 ---
 
