@@ -1794,6 +1794,8 @@ new CfnOutput(this, 'LogGroupName', {
 });
 ```
 
+An example of a custom dataset that can be processed by this product is available in s3://aws-analytics-reference-architecture/datasets/custom
+
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.CustomDataset.Initializer"></a>
 
 ```typescript

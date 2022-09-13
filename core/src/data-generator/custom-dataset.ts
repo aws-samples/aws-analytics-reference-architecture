@@ -92,6 +92,8 @@ export enum CustomDatasetInputFormat {
  *   value: custom.glueJobLogGroup,
  * });
  * ```
+ * 
+ * An example of a custom dataset that can be processed by this product is available in s3://aws-analytics-reference-architecture/datasets/custom
  */
 export class CustomDataset extends Construct {
 
