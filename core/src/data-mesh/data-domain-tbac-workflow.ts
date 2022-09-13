@@ -106,16 +106,16 @@ export class DataDomainTbacWorkflow extends Construct {
 
     // Task to check if this account is data product owner (producer)
     const thisAccountIsProducer = new Choice(this, 'thisAccountIsProducer')
-      .when(Condition.stringEquals('$.detail.producer_acc_id', Aws.ACCOUNT_ID), triggerCrawler)
+      .when(Condition.stringEquals('$.detail.producer_acc_id', Aws.ACCOUNT_ID), grantCrawlerPermission)
       .otherwise(new Pass(this, 'finishWorkflow'));
 
-    grantCrawlerPermission.next(thisAccountIsProducer);
+    grantCrawlerPermission.next(triggerCrawler);
 
     // Skip if Database resource link already exist
     createDbResourceLink.addCatch(thisAccountIsProducer, {
       errors: ['Glue.AlreadyExistsException'],
       resultPath: '$.Exception',
-    }).next(grantCrawlerPermission);
+    }).next(thisAccountIsProducer);
 
     // Create Log group for this state machine
     const logGroup = new LogGroup(this, 'Workflow', {
