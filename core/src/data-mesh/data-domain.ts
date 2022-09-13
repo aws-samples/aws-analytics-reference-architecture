@@ -210,6 +210,7 @@ export class DataDomain extends Construct {
 
     // create the data domain configuration object (in JSON) to be passed to the central governance account 
     var secretObject = {
+      DomainName: SecretValue.unsafePlainText(props.domainName),
       BucketName: SecretValue.unsafePlainText(this.dataLake.cleanBucket.bucketName),
       Prefix: SecretValue.unsafePlainText(DataDomain.DATA_PRODUCTS_PREFIX),
     }
