@@ -487,6 +487,15 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
+  '/eks-emr-studio/eks-emr-studio/lotfi-emr-advanced0ExecutionRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Wild card needed in path "data-platform/pod-template/*" to allow access to all pod templates',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
   'eks-emr-studio/data-platform/AsgTagProvider/CustomResourceProvider/framework-onEvent/Resource',
   [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
 );
