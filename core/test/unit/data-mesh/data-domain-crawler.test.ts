@@ -13,6 +13,7 @@ import { Match, Template } from 'aws-cdk-lib/assertions';
 import { Role, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Key } from 'aws-cdk-lib/aws-kms';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { EventBus } from 'aws-cdk-lib/aws-events';
 import { DataDomainCrawler } from '../../../src/data-mesh/data-domain-crawler';
 
 describe('DataDomainCrawlerTests', () => {
@@ -31,15 +32,20 @@ describe('DataDomainCrawlerTests', () => {
     encryptionKey: key,
   });
 
+  const eventBus = new EventBus(dataDomainCrawlerStack, 'dataDomainEventBus', {
+    eventBusName: 'data-mesh-bus',
+  });
+
   new DataDomainCrawler(dataDomainCrawlerStack, 'DataDomainCrawlerStack', {
     workflowRole: workflowRole,
     dataProductsBucket: bucket,
     dataProductsPrefix: 'test',
     domainName: 'Domain1Name',
+    eventBus,
   });
 
   const template = Template.fromStack(dataDomainCrawlerStack);
-  // console.log(JSON.stringify(template.toJSON(),null, 2));
+  console.log(JSON.stringify(template.toJSON(), null, 2));
 
   test('should provision the proper workflow default policy', () => {
     template.hasResourceProperties('AWS::IAM::Policy',
@@ -91,6 +97,11 @@ describe('DataDomainCrawlerTests', () => {
               "Resource": "*"
             },
             {
+              "Action": "events:PutEvents",
+              "Effect": "Allow",
+              "Resource": Match.anyValue()
+            },
+            {
               "Action": "glue:deleteCrawler",
               "Effect": "Allow",
               "Resource": "*"
@@ -99,7 +110,7 @@ describe('DataDomainCrawlerTests', () => {
               "Action": "lakeformation:batchGrantPermissions",
               "Effect": "Allow",
               "Resource": "*"
-            }
+            },
           ],
         },
       })

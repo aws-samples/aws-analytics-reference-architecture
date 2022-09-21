@@ -14,6 +14,7 @@ import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { DataDomainCrawler } from '../../../src/data-mesh/data-domain-crawler';
 import { Role, CompositePrincipal, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { EventBus } from 'aws-cdk-lib/aws-events';
 
 
 const mockApp = new App();
@@ -28,11 +29,16 @@ const workflowRole = new Role(dataDomainCrawlerStack, 'CrawlerWorkflowRole', {
 
 const bucket = new Bucket(dataDomainCrawlerStack, 'Bucket');
 
+const eventBus = new EventBus(dataDomainCrawlerStack, 'dataDomainEventBus', {
+  eventBusName: 'data-mesh-bus',
+});
+
 new DataDomainCrawler(dataDomainCrawlerStack, 'DataDomainCrawler', {
   workflowRole: workflowRole,
   dataProductsBucket: bucket,
   dataProductsPrefix: 'test',
   domainName: 'Domain1Name',
+  eventBus,
 });
 
 Aspects.of(dataDomainCrawlerStack).add(new AwsSolutionsChecks());
