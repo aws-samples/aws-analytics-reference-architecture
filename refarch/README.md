@@ -81,9 +81,9 @@ To disable, for example, the data visualization module, the following argument h
         * Go to "Manage QuickSight"
         * Click "Security & permissions"
         * Select "Manage" in the "QuickSight access to AWS services" section
-        * Click on the "Details" link at "Amazon S3" and click the "Select S3 buckets" button
-        * Select, i.e., check the box of, the S3 bucket named like the value of the CloudFormation output key `CleanS3Bucket` from the main CDK stack (named `ara`) deployed into your account. The bucket name has the following format: `ara-clean-data-<account-id>`
-        * Click "Finish" and then "Update" to confirm the selection 
+        * Click on the "Select S3 buckets" link
+        * Select, i.e., check the box of, the S3 bucket named like the value of the CloudFormation output key `CleanS3Bucket` from the main CDK stack (named `clean-<ACCOUNT_ID>-<REGION>`) deployed into your account. The bucket name has the following format: `ara-clean-data-<account-id>`
+        * Click "Finish" and then "Save" to confirm the selection 
     * To create the QuickSight VPC Connection:
         * Visit the [QuickSight web console](https://quicksight.aws.amazon.com)
         * Click on your username in the upper right corner
