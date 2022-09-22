@@ -58,7 +58,7 @@ Before starting the deployment, ensure that the following steps are completed.
    ```
 
 3. Deploy the main AWS CDK stack into your AWS account, providing the required parameters.
-If you install all modules, the Amazon QuickSight username (which can also be an IAM role) to which access should be granted to, as well as your QuickSight home region (the one selected during the QuickSight sign-up process) have to be specified. 
+If you install all modules, the Amazon QuickSight username (which can also be an IAM role) to which access should be granted to, as well as your QuickSight home region (the one selected during the QuickSight sign-up process) have to be specified. **Quicksight Entreprise edition is required to install the Dataviz module**.
 
    ```
    cdk deploy -c QuickSightUsername=<ROLE/USERNAME> -c QuickSightIdentityRegion=<REGION>
@@ -80,10 +80,10 @@ To disable, for example, the data visualization module, the following argument h
         * Click on your username in the upper right corner
         * Go to "Manage QuickSight"
         * Click "Security & permissions"
-        * Select "Add or remove" in the "QuickSight access to AWS services" section
-        * Click on the "Details" link at "Amazon S3" and click the "Select S3 buckets" button
-        * Select, i.e., check the box of, the S3 bucket named like the value of the CloudFormation output key `CleanS3Bucket` from the main CDK stack (named `ara`) deployed into your account. The bucket name has the following format: `ara-clean-data-<account-id>`
-        * Click "Finish" and then "Update" to confirm the selection 
+        * Select "Manage" in the "QuickSight access to AWS services" section
+        * Click on the "Select S3 buckets" link
+        * Select, i.e., check the box of, the S3 bucket named like the value of the CloudFormation output key `CleanS3Bucket` from the main CDK stack (named `clean-<ACCOUNT_ID>-<REGION>`) deployed into your account. The bucket name has the following format: `ara-clean-data-<account-id>`
+        * Click "Finish" and then "Save" to confirm the selection 
     * To create the QuickSight VPC Connection:
         * Visit the [QuickSight web console](https://quicksight.aws.amazon.com)
         * Click on your username in the upper right corner
