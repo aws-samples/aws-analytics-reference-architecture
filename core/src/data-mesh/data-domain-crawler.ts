@@ -5,7 +5,7 @@ import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { Choice, Condition, JsonPath, Map, StateMachine, TaskInput, Wait, WaitTime, LogLevel, Pass, Result } from 'aws-cdk-lib/aws-stepfunctions';
+import { Choice, Condition, JsonPath, Map, StateMachine, TaskInput, Wait, WaitTime, LogLevel, Pass } from 'aws-cdk-lib/aws-stepfunctions';
 import { CallAwsService, EventBridgePutEvents } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
@@ -288,10 +288,7 @@ export class DataDomainCrawler extends Construct {
       parameters: {
         'Name.$': "States.Format('{}_{}_{}', $$.Execution.Id, $.databaseName, $.tableName)"
       },
-      resultPath: '$.crawlerErrorMessage',
-      resultSelector: {
-        'error': ''
-      }
+      resultPath: JsonPath.DISCARD
     });
 
     const waitForCrawler = new Wait(this, 'WaitForCrawler', {
@@ -319,14 +316,13 @@ export class DataDomainCrawler extends Construct {
     });
 
     // Forward crawler state to Central account
-    const crawlerFinishedEvent = new EventBridgePutEvents(this, 'crawlerFinishedEvent', {
+    const crawlerStatusEvent = new EventBridgePutEvents(this, 'crawlerStatusEvent', {
       entries: [{
         detail: TaskInput.fromObject({
           'dbName': JsonPath.stringAt("$.centralDatabaseName"),
           'tableName': JsonPath.stringAt("$.centralTableName"),
           'state': JsonPath.stringAt("$.crawlerInfo.Crawler.State"),
-          'error': JsonPath.stringAt("$.crawlerErrorMessage.error"),
-          'lastCrawlStatus.$': '$.crawlerInfo.Crawler.LastCrawl.Status',
+          'crawlerInfo': JsonPath.stringAt("$.crawlerInfo.Crawler"),
         }),
         detailType: 'data-domain-crawler-update',
         eventBus: props.eventBus,
@@ -335,33 +331,17 @@ export class DataDomainCrawler extends Construct {
       resultPath: JsonPath.DISCARD,
     });
 
-    const addCrawlerErrorMessage = new Pass(this, 'addCrawlerErrorMessage', {
-      resultPath: '$.crawlerErrorMessage',
-      result: Result.fromObject({ error: '$.crawlerInfo.Crawler.LastCrawl.ErrorMessage' }),
-    });
-
     deleteCrawler.endStates;
-    crawlerFinishedEvent.next(deleteCrawler);
-    addCrawlerErrorMessage.next(crawlerFinishedEvent);
 
-    const checkCrawlerStatusChoice = new Choice(this, 'CheckCrawlerStatusChoice');
-    checkCrawlerStatusChoice
-      .when(Condition.and(
-        Condition.stringEquals("$.crawlerInfo.Crawler.State", "READY"),
-        Condition.stringEquals("$.crawlerInfo.Crawler.LastCrawl.Status", "FAILED")),
-        addCrawlerErrorMessage
-      )
-      .when(Condition.and(
-        Condition.stringEquals("$.crawlerInfo.Crawler.State", "READY"),
-        Condition.stringEquals("$.crawlerInfo.Crawler.LastCrawl.Status", "SUCCEEDED")),
-        crawlerFinishedEvent
-      )
+    const checkCrawlerStatusChoice = new Choice(this, 'CheckCrawlerStatusChoice')
+      .when(Condition.stringEquals("$.crawlerInfo.Crawler.State", "READY"), deleteCrawler)
       .otherwise(waitForCrawler);
 
     createCrawler
       .next(startCrawler)
       .next(waitForCrawler)
       .next(getCrawler)
+      .next(crawlerStatusEvent)
       .next(checkCrawlerStatusChoice);
 
     const initState = new Wait(this, 'WaitForMetadata', {
