@@ -15,7 +15,7 @@ export interface NotebookUserOptions {
   readonly identityName?: string;
 
   /**
-   * IAM User to for EMR Studio, if both iamUser and identityName are provided, the IAM User will have precedence
+   * IAM User for EMR Studio, if both iamUser and identityName are provided, the iamUser will have precedence
    * and will be used for EMR Studio
    *
    * if your IAM user is created in the same CDK stack you can pass the USER object
