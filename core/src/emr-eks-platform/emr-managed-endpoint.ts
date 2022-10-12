@@ -99,6 +99,7 @@ export class EmrManagedEndpointProvider extends Construct {
         actions: [
           'ec2:CreateSecurityGroup',
           'ec2:DeleteSecurityGroup',
+          'ec2:DescribeNetworkInterfaces',
           'ec2:AuthorizeSecurityGroupEgress',
           'ec2:AuthorizeSecurityGroupIngress',
           'ec2:RevokeSecurityGroupEgress',
