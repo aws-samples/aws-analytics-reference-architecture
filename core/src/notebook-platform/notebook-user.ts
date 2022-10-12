@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+import { IUser } from 'aws-cdk-lib/aws-iam';
 import { NotebookManagedEndpointOptions } from './notebook-managed-endpoint';
 
 /**
@@ -9,10 +10,17 @@ import { NotebookManagedEndpointOptions } from './notebook-managed-endpoint';
  */
 export interface NotebookUserOptions {
   /**
-   * Required
-   * Name of the identity as it appears in AWS SSO console, or the name to be given to a user in IAM_AUTHENTICATED
+   * Name of the identity as it appears in AWS IAM Identity Center console, or the IAM user to be used when IAM authentication is chosen
    * */
-  readonly identityName: string;
+  readonly identityName?: string;
+
+  /**
+   * IAM User to for EMR Studio, if both iamUser and identityName are provided, the IAM User will have precedence
+   * and will be used for EMR Studio
+   *
+   * if your IAM user is created in the same CDK stack you can pass the USER object
+   * */
+  readonly iamUser?: IUser;
 
   /**
    * Required

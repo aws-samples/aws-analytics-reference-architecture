@@ -1,19 +1,18 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+import { Aws } from 'aws-cdk-lib';
 import {
-  Effect,
   FederatedPrincipal,
   IRole,
   ManagedPolicy,
   Policy,
   PolicyDocument,
-  PolicyStatement,
   Role,
-  User,
 } from 'aws-cdk-lib/aws-iam';
-import { Aws, SecretValue } from 'aws-cdk-lib';
+
 import { Construct } from 'constructs';
+
 import { Utils } from '../utils';
 import { NotebookUserOptions } from './notebook-user';
 
@@ -53,9 +52,9 @@ export function createUserSessionPolicy(scope: Construct, user: NotebookUserOpti
   }
 
   //create the policy
-  let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName), {
+  let userSessionPolicy = new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName!), {
     document: PolicyDocument.fromJson(policy),
-    managedPolicyName: 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName) + studioId,
+    managedPolicyName: 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName!) + studioId,
   });
 
 
@@ -128,7 +127,7 @@ export function createStudioServiceRolePolicy(scope: Construct, keyArn: string, 
   //Update with KMS key ARN encrypting the bucket
   policy.Statement[12].Resource[0] = keyArn;
 
-  //Create a the policy of service role
+  //Create the policy of service role
   let serviceRolePolicy = new ManagedPolicy(scope, 'studioServicePolicy' + studioName, {
     document: PolicyDocument.fromJson(policy),
     managedPolicyName: 'studioServicePolicy' + studioName,
@@ -174,9 +173,9 @@ export function createIAMRolePolicy(scope: Construct,
   policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-studio-id>/gi, studioId);
 
   //create the policy
-  return new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName), {
+  return new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName!), {
     document: PolicyDocument.fromJson(policy),
-    managedPolicyName: 'studioIAMRolePolicy-' + Utils.stringSanitizer(user.identityName) + '-' + studioId,
+    managedPolicyName: 'studioIAMRolePolicy-' + Utils.stringSanitizer(user.identityName!) + '-' + studioId,
   });
 
 }
@@ -207,37 +206,4 @@ export function createIAMFederatedRole(scope: Construct,
     roleName: 'Role-' + identityName + studioId,
     managedPolicies: [iamRolePolicy],
   });
-}
-
-/**
- * @internal
- * Create an IAM user and its role then attach the policy for the role
- * Called when working in IAM auth mode with users are authenticated through IAM
- * @returns {string} Return the user created and its password
- */
-
-export function createIAMUser(scope: Construct,
-  iamRolePolicy: ManagedPolicy,
-  identityName: string): string {
-
-  let userPassword: SecretValue = SecretValue.unsafePlainText(Utils.randomize(identityName));
-
-  new User(scope, 'user' + identityName.replace(/[^\w\s]/gi, ''), {
-    userName: identityName,
-    passwordResetRequired: true,
-    password: userPassword,
-    managedPolicies: [iamRolePolicy],
-  });
-
-  //Add policy for user to be able to change password
-  iamRolePolicy.addStatements(new PolicyStatement({
-    effect: Effect.ALLOW,
-    actions: ['iam:ChangePassword'],
-    resources: ['arn:aws:iam::' + Aws.ACCOUNT_ID + ':user/' + identityName],
-  }));
-
-
-  return 'AWS account: ' + Aws.ACCOUNT_ID + ' ,' + ' userName: ' + identityName + ',' +
-    'userPassword: ' + userPassword.toString();
-
 }
