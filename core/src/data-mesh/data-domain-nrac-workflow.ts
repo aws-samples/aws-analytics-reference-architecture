@@ -193,6 +193,11 @@ export class DataDomainNracWorkflow extends Construct {
       outputPath: '$.map_result.[?(@.central_account_id)]',
     });
 
+    const invitationAccepted = new Pass(this, 'invitationAccepted', {
+      result: Result.fromObject({ 'Status': 'ACCEPTED' }),
+      resultPath: '$.Response'
+    })
+
     ramMapTask.iterator(new Choice(this, 'isInvitationPending')
       .when(Condition.and(
         Condition.stringEqualsJsonPath(
@@ -201,8 +206,15 @@ export class DataDomainNracWorkflow extends Construct {
         ),
         Condition.stringEquals('$.ram_share.Status', 'PENDING')
       ), acceptRamShare)
+      .when(Condition.and(
+        Condition.stringEqualsJsonPath(
+          '$.ram_share.SenderAccountId',
+          '$.central_account_id'
+        ),
+        Condition.stringEquals('$.ram_share.Status', 'ACCEPTED')
+      ), invitationAccepted,)
       .otherwise(
-        new Pass(this, 'notPendingPass', {
+        new Pass(this, 'notValidPass', {
           result: Result.fromObject({})
         }),
       ));

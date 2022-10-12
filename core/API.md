@@ -1726,8 +1726,19 @@ public readonly workflowRole: IRole;
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.CENTRAL_BUS_NAME">CENTRAL_BUS_NAME</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.DOMAIN_DATABASE_PREFIX">DOMAIN_DATABASE_PREFIX</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.DOMAIN_TAG_KEY">DOMAIN_TAG_KEY</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `CENTRAL_BUS_NAME`<sup>Required</sup> <a name="CENTRAL_BUS_NAME" id="aws-analytics-reference-architecture.CentralGovernance.property.CENTRAL_BUS_NAME"></a>
+
+```typescript
+public readonly CENTRAL_BUS_NAME: string;
+```
+
+- *Type:* string
 
 ---
 

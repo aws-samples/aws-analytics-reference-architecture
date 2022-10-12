@@ -5,10 +5,11 @@ import { Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
 import { Effect, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { Choice, Condition, JsonPath, Map, StateMachine, Wait, WaitTime, LogLevel, Pass } from 'aws-cdk-lib/aws-stepfunctions';
-import { CallAwsService } from 'aws-cdk-lib/aws-stepfunctions-tasks';
+import { Choice, Condition, JsonPath, Map, StateMachine, TaskInput, Wait, WaitTime, LogLevel, Pass } from 'aws-cdk-lib/aws-stepfunctions';
+import { CallAwsService, EventBridgePutEvents } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
+import { IEventBus } from 'aws-cdk-lib/aws-events';
 
 import { LfAccessControlMode as mode } from './central-governance';
 
@@ -35,6 +36,11 @@ export interface DataDomainCrawlerProps {
   * Data domain name
   */
   readonly domainName: string;
+
+  /**
+  * Event Bus in Data Domain
+  */
+  readonly eventBus: IEventBus;
 }
 
 /**
@@ -160,7 +166,9 @@ export class DataDomainCrawler extends Construct {
     const transformInput = new Pass(this, 'transformInput', {
       parameters: {
         'crawlerTables.$': '$.detail.table_names',
-        'databaseName.$': "States.Format('rl-{}', $.detail.central_database_name)"
+        'centralTables.$': '$.detail.table_names',
+        'databaseName.$': "States.Format('rl-{}', $.detail.central_database_name)",
+        'centralDatabaseName.$': '$.detail.central_database_name',
       }
     })
 
@@ -223,7 +231,9 @@ export class DataDomainCrawler extends Construct {
       },
       resultSelector: {
         'crawlerTables.$': '$[*].rlName',
-        'databaseName.$': '$[0].databaseName'
+        'databaseName.$': '$[0].databaseName',
+        'centralTables.$': '$[*].targetTableName',
+        'centralDatabaseName.$': '$[0].centralDatabaseName'
       }
     });
 
@@ -237,7 +247,9 @@ export class DataDomainCrawler extends Construct {
       maxConcurrency: 2,
       parameters: {
         'tableName.$': '$$.Map.Item.Value',
+        'centralTableName.$': "States.ArrayGetItem($.centralTables, $$.Map.Item.Index)",
         'databaseName.$': '$.databaseName',
+        'centralDatabaseName.$': '$.centralDatabaseName',
       },
       resultPath: JsonPath.DISCARD
     });
@@ -303,10 +315,25 @@ export class DataDomainCrawler extends Construct {
       resultPath: JsonPath.DISCARD
     });
 
+    // Forward crawler state to Central account
+    const crawlerStatusEvent = new EventBridgePutEvents(this, 'crawlerStatusEvent', {
+      entries: [{
+        detail: TaskInput.fromObject({
+          'dbName': JsonPath.stringAt("$.centralDatabaseName"),
+          'tableName': JsonPath.stringAt("$.centralTableName"),
+          'state': JsonPath.stringAt("$.crawlerInfo.Crawler.State"),
+          'crawlerInfo': JsonPath.stringAt("$.crawlerInfo.Crawler"),
+        }),
+        detailType: 'data-domain-crawler-update',
+        eventBus: props.eventBus,
+        source: 'data-domain-state-change',
+      }],
+      resultPath: JsonPath.DISCARD,
+    });
+
     deleteCrawler.endStates;
 
-    const checkCrawlerStatusChoice = new Choice(this, 'CheckCrawlerStatusChoice');
-    checkCrawlerStatusChoice
+    const checkCrawlerStatusChoice = new Choice(this, 'CheckCrawlerStatusChoice')
       .when(Condition.stringEquals("$.crawlerInfo.Crawler.State", "READY"), deleteCrawler)
       .otherwise(waitForCrawler);
 
@@ -314,6 +341,7 @@ export class DataDomainCrawler extends Construct {
       .next(startCrawler)
       .next(waitForCrawler)
       .next(getCrawler)
+      .next(crawlerStatusEvent)
       .next(checkCrawlerStatusChoice);
 
     const initState = new Wait(this, 'WaitForMetadata', {
