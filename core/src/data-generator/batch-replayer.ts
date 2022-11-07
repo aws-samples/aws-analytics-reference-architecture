@@ -120,7 +120,7 @@ export class BatchReplayer extends Construct {
     this.dataset = props.dataset;
     this.frequency = props.frequency?.toSeconds() || 60;
     this.sinkBucket = props.sinkBucket;
-    this.sinkObjectKey = props.sinkObjectKey;
+    this.sinkObjectKey = this.sinkObjectKey ? `${this.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
     this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
 
     const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python39:1`);
@@ -200,10 +200,8 @@ export class BatchReplayer extends Construct {
     });
 
     // grant permissions to write to the bucket and to use the KMS key
-    const putPattern = this.sinkObjectKey ? `${this.sinkObjectKey}/*` : undefined;
-    this.sinkBucket.grantWrite(writeInBatchFn, putPattern);
+    this.sinkBucket.grantWrite(writeInBatchFn, `${this.sinkObjectKey}/*`);
 
-    const sinkPath = this.sinkObjectKey ? `${this.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
     const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
       lambdaFunction: writeInBatchFn,
       payload: TaskInput.fromObject({
@@ -219,7 +217,7 @@ export class BatchReplayer extends Construct {
         // For file processing
         dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
         dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
-        sinkPath: this.sinkBucket.s3UrlForObject(sinkPath),
+        sinkPath: this.sinkBucket.s3UrlForObject(this.sinkObjectKey),
         outputFileMaxSizeInBytes: 20480,
       }),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
