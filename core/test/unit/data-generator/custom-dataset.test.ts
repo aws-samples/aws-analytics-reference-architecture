@@ -29,7 +29,7 @@ describe('CustomDataset test', () => {
   });
   
   const template = Template.fromStack(customDatasetStack);
-  console.log(JSON.stringify(template.toJSON(),null, 2));
+  // console.log(JSON.stringify(template.toJSON(),null, 2));
   
   test('CustomDataset should create the right number of resources', () => {
     

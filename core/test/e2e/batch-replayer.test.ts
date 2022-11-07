@@ -15,7 +15,7 @@ import { deployStack , destroyStack } from './utils';
 import { BatchReplayer } from '../../src/data-generator/batch-replayer';
 import { PreparedDataset } from '../../src/data-generator/prepared-dataset';
 
-jest.setTimeout(500000);
+jest.setTimeout(600000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'BatchReplayerE2eTest');

@@ -232,5 +232,10 @@ export class AraBucket extends Bucket {
     };
     // build the S3 bucket
     super(scope, props.bucketName, bucketProps);
+
+    // Used to force the cleaning of the access logs bucket after deletion of this 
+    if (serverAccessLogsBucket) {
+      this.node.addDependency(serverAccessLogsBucket);
+    }
   }
 }

@@ -14,11 +14,14 @@ import { CfnCrawler } from 'aws-cdk-lib/aws-glue';
 import { ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 import { SynchronousCrawler } from '../../src/synchronous-crawler';
+import { LakeFormationAdmin } from '../../src';
 
 jest.setTimeout(300000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'SynchronousCrawlerE2eTest');
+
+LakeFormationAdmin.addCdkExecRole(stack, 'SynchronousCrawlerLfAdmin');
 
 const testDb = new Database(stack, 'TestDb', {
   databaseName: 'sync_crawler_test_db',

@@ -744,6 +744,7 @@ The metric configuration to add.
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketArn">fromBucketArn</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketAttributes">fromBucketAttributes</a></code> | Creates a Bucket construct that represents an external bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketName">fromBucketName</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.fromCfnBucket">fromCfnBucket</a></code> | Create a mutable {@link IBucket} based on a low-level {@link CfnBucket}. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.validateBucketName">validateBucketName</a></code> | Thrown an exception if the given bucket name is not valid. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.getOrCreate">getOrCreate</a></code> | Get the Amazon S3 Bucket from the AWS CDK Stack based on the provided name. |
 
@@ -899,6 +900,22 @@ AraBucket.fromBucketName(scope: Construct, id: string, bucketName: string)
 ###### `bucketName`<sup>Required</sup> <a name="bucketName" id="aws-analytics-reference-architecture.AraBucket.fromBucketName.parameter.bucketName"></a>
 
 - *Type:* string
+
+---
+
+##### `fromCfnBucket` <a name="fromCfnBucket" id="aws-analytics-reference-architecture.AraBucket.fromCfnBucket"></a>
+
+```typescript
+import { AraBucket } from 'aws-analytics-reference-architecture'
+
+AraBucket.fromCfnBucket(cfnBucket: CfnBucket)
+```
+
+Create a mutable {@link IBucket} based on a low-level {@link CfnBucket}.
+
+###### `cfnBucket`<sup>Required</sup> <a name="cfnBucket" id="aws-analytics-reference-architecture.AraBucket.fromCfnBucket.parameter.cfnBucket"></a>
+
+- *Type:* aws-cdk-lib.aws_s3.CfnBucket
 
 ---
 
@@ -5069,6 +5086,7 @@ SingletonCfnLaunchTemplate.getOrCreate(scope: Construct, name: string, data: str
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData">launchTemplateData</a></code> | <code>aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty \| aws-cdk-lib.IResolvable</code> | The information for the launch template. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateName">launchTemplateName</a></code> | <code>string</code> | A name for the launch template. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications">tagSpecifications</a></code> | <code>aws-cdk-lib.IResolvable \| aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty \| aws-cdk-lib.IResolvable[]</code> | The tags to apply to the launch template during creation. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.versionDescription">versionDescription</a></code> | <code>string</code> | `AWS::EC2::LaunchTemplate.VersionDescription`. |
 
 ---
 
@@ -5229,6 +5247,20 @@ public readonly tagSpecifications: IResolvable | LaunchTemplateTagSpecificationP
 The tags to apply to the launch template during creation.
 
 > [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications)
+
+---
+
+##### `versionDescription`<sup>Optional</sup> <a name="versionDescription" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.versionDescription"></a>
+
+```typescript
+public readonly versionDescription: string;
+```
+
+- *Type:* string
+
+`AWS::EC2::LaunchTemplate.VersionDescription`.
+
+> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-versiondescription](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-versiondescription)
 
 ---
 
