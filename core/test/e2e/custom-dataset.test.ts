@@ -13,7 +13,7 @@ import { deployStack, destroyStack } from './utils';
 import { CustomDataset, CustomDatasetInputFormat } from '../../src/data-generator/custom-dataset';
 import { Duration } from 'aws-cdk-lib';
 
-jest.setTimeout(300000);
+jest.setTimeout(600000);
 
 //GIVEN
 const integTestApp = new cdk.App();

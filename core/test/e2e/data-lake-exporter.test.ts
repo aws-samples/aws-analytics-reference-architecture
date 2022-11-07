@@ -15,11 +15,14 @@ import { RemovalPolicy } from 'aws-cdk-lib';
 import { deployStack, destroyStack } from './utils';
 
 import { DataLakeExporter } from '../../src/data-lake-exporter';
+import { LakeFormationAdmin } from '../../src/lake-formation';
 
 jest.setTimeout(100000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'DataLakeExporterE2eTest');
+
+LakeFormationAdmin.addCdkExecRole(stack, 'DataLakeExporterLfAdmin');
 
 const sinkBucket = new Bucket(stack, 'SinkBucket', {
   removalPolicy: RemovalPolicy.DESTROY,

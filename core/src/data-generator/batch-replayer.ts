@@ -114,6 +114,9 @@ export class BatchReplayer extends Construct {
   constructor(scope: Construct, id: string, props: BatchReplayerProps) {
     super(scope, id);
 
+    // Used to force S3 bucket auto cleaning after deletion of this
+    this.node.addDependency(props.sinkBucket);
+
     this.dataset = props.dataset;
     this.frequency = props.frequency?.toSeconds() || 60;
     this.sinkBucket = props.sinkBucket;
