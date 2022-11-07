@@ -35,12 +35,10 @@ import { ContextOptions } from '../common/context-options';
 import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 import { SingletonKey } from '../singleton-kms-key';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
-import { validateSchema } from './config-override-schema-validation';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
 import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 import { EmrManagedEndpointOptions, EmrManagedEndpointProvider } from './emr-managed-endpoint';
 import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
-import * as configOverrideSchema from './resources/k8s/emr-eks-config/config-override-schema.json';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook-pod-template-ready.json';
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
@@ -162,7 +160,7 @@ export class EmrEksCluster extends TrackedConstruct {
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-  private static readonly EMR_VERSIONS = ['emr-6.7.0-latest', 'emr-6.6.0-latest', 'emr-6.5.0-latest', 'emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
+  private static readonly EMR_VERSIONS = ['emr-6.8.0-latest', 'emr-6.7.0-latest', 'emr-6.6.0-latest', 'emr-6.5.0-latest', 'emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
   private static readonly DEFAULT_EMR_VERSION = 'emr-6.7.0-latest';
   private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
   private static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
@@ -364,7 +362,7 @@ export class EmrEksCluster extends TrackedConstruct {
     this.emrServiceRole = new CfnServiceLinkedRole(this, 'EmrServiceRole', {
       awsServiceName: 'emr-containers.amazonaws.com',
     });
-    this.eksCluster.awsAuth.addMastersRole(
+    this.eksCluster.awsAuth.addRoleMapping(
       Role.fromRoleArn(
         this,
         'ServiceRoleForAmazonEMRContainers',
@@ -372,7 +370,10 @@ export class EmrEksCluster extends TrackedConstruct {
           Stack.of(this).account
         }:role/AWSServiceRoleForAmazonEMRContainers`,
       ),
-      'emr-containers',
+      {
+        username: 'emr-containers',
+        groups: ['']
+      }
     );
 
     // store the OIDC provider for creating execution roles later
@@ -784,16 +785,20 @@ ${userData.join('\r\n')}
 
     let jsonConfigurationOverrides: string | undefined;
 
-    try {
+    // TODO this need to be broadended to all possible emr configuration
+    // try {
 
-      //Check if the configOverride provided by user is valid
-      let isConfigOverrideValid: boolean = validateSchema(JSON.stringify(configOverrideSchema), options.configurationOverrides);
+    //   //Check if the configOverride provided by user is valid
+    //   let isConfigOverrideValid: boolean = validateSchema(JSON.stringify(configOverrideSchema), options.configurationOverrides);
 
-      jsonConfigurationOverrides = isConfigOverrideValid ? options.configurationOverrides : this.notebookDefaultConfig;
+    //   jsonConfigurationOverrides = isConfigOverrideValid ? options.configurationOverrides : this.notebookDefaultConfig;
 
-    } catch (error) {
-      throw new Error(`The configuration override is not valid JSON : ${options.configurationOverrides}`);
-    }
+    // } catch (error) {
+    //   throw new Error(`The configuration override is not valid JSON : ${options.configurationOverrides}`);
+    // }
+
+    jsonConfigurationOverrides = options.configurationOverrides ? options.configurationOverrides : this.notebookDefaultConfig;
+
     // Create custom resource with async waiter until the Amazon EMR Managed Endpoint is created
     const cr = new CustomResource(scope, id, {
       serviceToken: this.managedEndpointProviderServiceToken,
