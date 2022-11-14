@@ -18,7 +18,7 @@ const mockApp = new App();
 
 const athenaDemoSetupStack = new Stack(mockApp, 'athena-demo-setup');
 // Instantiate an AthenaDemoSetup
-new AthenaDemoSetup(athenaDemoSetupStack, 'athenaDemo');
+new AthenaDemoSetup(athenaDemoSetupStack, 'athenaDemo', {});
 
 Aspects.of(athenaDemoSetupStack).add(new AwsSolutionsChecks());
 
