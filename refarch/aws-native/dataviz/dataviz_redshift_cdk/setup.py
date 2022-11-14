@@ -10,7 +10,7 @@ with open("README.md") as fp:
 
 setuptools.setup(
     name="ara_dataviz_redshift",
-    version="1.0.0",
+    version="2.0.0",
 
     description="The Analytics Reference Architecture CDK app for Redshift Dataviz",
     long_description=long_description,
@@ -18,14 +18,12 @@ setuptools.setup(
 
     author="author",
 
-    package_dir={"": "ara_dataviz_redshift"},
-    packages=setuptools.find_packages(where="ara_dataviz_redshift"),
+    package_dir={"": "dataviz_redshift"},
+    packages=setuptools.find_packages(where="dataviz_redshift"),
 
     install_requires=[
-        "aws-cdk.core==1.103.0",
+        "aws-cdk-lib>=2.26.0",
     ],
-
-    python_requires=">=3.8,<3.9",
 
     classifiers=[
         "Development Status :: 4 - Beta",

@@ -20,9 +20,8 @@ export class SingletonKey extends Key {
     const id = `${keyName}`;
 
     const stackKey = stack.node.tryFindChild(id) as Key ?? (stack.nestedStackParent ? stack.nestedStackParent.node.tryFindChild(id) as Key : undefined);
-    
+
     return stackKey || new Key(stack, id, {
-      alias: `${keyName}-${Stack.of(stack).stackName}`,
       enableKeyRotation: true,
       removalPolicy: RemovalPolicy.DESTROY,
     });

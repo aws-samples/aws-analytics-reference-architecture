@@ -2,12 +2,11 @@
 # SPDX-License-Identifier: MIT-0
 
 from constructs import Construct
-from aws_cdk import Stack, CfnParameter, Fn, CfnOutput
+from aws_cdk import Stack, CfnParameter, Fn, CfnOutput, CustomResource
 import aws_cdk.aws_iam as iam
 import aws_cdk.aws_secretsmanager as sm
 import aws_cdk.custom_resources as cr
 import aws_cdk.aws_lambda as lambda_
-
 from dataviz_redshift.redshift_config import Config as cfg
 from dataviz_redshift.qs_redshift_dataset import QuickSightRedshiftDataset
 from dataviz_redshift.qs_redshift_analysis import QuickSightRedshiftAnalysis

@@ -9,10 +9,10 @@
 
 //TODO REDO this unit test to support the new way of deploying notebooks with nested stacks
 
-import { ManagedPolicy, PolicyDocument, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Stack } from 'aws-cdk-lib';
-import { EmrEksCluster, StudioAuthMode, NotebookPlatform, NotebookUserOptions } from '../../../src';
 import { Template, Match } from 'aws-cdk-lib/assertions';
+import { ManagedPolicy, PolicyDocument, PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { EmrEksCluster, StudioAuthMode, NotebookPlatform, NotebookUserOptions } from '../../../src';
 
 const stacksso = new Stack();
 
@@ -95,9 +95,9 @@ test('EMR virtual cluster should be created with proper configuration', () => {
 
 test('Should find a an EMR Studio with SSO Auth Mode', () => {
   stackssoTemplate.resourceCountIs('AWS::EMR::Studio', 1),
-    stackssoTemplate.hasResourceProperties('AWS::EMR::Studio', {
-      AuthMode: 'SSO',
-    });
+  stackssoTemplate.hasResourceProperties('AWS::EMR::Studio', {
+    AuthMode: 'SSO',
+  });
 });
 
 test('Should find an IAM role for EMR Studio used as Service Role', () => {
@@ -108,36 +108,36 @@ test('Should find an IAM role for EMR Studio used as Service Role', () => {
 
 test('Should find a an EMR Studio with SSO Auth Mode', () => {
   stackssoTemplate.resourceCountIs('AWS::EMR::Studio', 1),
-    stackssoTemplate.hasResourceProperties('AWS::EMR::Studio', {
-      AuthMode: 'SSO',
-      DefaultS3Location: {
-        'Fn::Join': [
-          '',
-          [
-            's3://',
-            {
-              Ref: 'workspacesbucketintegrationtestsso04B693AF',
-            },
-            '/',
-          ],
+  stackssoTemplate.hasResourceProperties('AWS::EMR::Studio', {
+    AuthMode: 'SSO',
+    DefaultS3Location: {
+      'Fn::Join': [
+        '',
+        [
+          's3://',
+          {
+            Ref: 'workspacesbucketintegrationtestsso04B693AF',
+          },
+          '/',
         ],
-      },
-    });
+      ],
+    },
+  });
 });
 
 test('Should find a mapping between an EMR Studio, a user and a session policy for SSO or an IdP identity and a role', () => {
   const stacksso = new Stack();
 
-const clusterSSO = EmrEksCluster.getOrCreate(stacksso, {
-  eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
-});
+  const clusterSSO = EmrEksCluster.getOrCreate(stacksso, {
+    eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
+  });
 
-const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {
-  emrEks: clusterSSO,
-  eksNamespace: 'integrationtestssons',
-  studioName: 'integration-test-sso',
-  studioAuthMode: StudioAuthMode.SSO,
-});
+  const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {
+    emrEks: clusterSSO,
+    eksNamespace: 'integrationtestssons',
+    studioName: 'integration-test-sso',
+    studioAuthMode: StudioAuthMode.SSO,
+  });
 
   const policySSO = new ManagedPolicy(stacksso, 'testPolicy', {
     document: new PolicyDocument({
@@ -258,8 +258,4 @@ const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {
   });
 
   iamAuthNotebook.addUser(userList_IAMAuth);
-
-  const stackiamauthTemplate = Template.fromStack(stackiamauth);
-
-  stackiamauthTemplate.resourceCountIs('AWS::IAM::User', 1);
 });

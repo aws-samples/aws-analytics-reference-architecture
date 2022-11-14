@@ -32,7 +32,7 @@ describe('DataDomainNracWorkflowTests', () => {
     workflowRole: workflowRole,
     centralAccountId: '11111111111111',
     domainName: 'Data1Domain',
-    eventBus: eventBus,
+    eventBus,
   });
 
   const template = Template.fromStack(dataDomainNracWorkflowStack);
