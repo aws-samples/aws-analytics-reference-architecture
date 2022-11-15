@@ -6,6 +6,15 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import { AraBucket } from './ara-bucket';
 
+export interface AthenaDemoSetupProps {
+
+  /**
+   * The Amazon Athena workgroup name. The name is also used 
+   * @default - `demo` is used
+   */
+  readonly workgroupName?: string;
+}
+
 /**
  * AthenaDemoSetup Construct to automatically setup a new Amazon Athena Workgroup with proper configuration for out-of-the-box demo
  */
@@ -22,17 +31,18 @@ export class AthenaDemoSetup extends Construct {
    * @access public
    */
 
-  constructor(scope: Construct, id: string) {
+  constructor(scope: Construct, id: string, props: AthenaDemoSetupProps) {
     super(scope, id);
 
+    const workgroupName = props.workgroupName || 'demo'; 
     // Singleton Amazon S3 bucket for Amazon Athena Query logs
     this.resultBucket = AraBucket.getOrCreate(this, {
-      bucketName: 'athena-logs',
-      serverAccessLogsPrefix: 'athena-logs-bucket',
+      bucketName: `${workgroupName}-athena-logs`,
+      serverAccessLogsPrefix: `${workgroupName}-athena-logs-bucket`,
     });
 
     this.athenaWorkgroup = new CfnWorkGroup(this, 'athenaDemoWorkgroup', {
-      name: 'demo',
+      name: workgroupName,
       recursiveDeleteOption: true,
       workGroupConfiguration: {
         requesterPaysEnabled: true,

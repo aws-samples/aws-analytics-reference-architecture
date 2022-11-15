@@ -17,7 +17,8 @@ jest.setTimeout(100000);
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'AthenaDemoSetupE2eTest');
 
-const athenaSetup = new AthenaDemoSetup(stack, 'AthenaSetup');
+const athenaSetup = new AthenaDemoSetup(stack, 'AthenaSetup', {});
+const athenaSetup2 = new AthenaDemoSetup(stack, 'AthenaSetup2', {workgroupName: 'custom'});
 
 new cdk.CfnOutput(stack, 'ResultsBucketName', {
   value: athenaSetup.resultBucket.bucketName,
@@ -29,6 +30,16 @@ new cdk.CfnOutput(stack, 'AthenaWorkgroupName', {
   exportName: 'AthenaWorkgroupName',
 });
 
+new cdk.CfnOutput(stack, 'AthenaWorkgroupName2', {
+  value: athenaSetup2.athenaWorkgroup.name,
+  exportName: 'AthenaWorkgroupName2',
+});
+
+new cdk.CfnOutput(stack, 'ResultsBucketName2', {
+  value: athenaSetup2.resultBucket.bucketName,
+  exportName: 'ResultsBucketName2',
+});
+
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     const deployResult = await deployStack(integTestApp, stack);
@@ -36,7 +47,9 @@ describe('deploy succeed', () => {
     
     // THEN
     expect(deployResult.outputs.AthenaWorkgroupName).toEqual('demo');
-    expect(deployResult.outputs.ResultsBucketName).toContain('athena-logs');
+    expect(deployResult.outputs.AthenaWorkgroupName2).toEqual('custom');
+    expect(deployResult.outputs.ResultsBucketName).toContain('demo-athena-logs');
+    expect(deployResult.outputs.ResultsBucketName2).toContain('custom-athena-logs');
 
   }, 9000000);
 });
