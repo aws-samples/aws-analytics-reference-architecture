@@ -1157,13 +1157,14 @@ AthenaDemoSetup Construct to automatically setup a new Amazon Athena Workgroup w
 ```typescript
 import { AthenaDemoSetup } from 'aws-analytics-reference-architecture'
 
-new AthenaDemoSetup(scope: Construct, id: string)
+new AthenaDemoSetup(scope: Construct, id: string, props: AthenaDemoSetupProps)
 ```
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
 | <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetupProps">AthenaDemoSetupProps</a></code> | *No description.* |
 
 ---
 
@@ -1180,6 +1181,12 @@ the Scope of the CDK Construct.
 - *Type:* string
 
 the ID of the CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.AthenaDemoSetup.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.AthenaDemoSetupProps">AthenaDemoSetupProps</a>
 
 ---
 
@@ -6906,6 +6913,39 @@ public readonly versioned: boolean;
 - *Default:* false
 
 Whether this bucket should have versioning turned on or not.
+
+---
+
+### AthenaDemoSetupProps <a name="AthenaDemoSetupProps" id="aws-analytics-reference-architecture.AthenaDemoSetupProps"></a>
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.AthenaDemoSetupProps.Initializer"></a>
+
+```typescript
+import { AthenaDemoSetupProps } from 'aws-analytics-reference-architecture'
+
+const athenaDemoSetupProps: AthenaDemoSetupProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.AthenaDemoSetupProps.property.workgroupName">workgroupName</a></code> | <code>string</code> | The Amazon Athena workgroup name. |
+
+---
+
+##### `workgroupName`<sup>Optional</sup> <a name="workgroupName" id="aws-analytics-reference-architecture.AthenaDemoSetupProps.property.workgroupName"></a>
+
+```typescript
+public readonly workgroupName: string;
+```
+
+- *Type:* string
+- *Default:* `demo` is used
+
+The Amazon Athena workgroup name.
+
+The name is also used
 
 ---
 
