@@ -161,6 +161,7 @@ export class DataDomain extends Construct {
         workflowRole: workflowRole.role,
         dataProductsBucket: this.dataLake.cleanBucket,
         dataProductsPrefix: DataDomain.DATA_PRODUCTS_PREFIX,
+        eventBus: this.eventBus,
       });
 
       // AWS Lambda function responsible to grant permissions on AWS Lake Formation tag to crawler role
@@ -206,6 +207,27 @@ export class DataDomain extends Construct {
       grantCrawlerPermissionRule.applyRemovalPolicy(RemovalPolicy.DESTROY);
       // allow grantCrawlerPermissionRule to invoke Lambda fn
       targets.addLambdaPermission(grantCrawlerPermissionRule, tagPermissionsFn);
+
+      // Construct central gov. account bus ARN
+      const centralBusArn = `arn:aws:events:${Aws.REGION}:${props.centralAccountId}:event-bus/${CentralGovernance.CENTRAL_BUS_NAME}`;
+
+      // Event Bridge Rule to send event about crawler state to Central account
+      const forwardCrawlerStateRule = new Rule(this, 'CrawlerStateRule', {
+        eventPattern: {
+          source: ['data-domain-state-change'],
+          detailType: ['data-domain-crawler-update'],
+        },
+        eventBus: this.eventBus,
+      });
+
+      forwardCrawlerStateRule.addTarget(new targets.EventBus(
+        EventBus.fromEventBusArn(
+          this,
+          '`${id}centralBus`',
+          centralBusArn
+        )),
+      );
+      forwardCrawlerStateRule.applyRemovalPolicy(RemovalPolicy.DESTROY);
     }
 
     // create the data domain configuration object (in JSON) to be passed to the central governance account 

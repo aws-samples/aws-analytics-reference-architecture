@@ -1,29 +1,37 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
+import { Aws, CfnOutput, RemovalPolicy, Tags } from 'aws-cdk-lib';
 import { ISecurityGroup, Peer, Port, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { CfnStudio, CfnStudioProps, CfnStudioSessionMapping } from 'aws-cdk-lib/aws-emr';
 import { CfnVirtualCluster } from 'aws-cdk-lib/aws-emrcontainers';
-import { Effect, IManagedPolicy, IRole, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import {
+  Effect,
+  IManagedPolicy,
+  IRole, IUser,
+  ManagedPolicy,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+  User,
+} from 'aws-cdk-lib/aws-iam';
 import { Key } from 'aws-cdk-lib/aws-kms';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
-import { Aws, CfnOutput, RemovalPolicy, Tags } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { AraBucket } from '../ara-bucket';
+import { ContextOptions } from '../common/context-options';
+import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 import { EmrEksCluster } from '../emr-eks-platform';
 import { SingletonKey } from '../singleton-kms-key';
 import { Utils } from '../utils';
 import {
   createIAMFederatedRole,
   createIAMRolePolicy,
-  createIAMUser,
   createStudioServiceRolePolicy,
   createStudioUserRolePolicy,
   createUserSessionPolicy,
 } from './notebook-platform-helpers';
 import { NotebookUserOptions } from './notebook-user';
-import { ContextOptions } from '../common/context-options';
-import { TrackedConstruct, TrackedConstructProps } from '../common/tracked-construct';
 
 
 /**
@@ -424,24 +432,16 @@ export class NotebookPlatform extends TrackedConstruct {
         iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
-        let iamUserCredentials: string = createIAMUser(this, iamRolePolicy!, user.identityName);
+        let iamUser: IUser = user.iamUser ? user.iamUser! : User.fromUserName(this, `IAMUSER-${user.identityName!}`, user.identityName!);
 
-        new CfnOutput(this, `${user.identityName}`, {
-          value: iamUserCredentials,
-        });
-
-        /*if (this.nestedStackParent != undefined) {
-          new CfnOutput(this.nestedStackParent, `${user.identityName}`, {
-            value: iamUserCredentials,
-          });
-        }*/
+        iamRolePolicy.attachToUser(iamUser);
 
       } else if (this.authMode === 'IAM' && this.federatedIdPARN != undefined) {
         //Create the role policy and gets its ARN
         iamRolePolicy = createIAMRolePolicy(this, user, this.studioServiceRole.roleName,
           managedEndpointArns, this.studioId);
 
-        createIAMFederatedRole(this, iamRolePolicy!, this.federatedIdPARN!, user.identityName, this.studioId);
+        createIAMFederatedRole(this, iamRolePolicy!, this.federatedIdPARN!, user.identityName!, this.studioId);
 
       } else if (this.authMode === 'SSO') {
         //Create the session policy and gets its ARN
@@ -451,7 +451,7 @@ export class NotebookPlatform extends TrackedConstruct {
         if (user.identityType == 'USER' || user.identityType == 'GROUP') {
           //Map a session to user or group
           new CfnStudioSessionMapping(this, 'studioUser' + user.identityName + user.identityName, {
-            identityName: user.identityName,
+            identityName: user.identityName!,
             identityType: user.identityType,
             sessionPolicyArn: sessionPolicyArn,
             studioId: this.studioId,

@@ -12,7 +12,7 @@ import * as cdk from 'aws-cdk-lib';
 import { deployStack, destroyStack } from './utils';
 import { S3CrossAccount } from '../../src/s3-cross-account';
  
-jest.setTimeout(100000);
+jest.setTimeout(300000);
 // GIVEN
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'S3CrossAccountE2eTest');
@@ -48,7 +48,7 @@ describe('deploy succeed', () => {
     const deployResult = await deployStack(integTestApp, stack);
 
     // THEN
-    expect(deployResult.outputs.BucketPolicy).toContain('2');
+    expect(deployResult.outputs.BucketPolicy).toContain('4');
   }, 9000000);
 });
 

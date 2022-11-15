@@ -3,12 +3,12 @@
 
 #!/usr/bin/env python3
 
-from aws_cdk import core
+from aws_cdk import App
 
 from dataviz_redshift.dataviz_redshift_stack import DataVizRedshiftStack
 
 
-app = core.App()
+app = App()
 DataVizRedshiftStack(app, "ara-dataviz-redshift")
 
 app.synth()

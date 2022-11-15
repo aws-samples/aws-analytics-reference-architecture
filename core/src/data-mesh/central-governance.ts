@@ -75,6 +75,7 @@ export interface CentralGovernanceProps {
  */
 export class CentralGovernance extends Construct {
 
+  public static readonly CENTRAL_BUS_NAME: string = 'central-mesh-bus';
   public static readonly DOMAIN_DATABASE_PREFIX: string = 'data-domain';
   public static readonly DOMAIN_TAG_KEY: string = 'LoB';
   public readonly workflowRole: IRole;
@@ -94,7 +95,9 @@ export class CentralGovernance extends Construct {
     super(scope, id);
 
     // Event Bridge event bus for the Central Governance account
-    this.eventBus = new EventBus(this, 'centralEventBus');
+    this.eventBus = new EventBus(this, 'centralEventBus', {
+      eventBusName: CentralGovernance.CENTRAL_BUS_NAME,
+    });
     this.eventBus.applyRemovalPolicy(RemovalPolicy.DESTROY);
     this.cdkLfAdmin = LakeFormationAdmin.addCdkExecRole(scope, 'CdkLfAdmin');
 

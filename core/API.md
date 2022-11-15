@@ -744,6 +744,7 @@ The metric configuration to add.
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketArn">fromBucketArn</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketAttributes">fromBucketAttributes</a></code> | Creates a Bucket construct that represents an external bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketName">fromBucketName</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.fromCfnBucket">fromCfnBucket</a></code> | Create a mutable {@link IBucket} based on a low-level {@link CfnBucket}. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.validateBucketName">validateBucketName</a></code> | Thrown an exception if the given bucket name is not valid. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.getOrCreate">getOrCreate</a></code> | Get the Amazon S3 Bucket from the AWS CDK Stack based on the provided name. |
 
@@ -899,6 +900,22 @@ AraBucket.fromBucketName(scope: Construct, id: string, bucketName: string)
 ###### `bucketName`<sup>Required</sup> <a name="bucketName" id="aws-analytics-reference-architecture.AraBucket.fromBucketName.parameter.bucketName"></a>
 
 - *Type:* string
+
+---
+
+##### `fromCfnBucket` <a name="fromCfnBucket" id="aws-analytics-reference-architecture.AraBucket.fromCfnBucket"></a>
+
+```typescript
+import { AraBucket } from 'aws-analytics-reference-architecture'
+
+AraBucket.fromCfnBucket(cfnBucket: CfnBucket)
+```
+
+Create a mutable {@link IBucket} based on a low-level {@link CfnBucket}.
+
+###### `cfnBucket`<sup>Required</sup> <a name="cfnBucket" id="aws-analytics-reference-architecture.AraBucket.fromCfnBucket.parameter.cfnBucket"></a>
+
+- *Type:* aws-cdk-lib.aws_s3.CfnBucket
 
 ---
 
@@ -1726,8 +1743,19 @@ public readonly workflowRole: IRole;
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.CENTRAL_BUS_NAME">CENTRAL_BUS_NAME</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.DOMAIN_DATABASE_PREFIX">DOMAIN_DATABASE_PREFIX</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.CentralGovernance.property.DOMAIN_TAG_KEY">DOMAIN_TAG_KEY</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `CENTRAL_BUS_NAME`<sup>Required</sup> <a name="CENTRAL_BUS_NAME" id="aws-analytics-reference-architecture.CentralGovernance.property.CENTRAL_BUS_NAME"></a>
+
+```typescript
+public readonly CENTRAL_BUS_NAME: string;
+```
+
+- *Type:* string
 
 ---
 
@@ -5058,6 +5086,7 @@ SingletonCfnLaunchTemplate.getOrCreate(scope: Construct, name: string, data: str
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData">launchTemplateData</a></code> | <code>aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty \| aws-cdk-lib.IResolvable</code> | The information for the launch template. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateName">launchTemplateName</a></code> | <code>string</code> | A name for the launch template. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications">tagSpecifications</a></code> | <code>aws-cdk-lib.IResolvable \| aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty \| aws-cdk-lib.IResolvable[]</code> | The tags to apply to the launch template during creation. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.versionDescription">versionDescription</a></code> | <code>string</code> | `AWS::EC2::LaunchTemplate.VersionDescription`. |
 
 ---
 
@@ -5218,6 +5247,20 @@ public readonly tagSpecifications: IResolvable | LaunchTemplateTagSpecificationP
 The tags to apply to the launch template during creation.
 
 > [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications)
+
+---
+
+##### `versionDescription`<sup>Optional</sup> <a name="versionDescription" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.versionDescription"></a>
+
+```typescript
+public readonly versionDescription: string;
+```
+
+- *Type:* string
+
+`AWS::EC2::LaunchTemplate.VersionDescription`.
+
+> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-versiondescription](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-versiondescription)
 
 ---
 
@@ -8424,21 +8467,10 @@ const notebookUserOptions: NotebookUserOptions = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.NotebookUserOptions.property.identityName">identityName</a></code> | <code>string</code> | Required Name of the identity as it appears in AWS SSO console, or the name to be given to a user in IAM_AUTHENTICATED. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookUserOptions.property.notebookManagedEndpoints">notebookManagedEndpoints</a></code> | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions">NotebookManagedEndpointOptions</a>[]</code> | Required Array of {@link NotebookManagedEndpointOptions} this defines the managed endpoint the notebook/workspace user will have access to. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookUserOptions.property.iamUser">iamUser</a></code> | <code>aws-cdk-lib.aws_iam.IUser</code> | IAM User for EMR Studio, if both iamUser and identityName are provided, the iamUser will have precedence and will be used for EMR Studio. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookUserOptions.property.identityName">identityName</a></code> | <code>string</code> | Name of the identity as it appears in AWS IAM Identity Center console, or the IAM user to be used when IAM authentication is chosen. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookUserOptions.property.identityType">identityType</a></code> | <code>string</code> | Required Type of the identity either GROUP or USER, to be used when SSO is used as an authentication mode {@see SSOIdentityType}. |
-
----
-
-##### `identityName`<sup>Required</sup> <a name="identityName" id="aws-analytics-reference-architecture.NotebookUserOptions.property.identityName"></a>
-
-```typescript
-public readonly identityName: string;
-```
-
-- *Type:* string
-
-Required Name of the identity as it appears in AWS SSO console, or the name to be given to a user in IAM_AUTHENTICATED.
 
 ---
 
@@ -8451,6 +8483,32 @@ public readonly notebookManagedEndpoints: NotebookManagedEndpointOptions[];
 - *Type:* <a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions">NotebookManagedEndpointOptions</a>[]
 
 Required Array of {@link NotebookManagedEndpointOptions} this defines the managed endpoint the notebook/workspace user will have access to.
+
+---
+
+##### `iamUser`<sup>Optional</sup> <a name="iamUser" id="aws-analytics-reference-architecture.NotebookUserOptions.property.iamUser"></a>
+
+```typescript
+public readonly iamUser: IUser;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.IUser
+
+IAM User for EMR Studio, if both iamUser and identityName are provided, the iamUser will have precedence and will be used for EMR Studio.
+
+if your IAM user is created in the same CDK stack you can pass the USER object
+
+---
+
+##### `identityName`<sup>Optional</sup> <a name="identityName" id="aws-analytics-reference-architecture.NotebookUserOptions.property.identityName"></a>
+
+```typescript
+public readonly identityName: string;
+```
+
+- *Type:* string
+
+Name of the identity as it appears in AWS IAM Identity Center console, or the IAM user to be used when IAM authentication is chosen.
 
 ---
 
