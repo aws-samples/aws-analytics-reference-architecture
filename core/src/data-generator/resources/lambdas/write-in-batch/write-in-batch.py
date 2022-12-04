@@ -94,28 +94,136 @@ def calculate_no_of_files(df, file_max_size):
     return no_of_files
 
 
-def write_all(df_list, path_prefix):
+def insert_mysql(df_list, params):
     """
-    Write all dataframe in the given list to separated files.
-    Each file is written to "{path_prefix}-{index_in_list}.csv"
-    e.g. "s3://path/file_prefix-00000.csv"
+    Insert dataframes into MySQL database
 
-    :param df_array: a list of dataframe to write
-    :param path_prefix: path prefix for each file
-    :return: None
+    :param df_list: List of dataframes to insert
+    :param params: Connection and table info
     """
-    output_paths = []
-    log.info(f'# write_all()')
+    con = wr.mysql.connect(secret_id=params['connection_name'])
     for idx, df in enumerate(df_list):
-        output_path = f'{path_prefix}-{idx:05d}.csv'
-        output_paths.append(output_path)
-        log.info(f"## Writing concatenated data to the {output_path}")
-        wr.s3.to_csv(
+        wr.mysql.to_sql(
+            df=df,
+            table=params['table_name'],
+            schema=params['schema'],
+            con=con
+        )
+    con.close()
+
+
+def insert_postgres(df_list, params):
+    """
+    Insert dataframes into PostgreSQL database
+
+    :param df_list: List of dataframes to insert
+    :param params: Connection and table info
+    """
+    con = wr.postgresql.connect(secret_id=params['connection_name'])
+    for idx, df in enumerate(df_list):
+        wr.postgresql.to_sql(
+            df=df,
+            table=params['table_name'],
+            schema=params['schema'],
+            con=con
+        )
+    con.close()
+
+
+def write_s3(df_list, params):
+   """
+   Write dataframe to a CSV file in S3.
+   Each file is written to "{path_prefix}-{index_in_list}.csv"
+   e.g. "s3://path/file_prefix-00000.csv"
+   """
+   for idx, df in enumerate(df_list):
+       output_path = f'{params["path_prefix"]}-{idx:05d}.csv'
+       log.info(f"## Writing concatenated data to the {output_path} in S3")
+       wr.s3.to_csv(
             df=df,
             path=output_path,
             index=False
+       )
+
+
+def write_ddb(df_list, params):
+    """
+    Write items from dataframe to DynamoDB.
+
+    :param df_list: List of dataframes to insert
+    :param params: Target table name
+    """
+    log.info(f"## Writing concatenated data to the {params['table_name']} table in DynamoDB")
+    for idx, df in enumerate(df_list):
+        df = df.astype(str)
+        wr.dynamodb.put_df(
+            df=df,
+            table_name=params['table_name']
         )
-    return output_paths
+
+
+def write_redshift(df_list, params):
+    """
+    Write items from dataframe to Redshift.
+
+    :param df_list: List of dataframes to insert
+    :param params: Connection and table info
+    """
+    log.info(f"## Writing concatenated data to the {params['table_name']} table in Amazon Redshift")
+    con = wr.redshift.connect(secret_id=params['connection_name'])
+    for idx, df in enumerate(df_list):
+        wr.redshift.to_sql(
+            df=df,
+            table=params['table_name'],
+            schema=params['schema'],
+            con=con
+        )
+    con.close()
+
+
+def write_mysql(df_list, params):
+    """
+    Write items from dataframe to MySQL target.
+    """
+    log.info(f"## Writing concatenated data to the {params['table_name']} table in MySQL>")
+    insert_mysql(df_list, params)
+
+
+def write_postgresql(df_list, params):
+    """
+    Write items from dataframe to PostgreSQL target.
+    """
+    log.info(f"## Writing concatenated data to the {params['table_name']} table in PostgreSQL>")
+    insert_postgres(df_list, params)
+
+
+def write_aurora_mysql(df_list, params):
+    """
+    Write items from dataframe to Aurora MySQL target.
+    """
+    log.info(f"## Writing concatenated data to the {params['table_name']} table in Aurora MySQL>")
+    insert_mysql(df_list, params)
+
+
+def write_aurora_postgres(df_list, params):
+    """
+    Write items from dataframe to Aurora PostgreSQL target.
+    """
+    log.info(f"## Writing concatenated data to the {params['table_name']} Postgres table in Aurora Postgres>")
+    insert_postgres(df_list, params)
+
+
+def write_all(df_list, target_params):
+    """
+    Write all dataframes to targets.
+
+    :param df_list: a list of dataframe to write
+    :param target_params: list of targets to write dataframe to, and the parameters required to do so
+    :return: None
+    """
+    log.info(f'# write_all()')
+    for target, params in target_params.items():
+        globals()['write_' + target](df_list, params)
 
 
 def handler(event, ctx):
@@ -131,9 +239,7 @@ def handler(event, ctx):
     output_file_index = int(event.get('outputFileIndex', 0))
     datetime_column_to_filter = event.get('dateTimeColumnToFilter', None)
     datetime_columns_to_adjust = event.get('dateTimeColumnsToAdjust', [])
-    sinkPath = event.get('sinkPath')
-    file_max_size = int(event.get('outputFileMaxSizeInBytes', 100 * 1048576)) # Default to 100 MB
-    
+
     start_time, end_time = calculate_time_range(trigger_time_in_iso, offset, frequency)
 
     log.info('Lambda called with these event values')
@@ -143,8 +249,6 @@ def handler(event, ctx):
     log.info(f'offset = {offset}')
     log.info(f'dateTimeColumnToFilter = {datetime_column_to_filter}')
     log.info(f'dateTimeColumnsToAdjust = {datetime_columns_to_adjust}')
-    log.info(f'sinkPath = {sinkPath}')
-
 
     log.info('Concatenating all files together')
     df=wr.s3.read_csv(
@@ -157,7 +261,6 @@ def handler(event, ctx):
     log.info(f"Concatenated dataframe (before filtering): {df.shape}")
     df = filter_rows_by_datetime(df, datetime_column_to_filter, start_time, end_time)
     log.info(f"Concatenated dataframe (after filtering): {df.shape}")
-    
 
     # Adjust datetime columns with offset
     log.info('Add offset to the datetime columns')
@@ -165,26 +268,82 @@ def handler(event, ctx):
         df[col] = pd.to_datetime(df[col])
         df[col] = (df[col] + pd.Timedelta(offset, 's')).dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    # Find s3 path prefix
-    adjusted_start_time = start_time + timedelta(seconds=offset)
-    adjusted_end_time = end_time + timedelta(seconds=offset)
-    path_prefix = f'{sinkPath}/ingestion_start={adjusted_start_time.isoformat()}/ingestion_end={adjusted_end_time.isoformat()}/{output_file_index:03d}'
+    target_params = {}
 
-    # Write filtered dataframe to S3
+    # S3 params
+    sink_path = event.get('sinkPath')
+    log.info(f'sinkPath = {sink_path}')
+    file_max_size = int(event.get('outputFileMaxSizeInBytes', 100 * 1048576)) # Default to 100 MB
+    # Find s3 path prefix
+    if sink_path:
+        adjusted_start_time = start_time + timedelta(seconds=offset)
+        adjusted_end_time = end_time + timedelta(seconds=offset)
+        target_params['s3'] = {'path_prefix': f'{sink_path}/ingestion_start={adjusted_start_time.isoformat()}'
+                                              f'/ingestion_end={adjusted_end_time.isoformat()}/{output_file_index:03d}'}
+
+    # DynamoDB params
+    log.info(f'ddbTableName = {event.get("ddbTableName")}')
+    if event.get('ddbTableName'): target_params['ddb'] = {'table_name': event.get('ddbTableName')}
+
+    # Redshift params
+    log.info(f'redshiftTableName = {event.get("redshiftTableName")}')
+    log.info(f'redshiftConnection = {event.get("redshiftConnection")}')
+    log.info(f'redshiftSchema = {event.get("redshiftSchema")}')
+    if event.get('redshiftTableName'):
+        target_params['redshift'] = {}
+        target_params['redshift']['table_name'] = event.get('redshiftTableName')
+        target_params['redshift']['connection_name'] = event.get('redshiftConnection')
+        target_params['redshift']['schema'] = event.get('redshiftSchema')
+
+    # Aurora MySQL params
+    log.info(f'auroraMysqlTableName = {event.get("auroraMysqlTableName")}')
+    log.info(f'auroraMysqlConnection = {event.get("auroraMysqlConnection")}')
+    log.info(f'auroraMysqlSchema = {event.get("auroraMysqlSchema")}')
+    if event.get('auroraMysqlTableName'):
+        target_params['aurora_mysql'] = {}
+        target_params['aurora_mysql']['table_name'] = event.get('auroraMysqlTableName')
+        target_params['aurora_mysql']['connection_name'] = event.get('auroraMysqlConnection')
+        target_params['aurora_mysql']['schema'] = event.get('auroraMysqlSchema')
+
+    # Aurora Postgres params
+    log.info(f'auroraPostgresTableName = {event.get("auroraPostgresTableName")}')
+    log.info(f'auroraPostgresConnection = {event.get("auroraPostgresConnection")}')
+    log.info(f'auroraPostgresSchema = {event.get("auroraPostgresSchema")}')
+    if event.get('auroraPostgresTableName'):
+        target_params['aurora_postgres'] = {}
+        target_params['aurora_postgres']['table_name'] = event.get('auroraPostgresTableName')
+        target_params['aurora_postgres']['connection_name'] = event.get('auroraPostgresConnection')
+        target_params['aurora_postgres']['schema'] = event.get('auroraPostgresSchema')
+
+    # MySQL params
+    log.info(f'mysqlTableName = {event.get("mysqlTableName")}')
+    log.info(f'mysqlConnection = {event.get("mysqlConnection")}')
+    log.info(f'mysqlSchema = {event.get("mysqlSchema")}')
+    if event.get('mysqlTableName'):
+        target_params['mysql'] = {}
+        target_params['mysql']['table_name'] = event.get('mysqlTableName')
+        target_params['mysql']['connection_name'] = event.get('mysqlConnection')
+        target_params['mysql']['schema'] = event.get('mysqlSchema')
+
+    # PostgreSQL params
+    log.info(f'postgresqlTableName = {event.get("postgresqlTableName")}')
+    log.info(f'postgresConnection = {event.get("postgresConnection")}')
+    log.info(f'postgresqlSchema = {event.get("postgresqlSchema")}')
+    if event.get('postgresqlTableName'):
+        target_params['postgresql'] = {}
+        target_params['postgresql']['table_name'] = event.get('postgresTableName')
+        target_params['postgresql']['connection_name'] = event.get('postgresConnection')
+        target_params['postgresql']['schema'] = event.get('postgresSchema')
+
+    # Write filtered dataframe to targets
     if len(df) > 0:
         no_files_to_write = calculate_no_of_files(df, file_max_size)
-        log.info(f'We will write dataframe into {no_files_to_write} files')
+        log.info(f'We will write dataframe into {no_files_to_write} entries per target')
         df_split = np.array_split(df, no_files_to_write)
-        output_paths = write_all(df_split, path_prefix)
-    else:
-        # Write one empty file with header even if there is no data
-        log.info(f'We will write dataframe into 1 file')
-        output_path = f'{path_prefix}-00000.csv'
-        output_paths = [output_path]
+        write_all(df_split, target_params)
 
     return {
         'processedRecords': len(df),
-        'outputPaths': output_paths,
         'startTimeinIso': start_time.isoformat(),
         'endTimeinIso': end_time.isoformat(),
     }
