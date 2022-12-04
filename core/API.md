@@ -1300,7 +1300,7 @@ The computation is in a Step Function with two Lambda steps.
 Read the manifest file and output a list of S3 file paths within that batch time range
 
 2. resources/lambdas/write-in-batch
-Take a file path, filter only records within given time range, adjust the the time with offset to
+Take a file path, filter only records within given time range, adjust the time with offset to
 make it looks like just being generated. Then write the output to the `sinkBucket`
 
 Usage example:
@@ -1422,8 +1422,26 @@ Any object.
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | Dataset used for replay. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.frequency">frequency</a></code> | <code>number</code> | Frequency (in Seconds) of the replaying. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket">sinkBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | Sink bucket where the batch replayer will put data in. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.auroraMysqlConnection">auroraMysqlConnection</a></code> | <code>string</code> | Glue catalog connection name for Aurora MySQL cluster. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.auroraMysqlSchema">auroraMysqlSchema</a></code> | <code>string</code> | Schema name for the Aurora MySQL table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.auroraMysqlTableName">auroraMysqlTableName</a></code> | <code>string</code> | RDS MySQL Aurora cluster where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.auroraPostgresConnection">auroraPostgresConnection</a></code> | <code>string</code> | Glue catalog connection name for Aurora PostgreSQL cluster. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.auroraPostgresSchema">auroraPostgresSchema</a></code> | <code>string</code> | Schema name for the Aurora PostgreSQL table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.auroraPostgresTableName">auroraPostgresTableName</a></code> | <code>string</code> | RDS PostgreSQL Aurora cluster where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.databaseVpc">databaseVpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | The VPC for the database instance(s) and/or cluster(s). |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.databaseVpcSG">databaseVpcSG</a></code> | <code>aws-cdk-lib.aws_ec2.ISecurityGroup</code> | The security group of the database VPC. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.ddbTable">ddbTable</a></code> | <code>aws-cdk-lib.aws_dynamodb.ITable</code> | The DynamoDB table where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.mysqlConnection">mysqlConnection</a></code> | <code>string</code> | Glue catalog connection name for the MySQL database. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.mysqlSchema">mysqlSchema</a></code> | <code>string</code> | Schema name for the RDS MySQL table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.mysqlTableName">mysqlTableName</a></code> | <code>string</code> | RDS MySQL database instance where the BatchReplayer writes data. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | Maximum file size for each output file. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.postgresConnection">postgresConnection</a></code> | <code>string</code> | Glue catalog connection name for the PostgreSQL database. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.postgresSchema">postgresSchema</a></code> | <code>string</code> | Schema name for the RDS PostgreSQL table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.postgresTableName">postgresTableName</a></code> | <code>string</code> | RDS PostgreSQL database instance where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.redshiftConnection">redshiftConnection</a></code> | <code>string</code> | Glue catalog connection name for Redshift cluster. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.redshiftSchema">redshiftSchema</a></code> | <code>string</code> | Schema name for the Redshift table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.redshiftTableName">redshiftTableName</a></code> | <code>string</code> | Redshift table where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket">sinkBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | Sink bucket where the batch replayer will put data in. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | Sink object key where the batch replayer will put data in. |
 
 ---
@@ -1467,15 +1485,149 @@ for every given frequency and replay the data in that period
 
 ---
 
-##### `sinkBucket`<sup>Required</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket"></a>
+##### `auroraMysqlConnection`<sup>Optional</sup> <a name="auroraMysqlConnection" id="aws-analytics-reference-architecture.BatchReplayer.property.auroraMysqlConnection"></a>
 
 ```typescript
-public readonly sinkBucket: Bucket;
+public readonly auroraMysqlConnection: string;
 ```
 
-- *Type:* aws-cdk-lib.aws_s3.Bucket
+- *Type:* string
 
-Sink bucket where the batch replayer will put data in.
+Glue catalog connection name for Aurora MySQL cluster.
+
+---
+
+##### `auroraMysqlSchema`<sup>Optional</sup> <a name="auroraMysqlSchema" id="aws-analytics-reference-architecture.BatchReplayer.property.auroraMysqlSchema"></a>
+
+```typescript
+public readonly auroraMysqlSchema: string;
+```
+
+- *Type:* string
+
+Schema name for the Aurora MySQL table.
+
+---
+
+##### `auroraMysqlTableName`<sup>Optional</sup> <a name="auroraMysqlTableName" id="aws-analytics-reference-architecture.BatchReplayer.property.auroraMysqlTableName"></a>
+
+```typescript
+public readonly auroraMysqlTableName: string;
+```
+
+- *Type:* string
+
+RDS MySQL Aurora cluster where the BatchReplayer writes data.
+
+---
+
+##### `auroraPostgresConnection`<sup>Optional</sup> <a name="auroraPostgresConnection" id="aws-analytics-reference-architecture.BatchReplayer.property.auroraPostgresConnection"></a>
+
+```typescript
+public readonly auroraPostgresConnection: string;
+```
+
+- *Type:* string
+
+Glue catalog connection name for Aurora PostgreSQL cluster.
+
+---
+
+##### `auroraPostgresSchema`<sup>Optional</sup> <a name="auroraPostgresSchema" id="aws-analytics-reference-architecture.BatchReplayer.property.auroraPostgresSchema"></a>
+
+```typescript
+public readonly auroraPostgresSchema: string;
+```
+
+- *Type:* string
+
+Schema name for the Aurora PostgreSQL table.
+
+---
+
+##### `auroraPostgresTableName`<sup>Optional</sup> <a name="auroraPostgresTableName" id="aws-analytics-reference-architecture.BatchReplayer.property.auroraPostgresTableName"></a>
+
+```typescript
+public readonly auroraPostgresTableName: string;
+```
+
+- *Type:* string
+
+RDS PostgreSQL Aurora cluster where the BatchReplayer writes data.
+
+---
+
+##### `databaseVpc`<sup>Optional</sup> <a name="databaseVpc" id="aws-analytics-reference-architecture.BatchReplayer.property.databaseVpc"></a>
+
+```typescript
+public readonly databaseVpc: IVpc;
+```
+
+- *Type:* aws-cdk-lib.aws_ec2.IVpc
+
+The VPC for the database instance(s) and/or cluster(s).
+
+---
+
+##### `databaseVpcSG`<sup>Optional</sup> <a name="databaseVpcSG" id="aws-analytics-reference-architecture.BatchReplayer.property.databaseVpcSG"></a>
+
+```typescript
+public readonly databaseVpcSG: ISecurityGroup;
+```
+
+- *Type:* aws-cdk-lib.aws_ec2.ISecurityGroup
+
+The security group of the database VPC.
+
+This needs to be added to the writeInBatchFn Lambda.
+
+---
+
+##### `ddbTable`<sup>Optional</sup> <a name="ddbTable" id="aws-analytics-reference-architecture.BatchReplayer.property.ddbTable"></a>
+
+```typescript
+public readonly ddbTable: ITable;
+```
+
+- *Type:* aws-cdk-lib.aws_dynamodb.ITable
+
+The DynamoDB table where the BatchReplayer writes data.
+
+---
+
+##### `mysqlConnection`<sup>Optional</sup> <a name="mysqlConnection" id="aws-analytics-reference-architecture.BatchReplayer.property.mysqlConnection"></a>
+
+```typescript
+public readonly mysqlConnection: string;
+```
+
+- *Type:* string
+
+Glue catalog connection name for the MySQL database.
+
+---
+
+##### `mysqlSchema`<sup>Optional</sup> <a name="mysqlSchema" id="aws-analytics-reference-architecture.BatchReplayer.property.mysqlSchema"></a>
+
+```typescript
+public readonly mysqlSchema: string;
+```
+
+- *Type:* string
+
+Schema name for the RDS MySQL table.
+
+---
+
+##### `mysqlTableName`<sup>Optional</sup> <a name="mysqlTableName" id="aws-analytics-reference-architecture.BatchReplayer.property.mysqlTableName"></a>
+
+```typescript
+public readonly mysqlTableName: string;
+```
+
+- *Type:* string
+
+RDS MySQL database instance where the BatchReplayer writes data.
 
 ---
 
@@ -1490,9 +1642,93 @@ public readonly outputFileMaxSizeInBytes: number;
 Maximum file size for each output file.
 
 If the output batch file is,
-larger than that, it will be splitted into multiple files that fit this size.
+larger than that, it will be split into multiple files that fit this size.
 
 Default to 100MB (max value)
+
+---
+
+##### `postgresConnection`<sup>Optional</sup> <a name="postgresConnection" id="aws-analytics-reference-architecture.BatchReplayer.property.postgresConnection"></a>
+
+```typescript
+public readonly postgresConnection: string;
+```
+
+- *Type:* string
+
+Glue catalog connection name for the PostgreSQL database.
+
+---
+
+##### `postgresSchema`<sup>Optional</sup> <a name="postgresSchema" id="aws-analytics-reference-architecture.BatchReplayer.property.postgresSchema"></a>
+
+```typescript
+public readonly postgresSchema: string;
+```
+
+- *Type:* string
+
+Schema name for the RDS PostgreSQL table.
+
+---
+
+##### `postgresTableName`<sup>Optional</sup> <a name="postgresTableName" id="aws-analytics-reference-architecture.BatchReplayer.property.postgresTableName"></a>
+
+```typescript
+public readonly postgresTableName: string;
+```
+
+- *Type:* string
+
+RDS PostgreSQL database instance where the BatchReplayer writes data.
+
+---
+
+##### `redshiftConnection`<sup>Optional</sup> <a name="redshiftConnection" id="aws-analytics-reference-architecture.BatchReplayer.property.redshiftConnection"></a>
+
+```typescript
+public readonly redshiftConnection: string;
+```
+
+- *Type:* string
+
+Glue catalog connection name for Redshift cluster.
+
+---
+
+##### `redshiftSchema`<sup>Optional</sup> <a name="redshiftSchema" id="aws-analytics-reference-architecture.BatchReplayer.property.redshiftSchema"></a>
+
+```typescript
+public readonly redshiftSchema: string;
+```
+
+- *Type:* string
+
+Schema name for the Redshift table.
+
+---
+
+##### `redshiftTableName`<sup>Optional</sup> <a name="redshiftTableName" id="aws-analytics-reference-architecture.BatchReplayer.property.redshiftTableName"></a>
+
+```typescript
+public readonly redshiftTableName: string;
+```
+
+- *Type:* string
+
+Redshift table where the BatchReplayer writes data.
+
+---
+
+##### `sinkBucket`<sup>Optional</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.BatchReplayer.property.sinkBucket"></a>
+
+```typescript
+public readonly sinkBucket: Bucket;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Bucket
+
+Sink bucket where the batch replayer will put data in.
 
 ---
 
@@ -6966,9 +7202,27 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The [PreparedDataset]{@link PreparedDataset} used to replay data. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | The S3 Bucket sink where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.auroraMysqlConnection">auroraMysqlConnection</a></code> | <code>string</code> | Glue catalog connection name for Aurora MySQL cluster. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.auroraMysqlSchema">auroraMysqlSchema</a></code> | <code>string</code> | Schema name of the Aurora MySQL table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.auroraMysqlTableName">auroraMysqlTableName</a></code> | <code>string</code> | RDS MySQL Aurora cluster where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.auroraPostgresConnection">auroraPostgresConnection</a></code> | <code>string</code> | Glue catalog connection name for Aurora PostgreSQL cluster. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.auroraPostgresSchema">auroraPostgresSchema</a></code> | <code>string</code> | Schema name of the Aurora PostgreSQL table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.auroraPostgresTableName">auroraPostgresTableName</a></code> | <code>string</code> | RDS PostgreSQL Aurora cluster where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.databaseVpc">databaseVpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | The VPC for the database instance(s) and/or cluster(s). |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.databaseVpcSG">databaseVpcSG</a></code> | <code>aws-cdk-lib.aws_ec2.ISecurityGroup</code> | The security group of the database VPC. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.ddbTable">ddbTable</a></code> | <code>aws-cdk-lib.aws_dynamodb.ITable</code> | The DynamoDB table where the BatchReplayer writes data. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>aws-cdk-lib.Duration</code> | The frequency of the replay. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.mysqlConnection">mysqlConnection</a></code> | <code>string</code> | Glue catalog connection name for MySQL database. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.mysqlSchema">mysqlSchema</a></code> | <code>string</code> | Schema name for the RDS MySQL table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.mysqlTableName">mysqlTableName</a></code> | <code>string</code> | RDS MySQL database instance where the BatchReplayer writes data. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes">outputFileMaxSizeInBytes</a></code> | <code>number</code> | The maximum file size in Bytes written by the BatchReplayer. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.postgresConnection">postgresConnection</a></code> | <code>string</code> | Glue catalog connection name for the PostgreSQL database. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.postgresSchema">postgresSchema</a></code> | <code>string</code> | Schema name for the RDS PostgreSQL table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.postgresTableName">postgresTableName</a></code> | <code>string</code> | RDS PostgreSQL database instance where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.redshiftConnection">redshiftConnection</a></code> | <code>string</code> | Glue catalog connection name for Redshift cluster. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.redshiftSchema">redshiftSchema</a></code> | <code>string</code> | Schema name of the Redshift table. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.redshiftTableName">redshiftTableName</a></code> | <code>string</code> | Redshift table where the BatchReplayer writes data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket">sinkBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | The S3 Bucket sink where the BatchReplayer writes data. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.sinkObjectKey">sinkObjectKey</a></code> | <code>string</code> | The S3 object key sink where the BatchReplayer writes data. |
 
 ---
@@ -6985,17 +7239,113 @@ The [PreparedDataset]{@link PreparedDataset} used to replay data.
 
 ---
 
-##### `sinkBucket`<sup>Required</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket"></a>
+##### `auroraMysqlConnection`<sup>Optional</sup> <a name="auroraMysqlConnection" id="aws-analytics-reference-architecture.BatchReplayerProps.property.auroraMysqlConnection"></a>
 
 ```typescript
-public readonly sinkBucket: Bucket;
+public readonly auroraMysqlConnection: string;
 ```
 
-- *Type:* aws-cdk-lib.aws_s3.Bucket
+- *Type:* string
 
-The S3 Bucket sink where the BatchReplayer writes data.
+Glue catalog connection name for Aurora MySQL cluster.
 
-:warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
+---
+
+##### `auroraMysqlSchema`<sup>Optional</sup> <a name="auroraMysqlSchema" id="aws-analytics-reference-architecture.BatchReplayerProps.property.auroraMysqlSchema"></a>
+
+```typescript
+public readonly auroraMysqlSchema: string;
+```
+
+- *Type:* string
+
+Schema name of the Aurora MySQL table.
+
+---
+
+##### `auroraMysqlTableName`<sup>Optional</sup> <a name="auroraMysqlTableName" id="aws-analytics-reference-architecture.BatchReplayerProps.property.auroraMysqlTableName"></a>
+
+```typescript
+public readonly auroraMysqlTableName: string;
+```
+
+- *Type:* string
+
+RDS MySQL Aurora cluster where the BatchReplayer writes data.
+
+---
+
+##### `auroraPostgresConnection`<sup>Optional</sup> <a name="auroraPostgresConnection" id="aws-analytics-reference-architecture.BatchReplayerProps.property.auroraPostgresConnection"></a>
+
+```typescript
+public readonly auroraPostgresConnection: string;
+```
+
+- *Type:* string
+
+Glue catalog connection name for Aurora PostgreSQL cluster.
+
+---
+
+##### `auroraPostgresSchema`<sup>Optional</sup> <a name="auroraPostgresSchema" id="aws-analytics-reference-architecture.BatchReplayerProps.property.auroraPostgresSchema"></a>
+
+```typescript
+public readonly auroraPostgresSchema: string;
+```
+
+- *Type:* string
+
+Schema name of the Aurora PostgreSQL table.
+
+---
+
+##### `auroraPostgresTableName`<sup>Optional</sup> <a name="auroraPostgresTableName" id="aws-analytics-reference-architecture.BatchReplayerProps.property.auroraPostgresTableName"></a>
+
+```typescript
+public readonly auroraPostgresTableName: string;
+```
+
+- *Type:* string
+
+RDS PostgreSQL Aurora cluster where the BatchReplayer writes data.
+
+---
+
+##### `databaseVpc`<sup>Optional</sup> <a name="databaseVpc" id="aws-analytics-reference-architecture.BatchReplayerProps.property.databaseVpc"></a>
+
+```typescript
+public readonly databaseVpc: IVpc;
+```
+
+- *Type:* aws-cdk-lib.aws_ec2.IVpc
+
+The VPC for the database instance(s) and/or cluster(s).
+
+---
+
+##### `databaseVpcSG`<sup>Optional</sup> <a name="databaseVpcSG" id="aws-analytics-reference-architecture.BatchReplayerProps.property.databaseVpcSG"></a>
+
+```typescript
+public readonly databaseVpcSG: ISecurityGroup;
+```
+
+- *Type:* aws-cdk-lib.aws_ec2.ISecurityGroup
+
+The security group of the database VPC.
+
+This needs to be added to the writeInBatchFn Lambda.
+
+---
+
+##### `ddbTable`<sup>Optional</sup> <a name="ddbTable" id="aws-analytics-reference-architecture.BatchReplayerProps.property.ddbTable"></a>
+
+```typescript
+public readonly ddbTable: ITable;
+```
+
+- *Type:* aws-cdk-lib.aws_dynamodb.ITable
+
+The DynamoDB table where the BatchReplayer writes data.
 
 ---
 
@@ -7012,6 +7362,42 @@ The frequency of the replay.
 
 ---
 
+##### `mysqlConnection`<sup>Optional</sup> <a name="mysqlConnection" id="aws-analytics-reference-architecture.BatchReplayerProps.property.mysqlConnection"></a>
+
+```typescript
+public readonly mysqlConnection: string;
+```
+
+- *Type:* string
+
+Glue catalog connection name for MySQL database.
+
+---
+
+##### `mysqlSchema`<sup>Optional</sup> <a name="mysqlSchema" id="aws-analytics-reference-architecture.BatchReplayerProps.property.mysqlSchema"></a>
+
+```typescript
+public readonly mysqlSchema: string;
+```
+
+- *Type:* string
+
+Schema name for the RDS MySQL table.
+
+---
+
+##### `mysqlTableName`<sup>Optional</sup> <a name="mysqlTableName" id="aws-analytics-reference-architecture.BatchReplayerProps.property.mysqlTableName"></a>
+
+```typescript
+public readonly mysqlTableName: string;
+```
+
+- *Type:* string
+
+RDS MySQL database instance where the BatchReplayer writes data.
+
+---
+
 ##### `outputFileMaxSizeInBytes`<sup>Optional</sup> <a name="outputFileMaxSizeInBytes" id="aws-analytics-reference-architecture.BatchReplayerProps.property.outputFileMaxSizeInBytes"></a>
 
 ```typescript
@@ -7022,6 +7408,92 @@ public readonly outputFileMaxSizeInBytes: number;
 - *Default:* The BatchReplayer writes 100MB files maximum
 
 The maximum file size in Bytes written by the BatchReplayer.
+
+---
+
+##### `postgresConnection`<sup>Optional</sup> <a name="postgresConnection" id="aws-analytics-reference-architecture.BatchReplayerProps.property.postgresConnection"></a>
+
+```typescript
+public readonly postgresConnection: string;
+```
+
+- *Type:* string
+
+Glue catalog connection name for the PostgreSQL database.
+
+---
+
+##### `postgresSchema`<sup>Optional</sup> <a name="postgresSchema" id="aws-analytics-reference-architecture.BatchReplayerProps.property.postgresSchema"></a>
+
+```typescript
+public readonly postgresSchema: string;
+```
+
+- *Type:* string
+
+Schema name for the RDS PostgreSQL table.
+
+---
+
+##### `postgresTableName`<sup>Optional</sup> <a name="postgresTableName" id="aws-analytics-reference-architecture.BatchReplayerProps.property.postgresTableName"></a>
+
+```typescript
+public readonly postgresTableName: string;
+```
+
+- *Type:* string
+
+RDS PostgreSQL database instance where the BatchReplayer writes data.
+
+---
+
+##### `redshiftConnection`<sup>Optional</sup> <a name="redshiftConnection" id="aws-analytics-reference-architecture.BatchReplayerProps.property.redshiftConnection"></a>
+
+```typescript
+public readonly redshiftConnection: string;
+```
+
+- *Type:* string
+
+Glue catalog connection name for Redshift cluster.
+
+---
+
+##### `redshiftSchema`<sup>Optional</sup> <a name="redshiftSchema" id="aws-analytics-reference-architecture.BatchReplayerProps.property.redshiftSchema"></a>
+
+```typescript
+public readonly redshiftSchema: string;
+```
+
+- *Type:* string
+
+Schema name of the Redshift table.
+
+---
+
+##### `redshiftTableName`<sup>Optional</sup> <a name="redshiftTableName" id="aws-analytics-reference-architecture.BatchReplayerProps.property.redshiftTableName"></a>
+
+```typescript
+public readonly redshiftTableName: string;
+```
+
+- *Type:* string
+
+Redshift table where the BatchReplayer writes data.
+
+---
+
+##### `sinkBucket`<sup>Optional</sup> <a name="sinkBucket" id="aws-analytics-reference-architecture.BatchReplayerProps.property.sinkBucket"></a>
+
+```typescript
+public readonly sinkBucket: Bucket;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Bucket
+
+The S3 Bucket sink where the BatchReplayer writes data.
+
+:warning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
 
 ---
 
