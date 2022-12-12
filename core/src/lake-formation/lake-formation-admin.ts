@@ -1,14 +1,14 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Aws, Stack, Duration, DefaultStackSynthesizer, ArnFormat, CustomResource, Fn } from 'aws-cdk-lib';
+import { Aws, Stack, Duration, ArnFormat, CustomResource } from 'aws-cdk-lib';
 import { IRole, IUser, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Provider } from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 import { PreBundledFunction } from '../common/pre-bundled-function';
-import { Role } from 'aws-cdk-lib/aws-iam';
+import { Utils } from '../utils';
 
 /**
  * Properties for the lakeFormationAdmin Construct
@@ -40,21 +40,12 @@ export class LakeFormationAdmin extends Construct {
   * It requires default cdk bootstrap
   */
   public static addCdkExecRole(scope: Construct, name: string) {
-    const stack = Stack.of(scope);
-    const id = `${name}`;
 
-    // Constructs the CDK execution role ARN
-    const cdkExecutionRoleArn = Fn.sub(
-      DefaultStackSynthesizer.DEFAULT_CLOUDFORMATION_ROLE_ARN,
-      {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        Qualifier: DefaultStackSynthesizer.DEFAULT_QUALIFIER,
-      },
-    );
-    // Makes the CDK execution role LF admin so it can create databases
-    const cdkRole = Role.fromRoleArn(stack, `${id}Role`, cdkExecutionRoleArn);
+    // get the CDK execution role
+    const cdkRole = Utils.getCdkExecRole(scope, name);
 
-    return new LakeFormationAdmin(stack, id, {
+    // make the CDK execution role a Lake Formation admin
+    return new LakeFormationAdmin(scope, name, {
       principal: cdkRole,
     });
   }
