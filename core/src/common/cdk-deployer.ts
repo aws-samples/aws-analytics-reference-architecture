@@ -4,7 +4,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { Aws, CustomResource, Duration } from 'aws-cdk-lib';
+import { Aws, CustomResource, DefaultStackSynthesizer, Duration } from 'aws-cdk-lib';
 import { BuildSpec, ComputeType, LinuxBuildImage, Project, Source } from 'aws-cdk-lib/aws-codebuild';
 import { SingletonKey } from '../singleton-kms-key';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -91,7 +91,12 @@ export class CdkDeployer extends cdk.Stack {
    * @param {CdkDeployerProps} props the CdkDeployer [properties]{@link CdkDeployerProps}
    */
   constructor(scope: Construct, id: string, props: CdkDeployerProps) {
-    super(scope, id);
+    // Change the Stack Synthetizer to remove the CFN parameters for the CDK version
+    super(scope, id,{ 
+      synthesizer: new DefaultStackSynthesizer({
+        generateBootstrapVersionRule: false
+      })
+    });
 
     // Add parameters to the stack so it can be transfered to the CDK application
     var parameters: string = '';
@@ -140,6 +145,7 @@ export class CdkDeployer extends cdk.Stack {
             's3:PutBucketPublicAccessBlock',
             's3:PutBucketVersioning',
             's3:DeleteBucket',
+            's3:PutBucketPolicy',
 
           ],
         }),
@@ -149,6 +155,7 @@ export class CdkDeployer extends cdk.Stack {
           ],
           actions: [
             'cloudformation:DescribeStacks',
+            'cloudformation:DeleteStack',
             'cloudformation:DeleteChangeSet',
             'cloudformation:CreateChangeSet',
             'cloudformation:DescribeChangeSet',
@@ -198,6 +205,7 @@ export class CdkDeployer extends cdk.Stack {
             `arn:aws:iam::${Aws.ACCOUNT_ID}:role/cdk*`,
           ],
           actions: [
+            'iam:GetRole',
             'iam:CreateRole',
             'iam:TagRole',
             'iam:DeleteRole',
