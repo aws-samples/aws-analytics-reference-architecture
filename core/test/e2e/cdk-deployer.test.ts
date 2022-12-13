@@ -21,7 +21,7 @@ const cdkDeployerStack = new CdkDeployer(integTestApp, 'CdkDeployerE2ETest', {
   cdkAppLocation: 'refarch/aws-native',
   cdkParameters: {
     QuickSightUsername: {
-      default: 'gromav',
+      default: 'gromav/gromav-Isengard',
       type: 'String',
     },
     QuickSightIdentityRegion: {

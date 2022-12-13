@@ -31,3 +31,5 @@ core/.github/*
 .idea
 .vscode
 *.iml
+
+core/tmp.yaml

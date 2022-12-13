@@ -216,6 +216,14 @@ export class CdkDeployer extends cdk.Stack {
             'iam:DeleteRolePolicy',
           ],
         }),
+        new PolicyStatement({
+          resources: [
+            `arn:aws:logs:${Aws.REGION}:${Aws.ACCOUNT_ID}:log-group:/aws/codebuild/*`,
+          ],
+          actions: [
+            'logs:PutLogEvents',
+          ],
+        }),
       ]
     }))
 

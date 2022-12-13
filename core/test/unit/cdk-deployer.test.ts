@@ -278,7 +278,7 @@
                   "Fn::Sub": [
                     "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-${Qualifier}-deploy-role-${AWS::AccountId}-${AWS::Region}",
                     {
-                      "Qualifier": "hnb659fds"
+                      "Qualifier": Match.anyValue(),
                     }
                   ]
                 },
@@ -286,7 +286,7 @@
                   "Fn::Sub": [
                     "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-${Qualifier}-file-publishing-role-${AWS::AccountId}-${AWS::Region}",
                     {
-                      "Qualifier": "hnb659fds"
+                      "Qualifier": Match.anyValue(),
                     }
                   ]
                 }
@@ -368,6 +368,26 @@
                       "Ref": "AWS::AccountId"
                     },
                     ":role/cdk*"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": "logs:PutLogEvents",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:logs:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":log-group:/aws/codebuild/*"
                   ]
                 ]
               }
