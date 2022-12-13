@@ -182,7 +182,12 @@
               "Name": "STACKNAME",
               "Type": "PLAINTEXT",
               "Value": ""
-            }
+            },
+            {
+              "Name": "CDK_APP_LOCATION",
+              "Type": "PLAINTEXT",
+              "Value": "refarch/aws-native"
+            },
           ],
           "Image": "aws/codebuild/standard:5.0",
           "ImagePullCredentialsType": "CODEBUILD",
@@ -195,8 +200,7 @@
           ]
         },
         "Source": {
-          "BuildSpec": "{\n  \"version\": \"0.2\",\n  \"phases\": {\n    \"install\": {\n      \"runtime-versions\": {\n        \"nodejs\": 14\n      },\n      \"commands\": [\n        \"cd refarch/aws-native\",\n        \"npm install\"\n      ]\n    },\n    \"pre_build\": {\n      \"commands\": [\n        \"npm install -g aws-cdk && sudo apt-get install python3 && python -m ensurepip --upgrade && python -m pip install --upgrade pip && python -m pip install -r requirements.txt\",\n        \"export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)\",\n        \"echo \\\"AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID\\\"\",\n        \"cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION\"\n      ]\n    },\n    \"build\": {\n      \"commands\": [\n        \"export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)\",\n        \"echo \\\"AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID\\\"\",\n        \"cdk deploy $STACKNAME $PARAMETERS --require-approval=never\"\n      ]\n    }\n  }\n}",          "Location": "https://github.com/aws-samples/aws-analytics-reference-architecture.git",
-          "ReportBuildStatus": true,
+          "BuildSpec": "{\n  \"version\": \"0.2\",\n  \"phases\": {\n    \"pre_build\": {\n      \"commands\": [\n        \"cd $CODEBUILD_SRC_DIR/$CDK_APP_LOCATION\",\n        \"npm install -g aws-cdk && sudo apt-get install python3 && python -m ensurepip --upgrade && python -m pip install --upgrade pip && python -m pip install -r requirements.txt\",\n        \"export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)\",\n        \"echo \\\"AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID\\\"\",\n        \"cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION\"\n      ]\n    },\n    \"build\": {\n      \"commands\": [\n        \"cd $CODEBUILD_SRC_DIR/$CDK_APP_LOCATION\",\n        \"export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)\",\n        \"echo \\\"AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID\\\"\",\n        \"cdk deploy $STACKNAME $PARAMETERS --require-approval=never\"\n      ]\n    }\n  }\n}",          "ReportBuildStatus": true,
           "Type": "GITHUB"
         },
       }),
@@ -210,7 +214,42 @@
           "Statement": [
             {
               "Action": [
+                "kms:CreateKey",
+                "kms:DisableKey",
+                "kms:EnableKeyRotation",
+                "kms:TagResource",
+                "kms:DescribeKey",
+                "kms:ScheduleKeyDeletion",
+                "kms:CreateAlias",
+                "kms:DeleteAlias",
+                "kms:CreateGrant",
+                "kms:RetireGrant"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "s3:CreateBucket",
+                "s3:PutBucketAcl",
+                "s3:PutEncryptionConfiguration",
+                "s3:PutBucketPublicAccessBlock",
+                "s3:PutBucketVersioning",
+                "s3:DeleteBucket",
+                "s3:PutBucketPolicy"
+              ],
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
                 "cloudformation:DescribeStacks",
+                "cloudformation:DeleteStack",
+                "cloudformation:DeleteChangeSet",
+                "cloudformation:CreateChangeSet",
+                "cloudformation:DescribeChangeSet",
+                "cloudformation:ExecuteChangeSet",
+                "cloudformation:DescribeStackEvents",
                 "cloudformation:GetTemplate"
               ],
               "Effect": "Allow",
@@ -252,6 +291,86 @@
                   ]
                 }
               ]
+            },
+            {
+              "Action": [
+                "ssm:PutParameter",
+                "ssm:GetParameters"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ssm:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":parameter/cdk-bootstrap/*/*"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": [
+                "ecr:SetRepositoryPolicy",
+                "ecr:GetLifecyclePolicy",
+                "ecr:PutImageTagMutability",
+                "ecr:DescribeRepositories",
+                "ecr:ListTagsForResource",
+                "ecr:PutImageScanningConfiguration",
+                "ecr:CreateRepository",
+                "ecr:PutLifecyclePolicy",
+                "ecr:DeleteRepository",
+                "ecr:TagResource"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:ecr:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":repository/cdk*"
+                  ]
+                ]
+              }
+            },
+            {
+              "Action": [
+                "iam:GetRole",
+                "iam:CreateRole",
+                "iam:TagRole",
+                "iam:DeleteRole",
+                "iam:AttachRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:GetRolePolicy",
+                "iam:PutRolePolicy",
+                "iam:DeleteRolePolicy"
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:iam::",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":role/cdk*"
+                  ]
+                ]
+              }
             }
           ],
         }
