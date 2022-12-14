@@ -1,5 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
+import * as fs from 'fs';
+import * as yaml from 'js-yaml';
 
 import { DefaultStackSynthesizer, Fn, Stack } from "aws-cdk-lib";
 import { Role } from "aws-cdk-lib/aws-iam";
@@ -40,7 +42,7 @@ export class Utils {
       },
     );
     // Makes the CDK execution role LF admin so it can create databases
-    return Role.fromRoleArn(Stack.of(scope), `${id}Role`, cdkExecutionRoleArn); 
+    return Role.fromRoleArn(Stack.of(scope), `${id}Role`, cdkExecutionRoleArn);
   }
 
   /**
@@ -57,7 +59,7 @@ export class Utils {
       },
     );
     // Makes the CDK execution role LF admin so it can create databases
-    return Role.fromRoleArn(Stack.of(scope), `${id}Role`, cdkDeployRoleArn); 
+    return Role.fromRoleArn(Stack.of(scope), `${id}Role`, cdkDeployRoleArn);
   }
 
   /**
@@ -65,15 +67,37 @@ export class Utils {
    * @param {Construct} scope the scope to import the role into
    * @param {string} id the ID of the role in the stack 
    */
-     public static getCdkFilePublishRole(scope: Construct, id: string) {
-      const cdkDeployRoleArn = Fn.sub(
-        DefaultStackSynthesizer.DEFAULT_FILE_ASSET_PUBLISHING_ROLE_ARN,
-        {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          Qualifier: DefaultStackSynthesizer.DEFAULT_QUALIFIER,
-        },
-      );
-      // Makes the CDK execution role LF admin so it can create databases
-      return Role.fromRoleArn(Stack.of(scope), `${id}Role`, cdkDeployRoleArn); 
+  public static getCdkFilePublishRole(scope: Construct, id: string) {
+    const cdkDeployRoleArn = Fn.sub(
+      DefaultStackSynthesizer.DEFAULT_FILE_ASSET_PUBLISHING_ROLE_ARN,
+      {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        Qualifier: DefaultStackSynthesizer.DEFAULT_QUALIFIER,
+      },
+    );
+    // Makes the CDK execution role LF admin so it can create databases
+    return Role.fromRoleArn(Stack.of(scope), `${id}Role`, cdkDeployRoleArn);
+  }
+  /*
+     * Read a YAML file from the path provided and return it 
+     * @param {string} path the path to the file
+     */
+  public static readYamlDocument(path: string): string {
+    try {
+      const doc = fs.readFileSync(path, 'utf8');
+      return doc;
+    } catch (e) {
+      console.log(e + ' for path: ' + path);
+      throw e;
     }
+  }
+
+  /**
+   * Take a document stored as string and load it as YAML 
+   * @param {string} document the document stored as string
+   */
+  public static loadYaml(document: string): any {
+    return yaml.load(document);
+  }
+
 }
