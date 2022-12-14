@@ -45,7 +45,7 @@ export interface CdkDeployerProps extends cdk.StackProps {
 }
 
 /**
- * A custom CDK Stack that can be synthetized as a CloudFormation Stack to deploy a CDK application hosted on GitHub. 
+ * A custom CDK Stack that can be synthetized as a CloudFormation Stack to deploy a CDK application written in **Python** hosted on GitHub. 
  * This stack is self contained and can be one-click deployed to any AWS account. 
  * It can be used for AWS workshop or AWS blog examples deployment when CDK is not supported/desired. 
  * The stack supports passing the CDK application stack name to deploy (in case there are multiple stacks in the CDK app) and CDK parameters. 
@@ -353,6 +353,6 @@ export class CdkDeployer extends cdk.Stack {
 
     buildTrigger.node.addDependency(buildCompleteRule);
 
-    this.deployResult = buildTrigger.getAttString('build.buildStatus');
+    this.deployResult = buildTrigger.getAttString('BuildStatus');
   }
 }

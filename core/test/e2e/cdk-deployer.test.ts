@@ -12,7 +12,7 @@ import { deployStack } from './utils';
 
 import { CdkDeployer } from '../../src/common/cdk-deployer';
 
-jest.setTimeout(10000000);
+jest.setTimeout(20000000);
 // GIVEN
 const integTestApp = new cdk.App();
 
@@ -41,9 +41,9 @@ describe('deploy succeed', () => {
     const deployResult = await deployStack(integTestApp, cdkDeployerStack, true, false);
     
     // THEN
-    expect(deployResult.outputs.CodeBuildStatus).toEqual('IN_PROGRESS');
+    expect(deployResult.outputs.CodeBuildStatus).toEqual('SUCCESS');
     
-  }, 10000000);
+  }, 20000000);
 });
 
 afterAll(async () => {

@@ -77,7 +77,7 @@ exports.handler = async function (event, context) {
   };
   
   if (event['detail']['build-status'] === 'SUCCEEDED') {
-    await respond(response, context, 'SUCCESS', {}, 'build');
+    await respond(response, context, 'SUCCESS', { BuildStatus: 'SUCCESS'}, 'build');
   } else {
     await respond(response, context, 'FAILED', { Error: 'Build failed' });
   }
