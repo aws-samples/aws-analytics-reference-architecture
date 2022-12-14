@@ -67,6 +67,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     '@types/prettier@2.6.0',
     `@aws-cdk/aws-redshift-alpha@${CDK_VERSION}-alpha.0`,
     `@aws-cdk/aws-glue-alpha@${CDK_VERSION}-alpha.0`,
+    '@aws-cdk/lambda-layer-kubectl-v22'
   ],
 
   peerDeps: [
@@ -86,6 +87,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'aws-sdk',
     '@exodus/schemasafe',
     'simple-base',
+    '@aws-cdk/lambda-layer-kubectl-v22'
   ],
 
   python: {

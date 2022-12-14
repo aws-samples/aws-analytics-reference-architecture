@@ -83,7 +83,7 @@ export class KarpenterProvisioner {
                 'ec2:DescribeInstanceTypeOfferings',
                 'ec2:DescribeAvailabilityZones',
             ],
-            resources: [`arn:aws:ec2:${Aws.REGION}:${Aws.ACCOUNT_ID}:*`],
+            resources: ['*'],
         });
 
         const karpenterControllerPolicyStatementIAM: PolicyStatement = new PolicyStatement({
@@ -92,9 +92,10 @@ export class KarpenterProvisioner {
             resources: [`arn:aws:iam::${Aws.ACCOUNT_ID}:role/KarpenterNodeRole-${eksClusterName}`],
         });
 
-        new CfnInstanceProfile(cluster, 'karpenter-instance-profile', {
+        const karpenterInstanceProfile = new CfnInstanceProfile(cluster, 'karpenter-instance-profile', {
             roles: [karpenterNodeRole.roleName],
             instanceProfileName: `karpenterNodeInstanceProfile-${eksClusterName}`,
+            path: '/'
         });
 
         cluster.awsAuth.addRoleMapping(karpenterNodeRole, {
@@ -124,7 +125,7 @@ export class KarpenterProvisioner {
             chart: 'karpenter',
             repository: 'https://charts.karpenter.sh/',
             namespace: 'karpenter',
-            version: karpenterVersion || 'v0.20.0',
+            version: karpenterVersion || '0.16.3',
             timeout: Duration.minutes(14),
             wait: true,
             values: {
@@ -138,13 +139,12 @@ export class KarpenterProvisioner {
                 clusterName: eksClusterName,
                 clusterEndpoint: cluster.clusterEndpoint,
                 aws: {
-                    defaultInstanceProfile: `karpenterNodeInstanceProfile-${eksClusterName}`,
+                    defaultInstanceProfile: karpenterInstanceProfile.instanceProfileName,
                 },
             },
         });
 
         this.karpenterChart.node.addDependency(karpenterAccount);
-
 
         Tags.of(cluster.vpc).add(
             'karpenter.sh/discovery', eksClusterName,

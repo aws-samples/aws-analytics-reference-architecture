@@ -45,6 +45,7 @@ import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-bindin
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
 import { KarpenterProvisioner } from './karpenter-provisioner';
 import { Utils } from '../utils'
+import { KubectlV22Layer } from '@aws-cdk/lambda-layer-kubectl-v22';
 
 /**
  * The properties for the EmrEksCluster Construct class.
@@ -216,6 +217,7 @@ export class EmrEksCluster extends TrackedConstruct {
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
         vpc: this.eksVpc,
         clusterLogging: eksClusterLogging,
+        kubectlLayer: new KubectlV22Layer (this, 'KubectlV22Layer'),
       });
 
     } else {
@@ -224,6 +226,7 @@ export class EmrEksCluster extends TrackedConstruct {
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
         clusterLogging: eksClusterLogging,
+        kubectlLayer: new KubectlV22Layer (this, 'KubectlV22Layer'),
       });
 
       //Create VPC flow log for the EKS VPC
@@ -263,6 +266,10 @@ export class EmrEksCluster extends TrackedConstruct {
         destination: FlowLogDestination.toCloudWatchLogs(eksVpcFlowLogLogGroup, iamRoleforFlowLog),
       });
     }
+
+    Tags.of(this.eksCluster).add(
+      'karpenter.sh/discovery', this.clusterName,
+    );
 
     AraBucket.getOrCreate(this, { bucketName: 's3-access-logs' });
 
