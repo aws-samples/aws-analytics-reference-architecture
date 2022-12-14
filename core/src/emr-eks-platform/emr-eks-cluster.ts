@@ -41,11 +41,9 @@ import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook-
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-import { setDefaultManagedNodeGroups, clusterAutoscalerSetup, karpenterSetup, eksClusterSetup, setDefaultKarpenterProvisioners } from './emr-eks-cluster-helpers';
-import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
-import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
-import { ILayerVersion } from 'aws-cdk-lib/aws-lambda';
-import { EmrEksJobTemplateDefinition, EmrEksJobTemplateProvider } from './emr-job-template';
+import { KarpenterProvisioner } from './karpenter-provisioner';
+import { Utils } from '../utils'
+import { KubectlV22Layer } from '@aws-cdk/lambda-layer-kubectl-v22';
 
 /**
  * The different autoscaler available with EmrEksCluster
@@ -254,10 +252,14 @@ export class EmrEksCluster extends TrackedConstruct {
     this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
     this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
 
-    // Create the custom resource provider for tagging the EC2 Auto Scaling groups
-    this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagProvider(this, 'AsgTagProvider', {
-      eksClusterName: this.clusterName,
-    }).provider.serviceToken;
+      this.eksCluster = new Cluster(scope, `${this.clusterName}Cluster`, {
+        defaultCapacity: 0,
+        clusterName: this.clusterName,
+        version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
+        vpc: this.eksVpc,
+        clusterLogging: eksClusterLogging,
+        kubectlLayer: new KubectlV22Layer (this, 'KubectlV22Layer'),
+      });
 
     this.jobTemplateProviderToken = new EmrEksJobTemplateProvider(this, 'jobTemplateProvider').provider.serviceToken;    
 
@@ -273,7 +275,7 @@ export class EmrEksCluster extends TrackedConstruct {
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
         clusterLogging: eksClusterLogging,
-        kubectlLayer: props.kubectlLambdaLayer as ILayerVersion ?? undefined,
+        kubectlLayer: new KubectlV22Layer (this, 'KubectlV22Layer'),
       });
 
       //Create VPC flow log for the EKS VPC
@@ -313,17 +315,11 @@ export class EmrEksCluster extends TrackedConstruct {
       this.eksCluster.vpc.addFlowLog('eksVpcFlowLog', {
         destination: FlowLogDestination.toCloudWatchLogs(eksVpcFlowLogLogGroup, iamRoleforFlowLog),
       });
+    }
 
-      //Setting up the cluster with the required controller
-      eksClusterSetup(this, this, props.eksAdminRoleArn!);
-
-      //Deploy the right autoscaler using the flag set earlier 
-      if (this.isKarpenter) {
-        this.karpenterChart = karpenterSetup(this.eksCluster, this.clusterName, this, props.karpenterVersion || EmrEksCluster.DEFAULT_KARPENTER_VERSION);
-      } else {
-        const kubernetesVersion = props.kubernetesVersion ?? EmrEksCluster.DEFAULT_EKS_VERSION;
-        clusterAutoscalerSetup(this.eksCluster, this.clusterName, this, kubernetesVersion);
-      }
+    Tags.of(this.eksCluster).add(
+      'karpenter.sh/discovery', this.clusterName,
+    );
 
     } else {
       //Initialize with the provided EKS Cluster
