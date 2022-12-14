@@ -2,3 +2,4 @@ export { EmrEksClusterProps, EmrEksCluster, Autoscaler, EmrVersion } from './emr
 export { EmrEksNodegroupOptions, EmrEksNodegroup } from './emr-eks-nodegroup';
 export { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 export { EmrManagedEndpointOptions } from './emr-managed-endpoint';
+export { KarpenterProvisioner } from './karpenter-provisioner';
