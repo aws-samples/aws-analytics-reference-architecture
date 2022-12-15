@@ -7,6 +7,7 @@ from aws_cdk import App, Stack, Annotations
 from constructs import Construct
 from common.common_cdk.data_lake import DataLake
 from cicd.pipeline import PipelineStack, AnalyticsEnvironment
+from aws_analytics_reference_architecture import CdkDeployer
 
 
 def make_env(scope: Construct, context_key: str):
@@ -24,6 +25,20 @@ def make_env(scope: Construct, context_key: str):
 
 # Initialize the CDK App and PipelineStack
 app = App()
+
+CdkDeployer( app, 'CdkDeployer', 
+    github_repository='aws-samples/aws-analytics-reference-architecture',
+    stack_name='ara',
+    cdk_app_location='refarch/aws-native',
+    cdk_parameters= {
+        'QuickSightUsername': {
+            'type': 'String',
+        },
+        'QuickSightIdentityRegion': {
+            'type': 'String',
+        },
+    },
+)
 
 if app.node.try_get_context('EnableCICD') == 'true':
     deploy_envs = []
