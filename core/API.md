@@ -7927,6 +7927,7 @@ const cdkDeployerProps: CdkDeployerProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation">cdkAppLocation</a></code> | <code>string</code> | The location of the CDK application in the Github repository. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkParameters">cdkParameters</a></code> | <code>{[ key: string ]: aws-cdk-lib.CfnParameterProps}</code> | The CFN parameters to pass to the CDK application. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkStack">cdkStack</a></code> | <code>string</code> | The CDK stack name to deploy. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch">gitBranch</a></code> | <code>string</code> | The branch to use on the Github repository. |
 
 ---
 
@@ -8132,6 +8133,19 @@ public readonly cdkStack: string;
 - *Default:* The default stack is deployed
 
 The CDK stack name to deploy.
+
+---
+
+##### `gitBranch`<sup>Optional</sup> <a name="gitBranch" id="aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch"></a>
+
+```typescript
+public readonly gitBranch: string;
+```
+
+- *Type:* string
+- *Default:* The main branch of the repository
+
+The branch to use on the Github repository.
 
 ---
 

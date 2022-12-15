@@ -19,6 +19,7 @@ const integTestApp = new cdk.App();
 const cdkDeployerStack = new CdkDeployer(integTestApp, 'CdkDeployerE2ETest', {
   githubRepository: 'aws-samples/aws-analytics-reference-architecture',
   cdkAppLocation: 'refarch/aws-native',
+  gitBranch: 'main',
   cdkParameters: {
     QuickSightUsername: {
       default: 'gromav/gromav-Isengard',
@@ -47,5 +48,5 @@ describe('deploy succeed', () => {
 });
 
 afterAll(async () => {
-  //await destroyStack(integTestApp, cdkDeployerStack);
+  await destroyStack(integTestApp, cdkDeployerStack);
 });
