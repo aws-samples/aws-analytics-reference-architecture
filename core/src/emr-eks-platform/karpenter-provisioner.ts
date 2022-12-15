@@ -123,9 +123,10 @@ export class KarpenterProvisioner {
         //Deploy Karpenter Chart
         this.karpenterChart = cluster.addHelmChart('Karpenter', {
             chart: 'karpenter',
-            repository: 'https://charts.karpenter.sh/',
+            release: 'karpenter',
+            repository: 'oci://public.ecr.aws/karpenter/karpenter',
             namespace: 'karpenter',
-            version: karpenterVersion || '0.16.3',
+            version: karpenterVersion || 'v0.20.0',
             timeout: Duration.minutes(14),
             wait: true,
             values: {
@@ -136,11 +137,15 @@ export class KarpenterProvisioner {
                         'eks.amazonaws.com/role-arn': karpenterAccount.role.roleArn,
                     },
                 },
-                clusterName: eksClusterName,
-                clusterEndpoint: cluster.clusterEndpoint,
-                aws: {
-                    defaultInstanceProfile: karpenterInstanceProfile.instanceProfileName,
-                },
+                settings: {
+                    aws: {
+                        defaultInstanceProfile: karpenterInstanceProfile.instanceProfileName,
+                        clusterName: eksClusterName,
+                        clusterEndpoint: cluster.clusterEndpoint,
+                        interruptionQueueName: karpenterInterruptionQueue.queueName
+                    },
+                }
+               
             },
         });
 
