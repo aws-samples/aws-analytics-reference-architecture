@@ -29,6 +29,7 @@ app = App()
 CdkDeployer( app, 'CdkDeployer', 
     github_repository='aws-samples/aws-analytics-reference-architecture',
     stack_name='ara',
+    git_branch='feature/ref-arch-click-deploy',
     cdk_app_location='refarch/aws-native',
     cdk_parameters= {
         'QuickSightUsername': {

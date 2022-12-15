@@ -456,7 +456,8 @@
       "DefaultKmsKeyD3CE93BD",
       "Arn"
      ]
-    }
+    },
+    "SourceVersion": "feature/ref-arch-click-deploy"
    },
    "Metadata": {
     "aws:cdk:path": "CdkDeployer/CodeBuildProject/Resource"
