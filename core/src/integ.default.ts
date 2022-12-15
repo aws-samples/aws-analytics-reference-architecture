@@ -1,37 +1,27 @@
-import { App, Duration, Stack } from 'aws-cdk-lib';
-import { AraBucket } from '.';
-import { BatchReplayer, PreparedDataset } from './data-generator';
-import { CustomDataset, CustomDatasetInputFormat } from './data-generator/custom-dataset';
+import { App, CfnOutput } from 'aws-cdk-lib';
+import { CdkDeployer } from './common/cdk-deployer';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 
 
 const mockApp = new App();
-const stack = new Stack(mockApp, 'IntegStack');
 
-const custom = new CustomDataset(stack, 'CustomDataset', {
-  s3Location: {
-    bucketName: 'aws-analytics-reference-architecture',
-    objectKey: 'datasets/custom',
+const cdkDeployerStack = new CdkDeployer(mockApp, 'CdkDeployerE2ETest', {
+  githubRepository: 'aws-samples/aws-analytics-reference-architecture',
+  cdkAppLocation: 'refarch/aws-native',
+  cdkParameters: {
+    QuickSightUsername: {
+      default: 'gromav',
+      type: 'String',
+    },
+    QuickSightIdentityRegion: {
+      default: 'us-east-1',
+      type: 'String',
+    },
   },
-  inputFormat: CustomDatasetInputFormat.CSV,
-  datetimeColumn: 'tpep_pickup_datetime',
-  datetimeColumnsToAdjust: ['tpep_pickup_datetime'],
-  partitionRange: Duration.minutes(5),
-  approximateDataSize: 1,
 });
 
-const bucket = AraBucket.getOrCreate(stack, { bucketName: 'test'});
-
-new BatchReplayer(stack, 'Replayer',{
-  frequency: Duration.minutes(1),
-  dataset: custom.preparedDataset,
-  sinkBucket: bucket,
-})
-
-new BatchReplayer(stack, 'Replayer2',{
-  frequency: Duration.minutes(1),
-  dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
-  sinkBucket: bucket,
-})
-
+new CfnOutput(cdkDeployerStack, 'CodeBuildStatus', {
+  value: cdkDeployerStack.deployResult,
+  exportName: 'CodeBuildStatus',
+});
 
