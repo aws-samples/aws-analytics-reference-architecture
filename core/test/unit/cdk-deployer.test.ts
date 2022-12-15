@@ -424,7 +424,7 @@
                 ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
               ]
             ]
-          }
+          },
         ],
         "Policies": [
           {

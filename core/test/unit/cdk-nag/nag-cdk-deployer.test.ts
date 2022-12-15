@@ -51,12 +51,25 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM4', reason: 'Provided by the Custom Resource framework of CDK' }],
 );
 
+// NagSuppressions.addResourceSuppressionsByPath(
+//   stack,
+//   'CdkDeployStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource',
+//   [{ id: 'AwsSolutions-IAM4', reason: 'Provided by the Custom Resource framework of CDK' }],
+//   true,
+// );
+
+// NagSuppressions.addResourceSuppressionsByPath(
+//   stack,
+//   'CdkDeployStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource',
+//   [{ id: 'AwsSolutions-IAM5', reason: 'Provided by the Custom Resource framework of CDK' }],
+//   true,
+// );
+
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
   'CdkDeployStack/StartBuildRole/Resource',
   [{ id: 'AwsSolutions-IAM4', reason: 'Provided by the Custom Resource framework of CDK' }],
 );
-
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));

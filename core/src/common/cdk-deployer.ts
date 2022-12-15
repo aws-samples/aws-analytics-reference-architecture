@@ -10,9 +10,8 @@ import { SingletonKey } from '../singleton-kms-key';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { Utils } from '../utils';
+import { startBuild, reportBuild } from './cdk-deployer-build';
 
 /**
  * The properties for the CdkDeployer construct.
@@ -293,8 +292,9 @@ export class CdkDeployer extends cdk.Stack {
 
     const startBuildFunction = new Function(this, 'StartBuildFunction', {
       runtime: Runtime.NODEJS_16_X,
-      code: Code.fromInline(readFileSync(join(__dirname, 'resources/lambdas/cdk-deployer/startbuild.js'), 'utf-8')),
+      code: Code.fromInline(startBuild),
       handler: "index.handler",
+      // logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(60),
       role: startBuildRole,
     }); 
@@ -319,8 +319,9 @@ export class CdkDeployer extends cdk.Stack {
 
     const reportBuildFunction = new Function(this, 'ReportBuildFunction', {
       runtime: Runtime.NODEJS_16_X,
-      code: Code.fromInline(readFileSync(join(__dirname, 'resources/lambdas/cdk-deployer/reportbuild.js'), 'utf-8')),
+      code: Code.fromInline(reportBuild),
       handler: 'index.handler',
+      // logRetention: RetentionDays.ONE_WEEK,
       timeout: Duration.seconds(60),
       role: reportBuildRole,
     });
