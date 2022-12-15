@@ -16,37 +16,59 @@ import { Match, Template } from 'aws-cdk-lib/assertions';
 describe ('AthenaDemoSetup', () => {
 
   const athenaDemoSetupStack = new Stack();
-  // Instantiate an AthenaDemoSetup
-  new AthenaDemoSetup(athenaDemoSetupStack, 'AthenaDefault');
-
+  // Instantiate an AthenaDemoSetup with default name
+  new AthenaDemoSetup(athenaDemoSetupStack, 'AthenaDefault', {});
+  // Instantiate an AthenaDemoSetup with custom name
+  new AthenaDemoSetup(athenaDemoSetupStack, 'NamedAthenaDefault', {workgroupName: 'custom-name'});
   const template = Template.fromStack(athenaDemoSetupStack);
 
-  // test('Athena demo setup creates the proper result bucket', () => {
+  test('Athena demo setup creates the proper result bucket', () => {
 
-  //   // Test if a bucket is created for results
-  //   template.resourceCountIs('AWS::S3::Bucket', 2);
+    // Test if buckets are created for results (+1 for access logs)
+    template.resourceCountIs('AWS::S3::Bucket', 3);
 
-  //   // Test if the Amazon S3 Bucket for the result is correct
-  //   // template.hasResourceProperties('AWS::S3::Bucket',
-  //   //   Match.objectLike({
-  //   //     BucketName: {
-  //   //       'Fn::Join': [
-  //   //         '',
-  //   //         [
-  //   //           'athena-logs-',
-  //   //           {
-  //   //             Ref: 'AWS::AccountId',
-  //   //           },
-  //   //           '-',
-  //   //           {
-  //   //             Ref: 'AWS::Region',
-  //   //           },
-  //   //         ],
-  //   //       ],
-  //   //     },
-  //   //   }),
-  //   // );
-  // });
+    // Test if the Amazon S3 Bucket for the result is correct
+    template.hasResourceProperties('AWS::S3::Bucket',
+      Match.objectLike({
+        BucketName: {
+          'Fn::Join': [
+            '',
+            [
+              'demo-athena-logs-',
+              {
+                Ref: 'AWS::AccountId',
+              },
+              '-',
+              {
+                Ref: 'AWS::Region',
+              },
+            ],
+          ],
+        },
+      }),
+    );
+  });
+
+  // Test if the Amazon S3 Bucket for the result is correct
+  template.hasResourceProperties('AWS::S3::Bucket',
+    Match.objectLike({
+      BucketName: {
+        'Fn::Join': [
+          '',
+          [
+            'custom-name-athena-logs-',
+            {
+              Ref: 'AWS::AccountId',
+            },
+            '-',
+            {
+              Ref: 'AWS::Region',
+            },
+          ],
+        ],
+      },
+    }),
+  );
 
   test('Athena Demo Setup creates the proper Athena workgroup', () => {
 
@@ -54,6 +76,31 @@ describe ('AthenaDemoSetup', () => {
     template.hasResourceProperties('AWS::Athena::WorkGroup',
       Match.objectLike({
         Name: 'demo',
+        WorkGroupConfiguration: {
+          RequesterPaysEnabled: true,
+          PublishCloudWatchMetricsEnabled: false,
+          ResultConfiguration: {
+            OutputLocation: {
+              'Fn::Join': [
+                '',
+                [
+                  's3://',
+                  {
+                    Ref: Match.anyValue(),
+                  },
+                  '/athena-console-results',
+                ],
+              ],
+            },
+          },
+        },
+      }),
+    );
+
+    // Test if the Amazon Athena Workgroup is correct
+    template.hasResourceProperties('AWS::Athena::WorkGroup',
+      Match.objectLike({
+        Name: 'custom-name',
         WorkGroupConfiguration: {
           RequesterPaysEnabled: true,
           PublishCloudWatchMetricsEnabled: false,
