@@ -41,6 +41,11 @@ export interface CdkDeployerProps extends cdk.StackProps {
    * @default - The root of the repository
    */
   readonly cdkAppLocation?: string;
+  /**
+   * The branch to use on the Github repository. 
+   * @default - The main branch of the repository
+   */
+  readonly gitBranch?: string;
 }
 
 /**
@@ -230,6 +235,7 @@ export class CdkDeployer extends cdk.Stack {
       source: Source.gitHub({
         owner: props.githubRepository.split('/')[0],
         repo: props.githubRepository.split('/')[1],
+        branchOrRef: props.gitBranch ? props.gitBranch : undefined,
         reportBuildStatus: true,
       }),
       buildSpec: BuildSpec.fromObject({
