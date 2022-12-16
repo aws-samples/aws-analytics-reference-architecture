@@ -8,7 +8,7 @@
  */
 
  import { App } from 'aws-cdk-lib';
- import { CdkDeployer } from '../../src/common/cdk-deployer';
+ import { CdkDeployer, DeploymentType } from '../../src/common/cdk-deployer';
  
  import { Match, Template } from 'aws-cdk-lib/assertions';
  
@@ -16,7 +16,8 @@
  describe ('CdkDeployer test', () => {
  
   const app = new App();
-  const CdkDeployerStack = new CdkDeployer(app, 'CdkDeployStack', {
+  const CdkDeployerStack = new CdkDeployer(app, {
+    deploymentType: DeploymentType.CLICK_TO_DEPLOY,
     githubRepository: 'aws-samples/aws-analytics-reference-architecture',
     cdkAppLocation: 'refarch/aws-native',
     cdkParameters: {

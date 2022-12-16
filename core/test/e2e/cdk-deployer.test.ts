@@ -10,13 +10,14 @@
 import * as cdk from 'aws-cdk-lib';
 import { deployStack } from './utils';
 
-import { CdkDeployer } from '../../src/common/cdk-deployer';
+import { CdkDeployer, DeploymentType } from '../../src/common/cdk-deployer';
 
 jest.setTimeout(20000000);
 // GIVEN
 const integTestApp = new cdk.App();
 
-const cdkDeployerStack = new CdkDeployer(integTestApp, 'CdkDeployerE2ETest', {
+const cdkDeployerStack = new CdkDeployer(integTestApp, {
+  deploymentType: DeploymentType.CLICK_TO_DEPLOY,
   githubRepository: 'aws-samples/aws-analytics-reference-architecture',
   cdkAppLocation: 'refarch/aws-native',
   gitBranch: 'main',
