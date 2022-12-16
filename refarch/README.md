@@ -41,6 +41,10 @@ Before starting the deployment, ensure that the following steps are completed.
     3. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
 
 #### Deployment option 1: provision stacks directly (without CI/CD pipeline)
+
+Follow these steps or directly click on the launch button below
+
+[![launch-aws-native-ref-arch](/static/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=AwsNativeRefArch&templateURL=https://aws-analytics-reference-architecture.s3.eu-west-1.amazonaws.com/binaries/RefArchDeployer.template.json)
  
 1. Clone this repository onto the machine from which you want to execute the deployment.
 
@@ -74,7 +78,7 @@ To disable, for example, the data visualization module, the following argument h
    **NOTE:
    Step 4 and 5 only have to be executed if the data visualization module has been installed.**
    
-4. Configure Amazon QuickSight:
+1. Configure Amazon QuickSight:
     * To link the clean data S3 bucket to the QuickSight account:
         * Visit the [QuickSight web console](https://quicksight.aws.amazon.com)
         * Click on your username in the upper right corner
@@ -97,7 +101,7 @@ To disable, for example, the data visualization module, the following argument h
         * Click "Create"
         * Note down the "VPC connection ARN" of the newly created VPC connection shown on the "Manage VPC connections" page
 
-5. Deploy a second CDK stack, called `DataVizRedshiftStack`, passing the ARN of the VPC connection from the previous step.
+2. Deploy a second CDK stack, called `DataVizRedshiftStack`, passing the ARN of the VPC connection from the previous step.
 
    ```
    cd dataviz/dataviz_redshift_cdk
