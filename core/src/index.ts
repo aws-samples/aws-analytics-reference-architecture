@@ -16,7 +16,7 @@ export { FlywayRunner, FlywayRunnerProps } from './db-schema-manager';
 export { NotebookPlatform, NotebookPlatformProps, StudioAuthMode, NotebookUserOptions, NotebookManagedEndpointOptions, SSOIdentityType } from './notebook-platform';
 export { S3CrossAccount, S3CrossAccountProps } from './s3-cross-account';
 export { TrackedConstruct, TrackedConstructProps } from './common/tracked-construct';
-export { CdkDeployer, CdkDeployerProps } from './common/cdk-deployer';
+export { CdkDeployer, CdkDeployerProps, DeploymentType } from './common/cdk-deployer';
 export { SingletonGlueDatabase } from './singleton-glue-database';
 export { SingletonKey } from './singleton-kms-key';
 export { SingletonCfnLaunchTemplate } from './singleton-launch-template';
