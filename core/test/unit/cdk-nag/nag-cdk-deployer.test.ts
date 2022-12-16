@@ -12,11 +12,12 @@ import { Annotations, Match } from 'aws-cdk-lib/assertions';
 import { App, Aspects } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { CdkDeployer } from '../../../src/common/cdk-deployer';
+import { CdkDeployer, DeploymentType } from '../../../src/common/cdk-deployer';
 
 const mockApp = new App();
 
-const stack = new CdkDeployer(mockApp, 'CdkDeployStack', {
+const stack = new CdkDeployer(mockApp, {
+  deploymentType: DeploymentType.CLICK_TO_DEPLOY,
   githubRepository: 'aws-samples/aws-analytics-reference-architecture',
   cdkAppLocation: 'refarch/aws-native',
   cdkParameters: {
@@ -35,39 +36,39 @@ Aspects.of(stack).add(new AwsSolutionsChecks());
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'CdkDeployStack/CdkBuildPolicy/Resource',
+  'CDKDeployer/CdkBuildPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'Wildcard required because the CDKToolkit ID is not know and random' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'CdkDeployStack/CodeBuildRole/DefaultPolicy/Resource',
+  'CDKDeployer/CodeBuildRole/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'DefaultPolicy provided by CodeBuild Project L2 CDK construct' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'CdkDeployStack/ReportBuildRole/Resource',
+  'CDKDeployer/ReportBuildRole/Resource',
   [{ id: 'AwsSolutions-IAM4', reason: 'Provided by the Custom Resource framework of CDK' }],
 );
 
 // NagSuppressions.addResourceSuppressionsByPath(
 //   stack,
-//   'CdkDeployStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource',
+//   'CDKDeployer/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource',
 //   [{ id: 'AwsSolutions-IAM4', reason: 'Provided by the Custom Resource framework of CDK' }],
 //   true,
 // );
 
 // NagSuppressions.addResourceSuppressionsByPath(
 //   stack,
-//   'CdkDeployStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource',
+//   'CDKDeployer/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/Resource',
 //   [{ id: 'AwsSolutions-IAM5', reason: 'Provided by the Custom Resource framework of CDK' }],
 //   true,
 // );
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'CdkDeployStack/StartBuildRole/Resource',
+  'CDKDeployer/StartBuildRole/Resource',
   [{ id: 'AwsSolutions-IAM4', reason: 'Provided by the Custom Resource framework of CDK' }],
 );
 
