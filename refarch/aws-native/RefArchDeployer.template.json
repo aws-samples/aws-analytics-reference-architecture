@@ -30,7 +30,7 @@
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/CodeBuildRole/Resource"
+    "aws:cdk:path": "CDKDeployer/CodeBuildRole/Resource"
    }
   },
   "CodeBuildRoleDefaultPolicy829527DE": {
@@ -155,7 +155,7 @@
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/CodeBuildRole/DefaultPolicy/Resource"
+    "aws:cdk:path": "CDKDeployer/CodeBuildRole/DefaultPolicy/Resource"
    }
   },
   "CdkBuildPolicyBE0B4E59": {
@@ -350,7 +350,7 @@
     "Path": "/"
    },
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/CdkBuildPolicy/Resource"
+    "aws:cdk:path": "CDKDeployer/CdkBuildPolicy/Resource"
    }
   },
   "DefaultKmsKeyD3CE93BD": {
@@ -389,7 +389,7 @@
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/DefaultKmsKey/Resource"
+    "aws:cdk:path": "CDKDeployer/DefaultKmsKey/Resource"
    }
   },
   "CodeBuildProject4B91CF3F": {
@@ -443,7 +443,6 @@
      ]
     },
     "Source": {
-     "BuildSpec": "{\n  \"version\": \"0.2\",\n  \"phases\": {\n    \"pre_build\": {\n      \"commands\": [\n        \"cd $CODEBUILD_SRC_DIR/$CDK_APP_LOCATION\",\n        \"npm install -g aws-cdk && sudo apt-get install python3 && python -m ensurepip --upgrade && python -m pip install --upgrade pip && python -m pip install -r requirements.txt\",\n        \"export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)\",\n        \"echo \\\"AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID\\\"\",\n        \"cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION\"\n      ]\n    },\n    \"build\": {\n      \"commands\": [\n        \"cd $CODEBUILD_SRC_DIR/$CDK_APP_LOCATION\",\n        \"export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)\",\n        \"echo \\\"AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID\\\"\",\n        \"cdk deploy $STACKNAME $PARAMETERS --require-approval=never\"\n      ]\n    }\n  }\n}",
      "Location": "https://github.com/aws-samples/aws-analytics-reference-architecture.git",
      "ReportBuildStatus": true,
      "Type": "GITHUB"
@@ -460,7 +459,7 @@
     "SourceVersion": "feature/ref-arch-click-deploy"
    },
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/CodeBuildProject/Resource"
+    "aws:cdk:path": "CDKDeployer/CodeBuildProject/Resource"
    }
   },
   "StartBuildRole2F45A2DC": {
@@ -514,7 +513,7 @@
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/StartBuildRole/Resource"
+    "aws:cdk:path": "CDKDeployer/StartBuildRole/Resource"
    }
   },
   "StartBuildFunction21B23CDA": {
@@ -537,7 +536,7 @@
     "StartBuildRole2F45A2DC"
    ],
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/StartBuildFunction/Resource"
+    "aws:cdk:path": "CDKDeployer/StartBuildFunction/Resource"
    }
   },
   "ReportBuildRoleDEFF2DDE": {
@@ -594,7 +593,7 @@
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/ReportBuildRole/Resource"
+    "aws:cdk:path": "CDKDeployer/ReportBuildRole/Resource"
    }
   },
   "ReportBuildFunction724A99F2": {
@@ -617,7 +616,7 @@
     "ReportBuildRoleDEFF2DDE"
    ],
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/ReportBuildFunction/Resource"
+    "aws:cdk:path": "CDKDeployer/ReportBuildFunction/Resource"
    }
   },
   "BuildCompleteEvent738B4D20": {
@@ -657,10 +656,10 @@
     ]
    },
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/BuildCompleteEvent/Resource"
+    "aws:cdk:path": "CDKDeployer/BuildCompleteEvent/Resource"
    }
   },
-  "BuildCompleteEventAllowEventRuleCdkDeployerReportBuildFunctionA70232EA10BD011F": {
+  "BuildCompleteEventAllowEventRuleCDKDeployerReportBuildFunctionF361D6C2F3C813BB": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
@@ -679,7 +678,7 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/BuildCompleteEvent/AllowEventRuleCdkDeployerReportBuildFunctionA70232EA"
+    "aws:cdk:path": "CDKDeployer/BuildCompleteEvent/AllowEventRuleCDKDeployerReportBuildFunctionF361D6C2"
    }
   },
   "CodeBuildTriggerCustomResource": {
@@ -718,13 +717,15 @@
     "StackName": "ara"
    },
    "DependsOn": [
-    "BuildCompleteEventAllowEventRuleCdkDeployerReportBuildFunctionA70232EA10BD011F",
-    "BuildCompleteEvent738B4D20"
+    "BuildCompleteEventAllowEventRuleCDKDeployerReportBuildFunctionF361D6C2F3C813BB",
+    "BuildCompleteEvent738B4D20",
+    "CodeBuildRoleDefaultPolicy829527DE",
+    "CodeBuildRole728CBADE"
    ],
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/CodeBuildTriggerCustomResource/Default"
+    "aws:cdk:path": "CDKDeployer/CodeBuildTriggerCustomResource/Default"
    }
   },
   "CDKMetadata": {
@@ -733,7 +734,7 @@
     "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WOSwoCMRBEz+I+0343rgU3IoS5gGSSVluTNOSjSMjdjaOgrupVVVP0AlZzmE3UPXbaXDtLA5TN0UsVlMOEQbTmUEg5KD1bFK0bVbIl/XjZD+2VVyc03/wvqOLqIpQdjlWTKjQbHDJZA0UGvqBO49obq7DKDUZB2WavE7F/lb8sMTiKsbkq8IY+tfk+fz5sWqvoMXIOukU5JnZf2y5+eMPeUBqH5COd2U+XsIb5cnKJRF3IPpFD6N/6BBXPzlwwAQAA"
    },
    "Metadata": {
-    "aws:cdk:path": "CdkDeployer/CDKMetadata/Default"
+    "aws:cdk:path": "CDKDeployer/CDKMetadata/Default"
    },
    "Condition": "CDKMetadataAvailable"
   }

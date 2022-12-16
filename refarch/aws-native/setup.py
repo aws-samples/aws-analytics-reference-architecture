@@ -19,7 +19,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="common"),
 
     install_requires=[
-        "aws_analytics_reference_architecture==2.4.13",
+        "aws_analytics_reference_architecture==2.4.14",
         "aws-cdk-lib>=2.26.0",
         "aws-cdk.aws-glue-alpha>=2.26.0.a0"
         "aws-cdk.aws-redshift-alpha>=2.26.0.a0"
