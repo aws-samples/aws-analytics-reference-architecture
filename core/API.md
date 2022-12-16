@@ -7920,7 +7920,6 @@ const cdkDeployerProps: CdkDeployerProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkStack">cdkStack</a></code> | <code>string</code> | The CDK stack name to deploy. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch">gitBranch</a></code> | <code>string</code> | The branch to use on the Github repository. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.githubRepository">githubRepository</a></code> | <code>string</code> | The github repository containing the CDK application. |
-| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.workshopId">workshopId</a></code> | <code>string</code> | The workshop id from Workshop Studio Required if deploymentType is WORKSHOP_STUDIO. |
 
 ---
 
@@ -8151,18 +8150,6 @@ public readonly githubRepository: string;
 - *Type:* string
 
 The github repository containing the CDK application.
-
----
-
-##### `workshopId`<sup>Optional</sup> <a name="workshopId" id="aws-analytics-reference-architecture.CdkDeployerProps.property.workshopId"></a>
-
-```typescript
-public readonly workshopId: string;
-```
-
-- *Type:* string
-
-The workshop id from Workshop Studio Required if deploymentType is WORKSHOP_STUDIO.
 
 ---
 
