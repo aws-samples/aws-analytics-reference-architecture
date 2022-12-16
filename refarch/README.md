@@ -44,7 +44,7 @@ Before starting the deployment, ensure that the following steps are completed.
 
 Follow these steps or directly click on the launch button below
 
-[![launch-aws-native-ref-arch](../../aws-analytics-reference-architecture/static/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=AwsNativeRefArch&templateURL=https://aws-analytics-reference-architecture.s3.eu-west-1.amazonaws.com/binaries/RefArchDeployer.template.json)
+[![launch-aws-native-ref-arch](/static/launch-stack.png)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=AwsNativeRefArch&templateURL=https://aws-analytics-reference-architecture.s3.eu-west-1.amazonaws.com/binaries/RefArchDeployer.template.json)
  
 1. Clone this repository onto the machine from which you want to execute the deployment.
 
