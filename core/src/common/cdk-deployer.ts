@@ -5,7 +5,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Aws, CfnParameter, CustomResource, DefaultStackSynthesizer, Duration } from 'aws-cdk-lib';
-import { BuildSpec, ComputeType, LinuxBuildImage, Project, Source, CfnProject } from 'aws-cdk-lib/aws-codebuild';
+import { ComputeType, LinuxBuildImage, Project, Source, CfnProject } from 'aws-cdk-lib/aws-codebuild';
 import { SingletonKey } from '../singleton-kms-key';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Rule } from 'aws-cdk-lib/aws-events';
@@ -52,13 +52,6 @@ export interface CdkDeployerProps extends cdk.StackProps {
    * @default - The main branch of the repository
    */
   readonly gitBranch?: string;
-
-
-  /**
-   * The workshop id from Workshop Studio
-   * Required if deploymentType is WORKSHOP_STUDIO
-   */
-  readonly workshopId?: string;
 
   /**
    * The deployment type
@@ -115,22 +108,10 @@ export class CdkDeployer extends cdk.Stack {
    */
   constructor(scope: Construct, props: CdkDeployerProps) {
 
-    // Check the needed props
-    switch (props.deploymentType) {
-      case DeploymentType.CLICK_TO_DEPLOY:
-        if(!props.githubRepository) {
-          throw new Error('githubRepository is required for CLICK_TO_DEPLOY');
-        }
-        break;
-      case DeploymentType.WORKSHOP_STUDIO:
-        if(!props.workshopId) {
-          throw new Error('workshopId is required for WORKSHOP_STUDIO');
-        }
-        break;
-      default:
-        break;
+    if((props.deploymentType == DeploymentType.CLICK_TO_DEPLOY) && !props.githubRepository) {
+      throw new Error('githubRepository is required for CLICK_TO_DEPLOY');
     }
-    
+        
     super(scope, 'CDKDeployer', {
       // Change the Stack Synthetizer to remove the CFN parameters for the CDK version
       synthesizer: new DefaultStackSynthesizer({
@@ -299,28 +280,6 @@ export class CdkDeployer extends cdk.Stack {
 
     const codeBuildProject = new Project(this, 'CodeBuildProject', {
       source,
-      buildSpec: BuildSpec.fromObject({
-        version: '0.2',
-        phases: {
-          pre_build: {
-            commands: [
-              'cd $CODEBUILD_SRC_DIR/$CDK_APP_LOCATION',
-              'npm install -g aws-cdk && sudo apt-get install python3 && python -m ensurepip --upgrade && python -m pip install --upgrade pip && python -m pip install -r requirements.txt',
-              'export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)',
-              'echo "AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID"',
-              'cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION',
-            ],
-          },
-          build: {
-            commands: [
-              'cd $CODEBUILD_SRC_DIR/$CDK_APP_LOCATION',
-              'export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)',
-              'echo "AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID"',
-              'cdk deploy $STACKNAME $PARAMETERS --require-approval=never',
-            ],
-          },
-        },
-      }),
       encryptionKey: SingletonKey.getOrCreate(this, 'DefaultKmsKey'),
       environment: {
         buildImage: LinuxBuildImage.STANDARD_5_0,

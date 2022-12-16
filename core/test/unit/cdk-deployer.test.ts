@@ -201,7 +201,6 @@
           ]
         },
         "Source": {
-          "BuildSpec": "{\n  \"version\": \"0.2\",\n  \"phases\": {\n    \"pre_build\": {\n      \"commands\": [\n        \"cd $CODEBUILD_SRC_DIR/$CDK_APP_LOCATION\",\n        \"npm install -g aws-cdk && sudo apt-get install python3 && python -m ensurepip --upgrade && python -m pip install --upgrade pip && python -m pip install -r requirements.txt\",\n        \"export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)\",\n        \"echo \\\"AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID\\\"\",\n        \"cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_REGION\"\n      ]\n    },\n    \"build\": {\n      \"commands\": [\n        \"cd $CODEBUILD_SRC_DIR/$CDK_APP_LOCATION\",\n        \"export AWS_ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -d: -f5)\",\n        \"echo \\\"AWS_ACCOUNT_ID: $AWS_ACCOUNT_ID\\\"\",\n        \"cdk deploy $STACKNAME $PARAMETERS --require-approval=never\"\n      ]\n    }\n  }\n}",          "ReportBuildStatus": true,
           "Type": "GITHUB"
         },
       }),
