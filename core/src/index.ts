@@ -11,7 +11,7 @@ export { DataLakeCatalog } from './data-lake-catalog';
 export { DataLakeExporter, DataLakeExporterProps } from './data-lake-exporter';
 export { AthenaDemoSetup, AthenaDemoSetupProps } from './athena-demo-setup';
 export { GlueDemoRole } from './glue-demo-role';
-export { EmrEksClusterProps, EmrEksCluster, EmrEksNodegroupOptions, EmrEksNodegroup, EmrVirtualClusterOptions, EmrManagedEndpointOptions } from './emr-eks-platform';
+export { EmrEksClusterProps, EmrEksCluster, EmrEksNodegroupOptions, EmrEksNodegroup, EmrVirtualClusterOptions, EmrManagedEndpointOptions, Autoscaler } from './emr-eks-platform';
 export { FlywayRunner, FlywayRunnerProps } from './db-schema-manager';
 export { NotebookPlatform, NotebookPlatformProps, StudioAuthMode, NotebookUserOptions, NotebookManagedEndpointOptions, SSOIdentityType } from './notebook-platform';
 export { S3CrossAccount, S3CrossAccountProps } from './s3-cross-account';
