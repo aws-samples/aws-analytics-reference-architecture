@@ -47,8 +47,6 @@ import { KubectlV22Layer } from '@aws-cdk/lambda-layer-kubectl-v22';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 
-//TODO Change from Class to functions the Karpenter and CA setup
-
 export enum Autoscaler {
   KARPENTER = 'KARPENTER',
   CLUSTER_AUTOSCALER = 'CLUSTER_AUTOSCALER',
@@ -190,7 +188,7 @@ export class EmrEksCluster extends TrackedConstruct {
   private readonly assetUploadBucketRole: Role;
   private readonly karpenterChart?: HelmChart;
   private readonly isKarpenter: boolean;
-  private readonly nodegroupAsgTagsProviderServiceToken?: string;
+  private readonly nodegroupAsgTagsProviderServiceToken: string;
   private readonly defaultNodes: boolean;
   private readonly ec2InstanceNodeGroupRole: Role;
   /**
@@ -232,6 +230,11 @@ export class EmrEksCluster extends TrackedConstruct {
     this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
     this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
     this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
+
+    // Create the custom resource provider for tagging the EC2 Auto Scaling groups
+    this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagProvider(this, 'AsgTagProvider', {
+      eksClusterName: this.clusterName,
+    }).provider.serviceToken;
 
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
     if (props.eksCluster == undefined) {
@@ -286,7 +289,7 @@ export class EmrEksCluster extends TrackedConstruct {
         destination: FlowLogDestination.toCloudWatchLogs(eksVpcFlowLogLogGroup, iamRoleforFlowLog),
       });
 
-      this.eksClusterSetup(this.eksCluster, this);
+      this.eksClusterSetup(this.eksCluster, this, props.eksAdminRoleArn);
 
       if (this.isKarpenter) {
         this.karpenterChart = karpenterSetup(this.eksCluster, this.clusterName, this, props.karpenterVersion || 'v0.20.0');
@@ -297,13 +300,8 @@ export class EmrEksCluster extends TrackedConstruct {
     } else {
       this.eksCluster = props.eksCluster;
     }
-
+    
     if (this.defaultNodes && props.autoScaling == Autoscaler.CLUSTER_AUTOSCALER) {
-      // Create the custom resource provider for tagging the EC2 Auto Scaling groups
-      this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagProvider(scope, 'AsgTagProvider', {
-        eksClusterName: this.clusterName,
-      }).provider.serviceToken;
-
       this.setDefaultManagedNodeGroups();
     }
 
@@ -332,8 +330,7 @@ export class EmrEksCluster extends TrackedConstruct {
       Role.fromRoleArn(
         this,
         'ServiceRoleForAmazonEMRContainers',
-        `arn:aws:iam::${Stack.of(this).account
-        }:role/AWSServiceRoleForAmazonEMRContainers`,
+        `arn:aws:iam::${Stack.of(this).account}:role/AWSServiceRoleForAmazonEMRContainers`,
       ),
       {
         username: 'emr-containers',
@@ -368,7 +365,7 @@ export class EmrEksCluster extends TrackedConstruct {
     });
 
     //Create an execution role for the lambda and attach to it a policy formed from user input
-    this.assetUploadBucketRole = new Role(scope,
+    this.assetUploadBucketRole = new Role(this,
       's3BucketDeploymentRole', {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       description: 'Role used by S3 deployment cdk construct',
@@ -523,12 +520,19 @@ export class EmrEksCluster extends TrackedConstruct {
     return cr;
   }
 
+  /**
+ * Add new nodegroups to the cluster for Amazon EMR on EKS. This method overrides Amazon EKS nodegroup options then create the nodegroup.
+ * If no subnet is provided, it creates one nodegroup per private subnet in the Amazon EKS Cluster.
+ * If NVME local storage is used, the user_data is modified.
+ * @param {string} id the CDK ID of the resource
+ * @param {EmrEksNodegroupOptions} props the EmrEksNodegroupOptions [properties]{@link EmrEksNodegroupOptions}
+ */
   public addEmrEksNodegroup(id: string, props: EmrEksNodegroupOptions) {
 
     // Get the subnet from Properties or one private subnet for each AZ
     const subnetList = props.subnet ? [props.subnet] : this.eksCluster.vpc.selectSubnets({
       onePerAz: true,
-      subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+      subnetType: SubnetType.PRIVATE_WITH_NAT,
     }).subnets;
 
     // Add Amazon SSM agent to the user data
@@ -575,12 +579,15 @@ export class EmrEksCluster extends TrackedConstruct {
     }
 
     // Add headers and footers to user data
-    const userDataMime = Fn.base64(`MIME-Version: 1.0
+  const userDataMime = Fn.base64(`MIME-Version: 1.0
 Content-Type: multipart/mixed; boundary="==MYBOUNDARY=="
+
 --==MYBOUNDARY==
 Content-Type: text/x-shellscript; charset="us-ascii"
+
 #!/bin/bash
 ${userData.join('\r\n')}
+
 --==MYBOUNDARY==--\\
 `);
 
@@ -672,7 +679,7 @@ ${userData.join('\r\n')}
           },
         );
         new CustomResource(this, `${nodegroupId}Label${key}`, {
-          serviceToken: this.nodegroupAsgTagsProviderServiceToken!,
+          serviceToken: this.nodegroupAsgTagsProviderServiceToken,
           properties: {
             nodegroupName: options.nodegroupName,
             tagKey: `k8s.io/cluster-autoscaler/node-template/label/${key}`,
@@ -781,7 +788,11 @@ ${userData.join('\r\n')}
     });
   }
 
-  private eksClusterSetup(cluster: Cluster, scope: Construct) {
+  private eksClusterSetup(cluster: Cluster, scope: Construct, eksAdminRoleArn: any) {
+
+    // Add the provided Amazon IAM Role as Amazon EKS Admin
+    this.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( this, 'AdminRole', eksAdminRoleArn ), 'AdminRole');
+
     // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
     const certManager = cluster.addHelmChart('CertManager', {
       createNamespace: true,
@@ -924,16 +935,32 @@ ${userData.join('\r\n')}
   }
 
   private setDefaultManagedNodeGroups() {
+    console.log('invoked');
 
     let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
     EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
     this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
-    this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
-    this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
-    // Add a nodegroup for notebooks
-    this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
-    this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
-    this.addEmrEksNodegroup('notebookWithoutPodTemplate', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
+
+    // let EmrEksNodeGroupsharedDriver: any = {...EmrEksNodegroup.SHARED_DRIVER};
+    // EmrEksNodeGroupsharedDriver.nodeRole = this.ec2InstanceNodeGroupRole;
+    // this.addEmrEksNodegroup('sharedDriver', EmrEksNodeGroupsharedDriver as EmrEksNodegroupOptions);
+
+    // let EmrEksNodeGroupsharedExecutor: any = {...EmrEksNodegroup.SHARED_EXECUTOR};
+    // EmrEksNodeGroupsharedExecutor.nodeRole = this.ec2InstanceNodeGroupRole;
+    // this.addEmrEksNodegroup('sharedExecutor', EmrEksNodeGroupsharedExecutor as EmrEksNodegroupOptions);
+
+    // // Add a nodegroup for notebooks
+
+    // let EmrEksNodeGroupnotebookDriver: any = {...EmrEksNodegroup.NOTEBOOK_DRIVER};
+    // EmrEksNodeGroupnotebookDriver.nodeRole = this.ec2InstanceNodeGroupRole;
+    // this.addEmrEksNodegroup('sharedExecutor', EmrEksNodeGroupnotebookDriver as EmrEksNodegroupOptions);
+
+    // let EmrEksNodeGroupnotebookExecutor: any = {...EmrEksNodegroup.NOTEBOOK_EXECUTOR};
+    // EmrEksNodeGroupnotebookExecutor.nodeRole = this.ec2InstanceNodeGroupRole;
+    // this.addEmrEksNodegroup('sharedExecutor', EmrEksNodeGroupnotebookExecutor as EmrEksNodegroupOptions);
+
+    
+    //this.addEmrEksNodegroup('notebookWithoutPodTemplate', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
   }
 }
 
