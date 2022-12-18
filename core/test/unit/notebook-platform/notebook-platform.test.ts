@@ -13,6 +13,7 @@ import { Stack } from 'aws-cdk-lib';
 import { Template, Match } from 'aws-cdk-lib/assertions';
 import { ManagedPolicy, PolicyDocument, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { EmrEksCluster, StudioAuthMode, NotebookPlatform, NotebookUserOptions, Autoscaler } from '../../../src';
+import { EmrEksCluster, StudioAuthMode, NotebookPlatform, NotebookUserOptions, Autoscaler } from '../../../src';
 
 const stacksso = new Stack();
 
@@ -21,7 +22,7 @@ const stackiamauth = new Stack();
 
 const clusterSSO = EmrEksCluster.getOrCreate(stacksso, {
   eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
-  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 
 new NotebookPlatform(stacksso, 'platform1', {
@@ -33,12 +34,12 @@ new NotebookPlatform(stacksso, 'platform1', {
 
 const clusterIAMAUTH = EmrEksCluster.getOrCreate(stackiamauth, {
   eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
-  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 
 const clusterIAMFED = EmrEksCluster.getOrCreate(stackiamfed, {
   eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
-  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 
 let iamFedNotebook = new NotebookPlatform(stackiamfed, 'dataplatformIAMFed', {
@@ -133,7 +134,7 @@ test('Should find a mapping between an EMR Studio, a user and a session policy f
 
   const clusterSSO = EmrEksCluster.getOrCreate(stacksso, {
     eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
-    autoscaling: Autoscaler.CLUSTER_AUTOSCALER
+    autoScaling: Autoscaler.CLUSTER_AUTOSCALER
   });
 
   const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {

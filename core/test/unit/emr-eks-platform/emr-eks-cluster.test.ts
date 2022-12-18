@@ -10,13 +10,14 @@
 import { ManagedPolicy, PolicyDocument, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Stack } from 'aws-cdk-lib';
 import { Autoscaler, EmrEksCluster } from '../../../src/emr-eks-platform/emr-eks-cluster';
+import { Autoscaler, EmrEksCluster } from '../../../src/emr-eks-platform/emr-eks-cluster';
 import { TaintEffect } from 'aws-cdk-lib/aws-eks';
 import { Template, Match } from 'aws-cdk-lib/assertions';
 
 const emrEksClusterStack = new Stack();
 const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, {
   eksAdminRoleArn: 'arn:aws:iam::1234567890:role/AdminAccess',
-  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 cluster.addEmrVirtualCluster(emrEksClusterStack, {
   name: 'test',
