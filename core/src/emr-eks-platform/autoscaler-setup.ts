@@ -181,8 +181,6 @@ export function clusterAutoscalerSetup(
     scope: Construct,
     autoscalerVersion?: string) {      
     
-
-    console.log('====>    executing autoscaler')
     // Create a Kubernetes Service Account for the Cluster Autoscaler with Amazon IAM Role
     const AutoscalerServiceAccount = cluster.addServiceAccount('Autoscaler', {
         name: 'cluster-autoscaler',
