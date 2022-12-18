@@ -37,6 +37,7 @@ export class EmrEksNodegroup {
   public static readonly TOOLING_ALL: EmrEksNodegroupOptions = {
     nodegroupName: 'tooling',
     instanceTypes: [new InstanceType('t3.medium')],
+    amiType: NodegroupAmiType.AL2_X86_64,
     minSize: 2,
     maxSize: 10,
     labels: { role: 'tooling' },
@@ -113,6 +114,7 @@ export class EmrEksNodegroup {
     minSize: 0,
     maxSize: 100,
     capacityType: CapacityType.SPOT,
+    amiType: NodegroupAmiType.AL2_X86_64,
     labels: {
       'role': 'notebook',
       'spark-role': 'executor',
@@ -137,6 +139,7 @@ export class EmrEksNodegroup {
   public static readonly NOTEBOOK_DRIVER: EmrEksNodegroupOptions = {
     nodegroupName: 'notebook-driver',
     instanceTypes: [new InstanceType('t3.large')],
+    amiType: NodegroupAmiType.AL2_X86_64,
     minSize: 0,
     maxSize: 10,
     labels: {
@@ -161,6 +164,7 @@ export class EmrEksNodegroup {
   public static readonly NOTEBOOK_WITHOUT_PODTEMPLATE: EmrEksNodegroupOptions = {
     nodegroupName: 'notebook-without-pod-template',
     instanceTypes: [new InstanceType('t3.2xlarge'), new InstanceType('t3a.2xlarge')],
+    amiType: NodegroupAmiType.AL2_X86_64,
     minSize: 0,
     maxSize: 100,
     capacityType: CapacityType.SPOT,
