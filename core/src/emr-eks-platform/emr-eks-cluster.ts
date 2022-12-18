@@ -190,7 +190,7 @@ export class EmrEksCluster extends TrackedConstruct {
   private readonly assetUploadBucketRole: Role;
   private readonly karpenterChart?: HelmChart;
   private readonly isKarpenter: boolean;
-  private readonly nodegroupAsgTagsProviderServiceToken: string;
+  private readonly nodegroupAsgTagsProviderServiceToken?: string;
   private readonly defaultNodes: boolean;
   private readonly ec2InstanceNodeGroupRole: Role;
   /**
@@ -240,7 +240,7 @@ export class EmrEksCluster extends TrackedConstruct {
         throw new Error('You mush provide an Admin role if the EKS cluster is created throught the EmrEksCluster Construct');
       }
 
-      this.defaultNodes = props.defaultNodes == undefined ? true : false;
+      this.defaultNodes = props.defaultNodes == undefined ? true : props.defaultNodes;
 
       this.eksCluster = new Cluster(scope, `${this.clusterName}Cluster`, {
         defaultCapacity: 0,
@@ -290,12 +290,6 @@ export class EmrEksCluster extends TrackedConstruct {
 
       this.eksClusterSetup(this.eksCluster, this);
 
-      let EmrEksNodeGroupTooling: any = { ...EmrEksNodegroup.TOOLING_ALL };
-      EmrEksNodeGroupTooling.nodeRole = this.ec2InstanceNodeGroupRole;
-
-      // Create the Amazon EKS Nodegroup for tooling
-      this.addNodegroupCapacity('Tooling', EmrEksNodeGroupTooling as EmrEksNodegroupOptions);
-
       if (this.isKarpenter) {
         this.karpenterChart = karpenterSetup(this.eksCluster, this.clusterName, this, props.karpenterVersion || 'v0.20.0');
       } else {
@@ -306,14 +300,14 @@ export class EmrEksCluster extends TrackedConstruct {
       this.eksCluster = props.eksCluster;
     }
 
-    if (this.defaultNodes) {
+    if (this.defaultNodes && props.autoScaling == Autoscaler.CLUSTER_AUTOSCALER) {
+      // Create the custom resource provider for tagging the EC2 Auto Scaling groups
+      this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagProvider(scope, 'AsgTagProvider', {
+        eksClusterName: this.clusterName,
+      }).provider.serviceToken;
+
       this.setDefaultManagedNodeGroups();
     }
-
-    // Create the custom resource provider for tagging the EC2 Auto Scaling groups
-    this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagProvider(scope, 'AsgTagProvider', {
-      eksClusterName: this.clusterName,
-  }).provider.serviceToken;
 
     AraBucket.getOrCreate(this, { bucketName: 's3-access-logs' });
 
@@ -680,7 +674,7 @@ ${userData.join('\r\n')}
           },
         );
         new CustomResource(this, `${nodegroupId}Label${key}`, {
-          serviceToken: this.nodegroupAsgTagsProviderServiceToken,
+          serviceToken: this.nodegroupAsgTagsProviderServiceToken!,
           properties: {
             nodegroupName: options.nodegroupName,
             tagKey: `k8s.io/cluster-autoscaler/node-template/label/${key}`,
@@ -699,7 +693,7 @@ ${userData.join('\r\n')}
     }
     // Iterate over taints and add appropriate tags
     if (options.taints) {
-      options.taints.forEach( (taint) => {
+      options.taints.forEach((taint) => {
         Tags.of(nodegroup).add(
           `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
           `${taint.value}:${taint.effect}`,
@@ -708,7 +702,7 @@ ${userData.join('\r\n')}
           },
         );
         new CustomResource(this, `${nodegroupId}Taint${taint.key}`, {
-          serviceToken: this.nodegroupAsgTagsProviderServiceToken,
+          serviceToken: this.nodegroupAsgTagsProviderServiceToken!,
           properties: {
             nodegroupName: options.nodegroupName,
             tagKey: `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
@@ -879,6 +873,12 @@ ${userData.join('\r\n')}
       ],
     });
 
+    let EmrEksNodeGroupTooling: any = { ...EmrEksNodegroup.TOOLING_ALL };
+    EmrEksNodeGroupTooling.nodeRole = this.ec2InstanceNodeGroupRole;
+
+    // Create the Amazon EKS Nodegroup for tooling
+    this.addNodegroupCapacity('Tooling', EmrEksNodeGroupTooling as EmrEksNodegroupOptions);
+
     //IAM role created for the aws-node pod following AWS best practice not to use the EC2 instance role
     const awsNodeRole: Role = new Role(scope, 'awsNodeRole', {
       assumedBy: new FederatedPrincipal(
@@ -919,17 +919,17 @@ ${userData.join('\r\n')}
     manifestApply.node.addDependency(this.karpenterChart!);
   }
 
-  private setDefaultManagedNodeGroups () {
-    
-      let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
-      EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
-      this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
-      this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
-      this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
-      // Add a nodegroup for notebooks
-      this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
-      this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
-      this.addEmrEksNodegroup('notebookWithoutPodTemplate', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
+  private setDefaultManagedNodeGroups() {
+
+    let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
+    EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
+    this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
+    this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
+    this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
+    // Add a nodegroup for notebooks
+    this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
+    this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+    this.addEmrEksNodegroup('notebookWithoutPodTemplate', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
   }
 }
 
