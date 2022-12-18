@@ -5,6 +5,7 @@ import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Rule } from 'aws-cdk-lib/aws-events';
 import { SqsQueue } from 'aws-cdk-lib/aws-events-targets';
 import { Construct } from 'constructs';
+import { Peer, Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 
 export function karpenterSetup (cluster: Cluster,
     eksClusterName: string,
@@ -142,6 +143,20 @@ export function karpenterSetup (cluster: Cluster,
 
     karpenterChart.node.addDependency(karpenterAccount);
 
+    const karpenterInstancesSg = new SecurityGroup(scope, 'caInstancesSg', {
+        vpc: cluster.vpc,
+        allowAllOutbound: true,
+        description: 'security group for a karpenter instances',
+        securityGroupName: 'caInstancesSg'
+      });
+      
+      Tags.of(karpenterInstancesSg).add('karpenter.sh/discovery', `${eksClusterName}`);
+      
+      cluster.clusterSecurityGroup.addIngressRule(
+        Peer.securityGroupId(karpenterInstancesSg.securityGroupId),
+        Port.allTraffic(),
+      );
+
     Tags.of(cluster.vpc).add(
         'karpenter.sh/discovery', eksClusterName,
     );
@@ -165,7 +180,9 @@ export function clusterAutoscalerSetup(
     eksClusterName: string,
     scope: Construct,
     autoscalerVersion?: string) {      
+    
 
+    console.log('====>    executing autoscaler')
     // Create a Kubernetes Service Account for the Cluster Autoscaler with Amazon IAM Role
     const AutoscalerServiceAccount = cluster.addServiceAccount('Autoscaler', {
         name: 'cluster-autoscaler',
