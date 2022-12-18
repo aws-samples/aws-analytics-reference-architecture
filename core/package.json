@@ -44,19 +44,20 @@
     "organization": true
   },
   "devDependencies": {
-    "@aws-cdk/aws-glue-alpha": "2.41.0-alpha.0",
-    "@aws-cdk/aws-redshift-alpha": "2.41.0-alpha.0",
-    "@aws-cdk/cloudformation-diff": "2.41.0",
-    "@aws-cdk/cx-api": "2.41.0",
+    "@aws-cdk/aws-glue-alpha": "2.51.0-alpha.0",
+    "@aws-cdk/aws-redshift-alpha": "2.51.0-alpha.0",
+    "@aws-cdk/cloudformation-diff": "2.51.0",
+    "@aws-cdk/cx-api": "2.51.0",
+    "@aws-cdk/lambda-layer-kubectl-v22": "^2.0.3",
     "@types/jest": "^27",
     "@types/js-yaml": "*",
     "@types/node": "^14",
     "@types/prettier": "2.6.0",
     "@typescript-eslint/eslint-plugin": "^5",
     "@typescript-eslint/parser": "^5",
-    "aws-cdk": "2.41.0",
-    "aws-cdk-lib": "2.41.0",
-    "cdk-assets": "2.41.0",
+    "aws-cdk": "2.51.0",
+    "aws-cdk-lib": "2.51.0",
+    "cdk-assets": "2.51.0",
     "cdk-nag": "^2.0.0",
     "constructs": "10.1.152",
     "esbuild": "^0.15.13",
@@ -82,14 +83,15 @@
     "typescript": "^4.8.4"
   },
   "peerDependencies": {
-    "@aws-cdk/aws-glue-alpha": "2.41.0-alpha.0",
-    "@aws-cdk/aws-redshift-alpha": "2.41.0-alpha.0",
-    "aws-cdk-lib": "2.41.0",
+    "@aws-cdk/aws-glue-alpha": "2.51.0-alpha.0",
+    "@aws-cdk/aws-redshift-alpha": "2.51.0-alpha.0",
+    "aws-cdk-lib": "2.51.0",
     "constructs": "^10.1.152"
   },
   "dependencies": {
-    "@aws-cdk/aws-glue-alpha": "2.41.0-alpha.0",
-    "@aws-cdk/aws-redshift-alpha": "2.41.0-alpha.0",
+    "@aws-cdk/aws-glue-alpha": "2.51.0-alpha.0",
+    "@aws-cdk/aws-redshift-alpha": "2.51.0-alpha.0",
+    "@aws-cdk/lambda-layer-kubectl-v22": "^2.0.3",
     "@exodus/schemasafe": "^1.0.0-rc.9",
     "aws-sdk": "^2.1248.0",
     "js-yaml": "^4.1.0",
@@ -97,6 +99,7 @@
     "uuid": "^9.0.0"
   },
   "bundledDependencies": [
+    "@aws-cdk/lambda-layer-kubectl-v22",
     "@exodus/schemasafe",
     "aws-sdk",
     "js-yaml",

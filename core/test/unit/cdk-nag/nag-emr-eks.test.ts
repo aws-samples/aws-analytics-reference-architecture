@@ -13,7 +13,7 @@ import { App, Stack, Aspects } from 'aws-cdk-lib';
 import { Annotations, Match } from 'aws-cdk-lib/assertions';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { EmrEksCluster } from '../../../src/emr-eks-platform';
+import { Autoscaler, EmrEksCluster } from '../../../src/emr-eks-platform';
 //import { NotebookPlatform, StudioAuthMode } from '../notebook-platform/';
 
 
@@ -24,6 +24,7 @@ Aspects.of(mockApp).add(new AwsSolutionsChecks());
 
 EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123445678912:role/myRole',
+  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 
 NagSuppressions.addResourceSuppressionsByPath(

@@ -14,7 +14,7 @@ import { ManagedPolicy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { SSOIdentityType } from '../../../lib';
-import { EmrEksCluster } from '../../../src/emr-eks-platform';
+import { Autoscaler, EmrEksCluster } from '../../../src/emr-eks-platform';
 import { NotebookPlatform, StudioAuthMode } from '../../../src/notebook-platform';
 
 const mockApp = new App();
@@ -24,6 +24,7 @@ Aspects.of(mockApp).add(new AwsSolutionsChecks({ verbose: true }));
 
 const emrEks = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
+  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 
 const notebookPlatform = new NotebookPlatform(stack, 'eks-emr-studio', {

@@ -8,6 +8,7 @@ import {
   CapacityType,
   Cluster,
   ClusterLoggingTypes,
+  HelmChart,
   KubernetesManifest,
   KubernetesVersion,
   Nodegroup,
@@ -43,11 +44,10 @@ import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-import { KarpenterProvisioner } from './karpenter-provisioner';
+import { clusterAutoscalerSetup, karpenterSetup } from './autoscaler-setup';
 import { KubectlV22Layer } from '@aws-cdk/lambda-layer-kubectl-v22';
-import { ClusterAutoscaler } from './cluster-autoscaler';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
-
+import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 
 //TODO Change from Class to functions the Karpenter and CA setup
 
@@ -75,7 +75,8 @@ export interface EmrEksClusterProps {
   readonly eksAdminRoleArn?: string;
   /**
    * Provide an EKS you create and manage in the same Stack for EMR on EKS
-   * By providing and EKS cluster you manage the cluster AddOns and all the controllers, like Ingress controller, Cluster Autoscaler or Karpenter..
+   * By providing and EKS cluster you manage the cluster AddOns and all the controllers, like Ingress controller, Cluster Autoscaler or Karpenter..,
+   * However you can sill use the methods for adding nodegroups that implements the best practices for running Spark on EKS.
    */
   readonly eksCluster?: Cluster;
   /**
@@ -183,6 +184,11 @@ export class EmrEksCluster extends TrackedConstruct {
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly clusterName: string;
   private readonly assetUploadBucketRole: Role;
+  private readonly karpenterChart?: HelmChart;
+  private readonly isKarpenter: boolean;
+  private readonly nodegroupAsgTagsProviderServiceToken: string;
+  private readonly defaultNodes: boolean;
+  private readonly ec2InstanceNodeGroupRole: Role;
   /**
    * Constructs a new instance of the EmrEksCluster construct.
    * @param {Construct} scope the Scope of the CDK Construct
@@ -208,12 +214,28 @@ export class EmrEksCluster extends TrackedConstruct {
       ClusterLoggingTypes.AUDIT,
     ];
 
+    this.isKarpenter = props.autoScaling == Autoscaler.KARPENTER ? true : false;
+    this.defaultNodes = props.defaultNodes || false;
+
+    // Create a role to be used as instance profile for nodegroups
+    this.ec2InstanceNodeGroupRole = new Role(this, 'ec2InstanceNodeGroupRole', {
+      assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
+    });
+
+    //attach policies to the role to be used by the nodegroups
+    this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
+    this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
+    this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
+    this.ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
+
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
     if (props.eksCluster == undefined) {
 
       if (props.eksAdminRoleArn == undefined) {
         throw new Error('You mush provide an Admin role if the EKS cluster is created throught the EmrEksCluster Construct');
       }
+
+      this.defaultNodes = props.defaultNodes == undefined ? true : false;
 
       this.eksCluster = new Cluster(scope, `${this.clusterName}Cluster`, {
         defaultCapacity: 0,
@@ -262,33 +284,30 @@ export class EmrEksCluster extends TrackedConstruct {
 
       this.eksClusterSetup(this.eksCluster, this);
 
-      // Create a role to be used as instance profile for nodegroups
-      const ec2InstanceNodeGroupRole = new Role(this, 'ec2InstanceNodeGroupRole', {
-        assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
-      });
-
-
-      //attach policies to the role to be used by the nodegroups
-      ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEKSWorkerNodePolicy'));
-      ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'));
-      ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'));
-      ec2InstanceNodeGroupRole.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy'));
-
       let EmrEksNodeGroupTooling: any = { ...EmrEksNodegroup.TOOLING_ALL };
-      EmrEksNodeGroupTooling.nodeRole = ec2InstanceNodeGroupRole;
+      EmrEksNodeGroupTooling.nodeRole = this.ec2InstanceNodeGroupRole;
 
       // Create the Amazon EKS Nodegroup for tooling
       this.addNodegroupCapacity('Tooling', EmrEksNodeGroupTooling as EmrEksNodegroupOptions);
 
-      if (props.autoScaling == Autoscaler.KARPENTER) {
-        this.karpenterSetup();
+      if (this.isKarpenter) {
+        this.karpenterChart = karpenterSetup(this.eksCluster, this.clusterName, this, props.karpenterVersion || 'v0.20.0');
       } else {
-        this.clusterAutoScalerSetup(props.autoscalerVersion!);
+        clusterAutoscalerSetup(this.eksCluster, this.clusterName, this, props.autoscalerVersion);
       }
 
     } else {
       this.eksCluster = props.eksCluster;
     }
+
+    if (this.defaultNodes) {
+      this.setDefaultManagedNodeGroups();
+    }
+
+    // Create the custom resource provider for tagging the EC2 Auto Scaling groups
+    this.nodegroupAsgTagsProviderServiceToken = new EmrEksNodegroupAsgTagProvider(scope, 'AsgTagProvider', {
+      eksClusterName: this.clusterName,
+  }).provider.serviceToken;
 
     AraBucket.getOrCreate(this, { bucketName: 's3-access-logs' });
 
@@ -647,11 +666,19 @@ ${userData.join('\r\n')}
             applyToLaunchedInstances: true,
           },
         );
+        new CustomResource(this, `${nodegroupId}Label${key}`, {
+          serviceToken: this.nodegroupAsgTagsProviderServiceToken,
+          properties: {
+            nodegroupName: options.nodegroupName,
+            tagKey: `k8s.io/cluster-autoscaler/node-template/label/${key}`,
+            tagValue: value,
+          },
+        }).node.addDependency(nodegroup);
       }
     }
     // Iterate over taints and add appropriate tags
     if (options.taints) {
-      options.taints.forEach((taint) => {
+      options.taints.forEach( (taint) => {
         Tags.of(nodegroup).add(
           `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
           `${taint.value}:${taint.effect}`,
@@ -659,6 +686,14 @@ ${userData.join('\r\n')}
             applyToLaunchedInstances: true,
           },
         );
+        new CustomResource(this, `${nodegroupId}Taint${taint.key}`, {
+          serviceToken: this.nodegroupAsgTagsProviderServiceToken,
+          properties: {
+            nodegroupName: options.nodegroupName,
+            tagKey: `k8s.io/cluster-autoscaler/node-template/taint/${taint.key}`,
+            tagValue: `${taint.value}:${taint.effect}`,
+          },
+        }).node.addDependency(nodegroup);
       });
     }
 
@@ -857,19 +892,22 @@ ${userData.join('\r\n')}
     });
   }
 
-
-  private clusterAutoScalerSetup(autoscalerVersion: string) {
-    new ClusterAutoscaler(this.eksCluster, this.clusterName, this, autoscalerVersion);
-
+  public addKarpenterProvisioner(id: string, manifest: any) {
+    let manifestApply = this.eksCluster.addManifest(id, ...manifest);
+    manifestApply.node.addDependency(this.karpenterChart!);
   }
 
-  private karpenterSetup() {
-    new KarpenterProvisioner(this.eksCluster, this.clusterName, this, 'v0.20.0');
-
-    // const provisionerYML: any = Utils.readYamlDocument(`${__dirname}/resources/k8s/karpenter-provisioner-config/spark-app-provisioner.yml`);
-    // const provisionerManifest: any = provisionerYML.split("---").map((e: any) => Utils.loadYaml(e));
-    // //console.log(provisionerManifest);
-    // karpenterProvisioner.addKarpenterProvisioner('sparkAppProvisioner', provisionerManifest);
+  private setDefaultManagedNodeGroups () {
+    
+      let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
+      EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
+      this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
+      this.addEmrEksNodegroup('sharedDriver', EmrEksNodegroup.SHARED_DRIVER);
+      this.addEmrEksNodegroup('sharedExecutor', EmrEksNodegroup.SHARED_EXECUTOR);
+      // Add a nodegroup for notebooks
+      this.addEmrEksNodegroup('notebookDriver', EmrEksNodegroup.NOTEBOOK_DRIVER);
+      this.addEmrEksNodegroup('notebookExecutor', EmrEksNodegroup.NOTEBOOK_EXECUTOR);
+      this.addEmrEksNodegroup('notebookWithoutPodTemplate', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
   }
 }
 
