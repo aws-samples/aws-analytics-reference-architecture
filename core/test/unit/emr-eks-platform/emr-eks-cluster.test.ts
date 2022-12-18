@@ -40,7 +40,7 @@ test('EKS cluster created with correct version and name', () => {
 
   template.hasResourceProperties('Custom::AWSCDK-EKS-Cluster', {
     Config: Match.objectLike({
-      version: '1.21',
+      version: '1.22',
       name: 'data-platform',
     }),
   });
@@ -128,9 +128,9 @@ test('EKS cluster should have the default Nodegroups', () => {
       role: 'tooling',
     },
     ScalingConfig: {
-      DesiredSize: 1,
+      DesiredSize: 2,
       MaxSize: 10,
-      MinSize: 1,
+      MinSize: 2,
     },
     Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',

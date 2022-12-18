@@ -215,7 +215,7 @@ export class EmrEksCluster extends TrackedConstruct {
     ];
 
     this.isKarpenter = props.autoScaling == Autoscaler.KARPENTER ? true : false;
-    this.defaultNodes = props.defaultNodes || false;
+    this.defaultNodes = props.defaultNodes == undefined ? true : props.defaultNodes;
 
     // Create a role to be used as instance profile for nodegroups
     this.ec2InstanceNodeGroupRole = new Role(this, 'ec2InstanceNodeGroupRole', {
@@ -234,8 +234,6 @@ export class EmrEksCluster extends TrackedConstruct {
       if (props.eksAdminRoleArn == undefined) {
         throw new Error('You mush provide an Admin role if the EKS cluster is created throught the EmrEksCluster Construct');
       }
-
-      this.defaultNodes = props.defaultNodes == undefined ? true : props.defaultNodes;
 
       this.eksCluster = new Cluster(scope, `${this.clusterName}Cluster`, {
         defaultCapacity: 0,
@@ -892,9 +890,15 @@ ${userData.join('\r\n')}
     });
   }
 
-  public addKarpenterProvisioner(id: string, manifest: any) {
+  public addKarpenterProvisioner(id: string, manifest: any): any {
+
     let manifestApply = this.eksCluster.addManifest(id, ...manifest);
-    manifestApply.node.addDependency(this.karpenterChart!);
+
+    if (this.karpenterChart) {
+      manifestApply.node.addDependency(this.karpenterChart!);
+    }
+
+    return manifestApply;
   }
 
   private setDefaultManagedNodeGroups() {
