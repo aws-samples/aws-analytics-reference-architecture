@@ -66,3 +66,4 @@ spec:
     karpenter.sh/discovery: {{cluster-name}}
   tags:
     KarpenerProvisionerName: "critical"
+  amiFamily: AL2

@@ -51,6 +51,7 @@ kind: AWSNodeTemplate
 metadata:
   name: tooling-nodes
 spec:
+  amiFamily: AL2
   subnetSelector:
     karpenter.sh/discovery: {{cluster-name}}
   securityGroupSelector:
