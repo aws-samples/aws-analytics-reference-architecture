@@ -62,7 +62,7 @@ metadata:
   name: shared-executor-nodes-{{az}}
 spec:
   subnetSelector:
-     aws-ids: {{subnet-id}}
+    aws-ids: {{subnet-id}}
   securityGroupSelector:
     karpenter.sh/discovery: {{cluster-name}}
   tags:

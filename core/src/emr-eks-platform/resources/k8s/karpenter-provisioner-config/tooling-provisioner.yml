@@ -16,16 +16,16 @@ spec:
   # Operators { In, NotIn } are supported to enable including or excluding values
   requirements:
     # Include general purpose instance families
-    - key: "karpenter.k8s.aws/instance-family"
+    - key: "karpenter.k8s.aws/instance-category"
       operator: In
-      values: ["t3", "t3a"]
+      values: ["t", "m"]
     - key: "kubernetes.io/arch"
       operator: In
       values: ["amd64"]
     # Exclude smaller instance sizes
     - key: "karpenter.k8s.aws/instance-size"
       operator: In
-      values: [medium, large, xlarge]
+      values: [medium, small, large]
     - key: "karpenter.sh/capacity-type" # If not included, the webhook for the AWS cloud provider will default to on-demand
       operator: In
       values: ["on-demand"]
@@ -40,13 +40,6 @@ spec:
       cpu: "100"
       memory: 100Gi
 
-  # If omitted, the feature is disabled and nodes will never expire.  If set to less time than it requires for a node
-  # to become ready, the node may expire before any pods successfully start.
-  ttlSecondsUntilExpired: 2592000 # 30 Days = 60 * 60 * 24 * 30 Seconds;
-
-  # If omitted, the feature is disabled, nodes will never scale down due to low utilization
-  ttlSecondsAfterEmpty: 300
-
   # Priority given to the provisioner when the scheduler considers which provisioner
   # to select. Higher weights indicate higher priority when comparing provisioners.
   # Specifying no weight is equivalent to specifying a weight of 0.
@@ -58,23 +51,9 @@ kind: AWSNodeTemplate
 metadata:
   name: tooling-nodes
 spec:
-  amiFamily: AL2
   subnetSelector:
-    aws-ids: {{subnet-list}}
+    karpenter.sh/discovery: {{cluster-name}}
   securityGroupSelector:
-    kubernetes.io/cluster/{{cluster-name}}: owned
+    karpenter.sh/discovery: {{cluster-name}}
   tags:
     KarpenerProvisionerName: "tooling"
-  userData: |
-    MIME-Version: 1.0
-    Content-Type: multipart/mixed; boundary="BOUNDARY"
-
-    --BOUNDARY
-    Content-Type: text/x-shellscript; charset="us-ascii"
-
-    #!/bin/bash
-    yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm,
-    systemctl enable amazon-ssm-agent,
-    systemctl start amazon-ssm-agent,
-
-    --BOUNDARY--

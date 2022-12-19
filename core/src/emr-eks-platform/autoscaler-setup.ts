@@ -6,8 +6,9 @@ import { Rule } from 'aws-cdk-lib/aws-events';
 import { SqsQueue } from 'aws-cdk-lib/aws-events-targets';
 import { Construct } from 'constructs';
 import { Peer, Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { Utils } from '../utils';
 
-export function karpenterSetup (cluster: Cluster,
+export function karpenterSetup(cluster: Cluster,
     eksClusterName: string,
     scope: Construct,
     karpenterVersion?: string): HelmChart {
@@ -25,7 +26,7 @@ export function karpenterSetup (cluster: Cluster,
         })
     );
 
-    new Rule (scope, 'scheduledChangeRule', {
+    new Rule(scope, 'scheduledChangeRule', {
         eventPattern: {
             source: ['aws.heatlh'],
             detail: ['AWS Health Event']
@@ -33,7 +34,7 @@ export function karpenterSetup (cluster: Cluster,
         targets: [new SqsQueue(karpenterInterruptionQueue)]
     });
 
-    new Rule (scope, 'instanceStateChangeRule', {
+    new Rule(scope, 'instanceStateChangeRule', {
         eventPattern: {
             source: ['aws.ec2'],
             detail: ['EC2 Instance State-change Notification']
@@ -111,7 +112,7 @@ export function karpenterSetup (cluster: Cluster,
     karpenterAccount.addToPrincipalPolicy(karpenterControllerPolicyStatementSSM);
     karpenterAccount.addToPrincipalPolicy(karpenterControllerPolicyStatementEC2);
     karpenterAccount.addToPrincipalPolicy(karpenterControllerPolicyStatementIAM);
-    
+
     //Deploy Karpenter Chart
     const karpenterChart = cluster.addHelmChart('Karpenter', {
         chart: 'karpenter',
@@ -137,7 +138,7 @@ export function karpenterSetup (cluster: Cluster,
                     interruptionQueueName: karpenterInterruptionQueue.queueName
                 },
             }
-           
+
         },
     });
 
@@ -148,14 +149,14 @@ export function karpenterSetup (cluster: Cluster,
         allowAllOutbound: true,
         description: 'security group for a karpenter instances',
         securityGroupName: 'caInstancesSg'
-      });
-      
-      Tags.of(karpenterInstancesSg).add('karpenter.sh/discovery', `${eksClusterName}`);
-      
-      cluster.clusterSecurityGroup.addIngressRule(
+    });
+
+    Tags.of(karpenterInstancesSg).add('karpenter.sh/discovery', `${eksClusterName}`);
+
+    cluster.clusterSecurityGroup.addIngressRule(
         Peer.securityGroupId(karpenterInstancesSg.securityGroupId),
         Port.allTraffic(),
-      );
+    );
 
     Tags.of(cluster.vpc).add(
         'karpenter.sh/discovery', eksClusterName,
@@ -169,6 +170,15 @@ export function karpenterSetup (cluster: Cluster,
         Tags.of(subnet).add('karpenter.sh/discovery', eksClusterName),
     );
 
+    let manifest = Utils.readYamlDocument(`${__dirname}/resources/k8s/karpenter-provisioner-config/tooling-provisioner.yml`);
+
+    manifest = manifest.replace(/(\{{cluster-name}})/g, eksClusterName);
+
+    let manfifestYAML: any = manifest.split("---").map((e: any) => Utils.loadYaml(e));
+
+    const manifestApply = cluster.addManifest('provisioner-tooling', ...manfifestYAML);
+
+    manifestApply.node.addDependency(karpenterChart);
 
     return karpenterChart;
 }
@@ -179,8 +189,8 @@ export function clusterAutoscalerSetup(
     cluster: Cluster,
     eksClusterName: string,
     scope: Construct,
-    autoscalerVersion?: string) {      
-    
+    autoscalerVersion?: string) {
+
     // Create a Kubernetes Service Account for the Cluster Autoscaler with Amazon IAM Role
     const AutoscalerServiceAccount = cluster.addServiceAccount('Autoscaler', {
         name: 'cluster-autoscaler',
