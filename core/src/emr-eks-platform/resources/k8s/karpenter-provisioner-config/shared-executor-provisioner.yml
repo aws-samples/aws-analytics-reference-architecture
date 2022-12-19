@@ -61,9 +61,23 @@ kind: AWSNodeTemplate
 metadata:
   name: shared-executor-nodes-{{az}}
 spec:
+  amiFamily: AL2
   subnetSelector:
     aws-ids: {{subnet-id}}
   securityGroupSelector:
     karpenter.sh/discovery: {{cluster-name}}
   tags:
     KarpenerProvisionerName: "shared-executor"
+  userData: |
+    MIME-Version: 1.0
+    Content-Type: multipart/mixed; boundary="BOUNDARY"
+
+    --BOUNDARY
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    #!/bin/bash
+    yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm,
+    systemctl enable amazon-ssm-agent,
+    systemctl start amazon-ssm-agent,
+
+    --BOUNDARY--
