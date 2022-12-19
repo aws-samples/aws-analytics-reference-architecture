@@ -519,7 +519,7 @@ export class EmrEksCluster extends TrackedConstruct {
     // Get the subnet from Properties or one private subnet for each AZ
     const subnetList = props.subnet ? [props.subnet] : this.eksCluster.vpc.selectSubnets({
       onePerAz: true,
-      subnetType: SubnetType.PRIVATE_WITH_NAT,
+      subnetType: SubnetType.PRIVATE_WITH_EGRESS,
     }).subnets;
 
     // Add Amazon SSM agent to the user data
@@ -799,7 +799,6 @@ ${userData.join('\r\n')}
       chart: 'aws-load-balancer-controller',
       repository: 'https://aws.github.io/eks-charts',
       namespace: 'kube-system',
-
       timeout: Duration.minutes(14),
       values: {
         clusterName: this.clusterName,
@@ -913,32 +912,29 @@ ${userData.join('\r\n')}
   }
 
   private setDefaultManagedNodeGroups() {
-    console.log('invoked');
 
     let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
     EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
     this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
 
-    // let EmrEksNodeGroupsharedDriver: any = {...EmrEksNodegroup.SHARED_DRIVER};
-    // EmrEksNodeGroupsharedDriver.nodeRole = this.ec2InstanceNodeGroupRole;
-    // this.addEmrEksNodegroup('sharedDriver', EmrEksNodeGroupsharedDriver as EmrEksNodegroupOptions);
+    let EmrEksNodeGroupsharedDriver: any = {...EmrEksNodegroup.SHARED_DRIVER};
+    EmrEksNodeGroupsharedDriver.nodeRole = this.ec2InstanceNodeGroupRole;
+    this.addEmrEksNodegroup('sharedDriver', EmrEksNodeGroupsharedDriver as EmrEksNodegroupOptions);
 
-    // let EmrEksNodeGroupsharedExecutor: any = {...EmrEksNodegroup.SHARED_EXECUTOR};
-    // EmrEksNodeGroupsharedExecutor.nodeRole = this.ec2InstanceNodeGroupRole;
-    // this.addEmrEksNodegroup('sharedExecutor', EmrEksNodeGroupsharedExecutor as EmrEksNodegroupOptions);
+    let EmrEksNodeGroupsharedExecutor: any = {...EmrEksNodegroup.SHARED_EXECUTOR};
+    EmrEksNodeGroupsharedExecutor.nodeRole = this.ec2InstanceNodeGroupRole;
+    this.addEmrEksNodegroup('sharedExecutor', EmrEksNodeGroupsharedExecutor as EmrEksNodegroupOptions);
 
-    // // Add a nodegroup for notebooks
+    // Add a nodegroup for notebooks
 
-    // let EmrEksNodeGroupnotebookDriver: any = {...EmrEksNodegroup.NOTEBOOK_DRIVER};
-    // EmrEksNodeGroupnotebookDriver.nodeRole = this.ec2InstanceNodeGroupRole;
-    // this.addEmrEksNodegroup('sharedExecutor', EmrEksNodeGroupnotebookDriver as EmrEksNodegroupOptions);
+    let EmrEksNodeGroupnotebookDriver: any = {...EmrEksNodegroup.NOTEBOOK_DRIVER};
+    EmrEksNodeGroupnotebookDriver.nodeRole = this.ec2InstanceNodeGroupRole;
+    this.addEmrEksNodegroup('notebookDriver', EmrEksNodeGroupnotebookDriver as EmrEksNodegroupOptions);
 
-    // let EmrEksNodeGroupnotebookExecutor: any = {...EmrEksNodegroup.NOTEBOOK_EXECUTOR};
-    // EmrEksNodeGroupnotebookExecutor.nodeRole = this.ec2InstanceNodeGroupRole;
-    // this.addEmrEksNodegroup('sharedExecutor', EmrEksNodeGroupnotebookExecutor as EmrEksNodegroupOptions);
+    let EmrEksNodeGroupnotebookExecutor: any = {...EmrEksNodegroup.NOTEBOOK_EXECUTOR};
+    EmrEksNodeGroupnotebookExecutor.nodeRole = this.ec2InstanceNodeGroupRole;
+    this.addEmrEksNodegroup('notebookExecutor', EmrEksNodeGroupnotebookExecutor as EmrEksNodegroupOptions);
 
-    
-    //this.addEmrEksNodegroup('notebookWithoutPodTemplate', EmrEksNodegroup.NOTEBOOK_WITHOUT_PODTEMPLATE);
   }
 }
 

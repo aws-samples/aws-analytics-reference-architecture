@@ -119,7 +119,7 @@ test('EKS should have a helm chart for deploying the Kubernetes Dashboard', () =
 });
 
 test('EKS cluster should have the default Nodegroups', () => {
-  template.resourceCountIs('AWS::EKS::Nodegroup', 13);
+  template.resourceCountIs('AWS::EKS::Nodegroup', 11);
 
   template.hasResourceProperties('AWS::EKS::Nodegroup', {
     AmiType: 'AL2_x86_64',
@@ -260,6 +260,7 @@ test('EKS cluster should have the default Nodegroups', () => {
   template.hasResourceProperties('AWS::EKS::Nodegroup', {
     NodegroupName: 'notebook-executor-0',
     InstanceTypes: ['t3.2xlarge', 't3a.2xlarge'],
+    AmiType: 'AL2_x86_64',
     CapacityType: 'SPOT',
     Labels: {
       role: 'notebook',
