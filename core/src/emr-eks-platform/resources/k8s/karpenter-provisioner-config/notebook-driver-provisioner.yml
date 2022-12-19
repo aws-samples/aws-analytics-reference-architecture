@@ -1,35 +1,47 @@
 apiVersion: karpenter.sh/v1alpha5
 kind: Provisioner
 metadata:
-  name: sparkcapacity
+  name: notebook-driver-{{az}}
 spec:
   # References cloud provider-specific custom resource, see your cloud provider specific documentation
   providerRef:
-    name: sparkinstance
+    name: notebook-driver-nodes-{{az}}
 
   # Labels are arbitrary key-values that are applied to all nodes
   labels:
-    app: spark
+    role: notebook
+    node-lifecycle: on-demand
+    spark-role: driver
+
+  taints:
+    - key: role
+      value: notebook
+      effect: NoSchedule
 
   # Requirements that constrain the parameters of provisioned nodes.
   # These requirements are combined with pod.spec.affinity.nodeAffinity rules.
   # Operators { In, NotIn } are supported to enable including or excluding values
   requirements:
     # Include general purpose instance families
-    - key: karpenter.k8s.aws/instance-family
+    - key: "karpenter.k8s.aws/instance-category"
       operator: In
-      values: [c5, m5, r5]
+      values: ["m"]
+    - key: "kubernetes.io/arch"
+      operator: In
+      values: ["amd64"]
     # Exclude smaller instance sizes
-    - key: karpenter.k8s.aws/instance-size
+    - key: "karpenter.k8s.aws/instance-size"
       operator: NotIn
       values: [nano, micro, small]
-    # Exclude a specific instance type
-    - key: node.kubernetes.io/instance-type
-      operator: NotIn
-      values: [m5.24xlarge]
     - key: "karpenter.sh/capacity-type" # If not included, the webhook for the AWS cloud provider will default to on-demand
       operator: In
-      values: ["spot", "on-demand"]
+      values: ["on-demand"]
+    - key: "topology.kubernetes.io/zone"
+      operator: In
+      values: [{{az}}]
+    - key: "karpenter.k8s.aws/instance-hypervisor"
+      operator: In
+      values: ["nitro"]
 
   # Resource limits constrain the total size of the cluster.
   # Limits prevent Karpenter from creating new instances once the limit is exceeded.
@@ -47,12 +59,11 @@ spec:
 apiVersion: karpenter.k8s.aws/v1alpha1
 kind: AWSNodeTemplate
 metadata:
-  name: sparkinstance
+  name: notebook-driver-nodes-{{az}}
 spec:
   subnetSelector:
-    karpenter.sh/discovery: "araKarpenterClusterRef"
+     aws-ids: {{subnet-id}}
   securityGroupSelector:
-    karpenter.sh/discovery: "araKarpenterClusterRef"
+    karpenter.sh/discovery: {{cluster-name}}
   tags:
-    KarpenerProvisionerName: "sparkcapacity"
-    IntentLabel: "spark"
+    KarpenerProvisionerName: "notebook-driver"
