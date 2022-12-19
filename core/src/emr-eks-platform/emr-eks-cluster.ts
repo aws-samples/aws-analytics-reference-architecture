@@ -3,7 +3,7 @@
 
 import { join } from 'path';
 import { Aws, CfnOutput, CustomResource, Duration, Stack, Tags, RemovalPolicy, CfnJson, Fn } from 'aws-cdk-lib';
-import { FlowLogDestination, SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { FlowLogDestination, ISubnet, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import {
   CapacityType,
   Cluster,
@@ -46,6 +46,7 @@ import { clusterAutoscalerSetup, karpenterSetup } from './autoscaler-setup';
 import { KubectlV22Layer } from '@aws-cdk/lambda-layer-kubectl-v22';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
+import { Utils } from '../utils';
 
 export enum Autoscaler {
   KARPENTER = 'KARPENTER',
@@ -303,6 +304,32 @@ export class EmrEksCluster extends TrackedConstruct {
     
     if (this.defaultNodes && props.autoScaling == Autoscaler.CLUSTER_AUTOSCALER) {
       this.setDefaultManagedNodeGroups();
+    }
+
+    if (this.defaultNodes && props.autoScaling == Autoscaler.KARPENTER) {
+
+      const subnets = this.eksCluster.vpc.selectSubnets({
+        onePerAz: true,
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+      }).subnets;
+
+      subnets.forEach( (subnet, index) => {
+        let criticalManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/critical-provisioner.yml`, subnet);
+        this.addKarpenterProvisioner(`karpenterCriticalManifest-${index}`, criticalManfifestYAML);
+
+        let sharedDriverManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/shared-driver-provisioner.yml`, subnet);
+        this.addKarpenterProvisioner(`karpenterSharedDriverManifest-${index}`, sharedDriverManfifestYAML);
+
+        let sharedExecutorManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/shared-executor-provisioner.yml`, subnet);
+        this.addKarpenterProvisioner(`karpenterSharedExecutorManifest-${index}`, sharedExecutorManfifestYAML);
+
+        let notebookDriverManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/notebook-driver-provisioner.yml`, subnet);
+        this.addKarpenterProvisioner(`karpenterNotebookDriverManifest-${index}`, notebookDriverManfifestYAML);
+
+        let notebookExecutorManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/notebook-executor-provisioner.yml`, subnet);
+        this.addKarpenterProvisioner(`karpenterNotebookExecutorManifest-${index}`, notebookExecutorManfifestYAML);
+
+      })
     }
 
     AraBucket.getOrCreate(this, { bucketName: 's3-access-logs' });
@@ -927,7 +954,7 @@ ${userData.join('\r\n')}
     let manifestApply = this.eksCluster.addManifest(id, ...manifest);
 
     if (this.karpenterChart) {
-      manifestApply.node.addDependency(this.karpenterChart!);
+      manifestApply.node.addDependency(this.karpenterChart);
     }
 
     return manifestApply;
@@ -957,6 +984,19 @@ ${userData.join('\r\n')}
     EmrEksNodeGroupnotebookExecutor.nodeRole = this.ec2InstanceNodeGroupRole;
     this.addEmrEksNodegroup('notebookExecutor', EmrEksNodeGroupnotebookExecutor as EmrEksNodegroupOptions);
 
+  }
+
+  private karpenterManifestSetup(path: string, subnet: ISubnet): any {
+
+    let manifest = Utils.readYamlDocument(path);
+
+    manifest = manifest.replace('{{subnet-id}}', subnet.subnetId);
+    manifest = manifest.replace( /(\{{az}})/g, subnet.availabilityZone);
+    manifest = manifest.replace('{{cluster-name}}', this.clusterName);
+
+    let manfifestYAML: any = manifest.split("---").map((e: any) => Utils.loadYaml(e));
+
+    return manfifestYAML;
   }
 }
 

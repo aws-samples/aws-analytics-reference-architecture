@@ -23,9 +23,9 @@ spec:
   # Operators { In, NotIn } are supported to enable including or excluding values
   requirements:
     # Include general purpose instance families
-    - key: "karpenter.k8s.aws/instance-family"
+    - key: "karpenter.k8s.aws/instance-category"
       operator: In
-      values: ["t3", "t3a"]
+      values: ["m"]
     - key: "kubernetes.io/arch"
       operator: In
       values: ["amd64"]
@@ -38,7 +38,7 @@ spec:
       values: ["on-demand"]
     - key: "topology.kubernetes.io/zone"
       operator: In
-      values: ["{{az}}"]
+      values: [{{az}}]
     - key: "karpenter.k8s.aws/instance-hypervisor"
       operator: In
       values: ["nitro"]
@@ -47,20 +47,13 @@ spec:
   # Limits prevent Karpenter from creating new instances once the limit is exceeded.
   limits:
     resources:
-      cpu: "40"
-      memory: 160Gi
-
-  # If omitted, the feature is disabled and nodes will never expire.  If set to less time than it requires for a node
-  # to become ready, the node may expire before any pods successfully start.
-  ttlSecondsUntilExpired: 2592000 # 30 Days = 60 * 60 * 24 * 30 Seconds;
-
-  # If omitted, the feature is disabled, nodes will never scale down due to low utilization
-  ttlSecondsAfterEmpty: 300
+      cpu: "100"
+      memory: 100Gi
 
   # Priority given to the provisioner when the scheduler considers which provisioner
   # to select. Higher weights indicate higher priority when comparing provisioners.
   # Specifying no weight is equivalent to specifying a weight of 0.
-  weight: 20
+  weight: 10
   
 ---
 apiVersion: karpenter.k8s.aws/v1alpha1
@@ -68,23 +61,9 @@ kind: AWSNodeTemplate
 metadata:
   name: notebook-driver-nodes-{{az}}
 spec:
-  amiFamily: AL2
   subnetSelector:
      aws-ids: {{subnet-id}}
   securityGroupSelector:
-    kubernetes.io/cluster/{{cluster-name}}: owned
+    karpenter.sh/discovery: {{cluster-name}}
   tags:
     KarpenerProvisionerName: "notebook-driver"
-  userData: |
-    MIME-Version: 1.0
-    Content-Type: multipart/mixed; boundary="BOUNDARY"
-
-    --BOUNDARY
-    Content-Type: text/x-shellscript; charset="us-ascii"
-
-    #!/bin/bash
-    yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm,
-    systemctl enable amazon-ssm-agent,
-    systemctl start amazon-ssm-agent,
-
-    --BOUNDARY--
