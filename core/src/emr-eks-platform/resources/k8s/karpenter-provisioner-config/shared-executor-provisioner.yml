@@ -1,11 +1,11 @@
 apiVersion: karpenter.sh/v1alpha5
 kind: Provisioner
 metadata:
-  name: shared-driver-{{az}}
+  name: shared-executor-{{az}}
 spec:
   # References cloud provider-specific custom resource, see your cloud provider specific documentation
   providerRef:
-    name: shared-driver-nodes-{{az}}
+    name: shared-executor-nodes-{{az}}
 
   # Labels are arbitrary key-values that are applied to all nodes
   labels:
@@ -66,4 +66,4 @@ spec:
   securityGroupSelector:
     karpenter.sh/discovery: {{cluster-name}}
   tags:
-    KarpenerProvisionerName: "shared-driver"
+    KarpenerProvisionerName: "shared-executor"
