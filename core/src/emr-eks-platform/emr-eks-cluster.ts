@@ -297,13 +297,18 @@ export class EmrEksCluster extends TrackedConstruct {
       }
 
     } else {
+      //Initialize with the provided EKS Cluster
       this.eksCluster = props.eksCluster;
     }
     
+    //Check if the user want to use the default nodegroup and
+    //Add the default nodegroup configured and optimized to run Spark workloads
     if (this.defaultNodes && props.autoScaling == Autoscaler.CLUSTER_AUTOSCALER) {
       this.setDefaultManagedNodeGroups();
     }
 
+    //Check if there user want to use the default Karpenter provisioners and
+    //Add the defaults pre-configured and optimized to run Spark workloads
     if (this.defaultNodes && props.autoScaling == Autoscaler.KARPENTER) {
 
       const subnets = this.eksCluster.vpc.selectSubnets({
@@ -546,6 +551,10 @@ export class EmrEksCluster extends TrackedConstruct {
  * @param {EmrEksNodegroupOptions} props the EmrEksNodegroupOptions [properties]{@link EmrEksNodegroupOptions}
  */
   public addEmrEksNodegroup(id: string, props: EmrEksNodegroupOptions) {
+
+    if (this.isKarpenter) {
+      throw new Error(`You can\'t use this method when the autoscaler is set to ${Autoscaler.KARPENTER}`);
+    }
 
     // Get the subnet from Properties or one private subnet for each AZ
     const subnetList = props.subnet ? [props.subnet] : this.eksCluster.vpc.selectSubnets({
@@ -946,6 +955,10 @@ ${userData.join('\r\n')}
    * You can use the Utils class that offers method to read yaml file and load it as a manifest
    */
   public addKarpenterProvisioner(id: string, manifest: any): any {
+
+    if (!this.isKarpenter) {
+      throw new Error(`You can\'t use this method when the autoscaler is set to ${Autoscaler.KARPENTER}`);
+    }
 
     let manifestApply = this.eksCluster.addManifest(id, ...manifest);
 
