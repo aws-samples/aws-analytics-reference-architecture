@@ -8,6 +8,14 @@ import { Construct } from 'constructs';
 import { Port, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { Utils } from '../utils';
 
+
+/**
+ * @internal
+ * Install all the reuiqred configurations of Karpenter SQS and Event rules to handle spot and unhealthy instance termination
+ * Create a security group to be used by nodes created with karpenter
+ * Tags the subnets and VPC to be used by karpenter
+ * create a tooling provisioner that will deploy in each of the AZs, one per AZ
+ */
 export function karpenterSetup(cluster: Cluster,
     eksClusterName: string,
     scope: Construct,
@@ -144,11 +152,12 @@ export function karpenterSetup(cluster: Cluster,
 
     karpenterChart.node.addDependency(karpenterAccount);
 
-    const karpenterInstancesSg = new SecurityGroup(scope, 'caInstancesSg', {
+    const karpenterInstancesSg = new SecurityGroup(scope, 'karpenterSg', {
         vpc: cluster.vpc,
         allowAllOutbound: true,
         description: 'security group for a karpenter instances',
-        securityGroupName: 'karpenterSg'
+        securityGroupName: 'karpenterSg',
+        disableInlineRules: true,
     });
 
     Tags.of(karpenterInstancesSg).add('karpenter.sh/discovery', `${eksClusterName}`);
@@ -201,7 +210,10 @@ export function karpenterSetup(cluster: Cluster,
     return karpenterChart;
 }
 
-
+/**
+ * @internal
+ * Deploy the cluster autoscaler controller in the k8s cluster
+ */
 
 export function clusterAutoscalerSetup(
     cluster: Cluster,
