@@ -53,7 +53,7 @@ metadata:
 spec:
   amiFamily: AL2
   subnetSelector:
-    karpenter.sh/discovery: {{cluster-name}}
+    aws-ids: {{subnet-list}}
   securityGroupSelector:
     karpenter.sh/discovery: {{cluster-name}}
   tags:
