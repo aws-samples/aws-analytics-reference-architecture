@@ -1582,6 +1582,7 @@ the CdkDeployer [properties]{@link CdkDeployerProps}.
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.toString">toString</a></code> | Returns a string representation of this construct. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addDependency">addDependency</a></code> | Add a dependency between this stack and another stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addMetadata">addMetadata</a></code> | Adds an arbitary key-value pair, with information you want to record about the stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addMetadata">addMetadata</a></code> | Adds an arbitary key-value pair, with information you want to record about the stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addTransform">addTransform</a></code> | Add a Transform to this stack. A Transform is a macro that AWS CloudFormation uses to process your template. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.exportValue">exportValue</a></code> | Create a CloudFormation Export for a value. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.formatArn">formatArn</a></code> | Creates an ARN from components. |
@@ -1623,6 +1624,30 @@ app, and also supports nested stacks.
 ###### `reason`<sup>Optional</sup> <a name="reason" id="aws-analytics-reference-architecture.CdkDeployer.addDependency.parameter.reason"></a>
 
 - *Type:* string
+
+---
+
+##### `addMetadata` <a name="addMetadata" id="aws-analytics-reference-architecture.CdkDeployer.addMetadata"></a>
+
+```typescript
+public addMetadata(key: string, value: any): void
+```
+
+Adds an arbitary key-value pair, with information you want to record about the stack.
+
+These get translated to the Metadata section of the generated template.
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html)
+
+###### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.CdkDeployer.addMetadata.parameter.key"></a>
+
+- *Type:* string
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="aws-analytics-reference-architecture.CdkDeployer.addMetadata.parameter.value"></a>
+
+- *Type:* any
 
 ---
 
@@ -3795,6 +3820,7 @@ Role's policies yourself.
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isOwnedResource">isOwnedResource</a></code> | Returns true if the construct was created by CDK, and false otherwise. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles">customizeRoles</a></code> | Customize the creation of IAM roles within the given scope. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles">customizeRoles</a></code> | Customize the creation of IAM roles within the given scope. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleArn">fromRoleArn</a></code> | Import an external role by ARN. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleName">fromRoleName</a></code> | Import an external role by name. |
 
@@ -3861,6 +3887,56 @@ Check whether the given construct is a Resource.
 ###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.Ec2SsmRole.isResource.parameter.construct"></a>
 
 - *Type:* constructs.IConstruct
+
+---
+
+##### `customizeRoles` <a name="customizeRoles" id="aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles"></a>
+
+```typescript
+import { Ec2SsmRole } from 'aws-analytics-reference-architecture'
+
+Ec2SsmRole.customizeRoles(scope: Construct, options?: CustomizeRolesOptions)
+```
+
+Customize the creation of IAM roles within the given scope.
+
+It is recommended that you **do not** use this method and instead allow
+CDK to manage role creation. This should only be used
+in environments where CDK applications are not allowed to created IAM roles.
+
+This can be used to prevent the CDK application from creating roles
+within the given scope and instead replace the references to the roles with
+precreated role names. A report will be synthesized in the cloud assembly (i.e. cdk.out)
+that will contain the list of IAM roles that would have been created along with the
+IAM policy statements that the role should contain. This report can then be used
+to create the IAM roles outside of CDK and then the created role names can be provided
+in `usePrecreatedRoles`.
+
+*Example*
+
+```typescript
+declare const app: App;
+Role.customizeRoles(app, {
+  usePrecreatedRoles: {
+    'ConstructPath/To/Role': 'my-precreated-role-name',
+  },
+});
+```
+
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+construct scope to customize role creation.
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles.parameter.options"></a>
+
+- *Type:* aws-cdk-lib.aws_iam.CustomizeRolesOptions
+
+options for configuring role creation.
 
 ---
 
@@ -4239,6 +4315,7 @@ cdk.CfnOutput(self,'ExecRoleArn', value = role.roleArn)
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup">addEmrEksNodegroup</a></code> | Add new nodegroups to the cluster for Amazon EMR on EKS. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster">addEmrVirtualCluster</a></code> | Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner">addKarpenterProvisioner</a></code> | Apply the provided manifest and add the CDK dependency on EKS cluster. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner">addKarpenterProvisioner</a></code> | Apply the provided manifest and add the CDK dependency on EKS cluster. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint">addManagedEndpoint</a></code> | Creates a new Amazon EMR managed endpoint to be used with Amazon EMR Virtual Cluster . |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity">addNodegroupCapacity</a></code> | Add a new Amazon EKS Nodegroup to the cluster. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole">createExecutionRole</a></code> | Create and configure a new Amazon IAM Role usable as an execution role. |
@@ -4303,6 +4380,32 @@ of the stack where virtual cluster is deployed.
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrVirtualClusterOptions">EmrVirtualClusterOptions</a>
 
 the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}.
+
+---
+
+##### `addKarpenterProvisioner` <a name="addKarpenterProvisioner" id="aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner"></a>
+
+```typescript
+public addKarpenterProvisioner(id: string, manifest: any): any
+```
+
+Apply the provided manifest and add the CDK dependency on EKS cluster.
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner.parameter.id"></a>
+
+- *Type:* string
+
+the unique ID of the CDK resource.
+
+---
+
+###### `manifest`<sup>Required</sup> <a name="manifest" id="aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner.parameter.manifest"></a>
+
+- *Type:* any
+
+The manifest to apply.
+
+You can use the Utils class that offers method to read yaml file and load it as a manifest
 
 ---
 
@@ -8084,6 +8187,7 @@ const cdkDeployerProps: CdkDeployerProps = { ... }
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.analyticsReporting">analyticsReporting</a></code> | <code>boolean</code> | Include runtime versioning information in this Stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.crossRegionReferences">crossRegionReferences</a></code> | <code>boolean</code> | Enable this flag to allow native cross region stack references. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.crossRegionReferences">crossRegionReferences</a></code> | <code>boolean</code> | Enable this flag to allow native cross region stack references. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.description">description</a></code> | <code>string</code> | A description of the stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.env">env</a></code> | <code>aws-cdk-lib.Environment</code> | The AWS environment (account/region) where this stack will be deployed. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.stackName">stackName</a></code> | <code>string</code> | Name to deploy the stack with. |
@@ -8111,6 +8215,24 @@ public readonly analyticsReporting: boolean;
 - *Default:* `analyticsReporting` setting of containing `App`, or value of 'aws:cdk:version-reporting' context key
 
 Include runtime versioning information in this Stack.
+
+---
+
+##### `crossRegionReferences`<sup>Optional</sup> <a name="crossRegionReferences" id="aws-analytics-reference-architecture.CdkDeployerProps.property.crossRegionReferences"></a>
+
+```typescript
+public readonly crossRegionReferences: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+Enable this flag to allow native cross region stack references.
+
+Enabling this will create a CloudFormation custom resource
+in both the producing stack and consuming stack in order to perform the export/import
+
+This feature is currently experimental
 
 ---
 
@@ -8797,26 +8919,28 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscaling">autoscaling</a></code> | <code><a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a></code> | The autoscaling mechanism to use. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodes">defaultNodes</a></code> | <code>boolean</code> | If set to true, the Construct will create default EKS nodegroups or node provisioners (based on the autoscaler mechanism used). |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoScaling">autoScaling</a></code> | <code><a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a></code> | The autoscaling mechanism to use. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscalerVersion">autoscalerVersion</a></code> | <code>string</code> | The version of autoscaler to pass to Helm. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodes">defaultNodes</a></code> | <code>boolean</code> | If set to true construct will create default EKS nodegroups. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | The EKS cluster to setup EMR on. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | Provide an EKS you create and manage in the same Stack for EMR on EKS By providing and EKS cluster you manage the cluster AddOns and all the controllers, like Ingress controller, Cluster Autoscaler or Karpenter.., However you can sill use the methods for adding nodegroups that implements the best practices for running Spark on EKS. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups">emrEksNodegroups</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup">EmrEksNodegroup</a>[]</code> | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.karpenterVersion">karpenterVersion</a></code> | <code>string</code> | The version of karpenter to pass to Helm. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer">kubectlLambdaLayer</a></code> | <code>aws-cdk-lib.aws_lambda.ILayerVersion</code> | Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size.  A layer needs to be passed to the Construct. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion">kubernetesVersion</a></code> | <code>aws-cdk-lib.aws_eks.KubernetesVersion</code> | Kubernetes version for Amazon EKS cluster that will be created. |
 
 ---
 
-##### `autoscaling`<sup>Required</sup> <a name="autoscaling" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscaling"></a>
+##### `autoScaling`<sup>Required</sup> <a name="autoScaling" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.autoScaling"></a>
 
 ```typescript
-public readonly autoscaling: Autoscaler;
+public readonly autoScaling: Autoscaler;
 ```
 
 - *Type:* <a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a>
+- *Type:* <a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a>
 
+The autoscaling mechanism to use.
 The autoscaling mechanism to use.
 
 ---
@@ -8824,11 +8948,11 @@ The autoscaling mechanism to use.
 ##### `defaultNodes`<sup>Optional</sup> <a name="defaultNodes" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodes"></a>
 
 ```typescript
-public readonly defaultNodes: boolean;
+public readonly autoscalerVersion: string;
 ```
 
-- *Type:* boolean
-- *Default:* true
+- *Type:* string
+- *Default:* version matching the default Kubernete version
 
 If set to true, the Construct will create default EKS nodegroups or node provisioners (based on the autoscaler mechanism used).
 
@@ -8839,10 +8963,10 @@ There are three types of nodes:
 
 ---
 
-##### `eksAdminRoleArn`<sup>Optional</sup> <a name="eksAdminRoleArn" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn"></a>
+##### `defaultNodes`<sup>Optional</sup> <a name="defaultNodes" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodes"></a>
 
 ```typescript
-public readonly eksAdminRoleArn: string;
+public readonly defaultNodes: boolean;
 ```
 
 - *Type:* string
@@ -8850,7 +8974,22 @@ public readonly eksAdminRoleArn: string;
 
 Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
 
-An admin role must be passed if `eksCluster` property is not set.
+There are three types of Nodegroup:
+  * Nodes for critical jobs which use on-demand instances.
+  * Nodes using spot instances for jobs that are not critical and can be preempted if a spot instance is reclaimed
+  * Nodes to provide capacity for creating and running managed endpoints spark drivers and executors.
+
+---
+
+##### `eksAdminRoleArn`<sup>Optional</sup> <a name="eksAdminRoleArn" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn"></a>
+
+```typescript
+public readonly eksAdminRoleArn: string;
+```
+
+- *Type:* string
+
+Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
 
 ---
 
@@ -8861,13 +9000,8 @@ public readonly eksCluster: Cluster;
 ```
 
 - *Type:* aws-cdk-lib.aws_eks.Cluster
-- *Default:* An EKS Cluster is created
 
-The EKS cluster to setup EMR on.
-
-The cluster needs to be created in the same CDK Stack.
-If the EKS cluster is provided, the cluster AddOns and all the controllers (Ingress controller, Cluster Autoscaler or Karpenter...) need to be configured. 
-When providing an EKS cluster, the methods for adding nodegroups can still be used. They implement the best practices for running Spark on EKS.
+Provide an EKS you create and manage in the same Stack for EMR on EKS By providing and EKS cluster you manage the cluster AddOns and all the controllers, like Ingress controller, Cluster Autoscaler or Karpenter.., However you can sill use the methods for adding nodegroups that implements the best practices for running Spark on EKS.
 
 ---
 
@@ -8878,7 +9012,7 @@ public readonly eksClusterName: string;
 ```
 
 - *Type:* string
-- *Default:* The [default cluster name]{@link DEFAULT_CLUSTER_NAME}
+- *Default:* The [default cluster name]{@link EmrEksCluster.DEFAULT_CLUSTER_NAME}
 
 Name of the Amazon EKS cluster to be created.
 
@@ -8904,25 +9038,8 @@ public readonly karpenterVersion: string;
 ```
 
 - *Type:* string
-- *Default:* The [default Karpenter version]{@link DEFAULT_KARPENTER_VERSION}
 
 The version of karpenter to pass to Helm.
-
----
-
-##### `kubectlLambdaLayer`<sup>Optional</sup> <a name="kubectlLambdaLayer" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer"></a>
-
-```typescript
-public readonly kubectlLambdaLayer: ILayerVersion;
-```
-
-- *Type:* aws-cdk-lib.aws_lambda.ILayerVersion
-- *Default:* No layer is used
-
-Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size.  A layer needs to be passed to the Construct.
-
-The cdk [documentation] (https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_eks.KubernetesVersion.html#static-v1_22)
-contains the libraries that you should add for the right Kubernetes version
 
 ---
 
@@ -8933,7 +9050,7 @@ public readonly kubernetesVersion: KubernetesVersion;
 ```
 
 - *Type:* aws-cdk-lib.aws_eks.KubernetesVersion
-- *Default:* Kubernetes v1.21 version is used
+- *Default:* v1.22 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
 
@@ -10843,8 +10960,6 @@ The BatchReplayer adds two columns ingestion_start and ingestion_end
 ## Enums <a name="Enums" id="Enums"></a>
 
 ### Autoscaler <a name="Autoscaler" id="aws-analytics-reference-architecture.Autoscaler"></a>
-
-The different autoscaler available with EmrEksCluster.
 
 #### Members <a name="Members" id="Members"></a>
 
