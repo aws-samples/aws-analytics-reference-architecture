@@ -213,6 +213,7 @@ export class EmrEksCluster extends TrackedConstruct {
       ClusterLoggingTypes.AUDIT,
     ];
 
+    //Set the autoscaler mechanism flag
     this.isKarpenter = props.autoScaling == Autoscaler.KARPENTER ? true : false;
     this.defaultNodes = props.defaultNodes == undefined ? true : props.defaultNodes;
 
@@ -276,6 +277,7 @@ export class EmrEksCluster extends TrackedConstruct {
         }),
       );
 
+      //Setup the VPC flow logs
       const iamRoleforFlowLog = new Role(this, 'iamRoleforFlowLog', {
         assumedBy: new ServicePrincipal('vpc-flow-logs.amazonaws.com'),
       });
@@ -284,8 +286,10 @@ export class EmrEksCluster extends TrackedConstruct {
         destination: FlowLogDestination.toCloudWatchLogs(eksVpcFlowLogLogGroup, iamRoleforFlowLog),
       });
 
+      //Setting up the cluster with the required controller
       this.eksClusterSetup(this.eksCluster, this, props.eksAdminRoleArn);
 
+      //Deploy the right autoscaler using the flag set earlier 
       if (this.isKarpenter) {
         this.karpenterChart = karpenterSetup(this.eksCluster, this.clusterName, this, props.karpenterVersion || 'v0.20.0');
       } else {
@@ -793,7 +797,14 @@ ${userData.join('\r\n')}
     });
   }
 
-  private eksClusterSetup(cluster: Cluster, scope: Construct, eksAdminRoleArn: any) {
+  /**
+   * @internal
+   * Upload podTemplates to the Amazon S3 location used by the cluster.
+   * @param {Cluster} cluster the unique ID of the CDK resource
+   * @param {Construct} scope The local path of the yaml podTemplate files to upload
+   * @param {string} eksAdminRoleArn The admin role of the EKS cluster
+   */
+  private eksClusterSetup(cluster: Cluster, scope: Construct, eksAdminRoleArn: string) {
 
     // Add the provided Amazon IAM Role as Amazon EKS Admin
     this.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( this, 'AdminRole', eksAdminRoleArn ), 'AdminRole');
@@ -886,6 +897,7 @@ ${userData.join('\r\n')}
       ],
     });
 
+    // Nodegroup capacity needed for all the tooling components including Karpenter
     let EmrEksNodeGroupTooling: any = { ...EmrEksNodegroup.TOOLING_ALL };
     EmrEksNodeGroupTooling.nodeRole = this.ec2InstanceNodeGroupRole;
 
@@ -927,6 +939,12 @@ ${userData.join('\r\n')}
     });
   }
 
+  /**
+   * Apply the provided manifest and add the CDK dependency on EKS cluster
+   * @param {string} id the unique ID of the CDK resource
+   * @param {any} manifest The manifest to apply. 
+   * You can use the Utils class that offers method to read yaml file and load it as a manifest
+   */
   public addKarpenterProvisioner(id: string, manifest: any): any {
 
     let manifestApply = this.eksCluster.addManifest(id, ...manifest);
@@ -938,6 +956,10 @@ ${userData.join('\r\n')}
     return manifestApply;
   }
 
+  /**
+   * @internal
+   * Method to add Managed Nodegroup configured for Spark workloads
+   */
   private setDefaultManagedNodeGroups() {
 
     let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
@@ -964,6 +986,10 @@ ${userData.join('\r\n')}
 
   }
 
+  /**
+   * @internal
+   * Method to add the Karpenter provisioned configured for Spark workloads
+   */
   private karpenterManifestSetup(path: string, subnet: ISubnet): any {
 
     let manifest = Utils.readYamlDocument(path);

@@ -53,7 +53,7 @@ spec:
   # Priority given to the provisioner when the scheduler considers which provisioner
   # to select. Higher weights indicate higher priority when comparing provisioners.
   # Specifying no weight is equivalent to specifying a weight of 0.
-  weight: 10
+  weight: 20
   
 ---
 apiVersion: karpenter.k8s.aws/v1alpha1
