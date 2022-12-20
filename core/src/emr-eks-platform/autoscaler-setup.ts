@@ -5,7 +5,7 @@ import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Rule } from 'aws-cdk-lib/aws-events';
 import { SqsQueue } from 'aws-cdk-lib/aws-events-targets';
 import { Construct } from 'constructs';
-import { Peer, Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { Port, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { Utils } from '../utils';
 
 export function karpenterSetup(cluster: Cluster,
@@ -148,13 +148,23 @@ export function karpenterSetup(cluster: Cluster,
         vpc: cluster.vpc,
         allowAllOutbound: true,
         description: 'security group for a karpenter instances',
-        securityGroupName: 'caInstancesSg'
+        securityGroupName: 'karpenterSg'
     });
 
     Tags.of(karpenterInstancesSg).add('karpenter.sh/discovery', `${eksClusterName}`);
 
     cluster.clusterSecurityGroup.addIngressRule(
-        Peer.securityGroupId(karpenterInstancesSg.securityGroupId),
+        karpenterInstancesSg,
+        Port.allTraffic(),
+    );
+
+    karpenterInstancesSg.addIngressRule(
+        karpenterInstancesSg,
+        Port.allTraffic(),
+    );
+
+    karpenterInstancesSg.addIngressRule(
+        cluster.clusterSecurityGroup,
         Port.allTraffic(),
     );
 
@@ -170,9 +180,17 @@ export function karpenterSetup(cluster: Cluster,
         Tags.of(subnet).add('karpenter.sh/discovery', eksClusterName),
     );
 
+    const privateSubnets = cluster.vpc.selectSubnets({
+        onePerAz: true,
+        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+      }).subnets;
+    
+    let listPrivateSubnets: string [] = privateSubnets.map(subnet => subnet.subnetId)
+
     let manifest = Utils.readYamlDocument(`${__dirname}/resources/k8s/karpenter-provisioner-config/tooling-provisioner.yml`);
 
     manifest = manifest.replace(/(\{{cluster-name}})/g, eksClusterName);
+    manifest = manifest.replace(/(\{{subnet-list}})/g, listPrivateSubnets.join(','));
 
     let manfifestYAML: any = manifest.split("---").map((e: any) => Utils.loadYaml(e));
 

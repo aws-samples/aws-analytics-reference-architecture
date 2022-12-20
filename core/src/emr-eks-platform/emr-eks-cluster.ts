@@ -607,7 +607,7 @@ ${userData.join('\r\n')}
 
     // Create a new LaunchTemplate or reuse existing one
     const lt = SingletonCfnLaunchTemplate.getOrCreate(this, launchTemplateName, userDataMime);
-
+    
     // Create one Amazon EKS Nodegroup per subnet
     subnetList.forEach((subnet, index) => {
 
