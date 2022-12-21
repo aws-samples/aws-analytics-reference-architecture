@@ -8927,6 +8927,7 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups">emrEksNodegroups</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup">EmrEksNodegroup</a>[]</code> | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.karpenterVersion">karpenterVersion</a></code> | <code>string</code> | The version of karpenter to pass to Helm. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer">kubectlLambdaLayer</a></code> | <code>any</code> | Starting k8s 1.22 CDK no longer bundle the kubectl layer with the code due to breaking npm package size You need to pass an initialized the layer and pass it here. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion">kubernetesVersion</a></code> | <code>aws-cdk-lib.aws_eks.KubernetesVersion</code> | Kubernetes version for Amazon EKS cluster that will be created. |
 
 ---
@@ -9040,6 +9041,21 @@ public readonly karpenterVersion: string;
 - *Type:* string
 
 The version of karpenter to pass to Helm.
+
+---
+
+##### `kubectlLambdaLayer`<sup>Optional</sup> <a name="kubectlLambdaLayer" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer"></a>
+
+```typescript
+public readonly kubectlLambdaLayer: any;
+```
+
+- *Type:* any
+
+Starting k8s 1.22 CDK no longer bundle the kubectl layer with the code due to breaking npm package size You need to pass an initialized the layer and pass it here.
+
+The cdk [documentation] (https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_eks.KubernetesVersion.html#static-v1_22)
+contains the libraries that you should add for the right Kubernetes version
 
 ---
 
