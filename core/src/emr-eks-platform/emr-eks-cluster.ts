@@ -43,10 +43,10 @@ import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
 import { clusterAutoscalerSetup, karpenterSetup } from './autoscaler-setup';
-import { KubectlV22Layer } from '@aws-cdk/lambda-layer-kubectl-v22';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 import { Utils } from '../utils';
+import { ILayerVersion } from 'aws-cdk-lib/aws-lambda';
 
 export enum Autoscaler {
   KARPENTER = 'KARPENTER',
@@ -107,6 +107,14 @@ export interface EmrEksClusterProps {
    * The version of karpenter to pass to Helm
    */
   readonly karpenterVersion?: string;
+  /**
+   * Starting k8s 1.22 CDK no longer bundle the kubectl layer with the code due to breaking npm package size
+   * You need to pass an initialized the layer and pass it here.
+   * 
+   * The cdk [documentation] (https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_eks.KubernetesVersion.html#static-v1_22)
+   * contains the libraries that you should add for the right Kubernetes version 
+   */
+  readonly kubectlLambdaLayer?: any;
 }
 
 /**
@@ -238,19 +246,19 @@ export class EmrEksCluster extends TrackedConstruct {
       eksClusterName: this.clusterName,
     }).provider.serviceToken;
 
+    if (props.eksAdminRoleArn == undefined && props.eksCluster == undefined) {
+      throw new Error('You mush provide an Admin role ARN if the EKS cluster is created throught the EmrEksCluster Construct');
+    }
+
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
     if (props.eksCluster == undefined) {
-
-      if (props.eksAdminRoleArn == undefined) {
-        throw new Error('You mush provide an Admin role if the EKS cluster is created throught the EmrEksCluster Construct');
-      }
 
       this.eksCluster = new Cluster(scope, `${this.clusterName}Cluster`, {
         defaultCapacity: 0,
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
         clusterLogging: eksClusterLogging,
-        kubectlLayer: new KubectlV22Layer(this, 'KubectlV22Layer'),
+        kubectlLayer: props.kubectlLambdaLayer as ILayerVersion ?? undefined,
       });
 
       //Create VPC flow log for the EKS VPC
@@ -292,7 +300,7 @@ export class EmrEksCluster extends TrackedConstruct {
       });
 
       //Setting up the cluster with the required controller
-      this.eksClusterSetup(this.eksCluster, this, props.eksAdminRoleArn);
+      this.eksClusterSetup(this.eksCluster, this, props.eksAdminRoleArn!);
 
       //Deploy the right autoscaler using the flag set earlier 
       if (this.isKarpenter) {
