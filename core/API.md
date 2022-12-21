@@ -7918,6 +7918,8 @@ const cdkDeployerProps: CdkDeployerProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation">cdkAppLocation</a></code> | <code>string</code> | The location of the CDK application in the Github repository. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkParameters">cdkParameters</a></code> | <code>{[ key: string ]: aws-cdk-lib.CfnParameterProps}</code> | The CFN parameters to pass to the CDK application. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkStack">cdkStack</a></code> | <code>string</code> | The CDK stack name to deploy. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.deployBuildSpec">deployBuildSpec</a></code> | <code>aws-cdk-lib.aws_codebuild.BuildSpec</code> | Deploy CodeBuild buildspec file name at the root of the cdk app folder. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.destroyBuildSpec">destroyBuildSpec</a></code> | <code>aws-cdk-lib.aws_codebuild.BuildSpec</code> | Destroy Codebuild buildspec file name at the root of the cdk app folder. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch">gitBranch</a></code> | <code>string</code> | The branch to use on the Github repository. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.githubRepository">githubRepository</a></code> | <code>string</code> | The github repository containing the CDK application. |
 
@@ -8125,6 +8127,30 @@ public readonly cdkStack: string;
 - *Default:* The default stack is deployed
 
 The CDK stack name to deploy.
+
+---
+
+##### `deployBuildSpec`<sup>Optional</sup> <a name="deployBuildSpec" id="aws-analytics-reference-architecture.CdkDeployerProps.property.deployBuildSpec"></a>
+
+```typescript
+public readonly deployBuildSpec: BuildSpec;
+```
+
+- *Type:* aws-cdk-lib.aws_codebuild.BuildSpec
+
+Deploy CodeBuild buildspec file name at the root of the cdk app folder.
+
+---
+
+##### `destroyBuildSpec`<sup>Optional</sup> <a name="destroyBuildSpec" id="aws-analytics-reference-architecture.CdkDeployerProps.property.destroyBuildSpec"></a>
+
+```typescript
+public readonly destroyBuildSpec: BuildSpec;
+```
+
+- *Type:* aws-cdk-lib.aws_codebuild.BuildSpec
+
+Destroy Codebuild buildspec file name at the root of the cdk app folder.
 
 ---
 

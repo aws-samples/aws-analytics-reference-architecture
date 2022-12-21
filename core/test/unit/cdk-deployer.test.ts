@@ -11,9 +11,10 @@
  import { CdkDeployer, DeploymentType } from '../../src/common/cdk-deployer';
  
  import { Match, Template } from 'aws-cdk-lib/assertions';
+import { BuildSpec } from 'aws-cdk-lib/aws-codebuild';
  
  
- describe ('CdkDeployer test', () => {
+ describe ('CdkDeployer test default', () => {
  
   const app = new App();
   const CdkDeployerStack = new CdkDeployer(app, {
@@ -491,11 +492,11 @@
     );
   });
 
-  test('CdkDeployer creates the proper StartBuild function', () => {
+  test('CdkDeployer creates the proper StartBuild function using default build spec', () => {
     template.hasResourceProperties('AWS::Lambda::Function',
       Match.objectLike({
         "Code": {
-          "ZipFile": Match.anyValue(),
+          "ZipFile": Match.stringLikeRegexp('Default'),
         },
         "Role": Match.anyValue(),
         "Handler": "index.handler",
@@ -525,6 +526,101 @@
         "ProjectName": Match.anyValue(),
         "BuildRoleArn": Match.anyValue(),
         "ServiceToken": Match.anyValue(),
+      }),
+    );
+  });
+});
+
+
+describe ('CdkDeployer test custom buildspec from object', () => {
+ 
+  const app = new App();
+  const CdkDeployerStack = new CdkDeployer(app, {
+    deploymentType: DeploymentType.CLICK_TO_DEPLOY,
+    githubRepository: 'aws-samples/aws-analytics-reference-architecture',
+    cdkAppLocation: 'refarch/aws-native',
+    deployBuildSpec: BuildSpec.fromObject({
+      version: '0.2',
+      phases: {
+        install: {
+          'runtime-versions': {
+            nodejs: 16,
+          },
+          commands: [
+            'echo "Custom BuildSpec"',
+            'npm install -g aws-cdk',
+          ],
+        },
+        build: {
+          commands: [
+            'npm install',
+            'npm run build',
+            'npm run cdk synth',
+          ],
+        },
+      },
+    }),
+    cdkParameters: {
+      Foo: {
+        default: 'no-value',
+        type: 'String',
+      },
+      Bar: {
+        default: 'some-value',
+        type: 'String',
+      },
+    },
+  });
+ 
+  const template = Template.fromStack(CdkDeployerStack);
+
+  test('CdkDeployer creates the proper StartBuild function using custom build spec', () => {
+    template.hasResourceProperties('AWS::Lambda::Function',
+      Match.objectLike({
+        "Code": {
+          "ZipFile": Match.stringLikeRegexp('Custom BuildSpec'),
+        },
+        "Role": Match.anyValue(),
+        "Handler": "index.handler",
+        "Runtime": "nodejs16.x",
+        "Timeout": 60
+      }),
+    );
+  });
+});
+
+describe ('CdkDeployer test custom buildspec from file', () => {
+ 
+  const app = new App();
+  const CdkDeployerStack = new CdkDeployer(app, {
+    deploymentType: DeploymentType.CLICK_TO_DEPLOY,
+    githubRepository: 'aws-samples/aws-analytics-reference-architecture',
+    cdkAppLocation: 'refarch/aws-native',
+    deployBuildSpec: BuildSpec.fromSourceFilename('custom-buildspec.yaml'),
+    cdkParameters: {
+      Foo: {
+        default: 'no-value',
+        type: 'String',
+      },
+      Bar: {
+        default: 'some-value',
+        type: 'String',
+      },
+    },
+  });
+ 
+  const template = Template.fromStack(CdkDeployerStack);
+
+  test('CdkDeployer creates the proper StartBuild function using custom build spec', () => {
+    template.hasResourceProperties('AWS::Lambda::Function',
+      Match.objectLike({
+        "Code": {
+          "ZipFile": Match.stringLikeRegexp('custom-buildspec.yaml'),
+        },
+        "Role": Match.anyValue(),
+        "Handler": "index.handler",
+        "Runtime": "nodejs16.x",
+        "Timeout": 60
       }),
     );
   });

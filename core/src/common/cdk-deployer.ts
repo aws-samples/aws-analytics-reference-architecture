@@ -5,7 +5,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { ManagedPolicy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Aws, CfnParameter, CustomResource, DefaultStackSynthesizer, Duration } from 'aws-cdk-lib';
-import { ComputeType, LinuxBuildImage, Project, Source, CfnProject } from 'aws-cdk-lib/aws-codebuild';
+import { ComputeType, LinuxBuildImage, Project, Source, CfnProject, BuildSpec } from 'aws-cdk-lib/aws-codebuild';
 import { SingletonKey } from '../singleton-kms-key';
 import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Rule } from 'aws-cdk-lib/aws-events';
@@ -59,6 +59,16 @@ export interface CdkDeployerProps extends cdk.StackProps {
    * CLICK_TO_DEPLOY: the CDK application is deployed through a click on a github README button
    */
   readonly deploymentType: DeploymentType;
+
+  /**
+   * Deploy CodeBuild buildspec file name at the root of the cdk app folder
+   */
+  readonly deployBuildSpec?: BuildSpec;
+
+  /**
+   * Destroy Codebuild buildspec file name at the root of the cdk app folder
+   */
+  readonly destroyBuildSpec?: BuildSpec;
 }
 
 /**
@@ -319,7 +329,7 @@ export class CdkDeployer extends cdk.Stack {
 
     const startBuildFunction = new Function(this, 'StartBuildFunction', {
       runtime: Runtime.NODEJS_16_X,
-      code: Code.fromInline(startBuild),
+      code: Code.fromInline(startBuild(props.deployBuildSpec, props.destroyBuildSpec)),
       handler: 'index.handler',
       timeout: Duration.seconds(60),
       role: startBuildRole,
