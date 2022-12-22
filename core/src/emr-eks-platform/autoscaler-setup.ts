@@ -1,4 +1,4 @@
-import { Cluster, HelmChart } from 'aws-cdk-lib/aws-eks';
+import { Cluster, HelmChart, KubernetesVersion } from 'aws-cdk-lib/aws-eks';
 import { CfnInstanceProfile, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Aws, Duration, Stack, Tags } from 'aws-cdk-lib';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
@@ -192,9 +192,9 @@ export function karpenterSetup(cluster: Cluster,
     const privateSubnets = cluster.vpc.selectSubnets({
         onePerAz: true,
         subnetType: SubnetType.PRIVATE_WITH_EGRESS,
-      }).subnets;
-    
-    let listPrivateSubnets: string [] = privateSubnets.map(subnet => subnet.subnetId)
+    }).subnets;
+
+    let listPrivateSubnets: string[] = privateSubnets.map(subnet => subnet.subnetId)
 
     let manifest = Utils.readYamlDocument(`${__dirname}/resources/k8s/karpenter-provisioner-config/tooling-provisioner.yml`);
 
@@ -219,8 +219,15 @@ export function clusterAutoscalerSetup(
     cluster: Cluster,
     eksClusterName: string,
     scope: Construct,
-    autoscalerVersion?: string) {
+    k8sVersion: KubernetesVersion) {
 
+    //Version of the autoscaler, controls the image tag
+    const versionMap = new Map([
+        [KubernetesVersion.V1_23, "9.21.0"],
+        [KubernetesVersion.V1_22, "9.13.1"],
+        [KubernetesVersion.V1_21, "9.13.1"]
+    ]);
+    
     // Create a Kubernetes Service Account for the Cluster Autoscaler with Amazon IAM Role
     const AutoscalerServiceAccount = cluster.addServiceAccount('Autoscaler', {
         name: 'cluster-autoscaler',
@@ -268,7 +275,7 @@ export function clusterAutoscalerSetup(
     cluster.addHelmChart('AutoScaler', {
         chart: 'cluster-autoscaler',
         repository: 'https://kubernetes.github.io/autoscaler',
-        version: autoscalerVersion || '9.11.0',
+        version: versionMap.get(k8sVersion),
         namespace: 'kube-system',
         timeout: Duration.minutes(14),
         values: {
