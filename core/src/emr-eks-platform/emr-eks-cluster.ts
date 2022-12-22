@@ -112,7 +112,7 @@ export interface EmrEksClusterProps {
    * The cdk [documentation] (https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_eks.KubernetesVersion.html#static-v1_22)
    * contains the libraries that you should add for the right Kubernetes version 
    */
-  readonly kubectlLambdaLayer?: any;
+  readonly kubectlLambdaLayer?: ILayerVersion;
 }
 
 /**
@@ -179,7 +179,7 @@ export class EmrEksCluster extends TrackedConstruct {
   }
   private static readonly EMR_VERSIONS = ['emr-6.9.0-latest', 'emr-6.8.0-latest', 'emr-6.7.0-latest', 'emr-6.6.0-latest', 'emr-6.5.0-latest', 'emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
   private static readonly DEFAULT_EMR_VERSION = 'emr-6.8.0-latest';
-  private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_22;
+  private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
   private static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
   public readonly eksCluster: Cluster;
   public readonly notebookDefaultConfig: string;
@@ -301,7 +301,8 @@ export class EmrEksCluster extends TrackedConstruct {
       if (this.isKarpenter) {
         this.karpenterChart = karpenterSetup(this.eksCluster, this.clusterName, this, props.karpenterVersion || 'v0.20.0');
       } else {
-        clusterAutoscalerSetup(this.eksCluster, this.clusterName, this, props.autoscalerVersion);
+        const kubernetesVersion = props.kubernetesVersion ?? EmrEksCluster.DEFAULT_EKS_VERSION;
+        clusterAutoscalerSetup(this.eksCluster, this.clusterName, this, kubernetesVersion);
       }
 
     } else {
@@ -854,6 +855,7 @@ ${userData.join('\r\n')}
       chart: 'aws-load-balancer-controller',
       repository: 'https://aws.github.io/eks-charts',
       namespace: 'kube-system',
+      version: '1.4.6',
       timeout: Duration.minutes(14),
       values: {
         clusterName: this.clusterName,
