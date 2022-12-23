@@ -21,7 +21,7 @@ const stackiamauth = new Stack();
 
 const clusterSSO = EmrEksCluster.getOrCreate(stacksso, {
   eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
-  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 
 new NotebookPlatform(stacksso, 'platform1', {
@@ -33,12 +33,12 @@ new NotebookPlatform(stacksso, 'platform1', {
 
 const clusterIAMAUTH = EmrEksCluster.getOrCreate(stackiamauth, {
   eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
-  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 
 const clusterIAMFED = EmrEksCluster.getOrCreate(stackiamfed, {
   eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
-  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 
 let iamFedNotebook = new NotebookPlatform(stackiamfed, 'dataplatformIAMFed', {
@@ -133,7 +133,7 @@ test('Should find a mapping between an EMR Studio, a user and a session policy f
 
   const clusterSSO = EmrEksCluster.getOrCreate(stacksso, {
     eksAdminRoleArn: 'arn:aws:iam::123456789012:role/Admin',
-    autoScaling: Autoscaler.CLUSTER_AUTOSCALER
+    autoscaling: Autoscaler.CLUSTER_AUTOSCALER
   });
 
   const ssoNotebook = new NotebookPlatform(stacksso, 'platform1', {

@@ -80,6 +80,13 @@ export class EmrEksNodegroup {
       'spark-role': 'driver',
       'node-lifecycle': 'on-demand',
     },
+    taints: [
+      {
+        key: 'role',
+        value: 'shared',
+        effect: TaintEffect.NO_SCHEDULE,
+      },
+    ],
   };
   /**
    * Default nodegroup configuration for EMR on EKS shared (non-crtical) workloads (executors only)
@@ -97,6 +104,11 @@ export class EmrEksNodegroup {
       'node-lifecycle': 'spot',
     },
     taints: [
+      {
+        key: 'role',
+        value: 'shared',
+        effect: TaintEffect.NO_SCHEDULE,
+      },
       {
         key: 'node-lifecycle',
         value: 'spot',

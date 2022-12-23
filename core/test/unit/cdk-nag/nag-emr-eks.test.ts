@@ -24,7 +24,7 @@ Aspects.of(mockApp).add(new AwsSolutionsChecks());
 
 EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123445678912:role/myRole',
-  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 
 NagSuppressions.addResourceSuppressionsByPath(

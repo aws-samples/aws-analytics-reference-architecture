@@ -16,7 +16,7 @@ import { Template, Match } from 'aws-cdk-lib/assertions';
 const emrEksClusterStack = new Stack();
 const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, {
   eksAdminRoleArn: 'arn:aws:iam::1234567890:role/AdminAccess',
-  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 cluster.addEmrVirtualCluster(emrEksClusterStack, {
   name: 'test',
@@ -184,6 +184,13 @@ test('EKS cluster should have the default Nodegroups', () => {
       MaxSize: 10,
       MinSize: 0,
     },
+    Taints: [
+      {
+        Effect: 'NO_SCHEDULE',
+        Key: 'role',
+        Value: 'shared',
+      },
+    ],
     Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
@@ -191,6 +198,7 @@ test('EKS cluster should have the default Nodegroups', () => {
       'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'on-demand',
       'k8s.io/cluster-autoscaler/node-template/label/role': 'shared',
       'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'driver',
+      'k8s.io/cluster-autoscaler/node-template/taint/role': 'shared:NO_SCHEDULE',
     }),
   });
 
@@ -208,13 +216,18 @@ test('EKS cluster should have the default Nodegroups', () => {
       MaxSize: 100,
       MinSize: 0,
     },
-    Taints: [
+    Taints: Match.arrayWith([
+      {
+        Effect: 'NO_SCHEDULE',
+        Key: 'role',
+        Value: 'shared',
+      },
       {
         Effect: 'NO_SCHEDULE',
         Key: 'node-lifecycle',
         Value: 'spot',
       },
-    ],
+    ]),
     Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
@@ -223,6 +236,7 @@ test('EKS cluster should have the default Nodegroups', () => {
       'k8s.io/cluster-autoscaler/node-template/label/role': 'shared',
       'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'executor',
       'k8s.io/cluster-autoscaler/node-template/taint/node-lifecycle': 'spot:NO_SCHEDULE',
+      'k8s.io/cluster-autoscaler/node-template/taint/role': 'shared:NO_SCHEDULE',
     }),
   });
 

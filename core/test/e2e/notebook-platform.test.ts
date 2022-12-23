@@ -8,21 +8,21 @@
  */
 
 import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
-import * as cdk from '@aws-cdk/core';
-import { ArnFormat, Aws } from '@aws-cdk/core';
+import { ArnFormat, Aws, App, Stack } from 'aws-cdk-lib';
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
 
 import { NotebookPlatform, StudioAuthMode } from '../../src';
-import { EmrEksCluster } from '../../src/emr-eks-platform';
+import { Autoscaler, EmrEksCluster } from '../../src/emr-eks-platform';
 
 jest.setTimeout(2000000);
 // GIVEN
-const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'notebookPlatformE2eTest');
+const integTestApp = new App();
+const stack = new Stack(integTestApp, 'notebookPlatformE2eTest');
 
 const emrEksCluster = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER,
 });
 
 const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {

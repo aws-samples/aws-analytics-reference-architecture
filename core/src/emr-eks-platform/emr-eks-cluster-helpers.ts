@@ -1,17 +1,241 @@
-import { Cluster, HelmChart, KubernetesVersion } from 'aws-cdk-lib/aws-eks';
-import { CfnInstanceProfile, Effect, ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { Aws, Duration, Stack, Tags } from 'aws-cdk-lib';
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+
+import { Cluster, HelmChart, KubernetesManifest, KubernetesVersion } from 'aws-cdk-lib/aws-eks';
+import { CfnInstanceProfile, Effect, FederatedPrincipal, ManagedPolicy, Policy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { Aws, CfnOutput, Duration, Stack, Tags } from 'aws-cdk-lib';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Rule } from 'aws-cdk-lib/aws-events';
 import { SqsQueue } from 'aws-cdk-lib/aws-events-targets';
 import { Construct } from 'constructs';
-import { Port, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { ISubnet, Port, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { Utils } from '../utils';
+import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
+import { EmrEksCluster } from './emr-eks-cluster';
+import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 
 
 /**
  * @internal
- * Install all the reuiqred configurations of Karpenter SQS and Event rules to handle spot and unhealthy instance termination
+ * Upload podTemplates to the Amazon S3 location used by the cluster.
+ * @param {Cluster} cluster the unique ID of the CDK resource
+ * @param {Construct} scope The local path of the yaml podTemplate files to upload
+ * @param {string} eksAdminRoleArn The admin role of the EKS cluster
+ */
+export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdminRoleArn: string) {
+
+  // Add the provided Amazon IAM Role as Amazon EKS Admin
+  cluster.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( scope, 'AdminRole', eksAdminRoleArn ), 'AdminRole');
+
+  // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
+  const certManager = cluster.eksCluster.addHelmChart('CertManager', {
+    createNamespace: true,
+    namespace: 'cert-manager',
+    chart: 'cert-manager',
+    repository: 'https://charts.jetstack.io',
+    version: 'v1.4.0',
+    timeout: Duration.minutes(14),
+  });
+
+  //Create service account for ALB and install ALB
+  const albPolicyDocument = PolicyDocument.fromJson(IamPolicyAlb);
+  const albIAMPolicy = new Policy(
+    scope,
+    'AWSLoadBalancerControllerIAMPolicy',
+    { document: albPolicyDocument },
+  );
+
+  const albServiceAccount = cluster.eksCluster.addServiceAccount('ALB', {
+    name: 'aws-load-balancer-controller',
+    namespace: 'kube-system',
+  });
+  albIAMPolicy.attachToRole(albServiceAccount.role);
+
+  const albService = cluster.eksCluster.addHelmChart('ALB', {
+    chart: 'aws-load-balancer-controller',
+    repository: 'https://aws.github.io/eks-charts',
+    namespace: 'kube-system',
+    version: '1.4.6',
+    timeout: Duration.minutes(14),
+    values: {
+      clusterName: cluster.clusterName,
+      serviceAccount: {
+        name: 'aws-load-balancer-controller',
+        create: false,
+      },
+    },
+  });
+  albService.node.addDependency(albServiceAccount);
+  albService.node.addDependency(certManager);
+
+  // Add the kubernetes dashboard from helm chart
+  cluster.eksCluster.addHelmChart('KubernetesDashboard', {
+    createNamespace: true,
+    namespace: 'kubernetes-dashboard',
+    chart: 'kubernetes-dashboard',
+    repository: 'https://kubernetes.github.io/dashboard/',
+    version: 'v6.0.0',
+    timeout: Duration.minutes(2),
+    values: {
+      fullnameOverride: 'kubernetes-dashboard',
+      resources: {
+        limits: {
+        memory: '600Mi',
+        },
+      },
+    },
+  });
+
+  // Add the kubernetes dashboard service account
+  cluster.eksCluster.addManifest('kubedashboard', {
+    apiVersion: 'v1',
+    kind: 'ServiceAccount',
+    metadata: {
+      name: 'eks-admin',
+      namespace: 'kube-system',
+    },
+  });
+  // Add the kubernetes dashboard cluster role binding
+  cluster.eksCluster.addManifest('kubedashboardrolebinding', {
+    apiVersion: 'rbac.authorization.k8s.io/v1',
+    kind: 'ClusterRoleBinding',
+    metadata: {
+      name: 'eks-admin',
+    },
+    roleRef: {
+      apiGroup: 'rbac.authorization.k8s.io',
+      kind: 'ClusterRole',
+      name: 'cluster-admin',
+    },
+    subjects: [
+      {
+        kind: 'ServiceAccount',
+        name: 'eks-admin',
+        namespace: 'kube-system',
+      },
+    ],
+  });
+
+  // Nodegroup capacity needed for all the tooling components including Karpenter
+  let EmrEksNodeGroupTooling: any = { ...EmrEksNodegroup.TOOLING_ALL };
+  EmrEksNodeGroupTooling.nodeRole = cluster.ec2InstanceNodeGroupRole;
+
+  // Create the Amazon EKS Nodegroup for tooling
+  cluster.addNodegroupCapacity('Tooling', EmrEksNodeGroupTooling as EmrEksNodegroupOptions);
+
+  //IAM role created for the aws-node pod following AWS best practice not to use the EC2 instance role
+  const awsNodeRole: Role = new Role(scope, 'awsNodeRole', {
+    assumedBy: new FederatedPrincipal(
+      cluster.eksCluster.openIdConnectProvider.openIdConnectProviderArn,
+      { ...[] },
+      'sts:AssumeRoleWithWebIdentity',
+    ),
+    roleName: `awsNodeRole-${cluster.clusterName}`,
+    managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy')],
+  });
+
+  // update the aws-node service account with IAM role created for it
+  new KubernetesManifest(scope, 'awsNodeServiceAccountUpdateManifest', {
+    cluster: cluster.eksCluster,
+    manifest: [
+      {
+        apiVersion: 'v1',
+        kind: 'ServiceAccount',
+        metadata: {
+          name: 'aws-node',
+          namespace: 'kube-system',
+          annotations: {
+            'eks.amazonaws.com/role-arn': awsNodeRole.roleArn,
+          },
+        },
+      }
+    ],
+    overwrite: true,
+  });
+
+  // Provide the Kubernetes Dashboard URL in AWS CloudFormation output
+  new CfnOutput(scope, 'kubernetesDashboardURL', {
+      description: 'Access Kubernetes Dashboard via kubectl proxy and this URL',
+      value: 'http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:https/proxy/#/login',
+  });
+}
+
+/**
+ * @internal
+ * Method to add the default EKS Managed Nodegroups configured for Spark workloads
+ */
+export function setDefaultManagedNodeGroups(cluster: EmrEksCluster) {
+
+  let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
+  EmrEksNodeGroupCritical.nodeRole = cluster.ec2InstanceNodeGroupRole;
+  cluster.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
+
+  let EmrEksNodeGroupsharedDriver: any = {...EmrEksNodegroup.SHARED_DRIVER};
+  EmrEksNodeGroupsharedDriver.nodeRole = cluster.ec2InstanceNodeGroupRole;
+  cluster.addEmrEksNodegroup('sharedDriver', EmrEksNodeGroupsharedDriver as EmrEksNodegroupOptions);
+
+  let EmrEksNodeGroupsharedExecutor: any = {...EmrEksNodegroup.SHARED_EXECUTOR};
+  EmrEksNodeGroupsharedExecutor.nodeRole = cluster.ec2InstanceNodeGroupRole;
+  cluster.addEmrEksNodegroup('sharedExecutor', EmrEksNodeGroupsharedExecutor as EmrEksNodegroupOptions);
+
+  let EmrEksNodeGroupnotebookDriver: any = {...EmrEksNodegroup.NOTEBOOK_DRIVER};
+  EmrEksNodeGroupnotebookDriver.nodeRole = cluster.ec2InstanceNodeGroupRole;
+  cluster.addEmrEksNodegroup('notebookDriver', EmrEksNodeGroupnotebookDriver as EmrEksNodegroupOptions);
+
+  let EmrEksNodeGroupnotebookExecutor: any = {...EmrEksNodegroup.NOTEBOOK_EXECUTOR};
+  EmrEksNodeGroupnotebookExecutor.nodeRole = cluster.ec2InstanceNodeGroupRole;
+  cluster.addEmrEksNodegroup('notebookExecutor', EmrEksNodeGroupnotebookExecutor as EmrEksNodegroupOptions);
+
+}
+
+/**
+ * @internal
+ * Method to add the default Karpenter provisioners for Spark workloads
+ */
+export function setDefaultKarpenterProvisioners(cluster: EmrEksCluster) {
+  const subnets = cluster.eksCluster.vpc.selectSubnets({
+    onePerAz: true,
+    subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+  }).subnets;
+
+  subnets.forEach( (subnet, index) => {
+    let criticalManfifestYAML = karpenterManifestSetup(cluster.clusterName,`${__dirname}/resources/k8s/karpenter-provisioner-config/critical-provisioner.yml`, subnet);
+    cluster.addKarpenterProvisioner(`karpenterCriticalManifest-${index}`, criticalManfifestYAML);
+
+    let sharedDriverManfifestYAML = karpenterManifestSetup(cluster.clusterName,`${__dirname}/resources/k8s/karpenter-provisioner-config/shared-driver-provisioner.yml`, subnet);
+    cluster.addKarpenterProvisioner(`karpenterSharedDriverManifest-${index}`, sharedDriverManfifestYAML);
+
+    let sharedExecutorManfifestYAML = karpenterManifestSetup(cluster.clusterName,`${__dirname}/resources/k8s/karpenter-provisioner-config/shared-executor-provisioner.yml`, subnet);
+    cluster.addKarpenterProvisioner(`karpenterSharedExecutorManifest-${index}`, sharedExecutorManfifestYAML);
+
+    let notebookDriverManfifestYAML = karpenterManifestSetup(cluster.clusterName,`${__dirname}/resources/k8s/karpenter-provisioner-config/notebook-driver-provisioner.yml`, subnet);
+    cluster.addKarpenterProvisioner(`karpenterNotebookDriverManifest-${index}`, notebookDriverManfifestYAML);
+
+    let notebookExecutorManfifestYAML = karpenterManifestSetup(cluster.clusterName,`${__dirname}/resources/k8s/karpenter-provisioner-config/notebook-executor-provisioner.yml`, subnet);
+    cluster.addKarpenterProvisioner(`karpenterNotebookExecutorManifest-${index}`, notebookExecutorManfifestYAML);
+  })
+}
+
+/**
+ * @internal
+ * Method to generate the Karpenter manifests from templates and targeted to the specific EKS cluster
+ */
+export function karpenterManifestSetup(clusterName: string, path: string, subnet: ISubnet): any {
+
+  let manifest = Utils.readYamlDocument(path);
+
+  manifest = manifest.replace('{{subnet-id}}', subnet.subnetId);
+  manifest = manifest.replace( /(\{{az}})/g, subnet.availabilityZone);
+  manifest = manifest.replace('{{cluster-name}}', clusterName);
+
+  let manfifestYAML: any = manifest.split("---").map((e: any) => Utils.loadYaml(e));
+
+  return manfifestYAML;
+}
+
+/**
+ * @internal
+ * Install all the required configurations of Karpenter SQS and Event rules to handle spot and unhealthy instance termination
  * Create a security group to be used by nodes created with karpenter
  * Tags the subnets and VPC to be used by karpenter
  * create a tooling provisioner that will deploy in each of the AZs, one per AZ
@@ -127,7 +351,7 @@ export function karpenterSetup(cluster: Cluster,
         release: 'karpenter',
         repository: 'oci://public.ecr.aws/karpenter/karpenter',
         namespace: 'karpenter',
-        version: karpenterVersion || 'v0.20.0',
+        version: karpenterVersion || EmrEksCluster.DEFAULT_KARPENTER_VERSION,
         timeout: Duration.minutes(14),
         wait: true,
         values: {

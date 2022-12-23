@@ -4374,7 +4374,7 @@ public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions
 
 Add a new Amazon EKS Nodegroup to the cluster.
 
-This method is be used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
+This method is used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
   so it can be used for the cluster autoscaler.
 
 ###### `nodegroupId`<sup>Required</sup> <a name="nodegroupId" id="aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity.parameter.nodegroupId"></a>
@@ -4542,7 +4542,9 @@ the EmrEksClusterProps [properties]{@link EmrEksClusterProps} if created.
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.assetBucket">assetBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.clusterName">clusterName</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig">criticalDefaultConfig</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.ec2InstanceNodeGroupRole">ec2InstanceNodeGroupRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig">notebookDefaultConfig</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.podTemplateLocation">podTemplateLocation</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | *No description.* |
@@ -4572,6 +4574,16 @@ public readonly assetBucket: Bucket;
 
 ---
 
+##### `clusterName`<sup>Required</sup> <a name="clusterName" id="aws-analytics-reference-architecture.EmrEksCluster.property.clusterName"></a>
+
+```typescript
+public readonly clusterName: string;
+```
+
+- *Type:* string
+
+---
+
 ##### `criticalDefaultConfig`<sup>Required</sup> <a name="criticalDefaultConfig" id="aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig"></a>
 
 ```typescript
@@ -4579,6 +4591,16 @@ public readonly criticalDefaultConfig: string;
 ```
 
 - *Type:* string
+
+---
+
+##### `ec2InstanceNodeGroupRole`<sup>Required</sup> <a name="ec2InstanceNodeGroupRole" id="aws-analytics-reference-architecture.EmrEksCluster.property.ec2InstanceNodeGroupRole"></a>
+
+```typescript
+public readonly ec2InstanceNodeGroupRole: Role;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.Role
 
 ---
 
@@ -4622,6 +4644,56 @@ public readonly sharedDefaultConfig: string;
 
 ---
 
+#### Constants <a name="Constants" id="Constants"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_CLUSTER_NAME">DEFAULT_CLUSTER_NAME</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EKS_VERSION">DEFAULT_EKS_VERSION</a></code> | <code>aws-cdk-lib.aws_eks.KubernetesVersion</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EMR_VERSION">DEFAULT_EMR_VERSION</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_KARPENTER_VERSION">DEFAULT_KARPENTER_VERSION</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `DEFAULT_CLUSTER_NAME`<sup>Required</sup> <a name="DEFAULT_CLUSTER_NAME" id="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_CLUSTER_NAME"></a>
+
+```typescript
+public readonly DEFAULT_CLUSTER_NAME: string;
+```
+
+- *Type:* string
+
+---
+
+##### `DEFAULT_EKS_VERSION`<sup>Required</sup> <a name="DEFAULT_EKS_VERSION" id="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EKS_VERSION"></a>
+
+```typescript
+public readonly DEFAULT_EKS_VERSION: KubernetesVersion;
+```
+
+- *Type:* aws-cdk-lib.aws_eks.KubernetesVersion
+
+---
+
+##### `DEFAULT_EMR_VERSION`<sup>Required</sup> <a name="DEFAULT_EMR_VERSION" id="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EMR_VERSION"></a>
+
+```typescript
+public readonly DEFAULT_EMR_VERSION: EmrVersion;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a>
+
+---
+
+##### `DEFAULT_KARPENTER_VERSION`<sup>Required</sup> <a name="DEFAULT_KARPENTER_VERSION" id="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_KARPENTER_VERSION"></a>
+
+```typescript
+public readonly DEFAULT_KARPENTER_VERSION: string;
+```
+
+- *Type:* string
+
+---
 
 ### FlywayRunner <a name="FlywayRunner" id="aws-analytics-reference-architecture.FlywayRunner"></a>
 
@@ -5297,7 +5369,7 @@ notebookPlatform.addUser([{
    identityName: 'user1',
    identityType: SSOIdentityType.USER,
    notebookManagedEndpoints: [{
-     emrOnEksVersion: 'emr-6.4.0-latest',
+     emrOnEksVersion: EmrVersion.V6_9,
      executionPolicy: policy1,
    }],
 }]);
@@ -8725,41 +8797,27 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoScaling">autoScaling</a></code> | <code><a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a></code> | The autoscaling mechanism to use. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscalerVersion">autoscalerVersion</a></code> | <code>string</code> | The version of autoscaler to pass to Helm. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodes">defaultNodes</a></code> | <code>boolean</code> | If set to true construct will create default EKS nodegroups. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscaling">autoscaling</a></code> | <code><a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a></code> | The autoscaling mechanism to use. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodes">defaultNodes</a></code> | <code>boolean</code> | If set to true, the Construct will create default EKS nodegroups or node provisioners (based on the autoscaler mechanism used). |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | Provide an EKS you create and manage in the same Stack for EMR on EKS By providing and EKS cluster you manage the cluster AddOns and all the controllers, like Ingress controller, Cluster Autoscaler or Karpenter.., However you can sill use the methods for adding nodegroups that implements the best practices for running Spark on EKS. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | The EKS cluster to setup EMR on. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups">emrEksNodegroups</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup">EmrEksNodegroup</a>[]</code> | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.karpenterVersion">karpenterVersion</a></code> | <code>string</code> | The version of karpenter to pass to Helm. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer">kubectlLambdaLayer</a></code> | <code>aws-cdk-lib.aws_lambda.ILayerVersion</code> | Starting k8s 1.22 CDK no longer bundle the kubectl layer with the code due to breaking npm package size You need to pass an initialized the layer and pass it here. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer">kubectlLambdaLayer</a></code> | <code>aws-cdk-lib.aws_lambda.ILayerVersion</code> | Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size.  A layer needs to be passed to the Construct. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion">kubernetesVersion</a></code> | <code>aws-cdk-lib.aws_eks.KubernetesVersion</code> | Kubernetes version for Amazon EKS cluster that will be created. |
 
 ---
 
-##### `autoScaling`<sup>Required</sup> <a name="autoScaling" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.autoScaling"></a>
+##### `autoscaling`<sup>Required</sup> <a name="autoscaling" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscaling"></a>
 
 ```typescript
-public readonly autoScaling: Autoscaler;
+public readonly autoscaling: Autoscaler;
 ```
 
 - *Type:* <a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a>
 
 The autoscaling mechanism to use.
-
----
-
-##### `autoscalerVersion`<sup>Optional</sup> <a name="autoscalerVersion" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscalerVersion"></a>
-
-```typescript
-public readonly autoscalerVersion: string;
-```
-
-- *Type:* string
-- *Default:* version matching the default Kubernete version
-
-The version of autoscaler to pass to Helm.
 
 ---
 
@@ -8772,12 +8830,12 @@ public readonly defaultNodes: boolean;
 - *Type:* boolean
 - *Default:* true
 
-If set to true construct will create default EKS nodegroups.
+If set to true, the Construct will create default EKS nodegroups or node provisioners (based on the autoscaler mechanism used).
 
-There are three types of Nodegroup:
-  * Nodes for critical jobs which use on-demand instances.
-  * Nodes using spot instances for jobs that are not critical and can be preempted if a spot instance is reclaimed
-  * Nodes to provide capacity for creating and running managed endpoints spark drivers and executors.
+There are three types of nodes:
+  * Nodes for critical jobs which use on-demand instances, high speed disks and workload isolation
+  * Nodes for shared worklaods which uses spot instances and no isolation to optimize costs
+  * Nodes for notebooks which leverage a cost optimized configuration for running EMR managed endpoints and spark drivers/executors.
 
 ---
 
@@ -8788,8 +8846,11 @@ public readonly eksAdminRoleArn: string;
 ```
 
 - *Type:* string
+- *Default:* No admin role is used and EKS cluster creation fails
 
 Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
+
+An admin role must be passed if `eksCluster` property is not set.
 
 ---
 
@@ -8800,8 +8861,13 @@ public readonly eksCluster: Cluster;
 ```
 
 - *Type:* aws-cdk-lib.aws_eks.Cluster
+- *Default:* An EKS Cluster is created
 
-Provide an EKS you create and manage in the same Stack for EMR on EKS By providing and EKS cluster you manage the cluster AddOns and all the controllers, like Ingress controller, Cluster Autoscaler or Karpenter.., However you can sill use the methods for adding nodegroups that implements the best practices for running Spark on EKS.
+The EKS cluster to setup EMR on.
+
+The cluster needs to be created in the same CDK Stack.
+If the EKS cluster is provided, the cluster AddOns and all the controllers (Ingress controller, Cluster Autoscaler or Karpenter...) need to be configured. 
+When providing an EKS cluster, the methods for adding nodegroups can still be used. They implement the best practices for running Spark on EKS.
 
 ---
 
@@ -8812,7 +8878,7 @@ public readonly eksClusterName: string;
 ```
 
 - *Type:* string
-- *Default:* The [default cluster name]{@link EmrEksCluster.DEFAULT_CLUSTER_NAME}
+- *Default:* The [default cluster name]{@link DEFAULT_CLUSTER_NAME}
 
 Name of the Amazon EKS cluster to be created.
 
@@ -8838,6 +8904,7 @@ public readonly karpenterVersion: string;
 ```
 
 - *Type:* string
+- *Default:* The [default Karpenter version]{@link DEFAULT_KARPENTER_VERSION}
 
 The version of karpenter to pass to Helm.
 
@@ -8850,8 +8917,9 @@ public readonly kubectlLambdaLayer: ILayerVersion;
 ```
 
 - *Type:* aws-cdk-lib.aws_lambda.ILayerVersion
+- *Default:* No layer is used
 
-Starting k8s 1.22 CDK no longer bundle the kubectl layer with the code due to breaking npm package size You need to pass an initialized the layer and pass it here.
+Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size.  A layer needs to be passed to the Construct.
 
 The cdk [documentation] (https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_eks.KubernetesVersion.html#static-v1_22)
 contains the libraries that you should add for the right Kubernetes version
@@ -8865,7 +8933,7 @@ public readonly kubernetesVersion: KubernetesVersion;
 ```
 
 - *Type:* aws-cdk-lib.aws_eks.KubernetesVersion
-- *Default:* v1.22 version is used
+- *Default:* Kubernetes v1.21 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
 
@@ -9221,7 +9289,7 @@ const emrManagedEndpointOptions: EmrManagedEndpointOptions = { ... }
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the EMR managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.virtualClusterId">virtualClusterId</a></code> | <code>string</code> | The Id of the Amazon EMR virtual cluster containing the managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>string</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint. |
-| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code>string</code> | The Amazon EMR version to use. |
+| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a></code> | The Amazon EMR version to use. |
 
 ---
 
@@ -9277,10 +9345,10 @@ The JSON configuration overrides for Amazon EMR on EKS configuration attached to
 ##### `emrOnEksVersion`<sup>Optional</sup> <a name="emrOnEksVersion" id="aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.emrOnEksVersion"></a>
 
 ```typescript
-public readonly emrOnEksVersion: string;
+public readonly emrOnEksVersion: EmrVersion;
 ```
 
-- *Type:* string
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a>
 - *Default:* The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
 
 The Amazon EMR version to use.
@@ -9631,7 +9699,7 @@ const notebookManagedEndpointOptions: NotebookManagedEndpointOptions = { ... }
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.executionPolicy">executionPolicy</a></code> | <code>aws-cdk-lib.aws_iam.ManagedPolicy</code> | The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>any</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json). |
-| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code>string</code> | The version of Amazon EMR to deploy. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a></code> | The version of Amazon EMR to deploy. |
 
 ---
 
@@ -9674,10 +9742,10 @@ The JSON configuration overrides for Amazon EMR on EKS configuration attached to
 ##### `emrOnEksVersion`<sup>Optional</sup> <a name="emrOnEksVersion" id="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion"></a>
 
 ```typescript
-public readonly emrOnEksVersion: string;
+public readonly emrOnEksVersion: EmrVersion;
 ```
 
-- *Type:* string
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a>
 
 The version of Amazon EMR to deploy.
 
@@ -10776,6 +10844,8 @@ The BatchReplayer adds two columns ingestion_start and ingestion_end
 
 ### Autoscaler <a name="Autoscaler" id="aws-analytics-reference-architecture.Autoscaler"></a>
 
+The different autoscaler available with EmrEksCluster.
+
 #### Members <a name="Members" id="Members"></a>
 
 | **Name** | **Description** |
@@ -10839,6 +10909,77 @@ The BatchReplayer adds two columns ingestion_start and ingestion_end
 
 
 ##### `CLICK_TO_DEPLOY` <a name="CLICK_TO_DEPLOY" id="aws-analytics-reference-architecture.DeploymentType.CLICK_TO_DEPLOY"></a>
+
+---
+
+
+### EmrVersion <a name="EmrVersion" id="aws-analytics-reference-architecture.EmrVersion"></a>
+
+The different EMR versions available on EKS.
+
+#### Members <a name="Members" id="Members"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_9">V6_9</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_8">V6_8</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_7">V6_7</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_6">V6_6</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_5">V6_5</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_4">V6_4</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_3">V6_3</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_2">V6_2</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V5_33">V5_33</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V5_32">V5_32</a></code> | *No description.* |
+
+---
+
+##### `V6_9` <a name="V6_9" id="aws-analytics-reference-architecture.EmrVersion.V6_9"></a>
+
+---
+
+
+##### `V6_8` <a name="V6_8" id="aws-analytics-reference-architecture.EmrVersion.V6_8"></a>
+
+---
+
+
+##### `V6_7` <a name="V6_7" id="aws-analytics-reference-architecture.EmrVersion.V6_7"></a>
+
+---
+
+
+##### `V6_6` <a name="V6_6" id="aws-analytics-reference-architecture.EmrVersion.V6_6"></a>
+
+---
+
+
+##### `V6_5` <a name="V6_5" id="aws-analytics-reference-architecture.EmrVersion.V6_5"></a>
+
+---
+
+
+##### `V6_4` <a name="V6_4" id="aws-analytics-reference-architecture.EmrVersion.V6_4"></a>
+
+---
+
+
+##### `V6_3` <a name="V6_3" id="aws-analytics-reference-architecture.EmrVersion.V6_3"></a>
+
+---
+
+
+##### `V6_2` <a name="V6_2" id="aws-analytics-reference-architecture.EmrVersion.V6_2"></a>
+
+---
+
+
+##### `V5_33` <a name="V5_33" id="aws-analytics-reference-architecture.EmrVersion.V5_33"></a>
+
+---
+
+
+##### `V5_32` <a name="V5_32" id="aws-analytics-reference-architecture.EmrVersion.V5_32"></a>
 
 ---
 

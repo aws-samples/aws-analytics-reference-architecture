@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import { EmrVersion } from '../emr-eks-platform/emr-eks-cluster';
 
 /**
  * The properties for defining a Managed Endpoint
@@ -11,7 +12,7 @@ export interface NotebookManagedEndpointOptions {
   /**
      * The version of Amazon EMR to deploy
      * */
-  readonly emrOnEksVersion?: string;
+  readonly emrOnEksVersion?: EmrVersion;
 
   /**
      * The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint

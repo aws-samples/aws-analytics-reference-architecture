@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: MIT-0
 
 import { join } from 'path';
-import { Aws, CfnOutput, CustomResource, Duration, Stack, Tags, RemovalPolicy, CfnJson, Fn } from 'aws-cdk-lib';
-import { FlowLogDestination, ISubnet, SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { Aws, CfnOutput, CustomResource, Stack, Tags, RemovalPolicy, CfnJson, Fn } from 'aws-cdk-lib';
+import { FlowLogDestination, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import {
   CapacityType,
   Cluster,
   ClusterLoggingTypes,
   HelmChart,
-  KubernetesManifest,
   KubernetesVersion,
   Nodegroup,
 } from 'aws-cdk-lib/aws-eks';
@@ -20,7 +19,6 @@ import {
   FederatedPrincipal,
   IManagedPolicy,
   ManagedPolicy,
-  Policy,
   PolicyDocument,
   PolicyStatement,
   Role,
@@ -41,19 +39,37 @@ import { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 import * as CriticalDefaultConfig from './resources/k8s/emr-eks-config/critical.json';
 import * as NotebookDefaultConfig from './resources/k8s/emr-eks-config/notebook-pod-template-ready.json';
 import * as SharedDefaultConfig from './resources/k8s/emr-eks-config/shared.json';
-import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
 import * as K8sRoleBinding from './resources/k8s/rbac/emr-containers-role-binding.json';
 import * as K8sRole from './resources/k8s/rbac/emr-containers-role.json';
-import { clusterAutoscalerSetup, karpenterSetup } from './autoscaler-setup';
+import { setDefaultManagedNodeGroups, clusterAutoscalerSetup, karpenterSetup, eksClusterSetup, setDefaultKarpenterProvisioners } from './emr-eks-cluster-helpers';
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
-import { Utils } from '../utils';
 import { ILayerVersion } from 'aws-cdk-lib/aws-lambda';
 
+/**
+ * The different autoscaler available with EmrEksCluster
+ */
 export enum Autoscaler {
   KARPENTER = 'KARPENTER',
   CLUSTER_AUTOSCALER = 'CLUSTER_AUTOSCALER',
 }
+
+/**
+ * The different EMR versions available on EKS
+ */
+export  enum EmrVersion {
+  V6_9 = 'emr-6.9.0-latest',
+  V6_8 = 'emr-6.8.0-latest',
+  V6_7 = 'emr-6.7.0-latest',
+  V6_6 = 'emr-6.6.0-latest',
+  V6_5 = 'emr-6.5.0-latest',
+  V6_4 = 'emr-6.4.0-latest',
+  V6_3 = 'emr-6.3.0-latest',
+  V6_2 = 'emr-6.2.0-latest',
+  V5_33 = 'emr-5.33.0-latest',
+  V5_32 = 'emr-5.32.0-latest',
+}
+
 
 /**
  * The properties for the EmrEksCluster Construct class.
@@ -61,21 +77,24 @@ export enum Autoscaler {
 export interface EmrEksClusterProps {
   /**
    * Name of the Amazon EKS cluster to be created
-   * @default -  The [default cluster name]{@link EmrEksCluster.DEFAULT_CLUSTER_NAME}
+   * @default -  The [default cluster name]{@link DEFAULT_CLUSTER_NAME}
    */
   readonly eksClusterName?: string;
   /**
    * The autoscaling mechanism to use
-  */
-  readonly autoScaling: Autoscaler;
+   */
+  readonly autoscaling: Autoscaler;
   /**
-   * Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI
+   * Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. 
+   * An admin role must be passed if `eksCluster` property is not set.
+   * @default - No admin role is used and EKS cluster creation fails
    */
   readonly eksAdminRoleArn?: string;
   /**
-   * Provide an EKS you create and manage in the same Stack for EMR on EKS
-   * By providing and EKS cluster you manage the cluster AddOns and all the controllers, like Ingress controller, Cluster Autoscaler or Karpenter..,
-   * However you can sill use the methods for adding nodegroups that implements the best practices for running Spark on EKS.
+   * The EKS cluster to setup EMR on. The cluster needs to be created in the same CDK Stack.
+   * If the EKS cluster is provided, the cluster AddOns and all the controllers (Ingress controller, Cluster Autoscaler or Karpenter...) need to be configured. 
+   * When providing an EKS cluster, the methods for adding nodegroups can still be used. They implement the best practices for running Spark on EKS.
+   * @default - An EKS Cluster is created
    */
   readonly eksCluster?: Cluster;
   /**
@@ -85,32 +104,30 @@ export interface EmrEksClusterProps {
   readonly emrEksNodegroups?: EmrEksNodegroup[];
   /**
    * Kubernetes version for Amazon EKS cluster that will be created
-   * @default -  v1.22 version is used
+   * @default -  Kubernetes v1.21 version is used
    */
   readonly kubernetesVersion?: KubernetesVersion;
   /**
-   * If set to true construct will create default EKS nodegroups. There are three types of Nodegroup:
-   *  * Nodes for critical jobs which use on-demand instances.
-   *  * Nodes using spot instances for jobs that are not critical and can be preempted if a spot instance is reclaimed
-   *  * Nodes to provide capacity for creating and running managed endpoints spark drivers and executors.
+   * If set to true, the Construct will create default EKS nodegroups or node provisioners (based on the autoscaler mechanism used). 
+   * There are three types of nodes:
+   *  * Nodes for critical jobs which use on-demand instances, high speed disks and workload isolation
+   *  * Nodes for shared worklaods which uses spot instances and no isolation to optimize costs
+   *  * Nodes for notebooks which leverage a cost optimized configuration for running EMR managed endpoints and spark drivers/executors.
    * @default -  true
    */
   readonly defaultNodes?: boolean;
   /**
-   * The version of autoscaler to pass to Helm
-   * @default -  version matching the default Kubernete version
-   */
-  readonly autoscalerVersion?: string;
-  /**
    * The version of karpenter to pass to Helm
+   * @default - The [default Karpenter version]{@link DEFAULT_KARPENTER_VERSION}
    */
   readonly karpenterVersion?: string;
   /**
-   * Starting k8s 1.22 CDK no longer bundle the kubectl layer with the code due to breaking npm package size
-   * You need to pass an initialized the layer and pass it here.
+   * Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size. 
+   * A layer needs to be passed to the Construct.
    * 
    * The cdk [documentation] (https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_eks.KubernetesVersion.html#static-v1_22)
    * contains the libraries that you should add for the right Kubernetes version 
+   * @default - No layer is used
    */
   readonly kubectlLambdaLayer?: ILayerVersion;
 }
@@ -177,31 +194,30 @@ export class EmrEksCluster extends TrackedConstruct {
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-  private static readonly EMR_VERSIONS = ['emr-6.9.0-latest', 'emr-6.8.0-latest', 'emr-6.7.0-latest', 'emr-6.6.0-latest', 'emr-6.5.0-latest', 'emr-6.4.0-latest', 'emr-6.3.0-latest', 'emr-6.2.0-latest', 'emr-5.33.0-latest', 'emr-5.32.0-latest'];
-  private static readonly DEFAULT_EMR_VERSION = 'emr-6.8.0-latest';
-  private static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
-  private static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
+  public static readonly DEFAULT_EMR_VERSION = EmrVersion.V6_8;
+  public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_21;
+  public static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
+  public static readonly DEFAULT_KARPENTER_VERSION = 'v0.20.0';
   public readonly eksCluster: Cluster;
   public readonly notebookDefaultConfig: string;
   public readonly criticalDefaultConfig: string;
   public readonly sharedDefaultConfig: string;
   public readonly podTemplateLocation: Location;
   public readonly assetBucket: Bucket;
+  public readonly clusterName: string;
+  public readonly ec2InstanceNodeGroupRole: Role;
   private readonly managedEndpointProviderServiceToken: string;
   private readonly emrServiceRole: CfnServiceLinkedRole;
-  private readonly clusterName: string;
   private readonly assetUploadBucketRole: Role;
   private readonly karpenterChart?: HelmChart;
   private readonly isKarpenter: boolean;
   private readonly nodegroupAsgTagsProviderServiceToken: string;
   private readonly defaultNodes: boolean;
-  private readonly ec2InstanceNodeGroupRole: Role;
   /**
    * Constructs a new instance of the EmrEksCluster construct.
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
    * @param {EmrEksClusterProps} props the EmrEksClusterProps [properties]{@link EmrEksClusterProps}
-   * @access private
    */
   private constructor(scope: Construct, id: string, props: EmrEksClusterProps) {
 
@@ -222,7 +238,7 @@ export class EmrEksCluster extends TrackedConstruct {
     ];
 
     //Set the autoscaler mechanism flag
-    this.isKarpenter = props.autoScaling == Autoscaler.KARPENTER ? true : false;
+    this.isKarpenter = props.autoscaling == Autoscaler.KARPENTER ? true : false;
     this.defaultNodes = props.defaultNodes == undefined ? true : props.defaultNodes;
 
     // Create a role to be used as instance profile for nodegroups
@@ -295,11 +311,11 @@ export class EmrEksCluster extends TrackedConstruct {
       });
 
       //Setting up the cluster with the required controller
-      this.eksClusterSetup(this.eksCluster, this, props.eksAdminRoleArn!);
+      eksClusterSetup(this, this, props.eksAdminRoleArn!);
 
       //Deploy the right autoscaler using the flag set earlier 
       if (this.isKarpenter) {
-        this.karpenterChart = karpenterSetup(this.eksCluster, this.clusterName, this, props.karpenterVersion || 'v0.20.0');
+        this.karpenterChart = karpenterSetup(this.eksCluster, this.clusterName, this, props.karpenterVersion || EmrEksCluster.DEFAULT_KARPENTER_VERSION);
       } else {
         const kubernetesVersion = props.kubernetesVersion ?? EmrEksCluster.DEFAULT_EKS_VERSION;
         clusterAutoscalerSetup(this.eksCluster, this.clusterName, this, kubernetesVersion);
@@ -312,36 +328,14 @@ export class EmrEksCluster extends TrackedConstruct {
     
     //Check if the user want to use the default nodegroup and
     //Add the default nodegroup configured and optimized to run Spark workloads
-    if (this.defaultNodes && props.autoScaling == Autoscaler.CLUSTER_AUTOSCALER) {
-      this.setDefaultManagedNodeGroups();
+    if (this.defaultNodes && props.autoscaling == Autoscaler.CLUSTER_AUTOSCALER) {
+      setDefaultManagedNodeGroups(this);
     }
 
     //Check if there user want to use the default Karpenter provisioners and
     //Add the defaults pre-configured and optimized to run Spark workloads
-    if (this.defaultNodes && props.autoScaling == Autoscaler.KARPENTER) {
-
-      const subnets = this.eksCluster.vpc.selectSubnets({
-        onePerAz: true,
-        subnetType: SubnetType.PRIVATE_WITH_EGRESS,
-      }).subnets;
-
-      subnets.forEach( (subnet, index) => {
-        let criticalManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/critical-provisioner.yml`, subnet);
-        this.addKarpenterProvisioner(`karpenterCriticalManifest-${index}`, criticalManfifestYAML);
-
-        let sharedDriverManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/shared-driver-provisioner.yml`, subnet);
-        this.addKarpenterProvisioner(`karpenterSharedDriverManifest-${index}`, sharedDriverManfifestYAML);
-
-        let sharedExecutorManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/shared-executor-provisioner.yml`, subnet);
-        this.addKarpenterProvisioner(`karpenterSharedExecutorManifest-${index}`, sharedExecutorManfifestYAML);
-
-        let notebookDriverManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/notebook-driver-provisioner.yml`, subnet);
-        this.addKarpenterProvisioner(`karpenterNotebookDriverManifest-${index}`, notebookDriverManfifestYAML);
-
-        let notebookExecutorManfifestYAML = this.karpenterManifestSetup(`${__dirname}/resources/k8s/karpenter-provisioner-config/notebook-executor-provisioner.yml`, subnet);
-        this.addKarpenterProvisioner(`karpenterNotebookExecutorManifest-${index}`, notebookExecutorManfifestYAML);
-
-      })
+    if (this.defaultNodes && props.autoscaling == Autoscaler.KARPENTER) {
+      setDefaultKarpenterProvisioners(this);
     }
 
     AraBucket.getOrCreate(this, { bucketName: 's3-access-logs' });
@@ -512,10 +506,6 @@ export class EmrEksCluster extends TrackedConstruct {
       throw new Error(`error managed endpoint name length is greater than 64 ${id}`);
     }
 
-    if (options.emrOnEksVersion && !EmrEksCluster.EMR_VERSIONS.includes(options.emrOnEksVersion)) {
-      throw new Error(`error unsupported EMR version ${options.emrOnEksVersion}`);
-    }
-
     if (this.notebookDefaultConfig == undefined) {
       throw new Error('error empty configuration override is not supported on non-default nodegroups');
     }
@@ -660,7 +650,7 @@ ${userData.join('\r\n')}
 
   /**
    * Add a new Amazon EKS Nodegroup to the cluster.
-   * This method is be used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
+   * This method is used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
    *  so it can be used for the cluster autoscaler.
    * @param {string} nodegroupId the ID of the nodegroup
    * @param {EmrEksNodegroupOptions} options the EmrEksNodegroup [properties]{@link EmrEksNodegroupOptions}
@@ -816,149 +806,6 @@ ${userData.join('\r\n')}
   }
 
   /**
-   * @internal
-   * Upload podTemplates to the Amazon S3 location used by the cluster.
-   * @param {Cluster} cluster the unique ID of the CDK resource
-   * @param {Construct} scope The local path of the yaml podTemplate files to upload
-   * @param {string} eksAdminRoleArn The admin role of the EKS cluster
-   */
-  private eksClusterSetup(cluster: Cluster, scope: Construct, eksAdminRoleArn: string) {
-
-    // Add the provided Amazon IAM Role as Amazon EKS Admin
-    this.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( this, 'AdminRole', eksAdminRoleArn ), 'AdminRole');
-
-    // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
-    const certManager = cluster.addHelmChart('CertManager', {
-      createNamespace: true,
-      namespace: 'cert-manager',
-      chart: 'cert-manager',
-      repository: 'https://charts.jetstack.io',
-      version: 'v1.4.0',
-      timeout: Duration.minutes(14),
-    });
-
-    //Create service account for ALB and install ALB
-    const albPolicyDocument = PolicyDocument.fromJson(IamPolicyAlb);
-    const albIAMPolicy = new Policy(
-      this,
-      'AWSLoadBalancerControllerIAMPolicy',
-      { document: albPolicyDocument },
-    );
-
-    const albServiceAccount = cluster.addServiceAccount('ALB', {
-      name: 'aws-load-balancer-controller',
-      namespace: 'kube-system',
-    });
-    albIAMPolicy.attachToRole(albServiceAccount.role);
-
-    const albService = cluster.addHelmChart('ALB', {
-      chart: 'aws-load-balancer-controller',
-      repository: 'https://aws.github.io/eks-charts',
-      namespace: 'kube-system',
-      version: '1.4.6',
-      timeout: Duration.minutes(14),
-      values: {
-        clusterName: this.clusterName,
-        serviceAccount: {
-          name: 'aws-load-balancer-controller',
-          create: false,
-        },
-      },
-    });
-    albService.node.addDependency(albServiceAccount);
-    albService.node.addDependency(certManager);
-
-    // Add the kubernetes dashboard from helm chart
-    cluster.addHelmChart('KubernetesDashboard', {
-      createNamespace: true,
-      namespace: 'kubernetes-dashboard',
-      chart: 'kubernetes-dashboard',
-      repository: 'https://kubernetes.github.io/dashboard/',
-      version: 'v6.0.0',
-      timeout: Duration.minutes(2),
-      values: {
-        fullnameOverride: 'kubernetes-dashboard',
-        resources: {
-          limits: {
-            memory: '600Mi',
-          },
-        },
-      },
-    });
-
-    // Add the kubernetes dashboard service account
-    cluster.addManifest('kubedashboard', {
-      apiVersion: 'v1',
-      kind: 'ServiceAccount',
-      metadata: {
-        name: 'eks-admin',
-        namespace: 'kube-system',
-      },
-    });
-    // Add the kubernetes dashboard cluster role binding
-    cluster.addManifest('kubedashboardrolebinding', {
-      apiVersion: 'rbac.authorization.k8s.io/v1',
-      kind: 'ClusterRoleBinding',
-      metadata: {
-        name: 'eks-admin',
-      },
-      roleRef: {
-        apiGroup: 'rbac.authorization.k8s.io',
-        kind: 'ClusterRole',
-        name: 'cluster-admin',
-      },
-      subjects: [
-        {
-          kind: 'ServiceAccount',
-          name: 'eks-admin',
-          namespace: 'kube-system',
-        },
-      ],
-    });
-
-    // Nodegroup capacity needed for all the tooling components including Karpenter
-    let EmrEksNodeGroupTooling: any = { ...EmrEksNodegroup.TOOLING_ALL };
-    EmrEksNodeGroupTooling.nodeRole = this.ec2InstanceNodeGroupRole;
-
-    // Create the Amazon EKS Nodegroup for tooling
-    this.addNodegroupCapacity('Tooling', EmrEksNodeGroupTooling as EmrEksNodegroupOptions);
-
-    //IAM role created for the aws-node pod following AWS best practice not to use the EC2 instance role
-    const awsNodeRole: Role = new Role(scope, 'awsNodeRole', {
-      assumedBy: new FederatedPrincipal(
-        cluster.openIdConnectProvider.openIdConnectProviderArn,
-        { ...[] },
-        'sts:AssumeRoleWithWebIdentity',
-      ),
-      roleName: `awsNodeRole-${this.clusterName}`,
-      managedPolicies: [ManagedPolicy.fromAwsManagedPolicyName('AmazonEKS_CNI_Policy')],
-    });
-
-    // update the aws-node service account with IAM role created for it
-    new KubernetesManifest(scope, 'awsNodeServiceAccountUpdateManifest', {
-      cluster: cluster,
-      manifest: [{
-        apiVersion: 'v1',
-        kind: 'ServiceAccount',
-        metadata: {
-          name: 'aws-node',
-          namespace: 'kube-system',
-          annotations: {
-            'eks.amazonaws.com/role-arn': awsNodeRole.roleArn,
-          },
-        },
-      }],
-      overwrite: true,
-    });
-
-    // Provide the Kubernetes Dashboard URL in AWS CloudFormation output
-    new CfnOutput(this, 'kubernetesDashboardURL', {
-      description: 'Access Kubernetes Dashboard via kubectl proxy and this URL',
-      value: 'http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:https/proxy/#/login',
-    });
-  }
-
-  /**
    * Apply the provided manifest and add the CDK dependency on EKS cluster
    * @param {string} id the unique ID of the CDK resource
    * @param {any} manifest The manifest to apply. 
@@ -977,53 +824,6 @@ ${userData.join('\r\n')}
     }
 
     return manifestApply;
-  }
-
-  /**
-   * @internal
-   * Method to add Managed Nodegroup configured for Spark workloads
-   */
-  private setDefaultManagedNodeGroups() {
-
-    let EmrEksNodeGroupCritical: any = { ...EmrEksNodegroup.CRITICAL_ALL };
-    EmrEksNodeGroupCritical.nodeRole = this.ec2InstanceNodeGroupRole;
-    this.addEmrEksNodegroup('criticalAll', EmrEksNodeGroupCritical as EmrEksNodegroupOptions);
-
-    let EmrEksNodeGroupsharedDriver: any = {...EmrEksNodegroup.SHARED_DRIVER};
-    EmrEksNodeGroupsharedDriver.nodeRole = this.ec2InstanceNodeGroupRole;
-    this.addEmrEksNodegroup('sharedDriver', EmrEksNodeGroupsharedDriver as EmrEksNodegroupOptions);
-
-    let EmrEksNodeGroupsharedExecutor: any = {...EmrEksNodegroup.SHARED_EXECUTOR};
-    EmrEksNodeGroupsharedExecutor.nodeRole = this.ec2InstanceNodeGroupRole;
-    this.addEmrEksNodegroup('sharedExecutor', EmrEksNodeGroupsharedExecutor as EmrEksNodegroupOptions);
-
-    // Add a nodegroup for notebooks
-
-    let EmrEksNodeGroupnotebookDriver: any = {...EmrEksNodegroup.NOTEBOOK_DRIVER};
-    EmrEksNodeGroupnotebookDriver.nodeRole = this.ec2InstanceNodeGroupRole;
-    this.addEmrEksNodegroup('notebookDriver', EmrEksNodeGroupnotebookDriver as EmrEksNodegroupOptions);
-
-    let EmrEksNodeGroupnotebookExecutor: any = {...EmrEksNodegroup.NOTEBOOK_EXECUTOR};
-    EmrEksNodeGroupnotebookExecutor.nodeRole = this.ec2InstanceNodeGroupRole;
-    this.addEmrEksNodegroup('notebookExecutor', EmrEksNodeGroupnotebookExecutor as EmrEksNodegroupOptions);
-
-  }
-
-  /**
-   * @internal
-   * Method to add the Karpenter provisioned configured for Spark workloads
-   */
-  private karpenterManifestSetup(path: string, subnet: ISubnet): any {
-
-    let manifest = Utils.readYamlDocument(path);
-
-    manifest = manifest.replace('{{subnet-id}}', subnet.subnetId);
-    manifest = manifest.replace( /(\{{az}})/g, subnet.availabilityZone);
-    manifest = manifest.replace('{{cluster-name}}', this.clusterName);
-
-    let manfifestYAML: any = manifest.split("---").map((e: any) => Utils.loadYaml(e));
-
-    return manfifestYAML;
   }
 }
 

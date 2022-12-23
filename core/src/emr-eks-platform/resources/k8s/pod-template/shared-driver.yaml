@@ -5,6 +5,11 @@ apiVersion: v1
 kind: Pod
 
 spec:
+  tolerations:
+  - key: role
+    operator: Equal
+    value: shared
+    effect: NoSchedule
   nodeSelector:
     node-lifecycle: on-demand
     spark-role: driver
