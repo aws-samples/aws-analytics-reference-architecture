@@ -23,9 +23,9 @@ spec:
   # Operators { In, NotIn } are supported to enable including or excluding values
   requirements:
     # Include general purpose instance families
-    - key: "karpenter.k8s.aws/instance-category"
+    - key: "karpenter.k8s.aws/instance-family"
       operator: In
-      values: ["m"]
+      values: ["t3", "t3a"]
     - key: "kubernetes.io/arch"
       operator: In
       values: ["amd64"]
@@ -47,8 +47,8 @@ spec:
   # Limits prevent Karpenter from creating new instances once the limit is exceeded.
   limits:
     resources:
-      cpu: "100"
-      memory: 100Gi
+      cpu: "40"
+      memory: 160Gi
 
   # Priority given to the provisioner when the scheduler considers which provisioner
   # to select. Higher weights indicate higher priority when comparing provisioners.

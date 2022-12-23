@@ -33,14 +33,8 @@ export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdm
     namespace: 'cert-manager',
     chart: 'cert-manager',
     repository: 'https://charts.jetstack.io',
-    version: 'v1.10.1',
+    version: 'v1.4.0',
     timeout: Duration.minutes(14),
-    values: {
-      startupapicheck: {
-        timeout: '5m'
-      },
-      installCRDs: true
-    }
   });
 
   //Create service account for ALB and install ALB
@@ -391,7 +385,7 @@ export function karpenterSetup(cluster: Cluster,
     });
 
     Tags.of(karpenterInstancesSg).add('karpenter.sh/discovery', `${eksClusterName}`);
-    
+
     cluster.clusterSecurityGroup.addIngressRule(
         karpenterInstancesSg,
         Port.allTraffic(),

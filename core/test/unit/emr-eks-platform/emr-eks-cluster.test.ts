@@ -17,7 +17,7 @@ import { Template, Match } from 'aws-cdk-lib/assertions';
 const emrEksClusterStack = new Stack();
 const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, {
   eksAdminRoleArn: 'arn:aws:iam::1234567890:role/AdminAccess',
-  autoScaling: Autoscaler.CLUSTER_AUTOSCALER
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 cluster.addEmrVirtualCluster(emrEksClusterStack, {
   name: 'test',

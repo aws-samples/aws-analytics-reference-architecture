@@ -23,16 +23,16 @@ spec:
   # Operators { In, NotIn } are supported to enable including or excluding values
   requirements:
     # Include general purpose instance families
-    - key: "karpenter.k8s.aws/instance-category"
+    - key: "karpenter.k8s.aws/instance-family"
       operator: In
-      values: ["m"]
+      values: ["m6g", "m6gd"]
     - key: "kubernetes.io/arch"
       operator: In
       values: ["arm64"]
     # Exclude smaller instance sizes
     - key: "karpenter.k8s.aws/instance-size"
       operator: NotIn
-      values: [nano, micro, small]
+      values: [nano, micro, small, medium, large]
     - key: "karpenter.sh/capacity-type" # If not included, the webhook for the AWS cloud provider will default to on-demand
       operator: In
       values: ["spot"]
@@ -47,8 +47,8 @@ spec:
   # Limits prevent Karpenter from creating new instances once the limit is exceeded.
   limits:
     resources:
-      cpu: "100"
-      memory: 100Gi
+      cpu: "3200"
+      memory: 12800Gi
 
   # Priority given to the provisioner when the scheduler considers which provisioner
   # to select. Higher weights indicate higher priority when comparing provisioners.
@@ -76,7 +76,7 @@ spec:
     Content-Type: text/x-shellscript; charset="us-ascii"
 
     #!/bin/bash
-    yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm,
+    yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_arm64/amazon-ssm-agent.rpm,
     systemctl enable amazon-ssm-agent,
     systemctl start amazon-ssm-agent,
 

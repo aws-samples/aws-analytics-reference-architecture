@@ -16,16 +16,16 @@ spec:
   # Operators { In, NotIn } are supported to enable including or excluding values
   requirements:
     # Include general purpose instance families
-    - key: "karpenter.k8s.aws/instance-category"
+    - key: "karpenter.k8s.aws/instance-family"
       operator: In
-      values: ["t", "m"]
+      values: ["t3", "t3a"]
     - key: "kubernetes.io/arch"
       operator: In
       values: ["amd64"]
     # Exclude smaller instance sizes
     - key: "karpenter.k8s.aws/instance-size"
       operator: In
-      values: [medium, small, large]
+      values: [medium, large, xlarge]
     - key: "karpenter.sh/capacity-type" # If not included, the webhook for the AWS cloud provider will default to on-demand
       operator: In
       values: ["on-demand"]
@@ -58,3 +58,16 @@ spec:
     karpenter.sh/discovery: {{cluster-name}}
   tags:
     KarpenerProvisionerName: "tooling"
+  userData: |
+    MIME-Version: 1.0
+    Content-Type: multipart/mixed; boundary="BOUNDARY"
+
+    --BOUNDARY
+    Content-Type: text/x-shellscript; charset="us-ascii"
+
+    #!/bin/bash
+    yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm,
+    systemctl enable amazon-ssm-agent,
+    systemctl start amazon-ssm-agent,
+
+    --BOUNDARY--
