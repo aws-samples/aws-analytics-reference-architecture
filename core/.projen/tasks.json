@@ -252,6 +252,9 @@
           "exec": "pip3 install -r lib/data-generator/resources/lambdas/write-in-batch/requirements.txt --target lib/data-generator/resources/lambdas/write-in-batch --upgrade"
         },
         {
+          "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/job-template/requirements.txt --target lib/emr-eks-platform/resources/lambdas/job-template --upgrade"
+        },
+        {
           "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/managed-endpoint/requirements.txt --target lib/emr-eks-platform/resources/lambdas/managed-endpoint --upgrade"
         },
         {
