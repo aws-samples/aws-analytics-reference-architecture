@@ -21,33 +21,13 @@ export interface PreBundledLayerProps extends Partial<LayerVersionProps>{
  * Do not include packages in your Lambda function `requirements.txt` if they are already part of the PreBundledLayer.
  *
  * Here is the list of bundled dependencies:
- * * astroid==2.4.2
- * * autopep8==1.6.0
- * * backports.entry-points-selectable==1.1.0
- * * boto3==1.20.12
- * * botocore==1.23.12
- * * click==8.0.3
- * * distlib==0.3.2
- * * filelock==3.0.12
- * * Flask==2.0.2
- * * isort==5.6.4
- * * itsdangerous==2.0.1
- * * Jinja2==3.0.2
- * * jmespath==0.10.0
- * * lazy-object-proxy==1.4.3
- * * MarkupSafe==2.0.1
- * * mccabe==0.6.1
- * * platformdirs==2.2.0
- * * pycodestyle==2.8.0
- * * pylint==2.6.0
+ * * boto3==1.26.37
+ * * botocore==1.29.37
+ * * jmespath==1.0.1
  * * python-dateutil==2.8.2
- * * s3transfer==0.5.0
- * * six==1.15.0
- * * toml==0.10.2
- * * urllib3==1.26.7
- * * virtualenv==20.7.0
- * * Werkzeug==2.0.2
- * * wrapt==1.12.1
+ * * s3transfer==0.6.0
+ * * six==1.16.0
+ * * urllib3==1.26.13
  */
 export class PreBundledLayer extends LayerVersion {
 
@@ -65,7 +45,7 @@ export class PreBundledLayer extends LayerVersion {
 
     return boto3Layer || new PreBundledLayer(stack, id, {
       codePath: codePath,
-      compatibleRuntimes: [Runtime.PYTHON_3_6, Runtime.PYTHON_3_8, Runtime.PYTHON_3_7, Runtime.PYTHON_3_9],
+      compatibleRuntimes: [Runtime.PYTHON_3_9],
       layerVersionName: 'ara-boto3-layer',
     });
   }
