@@ -51,18 +51,22 @@ describe ('ManagedEndpointProvider', () => {
                 ],
               },
             },
-            {
-              Action:
+            Match.objectLike({
+              Action: 
                 'emr-containers:DescribeManagedEndpoint',
-              Effect: 'Allow',
+              Condition: {
+                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' },
+              },
               Resource: '*',
-            },
-            {
-              Action:
+            }),
+            Match.objectLike({
+              Action: 
                 'emr-containers:DeleteManagedEndpoint',
-              Effect: 'Allow',
+              Condition: {
+                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' },
+              },
               Resource: '*',
-            },
+            }),
             Match.objectLike({
               Action: 'emr-containers:CreateManagedEndpoint',
               Condition: {
