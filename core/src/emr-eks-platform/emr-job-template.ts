@@ -49,7 +49,7 @@ export class EmrEksJobTemplateProvider extends Construct {
     const lambdaPolicy = [
       new PolicyStatement({
         resources: ['*'],
-        actions: ['emr-containers:CreateJobTemplate', 'emr-containers:TagResource'],
+        actions: ['emr-containers:CreateJobTemplate', 'emr-containers:TagResource', 'emr-containers:DeleteJobTemplate'],
         conditions: { StringEquals: { 'aws:RequestTag/for-use-with': 'cdk-analytics-reference-architecture' } }
       }),
     ];
