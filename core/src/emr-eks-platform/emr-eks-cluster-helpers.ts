@@ -33,7 +33,7 @@ export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdm
     namespace: 'cert-manager',
     chart: 'cert-manager',
     repository: 'https://charts.jetstack.io',
-    version: 'v1.4.0',
+    version: 'v1.10.1',
     timeout: Duration.minutes(14),
   });
 

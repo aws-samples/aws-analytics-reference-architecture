@@ -172,10 +172,12 @@ export function createIAMRolePolicy(scope: Construct,
   policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<region>/gi, Aws.REGION);
   policy.Statement[12].Resource[0] = policy.Statement[12].Resource[0].replace(/<your-studio-id>/gi, studioId);
 
+  let identityName = user.identityName ? user.identityName : user.iamUser?.userName;
+
   //create the policy
-  return new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(user.identityName!), {
+  return new ManagedPolicy(scope, 'studioSessionPolicy' + Utils.stringSanitizer(identityName!), {
     document: PolicyDocument.fromJson(policy),
-    managedPolicyName: 'studioIAMRolePolicy-' + Utils.stringSanitizer(user.identityName!) + '-' + studioId,
+    managedPolicyName: 'studioIAMRolePolicy-' + Utils.stringSanitizer(identityName!) + '-' + studioId,
   });
 
 }
