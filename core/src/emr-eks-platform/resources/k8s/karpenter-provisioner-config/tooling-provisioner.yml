@@ -62,7 +62,7 @@ spec:
   subnetSelector:
     aws-ids: {{subnet-list}}
   securityGroupSelector:
-    karpenter.sh/discovery: {{cluster-name}}
+    kubernetes.io/cluster/{{cluster-name}}: owned
   tags:
     KarpenerProvisionerName: "tooling"
   userData: |

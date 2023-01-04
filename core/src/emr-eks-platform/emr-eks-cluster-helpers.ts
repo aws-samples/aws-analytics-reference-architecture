@@ -385,7 +385,7 @@ export function karpenterSetup(cluster: Cluster,
     });
 
     Tags.of(karpenterInstancesSg).add('karpenter.sh/discovery', `${eksClusterName}`);
-
+    
     cluster.clusterSecurityGroup.addIngressRule(
         karpenterInstancesSg,
         Port.allTraffic(),

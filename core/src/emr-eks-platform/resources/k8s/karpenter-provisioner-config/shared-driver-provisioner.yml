@@ -67,7 +67,7 @@ spec:
   subnetSelector:
      aws-ids: {{subnet-id}}
   securityGroupSelector:
-    karpenter.sh/discovery: {{cluster-name}}
+    kubernetes.io/cluster/{{cluster-name}}: owned
   tags:
     KarpenerProvisionerName: "shared-driver"
   userData: |
