@@ -4,7 +4,7 @@ on:
   workflow_dispatch: {}
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       CI: "true"
     steps:
@@ -22,10 +22,6 @@ jobs:
         with:
           distribution: 'zulu' # OpenJDK
           java-version: '11'
-      - name: Setup Python 3.8
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.8'
       - name: Install dependencies
         run: cd core && yarn install --check-files --frozen-lockfile
       - name: Set git identity
