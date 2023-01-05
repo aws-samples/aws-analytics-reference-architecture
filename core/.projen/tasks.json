@@ -97,9 +97,6 @@
         },
         {
           "exec": "npx projen pip-install"
-        },
-        {
-          "exec": "npx projen upgrade-pyopenssl"
         }
       ]
     },
@@ -201,7 +198,7 @@
       "description": "Creates the distribution package",
       "steps": [
         {
-          "exec": "if [ ! -z ${CI} ]; then rsync -a . .repo --exclude .git --exclude node_modules && rm -rf dist && mv .repo dist; else npx projen package-all; fi"
+          "exec": "if [ ! -z ${CI} ]; then mkdir -p dist && rsync -a . dist --exclude .git --exclude node_modules; else npx projen package-all; fi"
         },
         {
           "spawn": "package-all"
@@ -368,6 +365,15 @@
         }
       ]
     },
+    "test:update": {
+      "name": "test:update",
+      "description": "Update jest snapshots",
+      "steps": [
+        {
+          "exec": "jest --updateSnapshot"
+        }
+      ]
+    },
     "test:watch": {
       "name": "test:watch",
       "description": "Run jest in watch mode",
@@ -429,15 +435,6 @@
         },
         {
           "spawn": "post-upgrade"
-        }
-      ]
-    },
-    "upgrade-pyopenssl": {
-      "name": "upgrade-pyopenssl",
-      "description": "Upgrade pyopenssl to avoid package failure",
-      "steps": [
-        {
-          "exec": "pip install pyopenssl --upgrade"
         }
       ]
     },
