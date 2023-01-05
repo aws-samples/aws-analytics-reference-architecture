@@ -22,10 +22,6 @@ jobs:
         with:
           distribution: 'zulu' # OpenJDK
           java-version: '11'
-      - name: Setup Python 3.8
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.8'
       - name: force cryptography version
         run: pip install --force-reinstall "cryptography==38.0.4"      
       - name: Install dependencies
