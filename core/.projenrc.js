@@ -139,6 +139,16 @@ project.addTask('test:destroy', {
 project.addDevDeps('glob');
 
 /**
+ * Add Task to upgrade pyopenssl
+ */
+
+const upgradePyOpenSSlTask = project.addTask('upgrade-pyopenssl', {
+  description: 'Upgrade pyopenssl to avoid package failure',
+});
+
+upgradePyOpenSSlTask.exec('pip install pyopenssl --upgrade');
+
+/**
  * Task to copy `resources` directories from `src` to `lib`
  */
 
@@ -193,6 +203,7 @@ for (const gradlePath of findAllGradleLambdaDir('src')) {
 project.compileTask.exec('npx projen gradle-build');
 project.compileTask.exec('npx projen copy-resources');
 project.compileTask.exec('npx projen pip-install');
+project.compileTask.exec('npx projen upgrade-pyopenssl');
 
 /**
  * Find all directory that has a Python package.
