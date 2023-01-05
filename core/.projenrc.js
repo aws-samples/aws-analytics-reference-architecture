@@ -139,16 +139,6 @@ project.addTask('test:destroy', {
 project.addDevDeps('glob');
 
 /**
- * Add Task to upgrade pyopenssl
- */
-
-const upgradePyOpenSSlTask = project.addTask('upgrade-pyopenssl', {
-  description: 'Upgrade pyopenssl to avoid package failure',
-});
-
-upgradePyOpenSSlTask.exec('pip install pyopenssl --upgrade');
-
-/**
  * Task to copy `resources` directories from `src` to `lib`
  */
 
