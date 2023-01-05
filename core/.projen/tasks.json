@@ -97,6 +97,9 @@
         },
         {
           "exec": "npx projen pip-install"
+        },
+        {
+          "exec": "npx projen upgrade-pyopenssl"
         }
       ]
     },
@@ -426,6 +429,15 @@
         },
         {
           "spawn": "post-upgrade"
+        }
+      ]
+    },
+    "upgrade-pyopenssl": {
+      "name": "upgrade-pyopenssl",
+      "description": "Upgrade pyopenssl to avoid package failure",
+      "steps": [
+        {
+          "exec": "pip install pyopenssl --upgrade"
         }
       ]
     },
