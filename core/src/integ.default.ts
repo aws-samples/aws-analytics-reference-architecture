@@ -13,7 +13,7 @@ const emrEks = EmrEksCluster.getOrCreate(stack, {
   autoscaling: Autoscaler.KARPENTER,
 });
 
-emrEks.addEmrVirtualCluster(stack, {
+const virtualCluster = emrEks.addEmrVirtualCluster(stack, {
   name: 'e2eTest',
   createNamespace: true,
   eksNamespace: 'emreks',
@@ -42,7 +42,7 @@ const policy = new ManagedPolicy(stack, 'MyPolicy1', {
   ],
 });
 
-emrEks.createExecutionRole(stack, 'ExecRole',
+const execRole = emrEks.createExecutionRole(stack, 'ExecRole',
   policy,
   'emreks',
   'emr-eks-exec-role',
@@ -71,3 +71,5 @@ platform.addUser([{
 // Job config for each nodegroup
 new CfnOutput(stack, 'CriticalConfig', { value: emrEks.criticalDefaultConfig });
 new CfnOutput(stack, 'SharedConfig', { value: emrEks.sharedDefaultConfig });
+new CfnOutput(stack, 'JobExecRole', { value: execRole.roleArn });
+new CfnOutput(stack, 'VirtualClusterId', { value: virtualCluster.attrId });

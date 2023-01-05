@@ -60,9 +60,6 @@ describe ('ManagedEndpointProvider', () => {
             {
               Action:
                 'emr-containers:DeleteManagedEndpoint',
-              Condition: {
-                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' },
-              },
               Effect: 'Allow',
               Resource: '*',
             },
