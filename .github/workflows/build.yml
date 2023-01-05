@@ -26,7 +26,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.8'
-        run: pip install --force-reinstall "cryptography==38.0.4"         
+      - name: force cryptography version
+        run: pip install --force-reinstall "cryptography==38.0.4"      
       - name: Install dependencies
         run: cd core && yarn install --check-files --frozen-lockfile
       - name: Set git identity
