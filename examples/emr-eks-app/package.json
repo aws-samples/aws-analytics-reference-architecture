@@ -16,13 +16,13 @@
     "@types/prettier": "2.6.0",
     "jest": "^27.5.1",
     "ts-jest": "^27.1.4",
-    "aws-cdk": "2.46.0",
+    "aws-cdk": "2.51.0",
     "ts-node": "^10.9.1",
     "typescript": "~3.9.7"
   },
   "dependencies": {
-    "aws-analytics-reference-architecture": "^2.4.9",
-    "aws-cdk-lib": "2.46.0",
+    "aws-analytics-reference-architecture": "2.6.0",
+    "aws-cdk-lib": "2.51.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
   }

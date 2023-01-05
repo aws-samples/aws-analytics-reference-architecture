@@ -10,7 +10,8 @@ export class EmrEksAppStack extends cdk.Stack {
 
     const emrEks = ara.EmrEksCluster.getOrCreate(this,{
       eksAdminRoleArn:'',
-      eksClusterName:''
+      eksClusterName:'',
+      autoscaling: ara.Autoscaler.KARPENTER,
     });
 
     const virtualCluster = emrEks.addEmrVirtualCluster(this,{
@@ -24,7 +25,7 @@ export class EmrEksAppStack extends cdk.Stack {
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW,
           actions:['s3:PutObject','s3:GetObject','s3:ListBucket'],
-          resources:['*'],
+          resources:['YOUR-S3-BUCKET'],
         }),
         new iam.PolicyStatement({
           effect: iam.Effect.ALLOW, actions:['logs:PutLogEvents','logs:CreateLogStream','logs:DescribeLogGroups','logs:DescribeLogStreams'],
@@ -54,7 +55,7 @@ export class EmrEksAppStack extends cdk.Stack {
       notebookPlatform.addUser([{
         identityName:'',
         notebookManagedEndpoints: [{
-        emrOnEksVersion: 'emr-6.8.0-latest',
+        emrOnEksVersion: ara.EmrVersion.V6_9,
         executionPolicy: emrEksPolicy,
         managedEndpointName: 'myendpoint'
               }],
