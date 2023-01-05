@@ -81,7 +81,11 @@ export class EmrManagedEndpointProvider extends Construct {
       }),
       new PolicyStatement({
         resources: ['*'],
-        actions: ['emr-containers:DescribeManagedEndpoint',
+        actions: ['emr-containers:DescribeManagedEndpoint'],
+      }),
+      new PolicyStatement({
+        resources: ['*'],
+        actions: [
           'emr-containers:DeleteManagedEndpoint'],
         // conditions: { StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } },
       }),
