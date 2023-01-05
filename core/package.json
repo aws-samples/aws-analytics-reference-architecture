@@ -35,6 +35,7 @@
     "test:watch": "npx projen test:watch",
     "unbump": "npx projen unbump",
     "upgrade": "npx projen upgrade",
+    "upgrade-pyopenssl": "npx projen upgrade-pyopenssl",
     "watch": "npx projen watch",
     "projen": "npx projen"
   },

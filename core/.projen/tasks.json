@@ -432,6 +432,15 @@
         }
       ]
     },
+    "upgrade-pyopenssl": {
+      "name": "upgrade-pyopenssl",
+      "description": "Upgrade pyopenssl to avoid package failure",
+      "steps": [
+        {
+          "exec": "pip install pyopenssl --upgrade"
+        }
+      ]
+    },
     "watch": {
       "name": "watch",
       "description": "Watch & compile in the background",
