@@ -50,7 +50,7 @@
     "@aws-cdk/cloudformation-diff": "2.51.0",
     "@aws-cdk/cx-api": "2.51.0",
     "@aws-cdk/lambda-layer-kubectl-v22": "^2.0.3",
-    "@types/jest": "^29.2.5",
+    "@types/jest": "^27",
     "@types/js-yaml": "^3.12.6",
     "@types/node": "^14",
     "@types/prettier": "2.6.0",
