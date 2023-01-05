@@ -83,7 +83,7 @@ export class EmrManagedEndpointProvider extends Construct {
         resources: ['*'],
         actions: ['emr-containers:DescribeManagedEndpoint',
           'emr-containers:DeleteManagedEndpoint'],
-        conditions: { StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } },
+        // conditions: { StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } },
       }),
       new PolicyStatement({
         resources: [`arn:${Aws.PARTITION}:emr-containers:${Aws.REGION}:${Aws.ACCOUNT_ID}:/virtualclusters/*`],

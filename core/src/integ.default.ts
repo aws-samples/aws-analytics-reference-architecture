@@ -1,4 +1,4 @@
-import { App, ArnFormat, Aws, Stack } from 'aws-cdk-lib';
+import { App, ArnFormat, Aws, CfnOutput, Stack } from 'aws-cdk-lib';
 import { Autoscaler, EmrEksCluster, EmrVersion } from './emr-eks-platform';
 import { ManagedPolicy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
 import { NotebookPlatform, StudioAuthMode } from './notebook-platform';
@@ -65,20 +65,9 @@ platform.addUser([{
       executionPolicy:   policy,
       managedEndpointName: 'notebook',
     },
-    {
-      emrOnEksVersion: EmrVersion.V6_9,
-      executionPolicy:   policy,
-      managedEndpointName: 'notebook2',
-    },
-    {
-      emrOnEksVersion: EmrVersion.V6_8,
-      executionPolicy:   policy,
-      managedEndpointName: 'notebook3',
-    },
-    {
-      emrOnEksVersion: EmrVersion.V6_7,
-      executionPolicy:   policy,
-      managedEndpointName: 'notebook4',
-    }
   ],
 }]);
+
+// Job config for each nodegroup
+new CfnOutput(stack, 'CriticalConfig', { value: emrEks.criticalDefaultConfig });
+new CfnOutput(stack, 'SharedConfig', { value: emrEks.sharedDefaultConfig });
