@@ -9,13 +9,14 @@
 
 import { ManagedPolicy, PolicyDocument, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Stack } from 'aws-cdk-lib';
-import { EmrEksCluster } from '../../../src/emr-eks-platform/emr-eks-cluster';
+import { Autoscaler, EmrEksCluster } from '../../../src/emr-eks-platform/emr-eks-cluster';
 import { TaintEffect } from 'aws-cdk-lib/aws-eks';
 import { Template, Match } from 'aws-cdk-lib/assertions';
 
 const emrEksClusterStack = new Stack();
 const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, {
   eksAdminRoleArn: 'arn:aws:iam::1234567890:role/AdminAccess',
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER
 });
 cluster.addEmrVirtualCluster(emrEksClusterStack, {
   name: 'test',
@@ -118,7 +119,7 @@ test('EKS should have a helm chart for deploying the Kubernetes Dashboard', () =
 });
 
 test('EKS cluster should have the default Nodegroups', () => {
-  template.resourceCountIs('AWS::EKS::Nodegroup', 13);
+  template.resourceCountIs('AWS::EKS::Nodegroup', 11);
 
   template.hasResourceProperties('AWS::EKS::Nodegroup', {
     AmiType: 'AL2_x86_64',
@@ -127,9 +128,9 @@ test('EKS cluster should have the default Nodegroups', () => {
       role: 'tooling',
     },
     ScalingConfig: {
-      DesiredSize: 1,
+      DesiredSize: 2,
       MaxSize: 10,
-      MinSize: 1,
+      MinSize: 2,
     },
     Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
@@ -183,6 +184,13 @@ test('EKS cluster should have the default Nodegroups', () => {
       MaxSize: 10,
       MinSize: 0,
     },
+    Taints: [
+      {
+        Effect: 'NO_SCHEDULE',
+        Key: 'role',
+        Value: 'shared',
+      },
+    ],
     Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
@@ -190,6 +198,7 @@ test('EKS cluster should have the default Nodegroups', () => {
       'k8s.io/cluster-autoscaler/node-template/label/node-lifecycle': 'on-demand',
       'k8s.io/cluster-autoscaler/node-template/label/role': 'shared',
       'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'driver',
+      'k8s.io/cluster-autoscaler/node-template/taint/role': 'shared:NO_SCHEDULE',
     }),
   });
 
@@ -207,13 +216,18 @@ test('EKS cluster should have the default Nodegroups', () => {
       MaxSize: 100,
       MinSize: 0,
     },
-    Taints: [
+    Taints: Match.arrayWith([
+      {
+        Effect: 'NO_SCHEDULE',
+        Key: 'role',
+        Value: 'shared',
+      },
       {
         Effect: 'NO_SCHEDULE',
         Key: 'node-lifecycle',
         Value: 'spot',
       },
-    ],
+    ]),
     Tags: Match.objectLike({
       'eks:cluster-name': 'data-platform',
       'k8s.io/cluster-autoscaler/enabled': 'true',
@@ -222,6 +236,7 @@ test('EKS cluster should have the default Nodegroups', () => {
       'k8s.io/cluster-autoscaler/node-template/label/role': 'shared',
       'k8s.io/cluster-autoscaler/node-template/label/spark-role': 'executor',
       'k8s.io/cluster-autoscaler/node-template/taint/node-lifecycle': 'spot:NO_SCHEDULE',
+      'k8s.io/cluster-autoscaler/node-template/taint/role': 'shared:NO_SCHEDULE',
     }),
   });
 
@@ -259,6 +274,7 @@ test('EKS cluster should have the default Nodegroups', () => {
   template.hasResourceProperties('AWS::EKS::Nodegroup', {
     NodegroupName: 'notebook-executor-0',
     InstanceTypes: ['t3.2xlarge', 't3a.2xlarge'],
+    AmiType: 'AL2_x86_64',
     CapacityType: 'SPOT',
     Labels: {
       role: 'notebook',

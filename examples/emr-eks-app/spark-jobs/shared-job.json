@@ -1,0 +1,14 @@
+{
+  "name": "example-shared",
+  "virtualClusterId": "<VIRTUAL_CLUSTER_ID",
+  "executionRoleArn": "<EXECUTION_ROLE_ARN>",
+  "releaseLabel": "emr-6.9.0-latest",
+  "jobDriver": {
+    "sparkSubmitJobDriver": {
+      "entryPoint": "s3://<REGION>.elasticmapreduce/emr-containers/samples/wordcount/scripts/wordcount.py",
+      "entryPointArguments": ["s3://<BUCKET>/wordcount_output"],
+      "sparkSubmitParameters": "--conf spark.executor.instances=2"
+    }
+  },
+  "configurationOverrides": <SHARED_CONFIG_JSON>
+}

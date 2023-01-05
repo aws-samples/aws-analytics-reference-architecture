@@ -10,6 +10,7 @@ import { Provider } from 'aws-cdk-lib/custom-resources';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { Construct } from 'constructs';
 import { PreBundledLayer } from '../common/pre-bundled-layer';
+import { EmrVersion } from './emr-eks-cluster';
 
 /**
 * The properties for the EMR Managed Endpoint to create.
@@ -32,7 +33,7 @@ export interface EmrManagedEndpointOptions {
    * The Amazon EMR version to use
    * @default - The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
    */
-  readonly emrOnEksVersion?: string;
+  readonly emrOnEksVersion?: EmrVersion;
   /**
    * The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint
    * @default - Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
@@ -80,9 +81,13 @@ export class EmrManagedEndpointProvider extends Construct {
       }),
       new PolicyStatement({
         resources: ['*'],
-        actions: ['emr-containers:DescribeManagedEndpoint',
+        actions: ['emr-containers:DescribeManagedEndpoint'],
+      }),
+      new PolicyStatement({
+        resources: ['*'],
+        actions: [
           'emr-containers:DeleteManagedEndpoint'],
-        conditions: { StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } },
+        // conditions: { StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' } },
       }),
       new PolicyStatement({
         resources: [`arn:${Aws.PARTITION}:emr-containers:${Aws.REGION}:${Aws.ACCOUNT_ID}:/virtualclusters/*`],

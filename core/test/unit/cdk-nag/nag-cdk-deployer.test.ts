@@ -72,6 +72,18 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM4', reason: 'Provided by the Custom Resource framework of CDK' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  '/CDKDeployer/StartBuildFunction/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Provided by the Custom Resource framework of CDK' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  '/CDKDeployer/ReportBuildFunction/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Provided by the Custom Resource framework of CDK' }],
+);
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);
