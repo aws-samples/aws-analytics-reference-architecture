@@ -27,6 +27,8 @@ jobs:
         with:
           distribution: 'zulu' # OpenJDK
           java-version: '11'
+      - name: force cryptography version
+        run: pip install --force-reinstall "cryptography==38.0.4"
       - name: Install dependencies
         run: cd core && yarn install --check-files --frozen-lockfile
       - name: release
