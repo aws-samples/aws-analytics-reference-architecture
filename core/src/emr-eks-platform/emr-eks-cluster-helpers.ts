@@ -35,6 +35,12 @@ export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdm
     repository: 'https://charts.jetstack.io',
     version: 'v1.10.1',
     timeout: Duration.minutes(14),
+    values: {
+      startupapicheck: {
+        timeout: '5m'
+      },
+      installCRDs: true
+    }
   });
 
   //Create service account for ALB and install ALB
