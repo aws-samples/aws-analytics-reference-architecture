@@ -1,6 +1,6 @@
 import { App, ArnFormat, Aws, CfnOutput, Stack } from 'aws-cdk-lib';
 import { Autoscaler, EmrEksCluster, EmrVersion } from './emr-eks-platform';
-import { ManagedPolicy, PolicyStatement, Role, ServicePrincipal, User } from 'aws-cdk-lib/aws-iam';
+import { ManagedPolicy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
 import { NotebookPlatform, StudioAuthMode } from './notebook-platform';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 
