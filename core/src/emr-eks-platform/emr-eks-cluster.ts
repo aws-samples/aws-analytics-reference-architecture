@@ -458,7 +458,7 @@ export class EmrEksCluster extends TrackedConstruct {
         metadata: { name: eksNamespace },
       })
       : null;
-
+    
     // deep clone the Role template object and replace the namespace
     const k8sRole = JSON.parse(JSON.stringify(K8sRole));
     k8sRole.metadata.namespace = eksNamespace;
@@ -487,6 +487,9 @@ export class EmrEksCluster extends TrackedConstruct {
 
     virtCluster.node.addDependency(roleBinding);
     virtCluster.node.addDependency(this.emrServiceRole);
+    
+    if (ns)
+      virtCluster.node.addDependency(ns);
 
     Tags.of(virtCluster).add('for-use-with', 'cdk-analytics-reference-architecture');
 
