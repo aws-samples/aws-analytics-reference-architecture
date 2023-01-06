@@ -14,7 +14,7 @@ export class EmrEksAppStack extends cdk.Stack {
     })
 
     const emrEks = ara.EmrEksCluster.getOrCreate(this,{
-      eksAdminRoleArn: 'arn:aws:iam::668876353122:role/gromav',
+      eksAdminRoleArn: '<YOUR_ADMIN_ROLE>>',
       eksClusterName:'dataplatform',
       autoscaling: ara.Autoscaler.KARPENTER,
     });
