@@ -1,6 +1,6 @@
 import { App, ArnFormat, Aws, CfnOutput, Stack } from 'aws-cdk-lib';
 import { Autoscaler, EmrEksCluster, EmrVersion } from './emr-eks-platform';
-import { ManagedPolicy, PolicyStatement, User } from 'aws-cdk-lib/aws-iam';
+import { ManagedPolicy, PolicyStatement, Role, ServicePrincipal, User } from 'aws-cdk-lib/aws-iam';
 import { NotebookPlatform, StudioAuthMode } from './notebook-platform';
 // eslint-disable-next-line import/no-extraneous-dependencies,import/no-unresolved
 
@@ -9,7 +9,7 @@ const mockApp = new App();
 const stack = new Stack(mockApp, 'EmrEksClustereE2eTest');
 
 const emrEks = EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::111111111111:role/myrole',
+  eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
   autoscaling: Autoscaler.KARPENTER,
 });
 
