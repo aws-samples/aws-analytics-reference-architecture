@@ -33,3 +33,4 @@ core/.github/*
 *.iml
 
 core/tmp.yaml
+examples/emr-eks-app/bin

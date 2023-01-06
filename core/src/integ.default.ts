@@ -9,7 +9,7 @@ const mockApp = new App();
 const stack = new Stack(mockApp, 'EmrEksClustereE2eTest');
 
 const emrEks = EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::111111111111:role/myrole',
+  eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
   autoscaling: Autoscaler.KARPENTER,
 });
 

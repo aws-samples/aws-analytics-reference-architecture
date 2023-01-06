@@ -5,9 +5,9 @@
   "releaseLabel": "emr-6.9.0-latest",
   "jobDriver": {
     "sparkSubmitJobDriver": {
-      "entryPoint": "s3://<REGION>.elasticmapreduce/emr-containers/samples/wordcount/scripts/wordcount.py",
-      "entryPointArguments": ["s3://<BUCKET>/wordcount_output"],
-      "sparkSubmitParameters": "--conf spark.executor.instances=2"
+      "entryPoint": "s3://aws-data-lake-workshop/spark-eks/spark-eks-assembly-3.3.0.jar",
+      "entryPointArguments": ["s3://nyc-tlc/csv_backup", "2017","s3://nyc-tlc/misc/taxi _zone_lookup.csv","s3://<RESULTS_BUCKET>/emr-eks-results", "emr_eks_demo"],
+      "sparkSubmitParameters": "--class ValueZones --conf spark.executor.instances=10"
     }
   },
   "configurationOverrides": <CRITICAL_CONFIG_JSON>
