@@ -8,7 +8,7 @@
 */
 
 import * as cdk from 'aws-cdk-lib';
-import { deployStack } from './utils';
+import { deployStack, destroyStack } from './utils';
 
 import { CdkDeployer, DeploymentType } from '../../src/common/cdk-deployer';
 
@@ -18,9 +18,15 @@ const integTestApp = new cdk.App();
 
 const cdkDeployerStack = new CdkDeployer(integTestApp, {
   deploymentType: DeploymentType.CLICK_TO_DEPLOY,
-  githubRepository: 'aws-samples/aws-analytics-reference-architecture',
-  cdkAppLocation: 'refarch/aws-native',
-  gitBranch: 'main',
+  // githubRepository: 'aws-samples/aws-analytics-reference-architecture',
+  // cdkAppLocation: 'refarch/aws-native',
+  stackName: 'ara',
+  cdkAppLocation: 'aws-native',
+  s3Repository: {
+    bucketName: 'gromav-test',
+    objectKey: 'cdk.zip',
+  },
+  // gitBranch: 'main',
   cdkParameters: {
     QuickSightUsername: {
       default: 'gromav/gromav-Isengard',

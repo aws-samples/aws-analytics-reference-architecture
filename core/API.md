@@ -1511,7 +1511,7 @@ Sink object key where the batch replayer will put data in.
 
 ### CdkDeployer <a name="CdkDeployer" id="aws-analytics-reference-architecture.CdkDeployer"></a>
 
-A custom CDK Stack that can be synthetized as a CloudFormation Stack to deploy a CDK application hosted on GitHub.
+A custom CDK Stack that can be synthetized as a CloudFormation Stack to deploy a CDK application hosted on GitHub or on S3 as a Zip file.
 
 This stack is self contained and can be one-click deployed to any AWS account.
 It can be used for AWS workshop or AWS blog examples deployment when CDK is not supported/desired.
@@ -1519,12 +1519,12 @@ The stack supports passing the CDK application stack name to deploy (in case the
 
 It contains the necessary resources to synchronously deploy a CDK application from a GitHub repository:
   * A CodeBuild project to effectively deploy the CDK application
-  * A StartBuild custom resource to synchronously trigger the build using a callback pattern based on Event Bridge
-  * The necessary roles
+  * A StartBuild custom resource to synchronously triggers the build using a callback pattern based on Event Bridge
+  * The necessary roles and permissions
 
 The StartBuild CFN custom resource is using the callback pattern to wait for the build completion:
   1. a Lambda function starts the build but doesn't return any value to the CFN callback URL. Instead, the callback URL is passed to the build project.
-  2. the completion of the build trigger an Event and a second Lambda function which checks the result of the build and send information to the CFN callback URL
+  2. the completion of the build triggers an Event and a second Lambda function which checks the result of the build and send information to the CFN callback URL
 
   * Usage example:
 ```typescript
@@ -8090,14 +8090,15 @@ const cdkDeployerProps: CdkDeployerProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.synthesizer">synthesizer</a></code> | <code>aws-cdk-lib.IStackSynthesizer</code> | Synthesis method to use while deploying this stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.tags">tags</a></code> | <code>{[ key: string ]: string}</code> | Stack tags that will be applied to all the taggable resources and the stack itself. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.terminationProtection">terminationProtection</a></code> | <code>boolean</code> | Whether to enable termination protection for this stack. |
-| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.deploymentType">deploymentType</a></code> | <code><a href="#aws-analytics-reference-architecture.DeploymentType">DeploymentType</a></code> | The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a click on a github README button. |
-| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation">cdkAppLocation</a></code> | <code>string</code> | The location of the CDK application in the Github repository. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.deploymentType">deploymentType</a></code> | <code><a href="#aws-analytics-reference-architecture.DeploymentType">DeploymentType</a></code> | The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a one-click deploy button. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation">cdkAppLocation</a></code> | <code>string</code> | The location of the CDK application in the repository. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkParameters">cdkParameters</a></code> | <code>{[ key: string ]: aws-cdk-lib.CfnParameterProps}</code> | The CFN parameters to pass to the CDK application. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkStack">cdkStack</a></code> | <code>string</code> | The CDK stack name to deploy. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.deployBuildSpec">deployBuildSpec</a></code> | <code>aws-cdk-lib.aws_codebuild.BuildSpec</code> | Deploy CodeBuild buildspec file name at the root of the cdk app folder. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.destroyBuildSpec">destroyBuildSpec</a></code> | <code>aws-cdk-lib.aws_codebuild.BuildSpec</code> | Destroy Codebuild buildspec file name at the root of the cdk app folder. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch">gitBranch</a></code> | <code>string</code> | The branch to use on the Github repository. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.githubRepository">githubRepository</a></code> | <code>string</code> | The github repository containing the CDK application. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.s3Repository">s3Repository</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The Amazon S3 repository location containing the CDK application. |
 
 ---
 
@@ -8279,7 +8280,7 @@ public readonly deploymentType: DeploymentType;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.DeploymentType">DeploymentType</a>
 
-The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a click on a github README button.
+The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a one-click deploy button.
 
 ---
 
@@ -8292,7 +8293,7 @@ public readonly cdkAppLocation: string;
 - *Type:* string
 - *Default:* The root of the repository
 
-The location of the CDK application in the Github repository.
+The location of the CDK application in the repository.
 
 It is used to `cd` into the folder before deploying the CDK application
 
@@ -8368,8 +8369,27 @@ public readonly githubRepository: string;
 ```
 
 - *Type:* string
+- *Default:* Github is not used as the source of the CDK code.
 
 The github repository containing the CDK application.
+
+Either `githubRepository` or `s3Repository` needs to be set if `deploymentType` is `CLICK_TO_DEPLOY`.
+
+---
+
+##### `s3Repository`<sup>Optional</sup> <a name="s3Repository" id="aws-analytics-reference-architecture.CdkDeployerProps.property.s3Repository"></a>
+
+```typescript
+public readonly s3Repository: Location;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Location
+- *Default:* S3 is not used as the source of the CDK code
+
+The Amazon S3 repository location containing the CDK application.
+
+The object key is a Zip file.
+Either `githubRepository` or `s3Repository` needs to be set if `deploymentType` is `CLICK_TO_DEPLOY`.
 
 ---
 

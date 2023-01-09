@@ -11,7 +11,7 @@ import { Code, Function, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Rule } from 'aws-cdk-lib/aws-events';
 import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets';
 import { Utils } from '../utils';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
+import { Bucket, Location } from 'aws-cdk-lib/aws-s3';
 import { startBuild, reportBuild } from './cdk-deployer-build';
 
 
@@ -38,25 +38,32 @@ export interface CdkDeployerProps extends cdk.StackProps {
   readonly cdkParameters?: { [name: string]: cdk.CfnParameterProps };
 
   /**
-   * The github repository containing the CDK application
+   * The github repository containing the CDK application.
+   * Either `githubRepository` or `s3Repository` needs to be set if `deploymentType` is `CLICK_TO_DEPLOY`.
+   * @default - Github is not used as the source of the CDK code.
    */
   readonly githubRepository?: string;
   /**
-   * The location of the CDK application in the Github repository.
+   * The branch to use on the Github repository. 
+   * @default - The main branch of the repository
+   */
+    readonly gitBranch?: string;
+  /**
+   * The Amazon S3 repository location containing the CDK application. The object key is a Zip file.
+   * Either `githubRepository` or `s3Repository` needs to be set if `deploymentType` is `CLICK_TO_DEPLOY`.
+   * @default -  S3 is not used as the source of the CDK code
+   */
+    readonly s3Repository?: Location;
+  /**
+   * The location of the CDK application in the repository.
    * It is used to `cd` into the folder before deploying the CDK application
    * @default - The root of the repository
    */
   readonly cdkAppLocation?: string;
   /**
-   * The branch to use on the Github repository. 
-   * @default - The main branch of the repository
-   */
-  readonly gitBranch?: string;
-
-  /**
    * The deployment type
    * WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process
-   * CLICK_TO_DEPLOY: the CDK application is deployed through a click on a github README button
+   * CLICK_TO_DEPLOY: the CDK application is deployed through a one-click deploy button
    */
   readonly deploymentType: DeploymentType;
 
@@ -72,19 +79,19 @@ export interface CdkDeployerProps extends cdk.StackProps {
 }
 
 /**
- * A custom CDK Stack that can be synthetized as a CloudFormation Stack to deploy a CDK application hosted on GitHub.
+ * A custom CDK Stack that can be synthetized as a CloudFormation Stack to deploy a CDK application hosted on GitHub or on S3 as a Zip file.
  * This stack is self contained and can be one-click deployed to any AWS account.
  * It can be used for AWS workshop or AWS blog examples deployment when CDK is not supported/desired.
  * The stack supports passing the CDK application stack name to deploy (in case there are multiple stacks in the CDK app) and CDK parameters.
  *
  * It contains the necessary resources to synchronously deploy a CDK application from a GitHub repository:
  *  * A CodeBuild project to effectively deploy the CDK application
- *  * A StartBuild custom resource to synchronously trigger the build using a callback pattern based on Event Bridge
- *  * The necessary roles
+ *  * A StartBuild custom resource to synchronously triggers the build using a callback pattern based on Event Bridge
+ *  * The necessary roles and permissions
  *
  * The StartBuild CFN custom resource is using the callback pattern to wait for the build completion:
  *  1. a Lambda function starts the build but doesn't return any value to the CFN callback URL. Instead, the callback URL is passed to the build project.
- *  2. the completion of the build trigger an Event and a second Lambda function which checks the result of the build and send information to the CFN callback URL
+ *  2. the completion of the build triggers an Event and a second Lambda function which checks the result of the build and send information to the CFN callback URL
  *
  *  * Usage example:
  * ```typescript
@@ -117,10 +124,6 @@ export class CdkDeployer extends cdk.Stack {
    * @param {CdkDeployerProps} props the CdkDeployer [properties]{@link CdkDeployerProps}
    */
   constructor(scope: Construct, props: CdkDeployerProps) {
-
-    if((props.deploymentType == DeploymentType.CLICK_TO_DEPLOY) && !props.githubRepository) {
-      throw new Error('githubRepository is required for CLICK_TO_DEPLOY');
-    }
         
     super(scope, 'CDKDeployer', {
       // Change the Stack Synthetizer to remove the CFN parameters for the CDK version
@@ -279,12 +282,25 @@ export class CdkDeployer extends cdk.Stack {
         path: `${cdkAppSourceCodeBucketPrefix.valueAsString}cdk_app.zip`,
       });
     } else {
-      source = Source.gitHub({
-        owner: props.githubRepository!.split('/')[0],
-        repo: props.githubRepository!.split('/')[1],
-        branchOrRef: props.gitBranch ? props.gitBranch : undefined,
-        reportBuildStatus: true,
-      });
+      if (props.githubRepository) {
+        source = Source.gitHub({
+          owner: props.githubRepository!.split('/')[0],
+          repo: props.githubRepository!.split('/')[1],
+          branchOrRef: props.gitBranch ? props.gitBranch : undefined,
+          reportBuildStatus: true,
+        });
+      } else if (props.s3Repository){
+        source = Source.s3({
+          bucket: Bucket.fromBucketName(
+            this,
+            'CdkAppBucket',
+            props.s3Repository.bucketName,
+          ),
+          path: props.s3Repository.objectKey,
+        });
+      } else {
+        throw new Error('githubRepository or s3Repository is required for CLICK_TO_DEPLOY deployment type');
+      }
     }
 
 
