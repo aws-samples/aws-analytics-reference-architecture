@@ -37,7 +37,14 @@ describe('EmrEksJobTemplateProvider', () => {
         {
           Statement: Match.arrayWith([
             Match.objectLike({
-              Action: ['emr-containers:CreateJobTemplate', 'emr-containers:TagResource', 'emr-containers:DeleteJobTemplate'],
+              Action: 'emr-containers:DeleteJobTemplate',
+              Condition: {
+                StringEquals: { 'aws:ResourceTag/for-use-with': 'cdk-analytics-reference-architecture' },
+              },
+              Effect: 'Allow',
+            }),
+            Match.objectLike({
+              Action: ['emr-containers:CreateJobTemplate', 'emr-containers:TagResource'],
               Condition: {
                 StringEquals: { 'aws:RequestTag/for-use-with': 'cdk-analytics-reference-architecture' },
               },
