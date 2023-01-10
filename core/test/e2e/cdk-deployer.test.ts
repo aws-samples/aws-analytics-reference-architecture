@@ -18,18 +18,13 @@ const integTestApp = new cdk.App();
 
 const cdkDeployerStack = new CdkDeployer(integTestApp, {
   deploymentType: DeploymentType.CLICK_TO_DEPLOY,
-  // githubRepository: 'aws-samples/aws-analytics-reference-architecture',
-  // cdkAppLocation: 'refarch/aws-native',
+  githubRepository: 'aws-samples/aws-analytics-reference-architecture',
+  cdkAppLocation: 'refarch/aws-native',
   stackName: 'ara',
-  cdkAppLocation: 'aws-native',
-  s3Repository: {
-    bucketName: 'gromav-test',
-    objectKey: 'cdk.zip',
-  },
-  // gitBranch: 'main',
+  gitBranch: 'main',
   cdkParameters: {
     QuickSightUsername: {
-      default: 'gromav/gromav-Isengard',
+      default: '<MY_USER>',
       type: 'String',
     },
     QuickSightIdentityRegion: {
