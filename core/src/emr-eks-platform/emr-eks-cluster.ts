@@ -259,11 +259,8 @@ export class EmrEksCluster extends TrackedConstruct {
       eksClusterName: this.clusterName,
     }).provider.serviceToken;
 
-    this.jobTemplateProviderToken = new EmrEksJobTemplateProvider(this, 'jobTemplateProvider').provider.serviceToken;    
-
-    if (props.eksAdminRoleArn == undefined && props.eksCluster == undefined) {
-      throw new Error('You mush provide an Admin role ARN if the EKS cluster is created throught the EmrEksCluster Construct');
-    }
+    // Create the custom resource provider for tagging the EC2 Auto Scaling groups
+    this.jobTemplateProviderToken = new EmrEksJobTemplateProvider(this, 'jobTemplateProvider').provider.serviceToken;
 
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
     if (props.eksCluster == undefined) {
@@ -315,7 +312,7 @@ export class EmrEksCluster extends TrackedConstruct {
       });
 
       //Setting up the cluster with the required controller
-      eksClusterSetup(this, this, props.eksAdminRoleArn!);
+      eksClusterSetup(this, this, props.eksAdminRoleArn);
 
       //Deploy the right autoscaler using the flag set earlier 
       if (this.isKarpenter) {
