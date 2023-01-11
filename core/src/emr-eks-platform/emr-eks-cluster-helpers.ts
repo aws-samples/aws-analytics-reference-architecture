@@ -22,10 +22,13 @@ import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
  * @param {Construct} scope The local path of the yaml podTemplate files to upload
  * @param {string} eksAdminRoleArn The admin role of the EKS cluster
  */
-export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdminRoleArn: string) {
+export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdminRoleArn?: string) {
+
 
   // Add the provided Amazon IAM Role as Amazon EKS Admin
-  cluster.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( scope, 'AdminRole', eksAdminRoleArn ), 'AdminRole');
+  if (eksAdminRoleArn != undefined){
+    cluster.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( scope, 'AdminRole', eksAdminRoleArn ), 'AdminRole');
+  }
 
   // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
   const certManager = cluster.eksCluster.addHelmChart('CertManager', {

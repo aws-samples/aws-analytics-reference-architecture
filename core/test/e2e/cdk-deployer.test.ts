@@ -8,7 +8,7 @@
 */
 
 import * as cdk from 'aws-cdk-lib';
-import { deployStack } from './utils';
+import { deployStack, destroyStack } from './utils';
 
 import { CdkDeployer, DeploymentType } from '../../src/common/cdk-deployer';
 
@@ -20,10 +20,11 @@ const cdkDeployerStack = new CdkDeployer(integTestApp, {
   deploymentType: DeploymentType.CLICK_TO_DEPLOY,
   githubRepository: 'aws-samples/aws-analytics-reference-architecture',
   cdkAppLocation: 'refarch/aws-native',
+  stackName: 'ara',
   gitBranch: 'main',
   cdkParameters: {
     QuickSightUsername: {
-      default: 'gromav/gromav-Isengard',
+      default: '<MY_USER>',
       type: 'String',
     },
     QuickSightIdentityRegion: {

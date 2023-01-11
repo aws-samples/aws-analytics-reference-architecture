@@ -1511,7 +1511,7 @@ Sink object key where the batch replayer will put data in.
 
 ### CdkDeployer <a name="CdkDeployer" id="aws-analytics-reference-architecture.CdkDeployer"></a>
 
-A custom CDK Stack that can be synthetized as a CloudFormation Stack to deploy a CDK application hosted on GitHub.
+A custom CDK Stack that can be synthetized as a CloudFormation Stack to deploy a CDK application hosted on GitHub or on S3 as a Zip file.
 
 This stack is self contained and can be one-click deployed to any AWS account.
 It can be used for AWS workshop or AWS blog examples deployment when CDK is not supported/desired.
@@ -1519,12 +1519,12 @@ The stack supports passing the CDK application stack name to deploy (in case the
 
 It contains the necessary resources to synchronously deploy a CDK application from a GitHub repository:
   * A CodeBuild project to effectively deploy the CDK application
-  * A StartBuild custom resource to synchronously trigger the build using a callback pattern based on Event Bridge
-  * The necessary roles
+  * A StartBuild custom resource to synchronously triggers the build using a callback pattern based on Event Bridge
+  * The necessary roles and permissions
 
 The StartBuild CFN custom resource is using the callback pattern to wait for the build completion:
   1. a Lambda function starts the build but doesn't return any value to the CFN callback URL. Instead, the callback URL is passed to the build project.
-  2. the completion of the build trigger an Event and a second Lambda function which checks the result of the build and send information to the CFN callback URL
+  2. the completion of the build triggers an Event and a second Lambda function which checks the result of the build and send information to the CFN callback URL
 
   * Usage example:
 ```typescript
@@ -4238,6 +4238,7 @@ cdk.CfnOutput(self,'ExecRoleArn', value = role.roleArn)
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.toString">toString</a></code> | Returns a string representation of this construct. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup">addEmrEksNodegroup</a></code> | Add new nodegroups to the cluster for Amazon EMR on EKS. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster">addEmrVirtualCluster</a></code> | Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate">addJobTemplate</a></code> | Creates a new Amazon EMR on EKS job template based on the props passed. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner">addKarpenterProvisioner</a></code> | Apply the provided manifest and add the CDK dependency on EKS cluster. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint">addManagedEndpoint</a></code> | Creates a new Amazon EMR managed endpoint to be used with Amazon EMR Virtual Cluster . |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity">addNodegroupCapacity</a></code> | Add a new Amazon EKS Nodegroup to the cluster. |
@@ -4303,6 +4304,38 @@ of the stack where virtual cluster is deployed.
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrVirtualClusterOptions">EmrVirtualClusterOptions</a>
 
 the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}.
+
+---
+
+##### `addJobTemplate` <a name="addJobTemplate" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate"></a>
+
+```typescript
+public addJobTemplate(scope: Construct, id: string, options: EmrEksJobTemplateDefinition): CustomResource
+```
+
+Creates a new Amazon EMR on EKS job template based on the props passed.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the scope of the stack where job template is created.
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate.parameter.id"></a>
+
+- *Type:* string
+
+the CDK id for job template resource.
+
+---
+
+###### `options`<sup>Required</sup> <a name="options" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate.parameter.options"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrEksJobTemplateDefinition">EmrEksJobTemplateDefinition</a>
+
+the EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint.
 
 ---
 
@@ -4694,6 +4727,131 @@ public readonly DEFAULT_KARPENTER_VERSION: string;
 - *Type:* string
 
 ---
+
+### EmrEksJobTemplateProvider <a name="EmrEksJobTemplateProvider" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider"></a>
+
+A custom resource provider for CRUD operations on Amazon EMR on EKS Managed Endpoints.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer"></a>
+
+```typescript
+import { EmrEksJobTemplateProvider } from 'aws-analytics-reference-architecture'
+
+new EmrEksJobTemplateProvider(scope: Construct, id: string)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.isConstruct"></a>
+
+```typescript
+import { EmrEksJobTemplateProvider } from 'aws-analytics-reference-architecture'
+
+EmrEksJobTemplateProvider.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.provider">provider</a></code> | <code>aws-cdk-lib.custom_resources.Provider</code> | The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `provider`<sup>Required</sup> <a name="provider" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.provider"></a>
+
+```typescript
+public readonly provider: Provider;
+```
+
+- *Type:* aws-cdk-lib.custom_resources.Provider
+
+The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources.
+
+---
+
 
 ### FlywayRunner <a name="FlywayRunner" id="aws-analytics-reference-architecture.FlywayRunner"></a>
 
@@ -8090,14 +8248,15 @@ const cdkDeployerProps: CdkDeployerProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.synthesizer">synthesizer</a></code> | <code>aws-cdk-lib.IStackSynthesizer</code> | Synthesis method to use while deploying this stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.tags">tags</a></code> | <code>{[ key: string ]: string}</code> | Stack tags that will be applied to all the taggable resources and the stack itself. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.terminationProtection">terminationProtection</a></code> | <code>boolean</code> | Whether to enable termination protection for this stack. |
-| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.deploymentType">deploymentType</a></code> | <code><a href="#aws-analytics-reference-architecture.DeploymentType">DeploymentType</a></code> | The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a click on a github README button. |
-| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation">cdkAppLocation</a></code> | <code>string</code> | The location of the CDK application in the Github repository. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.deploymentType">deploymentType</a></code> | <code><a href="#aws-analytics-reference-architecture.DeploymentType">DeploymentType</a></code> | The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a one-click deploy button. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation">cdkAppLocation</a></code> | <code>string</code> | The location of the CDK application in the repository. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkParameters">cdkParameters</a></code> | <code>{[ key: string ]: aws-cdk-lib.CfnParameterProps}</code> | The CFN parameters to pass to the CDK application. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkStack">cdkStack</a></code> | <code>string</code> | The CDK stack name to deploy. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.deployBuildSpec">deployBuildSpec</a></code> | <code>aws-cdk-lib.aws_codebuild.BuildSpec</code> | Deploy CodeBuild buildspec file name at the root of the cdk app folder. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.destroyBuildSpec">destroyBuildSpec</a></code> | <code>aws-cdk-lib.aws_codebuild.BuildSpec</code> | Destroy Codebuild buildspec file name at the root of the cdk app folder. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch">gitBranch</a></code> | <code>string</code> | The branch to use on the Github repository. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.githubRepository">githubRepository</a></code> | <code>string</code> | The github repository containing the CDK application. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.s3Repository">s3Repository</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The Amazon S3 repository location containing the CDK application. |
 
 ---
 
@@ -8279,7 +8438,7 @@ public readonly deploymentType: DeploymentType;
 
 - *Type:* <a href="#aws-analytics-reference-architecture.DeploymentType">DeploymentType</a>
 
-The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a click on a github README button.
+The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a one-click deploy button.
 
 ---
 
@@ -8292,7 +8451,7 @@ public readonly cdkAppLocation: string;
 - *Type:* string
 - *Default:* The root of the repository
 
-The location of the CDK application in the Github repository.
+The location of the CDK application in the repository.
 
 It is used to `cd` into the folder before deploying the CDK application
 
@@ -8368,8 +8527,27 @@ public readonly githubRepository: string;
 ```
 
 - *Type:* string
+- *Default:* Github is not used as the source of the CDK code.
 
 The github repository containing the CDK application.
+
+Either `githubRepository` or `s3Repository` needs to be set if `deploymentType` is `CLICK_TO_DEPLOY`.
+
+---
+
+##### `s3Repository`<sup>Optional</sup> <a name="s3Repository" id="aws-analytics-reference-architecture.CdkDeployerProps.property.s3Repository"></a>
+
+```typescript
+public readonly s3Repository: Location;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Location
+- *Default:* S3 is not used as the source of the CDK code
+
+The Amazon S3 repository location containing the CDK application.
+
+The object key is a Zip file.
+Either `githubRepository` or `s3Repository` needs to be set if `deploymentType` is `CLICK_TO_DEPLOY`.
 
 ---
 
@@ -8936,6 +9114,51 @@ public readonly kubernetesVersion: KubernetesVersion;
 - *Default:* Kubernetes v1.21 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
+
+---
+
+### EmrEksJobTemplateDefinition <a name="EmrEksJobTemplateDefinition" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition"></a>
+
+The properties for the EMR Managed Endpoint to create.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.Initializer"></a>
+
+```typescript
+import { EmrEksJobTemplateDefinition } from 'aws-analytics-reference-architecture'
+
+const emrEksJobTemplateDefinition: EmrEksJobTemplateDefinition = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.jobTemplateData">jobTemplateData</a></code> | <code>string</code> | The JSON definition of the job template. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.name">name</a></code> | <code>string</code> | The name of the job template. |
+
+---
+
+##### `jobTemplateData`<sup>Required</sup> <a name="jobTemplateData" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.jobTemplateData"></a>
+
+```typescript
+public readonly jobTemplateData: string;
+```
+
+- *Type:* string
+
+The JSON definition of the job template.
+
+---
+
+##### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.name"></a>
+
+```typescript
+public readonly name: string;
+```
+
+- *Type:* string
+
+The name of the job template.
 
 ---
 
