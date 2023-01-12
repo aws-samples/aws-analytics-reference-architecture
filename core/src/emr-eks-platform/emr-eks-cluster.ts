@@ -402,7 +402,6 @@ export class EmrEksCluster extends TrackedConstruct {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       description: 'Role used by S3 deployment cdk construct',
       managedPolicies: [lambdaExecutionRolePolicy],
-      roleName: 'araS3BucketDeploymentRole',
     });
 
 
