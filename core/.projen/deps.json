@@ -169,10 +169,6 @@
       "type": "build"
     },
     {
-      "name": "@aws-cdk/lambda-layer-kubectl-v22",
-      "type": "bundled"
-    },
-    {
       "name": "@exodus/schemasafe",
       "type": "bundled"
     },

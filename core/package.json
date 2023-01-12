@@ -91,7 +91,6 @@
   "dependencies": {
     "@aws-cdk/aws-glue-alpha": "2.51.0-alpha.0",
     "@aws-cdk/aws-redshift-alpha": "2.51.0-alpha.0",
-    "@aws-cdk/lambda-layer-kubectl-v22": "^2.0.3",
     "@exodus/schemasafe": "^1.0.0-rc.9",
     "aws-sdk": "^2.1291.0",
     "js-yaml": "^3.14.1",
@@ -99,7 +98,6 @@
     "uuid": "^3.4.0"
   },
   "bundledDependencies": [
-    "@aws-cdk/lambda-layer-kubectl-v22",
     "@exodus/schemasafe",
     "aws-sdk",
     "js-yaml",
