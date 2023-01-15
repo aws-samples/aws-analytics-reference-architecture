@@ -82,7 +82,7 @@ export class DockerBuilder extends Construct {
 
     new BucketDeployment(this, `DockerfileAssetDeployment`, {
       destinationBucket: this.assetBucket,
-      destinationKeyPrefix: `myDockerFile`,
+      destinationKeyPrefix: `${this.ecrName}/${tag}`,
       sources: [Source.asset(dockerfilePath)],
     });
 
