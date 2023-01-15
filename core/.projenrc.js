@@ -87,7 +87,6 @@ const project = new awscdk.AwsCdkConstructLibrary({
     'aws-sdk',
     '@exodus/schemasafe',
     'simple-base',
-    '@aws-cdk/lambda-layer-kubectl-v22'
   ],
 
   python: {
