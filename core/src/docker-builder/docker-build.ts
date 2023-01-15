@@ -39,7 +39,7 @@ export class DockerBuilder extends Construct {
 
     let commands = [
       'echo logging into docker',
-      'aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 372775283473.dkr.ecr.eu-west-1.amazonaws.com',
+      `aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ${this.ecrURI}`,
       'echo Build start',
       'echo $ecrURI',
       'echo $DOCKER_FILE_S3_PATH',
