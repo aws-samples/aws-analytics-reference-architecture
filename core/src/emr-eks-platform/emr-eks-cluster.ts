@@ -45,6 +45,7 @@ import { setDefaultManagedNodeGroups, clusterAutoscalerSetup, karpenterSetup, ek
 import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 import { ILayerVersion } from 'aws-cdk-lib/aws-lambda';
+import { EmrEksJobTemplateDefinition, EmrEksJobTemplateProvider } from './emr-eks-job-template';
 
 /**
  * The different autoscaler available with EmrEksCluster
@@ -207,6 +208,7 @@ export class EmrEksCluster extends TrackedConstruct {
   public readonly clusterName: string;
   public readonly ec2InstanceNodeGroupRole: Role;
   private readonly managedEndpointProviderServiceToken: string;
+  private readonly jobTemplateProviderToken: string;
   private readonly emrServiceRole: CfnServiceLinkedRole;
   private readonly assetUploadBucketRole: Role;
   private readonly karpenterChart?: HelmChart;
@@ -257,9 +259,8 @@ export class EmrEksCluster extends TrackedConstruct {
       eksClusterName: this.clusterName,
     }).provider.serviceToken;
 
-    if (props.eksAdminRoleArn == undefined && props.eksCluster == undefined) {
-      throw new Error('You mush provide an Admin role ARN if the EKS cluster is created throught the EmrEksCluster Construct');
-    }
+    // Create the custom resource provider for tagging the EC2 Auto Scaling groups
+    this.jobTemplateProviderToken = new EmrEksJobTemplateProvider(this, 'jobTemplateProvider').provider.serviceToken;
 
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
     if (props.eksCluster == undefined) {
@@ -311,7 +312,7 @@ export class EmrEksCluster extends TrackedConstruct {
       });
 
       //Setting up the cluster with the required controller
-      eksClusterSetup(this, this, props.eksAdminRoleArn!);
+      eksClusterSetup(this, this, props.eksAdminRoleArn);
 
       //Deploy the right autoscaler using the flag set earlier 
       if (this.isKarpenter) {
@@ -401,7 +402,6 @@ export class EmrEksCluster extends TrackedConstruct {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       description: 'Role used by S3 deployment cdk construct',
       managedPolicies: [lambdaExecutionRolePolicy],
-      roleName: 'araS3BucketDeploymentRole',
     });
 
 
@@ -806,6 +806,28 @@ ${userData.join('\r\n')}
       sources: [Source.asset(filePath)],
       role: this.assetUploadBucketRole,
     });
+  }
+
+
+  /**
+   * Creates a new Amazon EMR on EKS job template based on the props passed
+   * @param {Construct} scope the scope of the stack where job template is created
+   * @param {string} id the CDK id for job template resource
+   * @param {EmrEksJobTemplateDefinition} options the EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint
+   */
+  public addJobTemplate(scope: Construct, id: string, options: EmrEksJobTemplateDefinition) {
+
+    // Create custom resource to execute the create job template boto3 call
+    const cr = new CustomResource(scope, id, {
+      serviceToken: this.jobTemplateProviderToken,
+      properties: {
+        name: options.name,
+        jobTemplateData: options.jobTemplateData,
+      },
+    });
+    cr.node.addDependency(this.eksCluster);
+
+    return cr;
   }
 
   /**

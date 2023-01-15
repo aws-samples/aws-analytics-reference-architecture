@@ -4238,6 +4238,7 @@ cdk.CfnOutput(self,'ExecRoleArn', value = role.roleArn)
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.toString">toString</a></code> | Returns a string representation of this construct. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup">addEmrEksNodegroup</a></code> | Add new nodegroups to the cluster for Amazon EMR on EKS. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster">addEmrVirtualCluster</a></code> | Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate">addJobTemplate</a></code> | Creates a new Amazon EMR on EKS job template based on the props passed. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner">addKarpenterProvisioner</a></code> | Apply the provided manifest and add the CDK dependency on EKS cluster. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint">addManagedEndpoint</a></code> | Creates a new Amazon EMR managed endpoint to be used with Amazon EMR Virtual Cluster . |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity">addNodegroupCapacity</a></code> | Add a new Amazon EKS Nodegroup to the cluster. |
@@ -4303,6 +4304,38 @@ of the stack where virtual cluster is deployed.
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrVirtualClusterOptions">EmrVirtualClusterOptions</a>
 
 the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}.
+
+---
+
+##### `addJobTemplate` <a name="addJobTemplate" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate"></a>
+
+```typescript
+public addJobTemplate(scope: Construct, id: string, options: EmrEksJobTemplateDefinition): CustomResource
+```
+
+Creates a new Amazon EMR on EKS job template based on the props passed.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the scope of the stack where job template is created.
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate.parameter.id"></a>
+
+- *Type:* string
+
+the CDK id for job template resource.
+
+---
+
+###### `options`<sup>Required</sup> <a name="options" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate.parameter.options"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrEksJobTemplateDefinition">EmrEksJobTemplateDefinition</a>
+
+the EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint.
 
 ---
 
@@ -4694,6 +4727,131 @@ public readonly DEFAULT_KARPENTER_VERSION: string;
 - *Type:* string
 
 ---
+
+### EmrEksJobTemplateProvider <a name="EmrEksJobTemplateProvider" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider"></a>
+
+A custom resource provider for CRUD operations on Amazon EMR on EKS Managed Endpoints.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer"></a>
+
+```typescript
+import { EmrEksJobTemplateProvider } from 'aws-analytics-reference-architecture'
+
+new EmrEksJobTemplateProvider(scope: Construct, id: string)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.isConstruct"></a>
+
+```typescript
+import { EmrEksJobTemplateProvider } from 'aws-analytics-reference-architecture'
+
+EmrEksJobTemplateProvider.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.provider">provider</a></code> | <code>aws-cdk-lib.custom_resources.Provider</code> | The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `provider`<sup>Required</sup> <a name="provider" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.provider"></a>
+
+```typescript
+public readonly provider: Provider;
+```
+
+- *Type:* aws-cdk-lib.custom_resources.Provider
+
+The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources.
+
+---
+
 
 ### FlywayRunner <a name="FlywayRunner" id="aws-analytics-reference-architecture.FlywayRunner"></a>
 
@@ -8956,6 +9114,51 @@ public readonly kubernetesVersion: KubernetesVersion;
 - *Default:* Kubernetes v1.21 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
+
+---
+
+### EmrEksJobTemplateDefinition <a name="EmrEksJobTemplateDefinition" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition"></a>
+
+The properties for the EMR Managed Endpoint to create.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.Initializer"></a>
+
+```typescript
+import { EmrEksJobTemplateDefinition } from 'aws-analytics-reference-architecture'
+
+const emrEksJobTemplateDefinition: EmrEksJobTemplateDefinition = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.jobTemplateData">jobTemplateData</a></code> | <code>string</code> | The JSON definition of the job template. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.name">name</a></code> | <code>string</code> | The name of the job template. |
+
+---
+
+##### `jobTemplateData`<sup>Required</sup> <a name="jobTemplateData" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.jobTemplateData"></a>
+
+```typescript
+public readonly jobTemplateData: string;
+```
+
+- *Type:* string
+
+The JSON definition of the job template.
+
+---
+
+##### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.name"></a>
+
+```typescript
+public readonly name: string;
+```
+
+- *Type:* string
+
+The name of the job template.
 
 ---
 
