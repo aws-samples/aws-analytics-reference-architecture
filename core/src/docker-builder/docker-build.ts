@@ -44,6 +44,9 @@ export class DockerBuilder extends Construct {
       'echo $ecrURI',
       'echo $DOCKER_FILE_S3_PATH',
       'aws s3 cp $DOCKER_FILE_S3_PATH Dockerfile',
+      'docker build -t local .',
+      'docker tag local $ecrURI:$tag',
+      'docker push $ecrURI:$tag',
       'docker logout'
     ];
 
@@ -64,6 +67,7 @@ export class DockerBuilder extends Construct {
     });
 
     ecrRepo.grantPullPush(codeBuildRole);
+    this.assetBucket.grantRead(codeBuildRole);
 
     this.codebuildProjectName = codebuildProject.projectName;
 
