@@ -1,4 +1,4 @@
-import { CustomResource } from "aws-cdk-lib";
+import { CustomResource, RemovalPolicy } from "aws-cdk-lib";
 import { BuildSpec, LinuxBuildImage, Project } from "aws-cdk-lib/aws-codebuild";
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
@@ -30,14 +30,16 @@ export class DockerBuilder extends Construct {
     });
 
     const ecrRepo: Repository = new Repository(this, `ecr-${props.repositoryName}`, {
-      repositoryName: props.repositoryName
+      repositoryName: props.repositoryName,
+      removalPolicy: RemovalPolicy.DESTROY,
+      imageScanOnPush: true
     });
 
     this.ecrURI = ecrRepo.repositoryUri;
 
     let commands = [
       'echo logging into docker',
-      '$(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)',
+      'aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 372775283473.dkr.ecr.eu-west-1.amazonaws.com',
       'echo Build start',
       'echo $ecrURI',
       'echo $s3Path',
@@ -60,6 +62,8 @@ export class DockerBuilder extends Construct {
       },
       role: codeBuildRole,
     });
+
+    ecrRepo.grantPullPush(codeBuildRole);
 
     this.codebuildProjectName = codebuildProject.projectName;
 

@@ -19,7 +19,7 @@ export function CustomResourceProviderSetup (scope: Construct, codeBuildProjectA
   
       // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
       const onEvent = new PreBundledFunction(scope, 'OnEvent', {
-        codePath: 'emr-eks-platform/resources/lambdas',
+        codePath: 'docker-builder/resources/lambdas',
         runtime: Runtime.PYTHON_3_9,
         handler: 'lambda.on_event',
         layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],

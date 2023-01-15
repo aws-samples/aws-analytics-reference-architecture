@@ -7,8 +7,6 @@
 import boto3
 import os
 import logging
-import uuid
-import json
 
 codebuild = boto3.client('codebuild', os.getenv('AWS_REGION'))
 log = logging.getLogger()
@@ -58,7 +56,7 @@ def on_create(event):
 
     log.info(response)
     return {
-        'PhysicalResourceId': response['id'],
+        'PhysicalResourceId': response['build']['id'],
     }
 
 
