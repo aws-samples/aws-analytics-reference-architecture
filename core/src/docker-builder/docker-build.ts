@@ -1,4 +1,4 @@
-import { CfnOutput, CustomResource, RemovalPolicy } from "aws-cdk-lib";
+import { Aws, CfnOutput, CustomResource, RemovalPolicy } from "aws-cdk-lib";
 import { BuildSpec, LinuxBuildImage, Project } from "aws-cdk-lib/aws-codebuild";
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
@@ -39,7 +39,7 @@ export class DockerBuilder extends Construct {
 
     let commands = [
       'echo logging into docker',
-      `aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin ${this.ecrURI}`,
+      `aws ecr get-login-password --region ${Aws.REGION} | docker login --username AWS --password-stdin ${this.ecrURI}`,
       'echo Build start',
       'echo $ecrURI',
       'echo $DOCKER_FILE_S3_PATH',
