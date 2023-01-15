@@ -42,7 +42,7 @@ export class DockerBuilder extends Construct {
       'aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 372775283473.dkr.ecr.eu-west-1.amazonaws.com',
       'echo Build start',
       'echo $ecrURI',
-      'echo $s3Path',
+      'echo $DOCKER_FILE_S3_PATH',
       'aws s3 cp $DOCKER_FILE_S3_PATH Dockerfile',
       'docker logout'
     ];
@@ -83,7 +83,7 @@ export class DockerBuilder extends Construct {
     new CustomResource(this, 'testCR', {
       serviceToken: this.dockerBuildPublishCrToken,
       properties: {
-        s3Path: `s3://${this.assetBucket.bucketName}/myDockerFile`,
+        s3Path: `s3://${this.assetBucket.bucketName}/myDockerFile/Dockerfile`,
         tag: 'v1',
         ecrURI: this.ecrURI,
         codebuildProjectName: this.codebuildProjectName,

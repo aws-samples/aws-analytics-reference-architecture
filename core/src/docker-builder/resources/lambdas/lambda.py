@@ -29,7 +29,7 @@ def on_create(event):
     log.info(event)
 
     project_name = event['ResourceProperties']['codebuildProjectName']
-    s3_path = event['ResourceProperties']['codebuildProjectName']
+    s3_path = event['ResourceProperties']['s3Path']
     ecr_uri = event['ResourceProperties']['ecrURI']
     tag = event['ResourceProperties']['tag']
 
