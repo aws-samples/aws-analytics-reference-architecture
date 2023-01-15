@@ -76,7 +76,7 @@ export class DockerBuilder extends Construct {
     this.dockerBuildPublishCrToken = CustomResourceProviderSetup(this, codebuildProject.projectArn);
   }
 
-  public publishImage(dockerfilePath: string) {
+  public publishImage(dockerfilePath: string, tag: string) {
 
     new BucketDeployment(this, `DockerfileAssetDeployment`, {
       destinationBucket: this.assetBucket,
@@ -88,7 +88,7 @@ export class DockerBuilder extends Construct {
       serviceToken: this.dockerBuildPublishCrToken,
       properties: {
         s3Path: `s3://${this.assetBucket.bucketName}/myDockerFile/Dockerfile`,
-        tag: 'v2',
+        tag: tag,
         ecrURI: this.ecrURI,
         codebuildProjectName: this.codebuildProjectName,
       },
