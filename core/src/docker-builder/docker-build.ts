@@ -1,4 +1,4 @@
-import { CustomResource, RemovalPolicy } from "aws-cdk-lib";
+import { CfnOutput, CustomResource, RemovalPolicy } from "aws-cdk-lib";
 import { BuildSpec, LinuxBuildImage, Project } from "aws-cdk-lib/aws-codebuild";
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
@@ -84,15 +84,19 @@ export class DockerBuilder extends Construct {
       sources: [Source.asset(dockerfilePath)],
     });
 
-    new CustomResource(this, 'testCR', {
+    const containerImage =  new CustomResource(this, 'testCR', {
       serviceToken: this.dockerBuildPublishCrToken,
       properties: {
         s3Path: `s3://${this.assetBucket.bucketName}/myDockerFile/Dockerfile`,
-        tag: 'v1',
+        tag: 'v2',
         ecrURI: this.ecrURI,
         codebuildProjectName: this.codebuildProjectName,
       },
     });
+
+    new CfnOutput(this, 'URI', {
+      value: containerImage.getAttString('ContainerUri'),
+    })
 
   }
 

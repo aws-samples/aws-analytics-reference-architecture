@@ -88,8 +88,11 @@ def is_complete(event, ctx):
 
     if build_status == "SUCCEEDED" and current_phase == "COMPLETED":
         # Reducing the data returned to the custom resource
+        ecr_uri = event['ResourceProperties']['ecrURI']
+        tag = event['ResourceProperties']['tag']
+
         data = {
-            "arn": "arn"
+            "ContainerUri": f'{ecr_uri}:{tag}'
         }
 
         log.info({"IsComplete": True, "Data": data})
