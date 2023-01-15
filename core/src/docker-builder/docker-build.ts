@@ -1,8 +1,12 @@
+import { CustomResource } from "aws-cdk-lib";
 import { BuildSpec, LinuxBuildImage, Project } from "aws-cdk-lib/aws-codebuild";
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
-import { stringList } from "aws-sdk/clients/datapipeline";
+import { BucketEncryption } from "aws-cdk-lib/aws-s3";
+import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
+import { AraBucket } from "../ara-bucket";
+import { CustomResourceProviderSetup } from "./docker-builder-util";
 
 export interface DockerBuilderProps {
   readonly repositoryName: string;
@@ -10,50 +14,78 @@ export interface DockerBuilderProps {
 
 export class DockerBuilder extends Construct {
 
-    private readonly ecrUI : string;
+  private readonly ecrURI: string;
+  private readonly dockerBuildPublishCrToken: string;
+  private readonly assetBucket: AraBucket;
+  private readonly codebuildProjectName: string;
 
-    constructor (scope: Construct, id: string, props: DockerBuilderProps) {
+  constructor(scope: Construct, id: string, props: DockerBuilderProps) {
 
-        super (scope, id); 
+    super(scope, id);
 
-        let codeBuildRole = new Role(this, 'codebuildarn', {
-            assumedBy: new ServicePrincipal('codebuild.amazonaws.com'),
-        });
+    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: 'docker-builder-assets', encryption: BucketEncryption.KMS_MANAGED });
 
-        const ecrRepo: Repository = new Repository(this, `ecr-${props.repositoryName}`, {
-            repositoryName: props.repositoryName
-        });
-        
-        this.ecrUI = ecrRepo.repositoryUri;
+    let codeBuildRole = new Role(this, 'codebuildarn', {
+      assumedBy: new ServicePrincipal('codebuild.amazonaws.com'),
+    });
 
-        let commands = [
-            'echo logging into docker',
-            '$(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)',
-            'echo Build start',
-            'docker logout'
-            ];
+    const ecrRepo: Repository = new Repository(this, `ecr-${props.repositoryName}`, {
+      repositoryName: props.repositoryName
+    });
 
-        new Project(this, 'DockerImageDeployProject', {
-            buildSpec: BuildSpec.fromObject({
-              version: '0.2',
-              phases: {
-                build: {
-                  commands: commands,
-                },
-              },
-            }),
-            environment: {
-              privileged: true,
-              buildImage: LinuxBuildImage.STANDARD_5_0,
-            },
-            role: codeBuildRole,
-          });
+    this.ecrURI = ecrRepo.repositoryUri;
 
-        console.log(ecrRepo.repositoryName);
-    }
+    let commands = [
+      'echo logging into docker',
+      '$(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)',
+      'echo Build start',
+      'echo $ecrURI',
+      'echo $s3Path',
+      'aws s3 cp $DOCKER_FILE_S3_PATH Dockerfile',
+      'docker logout'
+    ];
 
-    public publishImage (dockerfilePath: string) {
+    const codebuildProject = new Project(this, 'DockerImageDeployProject', {
+      buildSpec: BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          build: {
+            commands: commands,
+          },
+        },
+      }),
+      environment: {
+        privileged: true,
+        buildImage: LinuxBuildImage.STANDARD_5_0,
+      },
+      role: codeBuildRole,
+    });
 
-    }
-  
+    this.codebuildProjectName = codebuildProject.projectName;
+
+    console.log(ecrRepo.repositoryName);
+
+    this.dockerBuildPublishCrToken = CustomResourceProviderSetup(this, codebuildProject.projectArn);
+  }
+
+  public publishImage(dockerfilePath: string) {
+
+    new BucketDeployment(this, `DockerfileAssetDeployment`, {
+      destinationBucket: this.assetBucket,
+      destinationKeyPrefix: `myDockerFile`,
+      sources: [Source.asset(dockerfilePath)],
+    });
+
+    new CustomResource(this, 'testCR', {
+      serviceToken: this.dockerBuildPublishCrToken,
+      properties: {
+        s3Path: `s3://${this.assetBucket.bucketName}/myDockerFile`,
+        tag: 'v1',
+        ecrURI: this.ecrURI,
+        codebuildProjectName: this.codebuildProjectName,
+      },
+    });
+
+  }
+
 }

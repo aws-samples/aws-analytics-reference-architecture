@@ -10,7 +10,7 @@ import logging
 import uuid
 import json
 
-emrcontainers = boto3.client('codebuild', os.getenv('AWS_REGION'))
+codebuild = boto3.client('codebuild', os.getenv('AWS_REGION'))
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
@@ -30,19 +30,31 @@ def on_event(event, ctx):
 def on_create(event):
     log.info(event)
 
-    response = emrcontainers.create_managed_endpoint(
-        name=event['ResourceProperties']['endpointName'],
-        virtualClusterId=event['ResourceProperties']['clusterId'],
-        type='JUPYTER_ENTERPRISE_GATEWAY',
-        releaseLabel=event['ResourceProperties']['releaseLabel'],
-        executionRoleArn=event['ResourceProperties']['executionRoleArn'],
-        configurationOverrides=event['ResourceProperties']['configurationOverrides'] if
-        event['ResourceProperties']['configurationOverrides'] else None,
-        clientToken=str(uuid.uuid4()),
-        tags={'for-use-with':'cdk-analytics-reference-architecture'}
-    )
+    project_name = event['ResourceProperties']['codebuildProjectName']
+    s3_path = event['ResourceProperties']['codebuildProjectName']
+    ecr_uri = event['ResourceProperties']['ecrURI']
+    tag = event['ResourceProperties']['tag']
 
-    ##log.info(json.load(event['ResourceProperties']['configurationOverrides']))
+    response = codebuild.start_build(
+        projectName=project_name,
+        environmentVariablesOverride=[
+            {
+                'name': 'DOCKER_FILE_S3_PATH',
+                'value': s3_path,
+                'type': 'PLAINTEXT'
+            },
+            {
+                'name': 'ecrURI',
+                'value': ecr_uri,
+                'type': 'PLAINTEXT'
+            },
+            {
+                'name': 'tag',
+                'value': tag,
+                'type': 'PLAINTEXT'
+            },
+        ],
+    )
 
     log.info(response)
     return {
@@ -57,61 +69,35 @@ def on_update(event):
 def on_delete(event):
     log.info(event)
 
-    response = emrcontainers.delete_managed_endpoint(
-        virtualClusterId=event['ResourceProperties']['clusterId'],
-        id=event['PhysicalResourceId']
-    )
-
-    log.info(response)
     return {
-        'PhysicalResourceId': response['id'],
+        'PhysicalResourceId': event['PhysicalResourceId'],
     }
 
 
 def is_complete(event, ctx):
     log.info(event)
-    requestType = '_DELETE' if event['RequestType'] == 'Delete' else '_CREATEUPDATE'
 
-    log.info(requestType)
+    build_id = event['PhysicalResourceId']
 
-    endpoint_id = event['PhysicalResourceId']
+    response = codebuild.batch_get_builds(
+        ids=[
+            build_id
+        ])
+    build = response['builds'][0]
 
-    response = emrcontainers.describe_managed_endpoint(
-        id=endpoint_id,
-        virtualClusterId=event['ResourceProperties']['clusterId']
-    )
+    build_status = build['buildStatus']
+    current_phase = build['currentPhase']
 
-    log.info(response)
-    log.info(response['endpoint'])
-
-    if (response['endpoint'] == None):
-        return json.dumps({"IsComplete": False})
-
-    log.info("current endpoint " + endpoint_id)
-
-    state = response['endpoint']['state'] + requestType
-
-    log.info(state)
-
-    response['endpoint']['createdAt'] = ""
-
-    log.info(response['endpoint']['createdAt'])
-
-    if state == "ACTIVE_CREATEUPDATE":
-        ##Reducing the data returned to the custom resource
+    if build_status == "SUCCEEDED" and current_phase == "COMPLETED":
+        # Reducing the data returned to the custom resource
         data = {
-            "securityGroup": response['endpoint']['securityGroup'],
-            "subnetIds": response['endpoint']['securityGroup'],
-            "id": response['endpoint']['id'],
-            "arn": response['endpoint']['arn']
+            "arn": "arn"
         }
 
         log.info({"IsComplete": True, "Data": data})
         return {"IsComplete": True, "Data": data}
-    elif state == "TERMINATED_DELETE":
-        return {"IsComplete": True}
-    elif state == "TERMINATED_CREATEUPDATE" or state == "TERMINATED_WITH_ERRORS_CREATEUPDATE" or state == "TERMINATED_WITH_ERRORS_DELETE" or state == "TERMINATING_CREATEUPDATE":
-        raise Exception('managed endpoint failed.')
+
+    elif build_status == "FAILED" and current_phase == "COMPLETED":
+        raise Exception('build failed.')
     else:
         return {"IsComplete": False}
-
