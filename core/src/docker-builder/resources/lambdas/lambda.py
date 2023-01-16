@@ -1,14 +1,13 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 
-# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-# SPDX-License-Identifier: MIT-0
-
 import boto3
 import os
 import logging
 
 codebuild = boto3.client('codebuild', os.getenv('AWS_REGION'))
+ecr = boto3.client('ecr', os.getenv('AWS_REGION'))
+
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
@@ -66,6 +65,17 @@ def on_update(event):
 
 def on_delete(event):
     log.info(event)
+    
+    #This is a hack to force the deletion of an ECR repository, ideally it should not be here
+    #Need to be removed one CDK support force delete of an ECR repository
+    #Feature tracked here https://github.com/aws/aws-cdk/issues/12618
+    
+    ecr_name = event['ResourceProperties']['ecrName']
+
+    ecr.delete_repository(
+        repositoryName=ecr_name,
+        force=True
+    )
 
     return {
         'PhysicalResourceId': event['PhysicalResourceId'],

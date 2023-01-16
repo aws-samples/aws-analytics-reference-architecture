@@ -1,7 +1,7 @@
 import { Aws, CfnOutput, CustomResource, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { BuildSpec, LinuxBuildImage, Project } from "aws-cdk-lib/aws-codebuild";
 import { Repository } from "aws-cdk-lib/aws-ecr";
-import { Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
+import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { BucketEncryption } from "aws-cdk-lib/aws-s3";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
@@ -41,12 +41,14 @@ export class DockerBuilder extends Construct {
 
     let commands = [
       'echo logging into docker',
-      `aws ecr get-login-password --region ${Aws.REGION} | docker login --username AWS --password-stdin ${this.ecrURI}`,
+      `aws ecr get-login-password --region ${Aws.REGION} | docker login --username AWS --password-stdin 483788554619.dkr.ecr.${Aws.REGION}.amazonaws.com`,
       'echo Build start',
-      'echo $ecrURI',
       'echo $DOCKER_FILE_S3_PATH',
       'aws s3 cp $DOCKER_FILE_S3_PATH Dockerfile',
       'docker build -t local .',
+      'docker logout',
+      'echo $ecrURI',
+      `aws ecr get-login-password --region ${Aws.REGION} | docker login --username AWS --password-stdin ${this.ecrURI}`,
       'docker tag local $ecrURI:$tag',
       'docker push $ecrURI:$tag',
       'docker logout'
@@ -71,11 +73,22 @@ export class DockerBuilder extends Construct {
     ecrRepo.grantPullPush(codeBuildRole);
     this.assetBucket.grantRead(codeBuildRole);
 
+
+    //TODO This need to be dynamic following the user input
+    codeBuildRole.addToPolicy(new PolicyStatement ({
+      resources: ['arn:aws:ecr:eu-west-1:483788554619:repository/spark/emr-6.6.0'],
+      actions: [
+        'ecr:BatchGetImage',
+        'ecr:GetAuthorizationToken',
+        'ecr:BatchCheckLayerAvailability',
+        'ecr:GetDownloadUrlForLayer',
+      ]
+    }));
+
+
     this.codebuildProjectName = codebuildProject.projectName;
 
-    console.log(ecrRepo.repositoryName);
-
-    this.dockerBuildPublishCrToken = CustomResourceProviderSetup(this, codebuildProject.projectArn);
+    this.dockerBuildPublishCrToken = CustomResourceProviderSetup(this, codebuildProject.projectArn, ecrRepo.repositoryArn);
   }
 
   public publishImage(dockerfilePath: string, tag: string) {
@@ -93,6 +106,7 @@ export class DockerBuilder extends Construct {
         tag: tag,
         ecrURI: this.ecrURI,
         codebuildProjectName: this.codebuildProjectName,
+        ecrName: this.ecrName,
       },
     });
 
