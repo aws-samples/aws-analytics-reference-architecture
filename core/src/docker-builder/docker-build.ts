@@ -10,7 +10,7 @@ import { CustomResourceProviderSetup, emrOnEksImageMap } from "./docker-builder-
 
 export interface DockerBuilderProps {
   readonly repositoryName: string;
-  readonly ecrRemovalPolicy: RemovalPolicy;
+  readonly ecrRemovalPolicy?: RemovalPolicy;
 }
 
 export class DockerBuilder extends Construct {
@@ -33,7 +33,7 @@ export class DockerBuilder extends Construct {
 
     const ecrRepo: Repository = new Repository(this, `ecr-${props.repositoryName}`, {
       repositoryName: props.repositoryName,
-      removalPolicy: RemovalPolicy.RETAIN,
+      removalPolicy: props.ecrRemovalPolicy ? props.ecrRemovalPolicy : RemovalPolicy.RETAIN,
       imageScanOnPush: true
     });
 
@@ -88,7 +88,7 @@ export class DockerBuilder extends Construct {
 
     this.codebuildProjectName = codebuildProject.projectName;
 
-    this.dockerBuildPublishCrToken = CustomResourceProviderSetup(this, codebuildProject.projectArn, ecrRepo.repositoryArn);
+    this.dockerBuildPublishCrToken = CustomResourceProviderSetup(this, codebuildProject.projectArn);
   }
 
   public publishImage(dockerfilePath: string, tag: string) {

@@ -7,19 +7,12 @@ import { Construct } from "constructs";
 import { PreBundledFunction } from "../common/pre-bundled-function";
 import { PreBundledLayer } from "../common/pre-bundled-layer";
 
-export function CustomResourceProviderSetup (scope: Construct, codeBuildProjectArn: string, ecrRepositoryArn: string) : string {
+export function CustomResourceProviderSetup (scope: Construct, codeBuildProjectArn: string) : string {
     //The policy allowing the creatio of the job template
     const lambdaPolicy = [
-
         new PolicyStatement({
           resources: [codeBuildProjectArn],
           actions: ['codebuild:BatchGetBuilds', 'codebuild:StartBuild'],
-        }),
-        new PolicyStatement ({
-          resources: [ecrRepositoryArn],
-          actions: [
-            'ecr:DeleteRepository',
-          ]
         })
       ];
   
