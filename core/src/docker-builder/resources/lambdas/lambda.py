@@ -27,6 +27,8 @@ def on_event(event, ctx):
 def on_create(event):
     log.info(event)
 
+    request_type = event['RequestType'].lower()
+
     project_name = event['ResourceProperties']['codebuildProjectName']
     s3_path = event['ResourceProperties']['s3Path']
     ecr_uri = event['ResourceProperties']['ecrURI']
@@ -54,9 +56,7 @@ def on_create(event):
     )
 
     log.info(response)
-    return {
-        'PhysicalResourceId': response['build']['id'],
-    }
+    return { 'PhysicalResourceId': response['build']['id'] } if request_type == 'create' else { 'PhysicalResourceId': event['PhysicalResourceId'] }
 
 
 def on_update(event):
@@ -65,17 +65,6 @@ def on_update(event):
 
 def on_delete(event):
     log.info(event)
-    
-    #This is a hack to force the deletion of an ECR repository, ideally it should not be here
-    #Need to be removed one CDK support force delete of an ECR repository
-    #Feature tracked here https://github.com/aws/aws-cdk/issues/12618
-    
-    ecr_name = event['ResourceProperties']['ecrName']
-
-    ecr.delete_repository(
-        repositoryName=ecr_name,
-        force=True
-    )
 
     return {
         'PhysicalResourceId': event['PhysicalResourceId'],

@@ -6,10 +6,11 @@ import { BucketEncryption } from "aws-cdk-lib/aws-s3";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
 import { AraBucket } from "../ara-bucket";
-import { CustomResourceProviderSetup } from "./docker-builder-util";
+import { CustomResourceProviderSetup, emrOnEksImageMap } from "./docker-builder-util";
 
 export interface DockerBuilderProps {
   readonly repositoryName: string;
+  readonly ecrRemovalPolicy: RemovalPolicy;
 }
 
 export class DockerBuilder extends Construct {
@@ -32,7 +33,7 @@ export class DockerBuilder extends Construct {
 
     const ecrRepo: Repository = new Repository(this, `ecr-${props.repositoryName}`, {
       repositoryName: props.repositoryName,
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy: RemovalPolicy.RETAIN,
       imageScanOnPush: true
     });
 
@@ -41,7 +42,7 @@ export class DockerBuilder extends Construct {
 
     let commands = [
       'echo logging into docker',
-      `aws ecr get-login-password --region ${Aws.REGION} | docker login --username AWS --password-stdin 483788554619.dkr.ecr.${Aws.REGION}.amazonaws.com`,
+      `aws ecr get-login-password --region ${Aws.REGION} | docker login --username AWS --password-stdin ${emrOnEksImageMap.get(Stack.of(this).region)}.dkr.ecr.${Aws.REGION}.amazonaws.com`,
       'echo Build start',
       'echo $DOCKER_FILE_S3_PATH',
       'aws s3 cp $DOCKER_FILE_S3_PATH Dockerfile',
@@ -76,7 +77,7 @@ export class DockerBuilder extends Construct {
 
     //TODO This need to be dynamic following the user input
     codeBuildRole.addToPolicy(new PolicyStatement ({
-      resources: ['arn:aws:ecr:eu-west-1:483788554619:repository/spark/emr-6.6.0'],
+      resources: [`arn:aws:ecr:${Aws.REGION}:${emrOnEksImageMap.get(Stack.of(this).region)}:repository/*`],
       actions: [
         'ecr:BatchGetImage',
         'ecr:GetAuthorizationToken',
@@ -84,7 +85,6 @@ export class DockerBuilder extends Construct {
         'ecr:GetDownloadUrlForLayer',
       ]
     }));
-
 
     this.codebuildProjectName = codebuildProject.projectName;
 
