@@ -23,4 +23,4 @@ export { SingletonCfnLaunchTemplate } from './singleton-launch-template';
 export { SynchronousGlueJob } from './synchronous-glue-job';
 export { CentralGovernance, CentralGovernanceProps, DataDomain, DataDomainProps, LfAccessControlMode, LfTag } from './data-mesh';
 export { LakeFormationAdmin, LakeFormationAdminProps, LakeFormationS3Location, LakeFormationS3LocationProps } from './lake-formation';
-export { DockerBuilder, DockerBuilderProps } from './docker-builder';
+export { EmrEksImageBuilder , EmrEksImageBuilderProps } from './docker-builder';

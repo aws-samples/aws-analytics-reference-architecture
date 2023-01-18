@@ -8,12 +8,12 @@ import { Construct } from "constructs";
 import { AraBucket } from "../ara-bucket";
 import { CustomResourceProviderSetup, emrOnEksImageMap } from "./docker-builder-util";
 
-export interface DockerBuilderProps {
+export interface EmrEksImageBuilderProps {
   readonly repositoryName: string;
   readonly ecrRemovalPolicy?: RemovalPolicy;
 }
 
-export class DockerBuilder extends Construct {
+export class EmrEksImageBuilder extends Construct {
 
   private readonly ecrURI: string;
   private readonly dockerBuildPublishCrToken: string;
@@ -21,7 +21,7 @@ export class DockerBuilder extends Construct {
   private readonly codebuildProjectName: string;
   private readonly ecrName: string;
 
-  constructor(scope: Construct, id: string, props: DockerBuilderProps) {
+  constructor(scope: Construct, id: string, props: EmrEksImageBuilderProps) {
 
     super(scope, id);
 
@@ -55,7 +55,7 @@ export class DockerBuilder extends Construct {
       'docker logout'
     ];
 
-    const codebuildProject = new Project(this, 'DockerImageDeployProject', {
+    const codebuildProject = new Project(this, `DockerImageDeployProject-${props.repositoryName}`, {
       buildSpec: BuildSpec.fromObject({
         version: '0.2',
         phases: {
@@ -93,13 +93,13 @@ export class DockerBuilder extends Construct {
 
   public publishImage(dockerfilePath: string, tag: string) {
 
-    new BucketDeployment(this, `DockerfileAssetDeployment`, {
+    new BucketDeployment(this, `DockerfileAssetDeployment-${tag}`, {
       destinationBucket: this.assetBucket,
       destinationKeyPrefix: `${this.ecrName}/${tag}`,
       sources: [Source.asset(dockerfilePath)],
     });
 
-    const containerImage =  new CustomResource(this, 'testCR', {
+    const containerImage =  new CustomResource(this, `EmrEksImageBuild-${tag}`, {
       serviceToken: this.dockerBuildPublishCrToken,
       properties: {
         s3Path: `s3://${this.assetBucket.bucketName}/${this.ecrName}/${tag}/Dockerfile`,
@@ -110,7 +110,7 @@ export class DockerBuilder extends Construct {
       },
     });
 
-    new CfnOutput(this, 'URI', {
+    new CfnOutput(this, `URI-${tag}`, {
       value: containerImage.getAttString('ContainerUri'),
     })
 
