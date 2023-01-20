@@ -40,9 +40,15 @@ export class EmrEksImageBuilder extends Construct {
     this.ecrURI = ecrRepo.repositoryUri;
     this.ecrName = props.repositoryName;
 
+    let dockerImageAccount: string | undefined = emrOnEksImageMap.get(Stack.of(this).region);
+
+    if (dockerImageAccount)
+      throw new Error('Docker Image is not available in the selected region');
+      
+
     let commands = [
       'echo logging into docker',
-      `aws ecr get-login-password --region ${Aws.REGION} | docker login --username AWS --password-stdin ${emrOnEksImageMap.get(Stack.of(this).region)}.dkr.ecr.${Aws.REGION}.amazonaws.com`,
+      `aws ecr get-login-password --region ${Aws.REGION} | docker login --username AWS --password-stdin ${dockerImageAccount!}.dkr.ecr.${Aws.REGION}.amazonaws.com`,
       'echo Build start',
       'echo $DOCKER_FILE_S3_PATH',
       'aws s3 cp $DOCKER_FILE_S3_PATH Dockerfile',
@@ -74,10 +80,8 @@ export class EmrEksImageBuilder extends Construct {
     ecrRepo.grantPullPush(codeBuildRole);
     this.assetBucket.grantRead(codeBuildRole);
 
-
-    //TODO This need to be dynamic following the user input
     codeBuildRole.addToPolicy(new PolicyStatement ({
-      resources: [`arn:aws:ecr:${Aws.REGION}:${emrOnEksImageMap.get(Stack.of(this).region)}:repository/*`],
+      resources: [`arn:aws:ecr:${Aws.REGION}:${dockerImageAccount!}:repository/*`],
       actions: [
         'ecr:BatchGetImage',
         'ecr:GetAuthorizationToken',
