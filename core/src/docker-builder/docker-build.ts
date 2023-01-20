@@ -8,10 +8,59 @@ import { Construct } from "constructs";
 import { AraBucket } from "../ara-bucket";
 import { CustomResourceProviderSetup, emrOnEksImageMap } from "./docker-builder-util";
 
+
+/**
+ * The properties for initializing the construct to build custom EMR on EKS image
+ */
 export interface EmrEksImageBuilderProps {
+  /**
+   * Required
+   * The name of the ECR repository to create
+   * */
   readonly repositoryName: string;
+  /**
+   * @default RemovalPolicy.RETAIN
+   * This option allow to delete or not the ECR repository
+   * If it is set to RemovalPolicy.DESTROY, you need to delete the images before we delete the Repository 
+   * */
   readonly ecrRemovalPolicy?: RemovalPolicy;
 }
+
+/**
+ * A CDK construct to create build and publish EMR on EKS custom image 
+ * The construct will create an ECR repository to publish the images 
+ * It provide a method {@link publishImage} to build a docker file and publish it to the ECR repository 
+ *
+ * Resources deployed:
+ *
+ * * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are:
+ *   * ECR Repository
+ *   * Codebuild project
+ *   * A custom resource to build and publish a custom EMR on EKS image 
+ *
+ *
+ * Usage example:
+ *
+ * ```typescript
+ * 
+ * const app = new App();
+ *   
+ * const account = process.env.CDK_DEFAULT_ACCOUNT;
+ * const region = process.env.CDK_DEFAULT_REGION;
+ * 
+ * const stack = new Stack(app, 'EmrEksImageBuilderStack', {
+ * env: { account: account, region: region },
+ * });
+ * 
+ * const publish = new EmrEksImageBuilder(stack, 'EmrEksImageBuilder', {
+ *  repositoryName: 'my-repo',
+ *  ecrRemovalPolicy: RemovalPolicy.RETAIN
+ * });
+ * 
+ * publish.publishImage('PATH-TO-DOCKER-FILE-FOLDER', 'v4');
+ *
+ * ```
+ */
 
 export class EmrEksImageBuilder extends Construct {
 
@@ -94,6 +143,14 @@ export class EmrEksImageBuilder extends Construct {
 
     this.dockerBuildPublishCrToken = CustomResourceProviderSetup(this, codebuildProject.projectArn);
   }
+
+  /**
+   * A method to build and publish the custom image from a Dockerfile 
+   * The method invoke the custom resource deployed by the construct 
+   * and publish the **URI** of the published custom image as Cloudformation output  
+   * @param {string} dockerfilePath Path to the folder for Dockerfile 
+   * @param {string} tag The tag used to publish to the ECR repository
+   */
 
   public publishImage(dockerfilePath: string, tag: string) {
 

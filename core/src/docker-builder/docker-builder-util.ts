@@ -7,6 +7,12 @@ import { Construct } from "constructs";
 import { PreBundledFunction } from "../common/pre-bundled-function";
 import { PreBundledLayer } from "../common/pre-bundled-layer";
 
+/**
+ * @internal
+ * Create a Customer Resource to start a codebuild project
+ * The policy allow access only to a single bucket to store notebooks
+ * @returns Return the token to the Provider for CR
+ */
 export function CustomResourceProviderSetup (scope: Construct, codeBuildProjectArn: string) : string {
     //The policy allowing the creatio of the job template
     const lambdaPolicy = [
@@ -16,7 +22,7 @@ export function CustomResourceProviderSetup (scope: Construct, codeBuildProjectA
         })
       ];
   
-      // AWS Lambda function supporting the create, update, delete operations on Amazon EMR on EKS managed endpoints
+      // AWS Lambda function supporting the start a codebuild project
       const onEvent = new PreBundledFunction(scope, 'OnEvent', {
         codePath: 'docker-builder/resources/lambdas',
         runtime: Runtime.PYTHON_3_9,
@@ -27,7 +33,7 @@ export function CustomResourceProviderSetup (scope: Construct, codeBuildProjectA
         timeout: Duration.seconds(120),
       });
   
-      // AWS Lambda supporting the status check on asynchronous create, update and delete operations
+      // AWS Lambda function that check the status of codebuild porject
       const isComplete = new PreBundledFunction(scope, 'IsComplete', {
           codePath: 'docker-builder/resources/lambdas',
           handler: 'lambda.is_complete',
@@ -49,6 +55,11 @@ export function CustomResourceProviderSetup (scope: Construct, codeBuildProjectA
       return provider.serviceToken;
 }
 
+/**
+ * @internal
+ * a Map containing the account for each region where the docker image are stored
+ * The list is maintained in this AWS documentation (link)[https://docs.aws.amazon.com/emr/latest/EMR-on-EKS-DevelopmentGuide/docker-custom-images-tag.html]
+ */
 export const emrOnEksImageMap = new Map([
   ['ap-northeast-1', "059004520145"],  
   ['ap-northeast-2', "996579266876"],
