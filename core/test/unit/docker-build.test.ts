@@ -22,7 +22,7 @@ describe('EmrEksJobTemplateProvider', () => {
         ecrRemovalPolicy: RemovalPolicy.RETAIN
     });
 
-    publish.publishImage('/Users/mouhib/tfc-ara/aws-analytics-reference-architecture/core/src/docker-builder/docker-file', 'v4');
+    publish.publishImage('./', 'v4');
 
     const template = Template.fromStack(EmrEksImageBuilderStack);
 
