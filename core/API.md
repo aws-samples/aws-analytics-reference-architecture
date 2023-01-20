@@ -3564,132 +3564,6 @@ public readonly transformBucket: Bucket;
 ---
 
 
-### DockerBuilder <a name="DockerBuilder" id="aws-analytics-reference-architecture.DockerBuilder"></a>
-
-#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DockerBuilder.Initializer"></a>
-
-```typescript
-import { DockerBuilder } from 'aws-analytics-reference-architecture'
-
-new DockerBuilder(scope: Construct, id: string, props: DockerBuilderProps)
-```
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DockerBuilder.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DockerBuilder.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.DockerBuilder.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.DockerBuilderProps">DockerBuilderProps</a></code> | *No description.* |
-
----
-
-##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.DockerBuilder.Initializer.parameter.scope"></a>
-
-- *Type:* constructs.Construct
-
----
-
-##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.DockerBuilder.Initializer.parameter.id"></a>
-
-- *Type:* string
-
----
-
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.DockerBuilder.Initializer.parameter.props"></a>
-
-- *Type:* <a href="#aws-analytics-reference-architecture.DockerBuilderProps">DockerBuilderProps</a>
-
----
-
-#### Methods <a name="Methods" id="Methods"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DockerBuilder.toString">toString</a></code> | Returns a string representation of this construct. |
-| <code><a href="#aws-analytics-reference-architecture.DockerBuilder.publishImage">publishImage</a></code> | *No description.* |
-
----
-
-##### `toString` <a name="toString" id="aws-analytics-reference-architecture.DockerBuilder.toString"></a>
-
-```typescript
-public toString(): string
-```
-
-Returns a string representation of this construct.
-
-##### `publishImage` <a name="publishImage" id="aws-analytics-reference-architecture.DockerBuilder.publishImage"></a>
-
-```typescript
-public publishImage(dockerfilePath: string): void
-```
-
-###### `dockerfilePath`<sup>Required</sup> <a name="dockerfilePath" id="aws-analytics-reference-architecture.DockerBuilder.publishImage.parameter.dockerfilePath"></a>
-
-- *Type:* string
-
----
-
-#### Static Functions <a name="Static Functions" id="Static Functions"></a>
-
-| **Name** | **Description** |
-| --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DockerBuilder.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
-
----
-
-##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.DockerBuilder.isConstruct"></a>
-
-```typescript
-import { DockerBuilder } from 'aws-analytics-reference-architecture'
-
-DockerBuilder.isConstruct(x: any)
-```
-
-Checks if `x` is a construct.
-
-Use this method instead of `instanceof` to properly detect `Construct`
-instances, even when the construct library is symlinked.
-
-Explanation: in JavaScript, multiple copies of the `constructs` library on
-disk are seen as independent, completely different libraries. As a
-consequence, the class `Construct` in each copy of the `constructs` library
-is seen as a different class, and an instance of one class will not test as
-`instanceof` the other class. `npm install` will not create installations
-like this, but users may manually symlink construct libraries together or
-use a monorepo tool: in those cases, multiple copies of the `constructs`
-library can be accidentally installed, and `instanceof` will behave
-unpredictably. It is safest to avoid using `instanceof`, and using
-this type-testing method instead.
-
-###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.DockerBuilder.isConstruct.parameter.x"></a>
-
-- *Type:* any
-
-Any object.
-
----
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DockerBuilder.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
-
----
-
-##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.DockerBuilder.property.node"></a>
-
-```typescript
-public readonly node: Node;
-```
-
-- *Type:* constructs.Node
-
-The tree node.
-
----
-
-
 ### Ec2SsmRole <a name="Ec2SsmRole" id="aws-analytics-reference-architecture.Ec2SsmRole"></a>
 
 Construct extending IAM Role with AmazonSSMManagedInstanceCore managed policy.
@@ -4853,6 +4727,174 @@ public readonly DEFAULT_KARPENTER_VERSION: string;
 - *Type:* string
 
 ---
+
+### EmrEksImageBuilder <a name="EmrEksImageBuilder" id="aws-analytics-reference-architecture.EmrEksImageBuilder"></a>
+
+A CDK construct to create build and publish EMR on EKS custom image  The construct will create an ECR repository to publish the images  It provide a method {@link publishImage} to build a docker file and publish it to the ECR repository   Resources deployed:  * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access.
+
+These resources are:
+   * ECR Repository
+   * Codebuild project
+   * A custom resource to build and publish a custom EMR on EKS image 
+
+
+Usage example:
+
+```typescript
+
+const app = new App();
+   
+const account = process.env.CDK_DEFAULT_ACCOUNT;
+const region = process.env.CDK_DEFAULT_REGION;
+
+const stack = new Stack(app, 'EmrEksImageBuilderStack', {
+env: { account: account, region: region },
+});
+
+const publish = new EmrEksImageBuilder(stack, 'EmrEksImageBuilder', {
+  repositoryName: 'my-repo',
+  ecrRemovalPolicy: RemovalPolicy.RETAIN
+});
+
+publish.publishImage('PATH-TO-DOCKER-FILE-FOLDER', 'v4');
+
+```
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer"></a>
+
+```typescript
+import { EmrEksImageBuilder } from 'aws-analytics-reference-architecture'
+
+new EmrEksImageBuilder(scope: Construct, id: string, props: EmrEksImageBuilderProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilderProps">EmrEksImageBuilderProps</a></code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrEksImageBuilderProps">EmrEksImageBuilderProps</a>
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.publishImage">publishImage</a></code> | A method to build and publish the custom image from a Dockerfile  The method invoke the custom resource deployed by the construct  and publish the **URI** of the published custom image as Cloudformation output. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.EmrEksImageBuilder.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+##### `publishImage` <a name="publishImage" id="aws-analytics-reference-architecture.EmrEksImageBuilder.publishImage"></a>
+
+```typescript
+public publishImage(dockerfilePath: string, tag: string): void
+```
+
+A method to build and publish the custom image from a Dockerfile  The method invoke the custom resource deployed by the construct  and publish the **URI** of the published custom image as Cloudformation output.
+
+###### `dockerfilePath`<sup>Required</sup> <a name="dockerfilePath" id="aws-analytics-reference-architecture.EmrEksImageBuilder.publishImage.parameter.dockerfilePath"></a>
+
+- *Type:* string
+
+Path to the folder for Dockerfile.
+
+---
+
+###### `tag`<sup>Required</sup> <a name="tag" id="aws-analytics-reference-architecture.EmrEksImageBuilder.publishImage.parameter.tag"></a>
+
+- *Type:* string
+
+The tag used to publish to the ECR repository.
+
+---
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.EmrEksImageBuilder.isConstruct"></a>
+
+```typescript
+import { EmrEksImageBuilder } from 'aws-analytics-reference-architecture'
+
+EmrEksImageBuilder.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.EmrEksImageBuilder.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.EmrEksImageBuilder.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
 
 ### EmrEksJobTemplateProvider <a name="EmrEksJobTemplateProvider" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider"></a>
 
@@ -9085,34 +9127,6 @@ Delay (in days) before moving TRANSFORM data to cold storage (Infrequent Access 
 
 ---
 
-### DockerBuilderProps <a name="DockerBuilderProps" id="aws-analytics-reference-architecture.DockerBuilderProps"></a>
-
-#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.DockerBuilderProps.Initializer"></a>
-
-```typescript
-import { DockerBuilderProps } from 'aws-analytics-reference-architecture'
-
-const dockerBuilderProps: DockerBuilderProps = { ... }
-```
-
-#### Properties <a name="Properties" id="Properties"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.DockerBuilderProps.property.repositoryName">repositoryName</a></code> | <code>string</code> | *No description.* |
-
----
-
-##### `repositoryName`<sup>Required</sup> <a name="repositoryName" id="aws-analytics-reference-architecture.DockerBuilderProps.property.repositoryName"></a>
-
-```typescript
-public readonly repositoryName: string;
-```
-
-- *Type:* string
-
----
-
 ### EmrEksClusterProps <a name="EmrEksClusterProps" id="aws-analytics-reference-architecture.EmrEksClusterProps"></a>
 
 The properties for the EmrEksCluster Construct class.
@@ -9268,6 +9282,50 @@ public readonly kubernetesVersion: KubernetesVersion;
 - *Default:* Kubernetes v1.21 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
+
+---
+
+### EmrEksImageBuilderProps <a name="EmrEksImageBuilderProps" id="aws-analytics-reference-architecture.EmrEksImageBuilderProps"></a>
+
+The properties for initializing the construct to build custom EMR on EKS image.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.EmrEksImageBuilderProps.Initializer"></a>
+
+```typescript
+import { EmrEksImageBuilderProps } from 'aws-analytics-reference-architecture'
+
+const emrEksImageBuilderProps: EmrEksImageBuilderProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilderProps.property.repositoryName">repositoryName</a></code> | <code>string</code> | Required The name of the ECR repository to create. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilderProps.property.ecrRemovalPolicy">ecrRemovalPolicy</a></code> | <code>aws-cdk-lib.RemovalPolicy</code> | *No description.* |
+
+---
+
+##### `repositoryName`<sup>Required</sup> <a name="repositoryName" id="aws-analytics-reference-architecture.EmrEksImageBuilderProps.property.repositoryName"></a>
+
+```typescript
+public readonly repositoryName: string;
+```
+
+- *Type:* string
+
+Required The name of the ECR repository to create.
+
+---
+
+##### `ecrRemovalPolicy`<sup>Optional</sup> <a name="ecrRemovalPolicy" id="aws-analytics-reference-architecture.EmrEksImageBuilderProps.property.ecrRemovalPolicy"></a>
+
+```typescript
+public readonly ecrRemovalPolicy: RemovalPolicy;
+```
+
+- *Type:* aws-cdk-lib.RemovalPolicy
+- *Default:* RemovalPolicy.RETAIN This option allow to delete or not the ECR repository If it is set to RemovalPolicy.DESTROY, you need to delete the images before we delete the Repository
 
 ---
 
