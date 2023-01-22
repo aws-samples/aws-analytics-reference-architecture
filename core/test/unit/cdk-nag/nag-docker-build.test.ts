@@ -27,7 +27,7 @@ const publish = new EmrEksImageBuilder(stack, 'test', {
     ecrRemovalPolicy: RemovalPolicy.RETAIN
   });
   
-publish.publishImage('/.', 'vNAG');
+publish.publishImage('./', 'vNAG');
   
 
 Aspects.of(app).add(new AwsSolutionsChecks({verbose:true}));
