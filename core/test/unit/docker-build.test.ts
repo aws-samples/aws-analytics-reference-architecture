@@ -14,7 +14,13 @@ import { EmrEksImageBuilder } from '../../src/docker-builder'
 
 
 describe('EmrEksJobTemplateProvider', () => {
-    const EmrEksImageBuilderStack = new Stack();
+
+    const account = '111111111111';
+    const region = 'eu-west-1';
+
+    const EmrEksImageBuilderStack = new Stack(undefined, 'EmrEksImageBuilderStack', {
+        env: { account: account, region: region },
+      });
 
 
     const publish = new EmrEksImageBuilder(EmrEksImageBuilderStack, 'test', {
