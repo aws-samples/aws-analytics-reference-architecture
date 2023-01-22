@@ -91,10 +91,9 @@ export class EmrEksImageBuilder extends Construct {
 
     let dockerImageAccount: string | undefined = emrOnEksImageMap.get(Stack.of(this).region);
 
-    if (dockerImageAccount)
+    if (dockerImageAccount === undefined)
       throw new Error('Docker Image is not available in the selected region');
       
-
     let commands = [
       'echo logging into docker',
       `aws ecr get-login-password --region ${Aws.REGION} | docker login --username AWS --password-stdin ${dockerImageAccount!}.dkr.ecr.${Aws.REGION}.amazonaws.com`,
