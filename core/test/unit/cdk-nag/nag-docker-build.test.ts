@@ -27,7 +27,7 @@ const publish = new EmrEksImageBuilder(stack, 'test', {
     ecrRemovalPolicy: RemovalPolicy.RETAIN
   });
   
-publish.publishImage('/Users/mouhib/tfc-ara/aws-analytics-reference-architecture/core/src/docker-builder/docker-file', 'v4');
+publish.publishImage('/.', 'vNAG');
   
 
 Aspects.of(app).add(new AwsSolutionsChecks({verbose:true}));
