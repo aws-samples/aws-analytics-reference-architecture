@@ -1,12 +1,12 @@
 import { Aws, CfnOutput, CustomResource, RemovalPolicy, Stack } from "aws-cdk-lib";
-import { BuildSpec, LinuxBuildImage, Project } from "aws-cdk-lib/aws-codebuild";
+import { BuildSpec, ComputeType, LinuxBuildImage, Project } from "aws-cdk-lib/aws-codebuild";
 import { Repository } from "aws-cdk-lib/aws-ecr";
 import { PolicyStatement, Role, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 import { BucketEncryption } from "aws-cdk-lib/aws-s3";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
 import { AraBucket } from "../ara-bucket";
-import { CustomResourceProviderSetup, emrOnEksImageMap } from "./docker-builder-util";
+import { EmrEksImageBuilderCRProviderSetup, emrOnEksImageMap } from "./docker-builder-util";
 
 
 /**
@@ -121,6 +121,7 @@ export class EmrEksImageBuilder extends Construct {
       environment: {
         privileged: true,
         buildImage: LinuxBuildImage.STANDARD_5_0,
+        computeType: ComputeType.SMALL
       },
       role: codeBuildRole,
     });
@@ -129,7 +130,7 @@ export class EmrEksImageBuilder extends Construct {
     this.assetBucket.grantRead(codeBuildRole);
 
     codeBuildRole.addToPolicy(new PolicyStatement ({
-      resources: [`arn:aws:ecr:${Aws.REGION}:${dockerImageAccount!}:repository/*`],
+      resources: [`arn:aws:ecr:${Aws.REGION}:${dockerImageAccount}:repository/*`],
       actions: [
         'ecr:BatchGetImage',
         'ecr:GetAuthorizationToken',
@@ -140,7 +141,7 @@ export class EmrEksImageBuilder extends Construct {
 
     this.codebuildProjectName = codebuildProject.projectName;
 
-    this.dockerBuildPublishCrToken = CustomResourceProviderSetup(this, codebuildProject.projectArn);
+    this.dockerBuildPublishCrToken = EmrEksImageBuilderCRProviderSetup(this, codebuildProject.projectArn);
   }
 
   /**

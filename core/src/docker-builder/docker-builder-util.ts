@@ -13,7 +13,7 @@ import { PreBundledLayer } from "../common/pre-bundled-layer";
  * The policy allow access only to a single bucket to store notebooks
  * @returns Return the token to the Provider for CR
  */
-export function CustomResourceProviderSetup (scope: Construct, codeBuildProjectArn: string) : string {
+export function EmrEksImageBuilderCRProviderSetup (scope: Construct, codeBuildProjectArn: string) : string {
     //The policy allowing the creatio of the job template
     const lambdaPolicy = [
         new PolicyStatement({
