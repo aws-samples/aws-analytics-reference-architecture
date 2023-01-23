@@ -109,7 +109,7 @@
         },
         {
             "apiGroups": [
-                "extensions"
+                "extensions", "networking.k8s.io"
             ],
             "resources": [
                 "ingresses"
