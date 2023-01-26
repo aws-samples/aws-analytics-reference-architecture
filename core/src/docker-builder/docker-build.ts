@@ -6,6 +6,7 @@ import { BucketEncryption } from "aws-cdk-lib/aws-s3";
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
 import { AraBucket } from "../ara-bucket";
+import { Utils } from "../utils";
 import { EmrEksImageBuilderCRProviderSetup, emrOnEksImageMap } from "./docker-builder-util";
 
 
@@ -74,7 +75,7 @@ export class EmrEksImageBuilder extends Construct {
 
     super(scope, id);
 
-    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${Stack.of(this).stackName}-ara-docker-assets`, encryption: BucketEncryption.KMS_MANAGED });
+    this.assetBucket = AraBucket.getOrCreate(this, { bucketName: `${Utils.stringSanitizer(Stack.of(this).stackName)}-ara-docker-assets`, encryption: BucketEncryption.KMS_MANAGED });
 
     let codeBuildRole = new Role(this, 'codebuildarn', {
       assumedBy: new ServicePrincipal('codebuild.amazonaws.com'),
