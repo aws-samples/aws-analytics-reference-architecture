@@ -173,7 +173,7 @@ NagSuppressions.addResourceSuppressionsByPath(
     'docker-build/dockerbuild-ara-docker-assets/Resource',
     [{ id: 'AwsSolutions-S1', reason: 'Log disabled the bucket hold asset needed for build no data' }],
   );
-  
+
   NagSuppressions.addResourceSuppressionsByPath(
     stack,
     'docker-build/test/CustomResourceProvider/framework-onEvent/ServiceRole/Resource',
