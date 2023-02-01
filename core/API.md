@@ -5762,7 +5762,7 @@ Returns a string representation of this construct.
 ##### `addUser` <a name="addUser" id="aws-analytics-reference-architecture.NotebookPlatform.addUser"></a>
 
 ```typescript
-public addUser(userList: NotebookUserOptions[]): string[]
+public addUser(userList: NotebookUserOptions[]): Role[]
 ```
 
 ###### `userList`<sup>Required</sup> <a name="userList" id="aws-analytics-reference-architecture.NotebookPlatform.addUser.parameter.userList"></a>
