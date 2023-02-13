@@ -11,7 +11,7 @@
                 "spark.dynamicAllocation.maxExecutors": "40",
                 "spark.kubernetes.allocation.batch.size": "8",
                 "spark.kubernetes.executor.request.cores": "7.7",
-                "spark.executor.memory": "20800",
+                "spark.executor.memory": "20800m",
                 "spark.kubernetes.driver.request.cores": "2.5",
                 "spark.driver.memory": "6800m",
                 "spark.dynamicAllocation.executorAllocationRatio": "1",
