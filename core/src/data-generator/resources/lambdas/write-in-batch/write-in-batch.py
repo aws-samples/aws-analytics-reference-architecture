@@ -94,42 +94,6 @@ def calculate_no_of_files(df, file_max_size):
     return no_of_files
 
 
-def insert_mysql(df_list, params):
-    """
-    Insert dataframes into MySQL database
-
-    :param df_list: List of dataframes to insert
-    :param params: Connection and table info
-    """
-    con = wr.mysql.connect(secret_id=params['connection_name'])
-    for idx, df in enumerate(df_list):
-        wr.mysql.to_sql(
-            df=df,
-            table=params['table_name'],
-            schema=params['schema'],
-            con=con
-        )
-    con.close()
-
-
-def insert_postgres(df_list, params):
-    """
-    Insert dataframes into PostgreSQL database
-
-    :param df_list: List of dataframes to insert
-    :param params: Connection and table info
-    """
-    con = wr.postgresql.connect(secret_id=params['connection_name'])
-    for idx, df in enumerate(df_list):
-        wr.postgresql.to_sql(
-            df=df,
-            table=params['table_name'],
-            schema=params['schema'],
-            con=con
-        )
-    con.close()
-
-
 def write_s3(df_list, params):
    """
    Write dataframe to a CSV file in S3.
@@ -181,36 +145,60 @@ def write_redshift(df_list, params):
     con.close()
 
 
-def write_mysql(df_list, params):
+def insert_mysql(df_list, params):
     """
-    Write items from dataframe to MySQL target.
+    Insert dataframes into MySQL database
+
+    :param df_list: List of dataframes to insert
+    :param params: Connection and table info
     """
-    log.info(f"## Writing concatenated data to the {params['table_name']} table in MySQL>")
-    insert_mysql(df_list, params)
+    con = wr.mysql.connect(secret_id=params['connection_name'])
+    for idx, df in enumerate(df_list):
+        wr.mysql.to_sql(
+            df=df,
+            table=params['table_name'],
+            schema=params['schema'],
+            con=con
+        )
+    con.close()
 
 
-def write_postgresql(df_list, params):
+def insert_postgresql(df_list, params):
     """
-    Write items from dataframe to PostgreSQL target.
+    Insert dataframes into PostgreSQL database
+
+    :param df_list: List of dataframes to insert
+    :param params: Connection and table info
     """
-    log.info(f"## Writing concatenated data to the {params['table_name']} table in PostgreSQL>")
-    insert_postgres(df_list, params)
+    con = wr.postgresql.connect(secret_id=params['connection_name'])
+    for idx, df in enumerate(df_list):
+        wr.postgresql.to_sql(
+            df=df,
+            table=params['table_name'],
+            schema=params['schema'],
+            con=con
+        )
+    con.close()
 
 
-def write_aurora_mysql(df_list, params):
+def resolve_db_type(df_list, params):
     """
-    Write items from dataframe to Aurora MySQL target.
+    Choose whether to insert to Postgres or MySQL database depending on selection
     """
-    log.info(f"## Writing concatenated data to the {params['table_name']} table in Aurora MySQL>")
-    insert_mysql(df_list, params)
+    if params['type'] == 'mysql':
+        insert_mysql(df_list, params)
+    elif params['type'] == 'postgresql':
+        insert_postgresql(df_list, params)
+    else:
+        log.info(f"Type {params['type']} is not a valid option.")
 
 
-def write_aurora_postgres(df_list, params):
-    """
-    Write items from dataframe to Aurora PostgreSQL target.
-    """
-    log.info(f"## Writing concatenated data to the {params['table_name']} Postgres table in Aurora Postgres>")
-    insert_postgres(df_list, params)
+def write_aurora(df_list, params):
+    resolve_db_type(df_list, params)
+
+
+def write_rds(df_list, params):
+    resolve_db_type(df_list, params)
 
 
 def write_all(df_list, target_params):
@@ -223,6 +211,7 @@ def write_all(df_list, target_params):
     """
     log.info(f'# write_all()')
     for target, params in target_params.items():
+        log.info(f"## Writing concatenated data to the {params['table_name']} table in {target}>")
         globals()['write_' + target](df_list, params)
 
 
@@ -295,45 +284,27 @@ def handler(event, ctx):
         target_params['redshift']['connection_name'] = event.get('redshiftConnection')
         target_params['redshift']['schema'] = event.get('redshiftSchema')
 
-    # Aurora MySQL params
-    log.info(f'auroraMysqlTableName = {event.get("auroraMysqlTableName")}')
-    log.info(f'auroraMysqlConnection = {event.get("auroraMysqlConnection")}')
-    log.info(f'auroraMysqlSchema = {event.get("auroraMysqlSchema")}')
-    if event.get('auroraMysqlTableName'):
-        target_params['aurora_mysql'] = {}
-        target_params['aurora_mysql']['table_name'] = event.get('auroraMysqlTableName')
-        target_params['aurora_mysql']['connection_name'] = event.get('auroraMysqlConnection')
-        target_params['aurora_mysql']['schema'] = event.get('auroraMysqlSchema')
+    # Aurora params
+    log.info(f'auroraTableName = {event.get("auroraTableName")}')
+    log.info(f'auroraConnection = {event.get("auroraConnection")}')
+    log.info(f'auroraSchema = {event.get("auroraSchema")}')
+    if event.get('auroraTableName'):
+        target_params['aurora'] = {}
+        target_params['aurora']['table_name'] = event.get('auroraTableName')
+        target_params['aurora']['connection_name'] = event.get('auroraConnection')
+        target_params['aurora']['schema'] = event.get('auroraSchema')
+        target_params['aurora']['type'] = event.get('dbType')
 
-    # Aurora Postgres params
-    log.info(f'auroraPostgresTableName = {event.get("auroraPostgresTableName")}')
-    log.info(f'auroraPostgresConnection = {event.get("auroraPostgresConnection")}')
-    log.info(f'auroraPostgresSchema = {event.get("auroraPostgresSchema")}')
-    if event.get('auroraPostgresTableName'):
-        target_params['aurora_postgres'] = {}
-        target_params['aurora_postgres']['table_name'] = event.get('auroraPostgresTableName')
-        target_params['aurora_postgres']['connection_name'] = event.get('auroraPostgresConnection')
-        target_params['aurora_postgres']['schema'] = event.get('auroraPostgresSchema')
-
-    # MySQL params
-    log.info(f'mysqlTableName = {event.get("mysqlTableName")}')
-    log.info(f'mysqlConnection = {event.get("mysqlConnection")}')
-    log.info(f'mysqlSchema = {event.get("mysqlSchema")}')
-    if event.get('mysqlTableName'):
-        target_params['mysql'] = {}
-        target_params['mysql']['table_name'] = event.get('mysqlTableName')
-        target_params['mysql']['connection_name'] = event.get('mysqlConnection')
-        target_params['mysql']['schema'] = event.get('mysqlSchema')
-
-    # PostgreSQL params
-    log.info(f'postgresqlTableName = {event.get("postgresqlTableName")}')
-    log.info(f'postgresConnection = {event.get("postgresConnection")}')
-    log.info(f'postgresqlSchema = {event.get("postgresqlSchema")}')
-    if event.get('postgresqlTableName'):
-        target_params['postgresql'] = {}
-        target_params['postgresql']['table_name'] = event.get('postgresTableName')
-        target_params['postgresql']['connection_name'] = event.get('postgresConnection')
-        target_params['postgresql']['schema'] = event.get('postgresSchema')
+    # RDS params
+    log.info(f'rdsTableName = {event.get("rdsTableName")}')
+    log.info(f'rdsConnection = {event.get("rdsConnection")}')
+    log.info(f'rdsSchema = {event.get("rdsSchema")}')
+    if event.get('rdsTableName'):
+        target_params['rds'] = {}
+        target_params['rds']['table_name'] = event.get('rdsTableName')
+        target_params['rds']['connection_name'] = event.get('rdsConnection')
+        target_params['rds']['schema'] = event.get('rdsSchema')
+        target_params['rds']['type'] = event.get('dbType')
 
     # Write filtered dataframe to targets
     if len(df) > 0:
