@@ -13,6 +13,7 @@ import { Cluster } from '@aws-cdk/aws-redshift-alpha';
 import { deployStack, destroyStack } from './utils';
 
 import { BatchReplayer } from '../../src/data-generator/batch-replayer';
+import { IS3Sink, DynamoDbSink, DbSink } from '../../src/data-generator/batch-replayer-helpers';
 import { PreparedDataset } from '../../src/data-generator/prepared-dataset';
 
 jest.setTimeout(3000000);
@@ -26,15 +27,17 @@ const sinkBucket = new Bucket(stack, 'SinkBucket', {
   removalPolicy: RemovalPolicy.DESTROY,
   autoDeleteObjects: true,
 });
+let s3Props: IS3Sink = { sinkBucket: sinkBucket };
 
 const vpc = new aws_ec2.Vpc(stack, 'Vpc');
 
-const securityGroup = new aws_ec2.SecurityGroup(stack, 'SecurityGroup', {vpc});
+const secGroup = new aws_ec2.SecurityGroup(stack, 'SecurityGroup', { vpc });
 
 const ddbTable = new aws_dynamodb.Table(stack, 'DynamoDB', {
   partitionKey: { name: defaultName, type: aws_dynamodb.AttributeType.STRING },
   removalPolicy: RemovalPolicy.DESTROY,
 });
+let ddbProps: DynamoDbSink = { table: ddbTable };
 
 const redshift = new Cluster(stack, 'Redshift', {
   masterUser: { masterUsername: 'admin' },
@@ -43,30 +46,16 @@ const redshift = new Cluster(stack, 'Redshift', {
   vpc,
 });
 const redshiftCreds = redshift.secret ? redshift.secret.secretArn : '';
+let redshiftProps: DbSink = { table: defaultName, connection: redshiftCreds, schema: defaultName };
 
 const auroraMySQL = new aws_rds.DatabaseCluster(stack, 'AuroraMySQL', {
-  engine: aws_rds.DatabaseClusterEngine.auroraMysql({ version: aws_rds.AuroraMysqlEngineVersion.VER_2_08_1 }),
+  engine: aws_rds.DatabaseClusterEngine.auroraMysql({ version: aws_rds.AuroraMysqlEngineVersion.VER_3_02_1 }),
   defaultDatabaseName: defaultName,
   removalPolicy: RemovalPolicy.DESTROY,
   instanceProps: { vpc },
 });
 const auroraMysqlCreds = auroraMySQL.secret ? auroraMySQL.secret.secretArn : '';
-
-const auroraPostgres = new aws_rds.DatabaseCluster(stack, 'AuroraPostgres', {
-  engine: aws_rds.DatabaseClusterEngine.auroraPostgres({ version: aws_rds.AuroraPostgresEngineVersion.VER_12_11 }),
-  defaultDatabaseName: defaultName,
-  removalPolicy: RemovalPolicy.DESTROY,
-  instanceProps: { vpc },
-});
-const auroraPostgresCreds = auroraPostgres.secret ? auroraPostgres.secret.secretArn : '';
-
-const rdsMySQL = new aws_rds.DatabaseInstance(stack, 'MySQL', {
-  engine: aws_rds.DatabaseInstanceEngine.mysql({ version: aws_rds.MysqlEngineVersion.VER_8_0_28 }),
-  databaseName: defaultName,
-  removalPolicy: RemovalPolicy.DESTROY,
-  vpc,
-});
-const rdsMysqlCreds = rdsMySQL.secret ? rdsMySQL.secret.secretArn : '';
+let auroraProps: DbSink = { table: defaultName, connection: auroraMysqlCreds, schema: defaultName, type: 'mysql' };
 
 const rdsPostgres = new aws_rds.DatabaseInstance(stack, 'PostgreSQL', {
   engine: aws_rds.DatabaseInstanceEngine.postgres({ version: aws_rds.PostgresEngineVersion.VER_14_2 }),
@@ -75,51 +64,28 @@ const rdsPostgres = new aws_rds.DatabaseInstance(stack, 'PostgreSQL', {
   vpc,
 });
 const rdsPostgresCreds = rdsPostgres.secret ? rdsPostgres.secret.secretArn : '';
+let rdsProps: DbSink = { table: defaultName, connection: rdsPostgresCreds, schema: defaultName, type: 'postgresql' };
 
 const batchReplayer = new BatchReplayer(stack, 'BatchReplay', {
   dataset: PreparedDataset.RETAIL_1_GB_STORE_SALE,
-  sinkBucket: sinkBucket,
-  ddbTable: ddbTable,
-  redshiftTableName: defaultName,
-  redshiftConnection: redshiftCreds,
-  redshiftSchema: defaultName,
-  auroraMysqlTableName: defaultName,
-  auroraMysqlConnection: auroraMysqlCreds,
-  auroraMysqlSchema: defaultName,
-  auroraPostgresTableName: defaultName,
-  auroraPostgresConnection: auroraPostgresCreds,
-  auroraPostgresSchema: defaultName,
-  mysqlTableName: defaultName,
-  mysqlConnection: rdsMysqlCreds,
-  mysqlSchema: defaultName,
-  postgresTableName: defaultName,
-  postgresConnection: rdsPostgresCreds,
-  postgresSchema: defaultName,
-  databaseVpc: vpc,
-  databaseVpcSG: securityGroup,
+  s3Props: s3Props,
+  ddbProps: ddbProps,
+  redshiftProps: redshiftProps,
+  auroraProps: auroraProps,
+  rdsProps: rdsProps,
+  vpc: vpc,
+  secGroup: secGroup,
 });
 
 new BatchReplayer(stack, 'BatchReplay2', {
   dataset: PreparedDataset.RETAIL_1_GB_CUSTOMER,
-  sinkBucket: sinkBucket,
-  ddbTable: ddbTable,
-  redshiftTableName: defaultName,
-  redshiftConnection: redshiftCreds,
-  redshiftSchema: defaultName,
-  auroraMysqlTableName: defaultName,
-  auroraMysqlConnection: auroraMysqlCreds,
-  auroraMysqlSchema: defaultName,
-  auroraPostgresTableName: defaultName,
-  auroraPostgresConnection: auroraPostgresCreds,
-  auroraPostgresSchema: defaultName,
-  mysqlTableName: defaultName,
-  mysqlConnection: rdsMysqlCreds,
-  mysqlSchema: defaultName,
-  postgresTableName: defaultName,
-  postgresConnection: rdsPostgresCreds,
-  postgresSchema: defaultName,
-  databaseVpc: vpc,
-  databaseVpcSG: securityGroup,
+  s3Props: s3Props,
+  ddbProps: ddbProps,
+  redshiftProps: redshiftProps,
+  auroraProps: auroraProps,
+  rdsProps: rdsProps,
+  vpc: vpc,
+  secGroup: secGroup,
 });
 
 new CfnOutput(stack, 'DatasetName', {
