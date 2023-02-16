@@ -7,14 +7,22 @@ import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from 'aws-cdk-lib/aws-stepfunctions';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { Construct } from 'constructs';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { PreparedDataset } from './prepared-dataset';
-import { ITable } from 'aws-cdk-lib/aws-dynamodb';
 import { ISecurityGroup, IVpc } from 'aws-cdk-lib/aws-ec2';
+import {
+  prepareAuroraTarget,
+  prepareDdbTarget,
+  prepareRdsTarget,
+  prepareRedshiftTarget,
+  prepareS3Target,
+  IS3Sink,
+  DbSink,
+  DynamoDbSink,
+} from './batch-replayer-helpers';
 
 /**
  * The properties for the BatchReplayer construct
@@ -31,98 +39,39 @@ export interface BatchReplayerProps {
    */
   readonly frequency?: Duration;
   /**
-   * The S3 Bucket sink where the BatchReplayer writes data.
-   * :warning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
+   * Parameters to write to S3 target
    */
-  readonly sinkBucket?: Bucket;
+  readonly s3Props?: IS3Sink;
   /**
-   * The S3 object key sink where the BatchReplayer writes data.
-   * @default - No object key is used and the BatchReplayer writes the dataset in s3://<BUCKET_NAME>/<TABLE_NAME>
+   * Parameters to write to DynamoDB target
    */
-  readonly sinkObjectKey?: string;
+  readonly ddbProps?: DynamoDbSink;
   /**
-   * The maximum file size in Bytes written by the BatchReplayer
-   * @default - The BatchReplayer writes 100MB files maximum
+   * Parameters to write to Redshift target
    */
-  readonly outputFileMaxSizeInBytes?: number;
+  readonly redshiftProps?: DbSink;
   /**
-   * The DynamoDB table where the BatchReplayer writes data.
+   * Parameters to write to Aurora target
    */
-  readonly ddbTable?: ITable;
+  readonly auroraProps?: DbSink;
   /**
-   * Redshift table where the BatchReplayer writes data.
+   * Parameters to write to RDS target
    */
-  readonly redshiftTableName?: string;
+  readonly rdsProps?: DbSink;
   /**
-   * Glue catalog connection name for Redshift cluster.
+   * Security group for the WriteInBatch Lambda function
    */
-  readonly redshiftConnection?: string;
+  readonly secGroup?: ISecurityGroup;
   /**
-   * Schema name of the Redshift table.
+   * VPC for the WriteInBatch Lambda function
    */
-  readonly redshiftSchema?: string;
-  /**
-   * RDS MySQL Aurora cluster where the BatchReplayer writes data.
-   */
-  readonly auroraMysqlTableName?: string;
-  /**
-   * Glue catalog connection name for Aurora MySQL cluster.
-   */
-  readonly auroraMysqlConnection?: string;
-  /**
-   * Schema name of the Aurora MySQL table.
-   */
-  readonly auroraMysqlSchema?: string;
-  /**
-   * RDS PostgreSQL Aurora cluster where the BatchReplayer writes data.
-   */
-  readonly auroraPostgresTableName?: string;
-  /**
-   * Glue catalog connection name for Aurora PostgreSQL cluster.
-   */
-  readonly auroraPostgresConnection?: string;
-  /**
-   * Schema name of the Aurora PostgreSQL table.
-   */
-  readonly auroraPostgresSchema?: string;
-  /**
-   * RDS MySQL database instance where the BatchReplayer writes data.
-   */
-  readonly mysqlTableName?: string;
-  /**
-   * Glue catalog connection name for MySQL database.
-   */
-  readonly mysqlConnection?: string;
-  /**
-   * Schema name for the RDS MySQL table.
-   */
-  readonly mysqlSchema?: string;
-  /**
-   * RDS PostgreSQL database instance where the BatchReplayer writes data.
-   */
-  readonly postgresTableName?: string;
-  /**
-   * Glue catalog connection name for the PostgreSQL database.
-   */
-  readonly postgresConnection?: string;
-  /**
-   * Schema name for the RDS PostgreSQL table.
-   */
-  readonly postgresSchema?: string;
-  /**
-   * The VPC for the database instance(s) and/or cluster(s).
-   */
-  readonly databaseVpc?: IVpc;
-  /**
-   * The security group of the database VPC. This needs to be added to the writeInBatchFn Lambda.
-   */
-  readonly databaseVpcSG?: ISecurityGroup;
+  readonly vpc?: IVpc;
 }
 
 /**
  * Replay the data in the given PartitionedDataset.
  *
- * It will dump files into the `sinkBucket` based on the given `frequency`.
+ * It will dump files into the target based on the given `frequency`.
  * The computation is in a Step Function with two Lambda steps.
  *
  * 1. resources/lambdas/find-file-paths
@@ -130,23 +79,27 @@ export interface BatchReplayerProps {
  *
  * 2. resources/lambdas/write-in-batch
  * Take a file path, filter only records within given time range, adjust the time with offset to
- * make it looks like just being generated. Then write the output to the `sinkBucket`
+ * make it looks like just being generated. Then write the output to the target
  *
  * Usage example:
  * ```typescript
  *
  * const myBucket = new Bucket(stack, "MyBucket")
  *
+ * let myProps: IS3Sink = {
+ *  sinkBucket: myBucket,
+ *  sinkObjectKey: 'some-prefix',
+ *  outputFileMaxSizeInBytes: 10000000,
+ * }
+ *
  * new BatchReplayer(stack, "WebSalesReplayer", {
  *   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
- *   s3BucketSink: myBucket
- *   s3ObjectKeySink: 'some-prefix',
+ *   s3Props: myProps,
  *   frequency: 120,
- *   outputFileMaxSizeInBytes: 10000000,
  * });
  * ```
  *
- * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
+ * :warning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
  */
 export class BatchReplayer extends Construct {
 
@@ -160,114 +113,34 @@ export class BatchReplayer extends Construct {
    * for every given frequency and replay the data in that period
    */
   public readonly frequency: number;
-
   /**
-   * Sink bucket where the batch replayer will put data in
+   * Parameters to write to S3 target
    */
-  public readonly sinkBucket?: Bucket;
-
+  public readonly s3Props?: IS3Sink;
   /**
-   * Sink object key where the batch replayer will put data in
+   * Parameters to write to DynamoDB target
    */
-  public readonly sinkObjectKey?: string;
-
+  public readonly ddbProps?: DynamoDbSink;
   /**
-   * Maximum file size for each output file. If the output batch file is,
-   * larger than that, it will be split into multiple files that fit this size.
-   *
-   * Default to 100MB (max value)
+   * Parameters to write to Redshift target
    */
-  public readonly outputFileMaxSizeInBytes?: number;
-
+  public readonly redshiftProps?: DbSink;
   /**
-   * The DynamoDB table where the BatchReplayer writes data.
+   * Parameters to write to Aurora target
    */
-  public readonly ddbTable?: ITable;
-
+  public readonly auroraProps?: DbSink;
   /**
-   * Redshift table where the BatchReplayer writes data.
+   * Parameters to write to RDS target
    */
-  public readonly redshiftTableName?: string;
-
+  public readonly rdsProps?: DbSink;
   /**
-   * Glue catalog connection name for Redshift cluster.
+   * Security group for the WriteInBatch Lambda function
    */
-  public readonly redshiftConnection?: string;
-
+  public readonly secGroup?: ISecurityGroup;
   /**
-   * Schema name for the Redshift table.
+   * VPC for the WriteInBatch Lambda function
    */
-  public readonly redshiftSchema?: string;
-
-  /**
-   * RDS MySQL Aurora cluster where the BatchReplayer writes data.
-   */
-  public readonly auroraMysqlTableName?: string;
-
-  /**
-   * Glue catalog connection name for Aurora MySQL cluster.
-   */
-  public readonly auroraMysqlConnection?: string;
-
-  /**
-   * Schema name for the Aurora MySQL table.
-   */
-  public readonly auroraMysqlSchema?: string;
-
-  /**
-   * RDS PostgreSQL Aurora cluster where the BatchReplayer writes data.
-   */
-  public readonly auroraPostgresTableName?: string;
-
-  /**
-   * Glue catalog connection name for Aurora PostgreSQL cluster.
-   */
-  public readonly auroraPostgresConnection?: string;
-
-  /**
-   * Schema name for the Aurora PostgreSQL table.
-   */
-  public readonly auroraPostgresSchema?: string;
-
-  /**
-   * RDS MySQL database instance where the BatchReplayer writes data.
-   */
-  public readonly mysqlTableName?: string;
-
-  /**
-   * Glue catalog connection name for the MySQL database.
-   */
-  public readonly mysqlConnection?: string;
-
-  /**
-   * Schema name for the RDS MySQL table.
-   */
-  public readonly mysqlSchema?: string;
-
-  /**
-   * RDS PostgreSQL database instance where the BatchReplayer writes data.
-   */
-  public readonly postgresTableName?: string;
-
-  /**
-   * Glue catalog connection name for the PostgreSQL database.
-   */
-  public readonly postgresConnection?: string;
-
-  /**
-   * Schema name for the RDS PostgreSQL table.
-   */
-  public readonly postgresSchema?: string;
-
-  /**
-   * The VPC for the database instance(s) and/or cluster(s).
-   */
-  public readonly databaseVpc?: IVpc;
-
-  /**
-   * The security group of the database VPC. This needs to be added to the writeInBatchFn Lambda.
-   */
-  public readonly databaseVpcSG?: ISecurityGroup;
+  public readonly vpc?: IVpc;
 
   /**
    * Constructs a new instance of the BatchReplayer construct
@@ -282,47 +155,27 @@ export class BatchReplayer extends Construct {
     this.frequency = props.frequency?.toSeconds() || 60;
 
     // Properties for S3 target
-    this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
-    this.sinkBucket = props.sinkBucket;
-
-    // Properties for DynamoDB target
-    this.ddbTable = props.ddbTable;
-
-    // Properties for Redshift target
-    this.redshiftTableName = props.redshiftTableName;
-    this.redshiftConnection = props.redshiftConnection;
-    this.redshiftSchema = props.redshiftSchema;
-
-    // Properties for Aurora MySQL target
-    this.auroraMysqlTableName = props.auroraMysqlTableName;
-    this.auroraMysqlConnection = props.auroraMysqlConnection;
-    this.auroraMysqlSchema = props.auroraMysqlSchema;
-
-    // Properties for Aurora PostgreSQL target
-    this.auroraPostgresTableName = props.auroraPostgresTableName;
-    this.auroraPostgresConnection = props.auroraPostgresConnection;
-    this.auroraPostgresSchema = props.auroraPostgresSchema;
-
-    // Properties for MySQL target
-    this.mysqlTableName = props.mysqlTableName;
-    this.mysqlConnection = props.mysqlConnection;
-    this.mysqlSchema = props.mysqlSchema;
-
-    // Properties for PostgreSQL target
-    this.postgresTableName = props.postgresTableName;
-    this.postgresConnection = props.postgresConnection;
-    this.postgresSchema = props.postgresSchema;
-
-    // Vpc for the database instance(s)/cluster(s)
-    this.databaseVpc = props.databaseVpc;
-    this.databaseVpcSG = props.databaseVpcSG;
-
-    const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python39:1`);
-
+    if (props.s3Props) {
+      this.s3Props = props.s3Props;
+      if (!this.s3Props.outputFileMaxSizeInBytes) {
+        this.s3Props.outputFileMaxSizeInBytes = 100 * 1024 * 1024; //Default to 100 MB
+      }
+    }
     const manifestBucketName = this.dataset.manifestLocation.bucketName;
     const manifestObjectKey = this.dataset.manifestLocation.objectKey;
     const dataBucketName = this.dataset.location.bucketName;
     const dataObjectKey = this.dataset.location.objectKey;
+
+    // Properties for DynamoDB target
+    this.ddbProps = props.ddbProps ? props.ddbProps : undefined;
+    // Properties for Redshift target
+    this.redshiftProps = (props.redshiftProps && props.secGroup && props.vpc) ? props.redshiftProps : undefined;
+    // Properties for Aurora target
+    this.auroraProps = (props.auroraProps && props.secGroup && props.vpc) ? props.auroraProps : undefined;
+    // Properties for RDS target
+    this.rdsProps = (props.rdsProps && props.secGroup && props.vpc) ? props.rdsProps : undefined;
+
+    const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python39:1`);
 
     const findFilePathsFnPolicy = [
       new PolicyStatement({
@@ -368,17 +221,6 @@ export class BatchReplayer extends Construct {
 
     const writeInBatchFnPolicy = [];
 
-    writeInBatchFnPolicy.push(
-      new PolicyStatement({
-        actions: [
-          'ec2:CreateNetworkInterface',
-          'ec2:DescribeNetworkInterfaces',
-          'ec2:DeleteNetworkInterface',
-        ],
-        resources: ['*'],
-      }),
-    );
-
     let taskInputObj = {
       // Array from the last step to be mapped
       outputFileIndex: JsonPath.stringAt('$.index'),
@@ -395,196 +237,84 @@ export class BatchReplayer extends Construct {
     };
 
     // S3 target is selected
-    if (this.sinkBucket) {
+    if (this.s3Props) {
       // Used to force S3 bucket auto cleaning after deletion of this
-      this.node.addDependency(this.sinkBucket);
+      this.node.addDependency(this.s3Props.sinkBucket);
 
-      // Add policy to allow access to bucket
-      writeInBatchFnPolicy.push(
-        new PolicyStatement({
-          actions: [
-            's3:GetObject',
-            's3:ListBucket',
-          ],
-          resources: [
-            `arn:aws:s3:::${dataBucketName}/${dataObjectKey}/*`,
-            `arn:aws:s3:::${dataBucketName}`,
-          ],
-        }),
-      );
-      this.sinkObjectKey = props.sinkObjectKey ? `${props.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
-      // Add params to allow data to be output to S3 target
-      let s3Params = {
-        sinkPath: this.sinkBucket.s3UrlForObject(this.sinkObjectKey),
-        outputFileMaxSizeInBytes: this.outputFileMaxSizeInBytes,
-      };
-      taskInputObj = Object.assign(taskInputObj, s3Params);
+      this.s3Props.sinkObjectKey = this.s3Props.sinkObjectKey ?
+        `${this.s3Props.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
+
+      const { policy, taskInputParams } = prepareS3Target(this.s3Props, dataBucketName, dataObjectKey);
+      writeInBatchFnPolicy.push(policy);
+      taskInputObj = Object.assign(taskInputObj, taskInputParams);
     }
 
     // DynamoDB target is selected
-    if (this.ddbTable) {
-      // Add policy to allow access to table
+    if (this.ddbProps) {
+      const { policy, taskInputParams } = prepareDdbTarget(this.ddbProps);
+      writeInBatchFnPolicy.push(policy);
+      taskInputObj = Object.assign(taskInputObj, taskInputParams);
+    }
+
+    /**
+     * Redshift, Aurora and RDS databases require the Lambda to have VPC access.
+     */
+    if (this.secGroup && this.vpc) {
+
+      // Lambda requires these actions to have access to all resources in order to connect to a VPC
       writeInBatchFnPolicy.push(
         new PolicyStatement({
           actions: [
-            'dynamodb:DescribeTable',
-            'dynamodb:PutItem',
-            'dynamodb:BatchWriteItem',
+            'ec2:CreateNetworkInterface',
+            'ec2:DescribeNetworkInterfaces',
+            'ec2:DeleteNetworkInterface',
           ],
-          resources: [this.ddbTable.tableArn],
+          resources: ['*'],
         }),
       );
-      // Add params to allow data to be output to DynamoDB target
-      let ddbParams = {
-        ddbTableName: this.ddbTable.tableName,
-      };
-      taskInputObj = Object.assign(taskInputObj, ddbParams);
-    }
-
-    let writeInBatchFn: PreBundledFunction;
-
-    /**
-     * Redshift and RDS databases require the Lambda to have VPC access.
-     */
-    if (this.databaseVpc && this.databaseVpcSG) {
 
       // Redshift target is selected
-      if (this.redshiftTableName && this.redshiftConnection && this.redshiftSchema) {
-        // Add policy to allow access to table
-        writeInBatchFnPolicy.push(
-            new PolicyStatement({
-              actions: [
-                'secretsmanager:GetSecretValue',
-              ],
-              resources: [this.redshiftConnection],
-            }),
-        );
-        // Add params to allow data to be output to Redshift target
-        let redshiftParams = {
-          redshiftTableName: this.redshiftTableName,
-          redshiftConnection: this.redshiftConnection,
-          redshiftSchema: this.redshiftSchema,
-        };
-        taskInputObj = Object.assign(taskInputObj, redshiftParams);
+      if (this.redshiftProps) {
+        const { policy, taskInputParams } = prepareRedshiftTarget(this.redshiftProps);
+        writeInBatchFnPolicy.push(policy);
+        taskInputObj = Object.assign(taskInputObj, taskInputParams);
       }
-
-      // Aurora MySQL target is selected
-      if (this.auroraMysqlTableName && this.auroraMysqlConnection && this.auroraMysqlSchema) {
-        // Add policy to allow access to table
-        writeInBatchFnPolicy.push(
-          new PolicyStatement({
-            actions: [
-              'secretsmanager:GetSecretValue',
-            ],
-            resources: [this.auroraMysqlConnection],
-          }),
-        );
-        // Add params to allow data to be output to Aurora MySQL target
-        let auroraMysqlParams = {
-          auroraMysqlTableName: this.auroraMysqlTableName,
-          auroraMysqlConnection: this.auroraMysqlConnection,
-          auroraMysqlSchema: this.auroraMysqlSchema,
-        };
-        taskInputObj = Object.assign(taskInputObj, auroraMysqlParams);
+      // Aurora target is selected
+      if (this.auroraProps) {
+        const { policy, taskInputParams } = prepareAuroraTarget(this.auroraProps);
+        writeInBatchFnPolicy.push(policy);
+        taskInputObj = Object.assign(taskInputObj, taskInputParams);
       }
-
-      // Aurora PostgreSQL target is selected
-      if (this.auroraPostgresTableName && this.auroraPostgresConnection && this.auroraPostgresSchema) {
-        // Add policy to allow access to table
-        writeInBatchFnPolicy.push(
-          new PolicyStatement({
-            actions: [
-              'secretsmanager:GetSecretValue',
-            ],
-            resources: [this.auroraPostgresConnection],
-          }),
-        );
-        // Add params to allow data to be output to Aurora Postgres target
-        let auroraPostgresParams = {
-          auroraPostgresTableName: this.auroraPostgresTableName,
-          auroraPostgresConnection: this.auroraPostgresConnection,
-          auroraPostgresSchema: this.auroraPostgresSchema,
-        };
-        taskInputObj = Object.assign(taskInputObj, auroraPostgresParams);
+      // RDS target is selected
+      if (this.rdsProps) {
+        const { policy, taskInputParams } = prepareRdsTarget(this.rdsProps);
+        writeInBatchFnPolicy.push(policy);
+        taskInputObj = Object.assign(taskInputObj, taskInputParams);
       }
-
-      // MySQL target is selected
-      if (this.mysqlTableName && this.mysqlConnection && this.mysqlSchema) {
-        // Add policy to allow access to table
-        writeInBatchFnPolicy.push(
-          new PolicyStatement({
-            actions: [
-              'secretsmanager:GetSecretValue',
-            ],
-            resources: [this.mysqlConnection],
-          }),
-        );
-        // Add params to allow data to be output to MySQL target
-        let mysqlParams = {
-          mysqlTableName: this.mysqlTableName,
-          mysqlConnection: this.mysqlConnection,
-          mysqlSchema: this.mysqlSchema,
-        };
-        taskInputObj = Object.assign(taskInputObj, mysqlParams);
-      }
-
-      // PostgreSQL target is selected
-      if (this.postgresTableName && this.postgresConnection && this.postgresSchema) {
-        // Add policy to allow access to table
-        writeInBatchFnPolicy.push(
-          new PolicyStatement({
-            actions: [
-              'secretsmanager:GetSecretValue',
-            ],
-            resources: [this.postgresConnection],
-          }),
-        );
-        // Add params to allow data to be output to Postgres target
-        let postgresParams = {
-          postgresTableName: this.postgresTableName,
-          postgresConnection: this.postgresConnection,
-          postgresSchema: this.postgresSchema,
-        };
-        taskInputObj = Object.assign(taskInputObj, postgresParams);
-      }
-
-      /**
-       * Rewrite data
-       */
-      writeInBatchFn = new PreBundledFunction(this, 'WriteInBatch', {
-        memorySize: 3008,
-        codePath: 'data-generator/resources/lambdas/write-in-batch',
-        runtime: Runtime.PYTHON_3_9,
-        handler: 'write-in-batch.handler',
-        logRetention: RetentionDays.ONE_WEEK,
-        timeout: Duration.minutes(15),
-        layers: [dataWranglerLayer],
-        lambdaPolicyStatements: writeInBatchFnPolicy,
-        vpc: this.databaseVpc, // Add VPC configuration if set for database connections
-        vpcSubnets: this.databaseVpc.selectSubnets({
-          subnetType: aws_ec2.SubnetType.PRIVATE_WITH_NAT,
-        }),
-        securityGroups: [this.databaseVpcSG],
-      });
-    } else {
-      /**
-       * Rewrite data
-       */
-      writeInBatchFn = new PreBundledFunction(this, 'WriteInBatch', {
-        memorySize: 3008,
-        codePath: 'data-generator/resources/lambdas/write-in-batch',
-        runtime: Runtime.PYTHON_3_9,
-        handler: 'write-in-batch.handler',
-        logRetention: RetentionDays.ONE_WEEK,
-        timeout: Duration.minutes(15),
-        layers: [dataWranglerLayer],
-        lambdaPolicyStatements: writeInBatchFnPolicy,
-      });
     }
 
-    if (this.sinkBucket) {
-        // grant permissions to write to the bucket and to use the KMS key
-        this.sinkBucket.grantWrite(writeInBatchFn, `${this.sinkObjectKey}/*`);
+    /**
+     * Rewrite data
+     */
+    const writeInBatchFn = new PreBundledFunction(this, 'WriteInBatch', {
+      memorySize: 3008,
+      codePath: 'data-generator/resources/lambdas/write-in-batch',
+      runtime: Runtime.PYTHON_3_9,
+      handler: 'write-in-batch.handler',
+      logRetention: RetentionDays.ONE_WEEK,
+      timeout: Duration.minutes(15),
+      layers: [dataWranglerLayer],
+      lambdaPolicyStatements: writeInBatchFnPolicy,
+      vpc: this.vpc ? this.vpc : undefined,
+      vpcSubnets: this.vpc ? this.vpc.selectSubnets({
+        subnetType: aws_ec2.SubnetType.PRIVATE_WITH_NAT,
+      }) : undefined,
+      securityGroups: this.secGroup ? [this.secGroup] : undefined,
+    });
+
+    if (this.s3Props) {
+      // grant permissions to write to the bucket and to use the KMS key
+      this.s3Props.sinkBucket.grantWrite(writeInBatchFn, `${this.s3Props.sinkObjectKey}/*`);
     }
 
     const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
