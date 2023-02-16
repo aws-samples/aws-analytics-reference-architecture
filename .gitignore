@@ -31,3 +31,7 @@ core/.github/*
 .idea
 .vscode
 *.iml
+
+core/tmp.yaml
+examples/emr-eks-app/bin/*.d.ts
+examples/emr-eks-app/bin/*.js

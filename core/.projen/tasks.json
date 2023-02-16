@@ -123,6 +123,9 @@
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
         },
         {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/docker-builder/resources lib/docker-builder"
+        },
+        {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/emr-eks-platform/resources lib/emr-eks-platform"
         },
         {
@@ -253,6 +256,12 @@
         },
         {
           "exec": "pip3 install -r lib/data-generator/resources/lambdas/write-in-batch/requirements.txt --target lib/data-generator/resources/lambdas/write-in-batch --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/docker-builder/resources/lambdas/requirements.txt --target lib/docker-builder/resources/lambdas --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/job-template/requirements.txt --target lib/emr-eks-platform/resources/lambdas/job-template --upgrade"
         },
         {
           "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/managed-endpoint/requirements.txt --target lib/emr-eks-platform/resources/lambdas/managed-endpoint --upgrade"

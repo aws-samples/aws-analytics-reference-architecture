@@ -10,6 +10,10 @@ spec:
     operator: Equal
     value: spot
     effect: NoSchedule
+  - key: role
+    operator: Equal
+    value: shared
+    effect: NoSchedule
   nodeSelector:
     node-lifecycle: spot
     spark-role: executor

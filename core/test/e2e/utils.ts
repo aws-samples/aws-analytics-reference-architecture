@@ -4,7 +4,7 @@ import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deploy
 import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
 import { DeployStackResult } from 'aws-cdk/lib/api/deploy-stack';
 
-export const deployStack = async (app: App, stack: Stack, quiet?: boolean): Promise<DeployStackResult> => {
+export const deployStack = async (app: App, stack: Stack, quiet?: boolean, rollback?: boolean): Promise<DeployStackResult> => {
   const stackArtifact = getStackArtifact(app, stack);
 
   const cloudFormation = await createCloudFormationDeployments();
@@ -12,6 +12,7 @@ export const deployStack = async (app: App, stack: Stack, quiet?: boolean): Prom
   return cloudFormation.deployStack({
     stack: stackArtifact,
     quiet: quiet ? quiet : true,
+    rollback: rollback? rollback: true,
   });
 };
 

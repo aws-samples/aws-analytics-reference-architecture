@@ -1745,6 +1745,884 @@ Sink object key where the batch replayer will put data in.
 ---
 
 
+### CdkDeployer <a name="CdkDeployer" id="aws-analytics-reference-architecture.CdkDeployer"></a>
+
+A custom CDK Stack that can be synthetized as a CloudFormation Stack to deploy a CDK application hosted on GitHub or on S3 as a Zip file.
+
+This stack is self contained and can be one-click deployed to any AWS account.
+It can be used for AWS workshop or AWS blog examples deployment when CDK is not supported/desired.
+The stack supports passing the CDK application stack name to deploy (in case there are multiple stacks in the CDK app) and CDK parameters.
+
+It contains the necessary resources to synchronously deploy a CDK application from a GitHub repository:
+  * A CodeBuild project to effectively deploy the CDK application
+  * A StartBuild custom resource to synchronously triggers the build using a callback pattern based on Event Bridge
+  * The necessary roles and permissions
+
+The StartBuild CFN custom resource is using the callback pattern to wait for the build completion:
+  1. a Lambda function starts the build but doesn't return any value to the CFN callback URL. Instead, the callback URL is passed to the build project.
+  2. the completion of the build triggers an Event and a second Lambda function which checks the result of the build and send information to the CFN callback URL
+
+  * Usage example:
+```typescript
+new CdkDeployer(AwsNativeRefArchApp, 'AwsNativeRefArchDeployer', {
+  githubRepository: 'aws-samples/aws-analytics-reference-architecture',
+  cdkAppLocation: 'refarch/aws-native',
+  cdkParameters: {
+    QuickSightUsername: {
+      default: 'myuser',
+      type: 'String',
+    },
+    QuickSightIdentityRegion: {
+      default: 'us-east-1',
+      type: 'String',
+    },
+  },
+});
+```
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.CdkDeployer.Initializer"></a>
+
+```typescript
+import { CdkDeployer } from 'aws-analytics-reference-architecture'
+
+new CdkDeployer(scope: Construct, props: CdkDeployerProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps">CdkDeployerProps</a></code> | the CdkDeployer [properties]{@link CdkDeployerProps}. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.CdkDeployer.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.CdkDeployer.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.CdkDeployerProps">CdkDeployerProps</a>
+
+the CdkDeployer [properties]{@link CdkDeployerProps}.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addDependency">addDependency</a></code> | Add a dependency between this stack and another stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addMetadata">addMetadata</a></code> | Adds an arbitary key-value pair, with information you want to record about the stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addTransform">addTransform</a></code> | Add a Transform to this stack. A Transform is a macro that AWS CloudFormation uses to process your template. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.exportValue">exportValue</a></code> | Create a CloudFormation Export for a value. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.formatArn">formatArn</a></code> | Creates an ARN from components. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.getLogicalId">getLogicalId</a></code> | Allocates a stack-unique CloudFormation-compatible logical identity for a specific resource. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.regionalFact">regionalFact</a></code> | Look up a fact value for the given fact for the region of this stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.renameLogicalId">renameLogicalId</a></code> | Rename a generated logical identities. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.reportMissingContextKey">reportMissingContextKey</a></code> | Indicate that a context key was expected. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.resolve">resolve</a></code> | Resolve a tokenized value in the context of the current stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.splitArn">splitArn</a></code> | Splits the provided ARN into its components. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.toJsonString">toJsonString</a></code> | Convert an object, potentially containing tokens, to a JSON string. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.CdkDeployer.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+##### `addDependency` <a name="addDependency" id="aws-analytics-reference-architecture.CdkDeployer.addDependency"></a>
+
+```typescript
+public addDependency(target: Stack, reason?: string): void
+```
+
+Add a dependency between this stack and another stack.
+
+This can be used to define dependencies between any two stacks within an
+app, and also supports nested stacks.
+
+###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.CdkDeployer.addDependency.parameter.target"></a>
+
+- *Type:* aws-cdk-lib.Stack
+
+---
+
+###### `reason`<sup>Optional</sup> <a name="reason" id="aws-analytics-reference-architecture.CdkDeployer.addDependency.parameter.reason"></a>
+
+- *Type:* string
+
+---
+
+##### `addMetadata` <a name="addMetadata" id="aws-analytics-reference-architecture.CdkDeployer.addMetadata"></a>
+
+```typescript
+public addMetadata(key: string, value: any): void
+```
+
+Adds an arbitary key-value pair, with information you want to record about the stack.
+
+These get translated to the Metadata section of the generated template.
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/metadata-section-structure.html)
+
+###### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.CdkDeployer.addMetadata.parameter.key"></a>
+
+- *Type:* string
+
+---
+
+###### `value`<sup>Required</sup> <a name="value" id="aws-analytics-reference-architecture.CdkDeployer.addMetadata.parameter.value"></a>
+
+- *Type:* any
+
+---
+
+##### `addTransform` <a name="addTransform" id="aws-analytics-reference-architecture.CdkDeployer.addTransform"></a>
+
+```typescript
+public addTransform(transform: string): void
+```
+
+Add a Transform to this stack. A Transform is a macro that AWS CloudFormation uses to process your template.
+
+Duplicate values are removed when stack is synthesized.
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html)
+
+*Example*
+
+```typescript
+declare const stack: Stack;
+
+stack.addTransform('AWS::Serverless-2016-10-31')
+```
+
+
+###### `transform`<sup>Required</sup> <a name="transform" id="aws-analytics-reference-architecture.CdkDeployer.addTransform.parameter.transform"></a>
+
+- *Type:* string
+
+The transform to add.
+
+---
+
+##### `exportValue` <a name="exportValue" id="aws-analytics-reference-architecture.CdkDeployer.exportValue"></a>
+
+```typescript
+public exportValue(exportedValue: any, options?: ExportValueOptions): string
+```
+
+Create a CloudFormation Export for a value.
+
+Returns a string representing the corresponding `Fn.importValue()`
+expression for this Export. You can control the name for the export by
+passing the `name` option.
+
+If you don't supply a value for `name`, the value you're exporting must be
+a Resource attribute (for example: `bucket.bucketName`) and it will be
+given the same name as the automatic cross-stack reference that would be created
+if you used the attribute in another Stack.
+
+One of the uses for this method is to *remove* the relationship between
+two Stacks established by automatic cross-stack references. It will
+temporarily ensure that the CloudFormation Export still exists while you
+remove the reference from the consuming stack. After that, you can remove
+the resource and the manual export.
+
+## Example
+
+Here is how the process works. Let's say there are two stacks,
+`producerStack` and `consumerStack`, and `producerStack` has a bucket
+called `bucket`, which is referenced by `consumerStack` (perhaps because
+an AWS Lambda Function writes into it, or something like that).
+
+It is not safe to remove `producerStack.bucket` because as the bucket is being
+deleted, `consumerStack` might still be using it.
+
+Instead, the process takes two deployments:
+
+### Deployment 1: break the relationship
+
+- Make sure `consumerStack` no longer references `bucket.bucketName` (maybe the consumer
+   stack now uses its own bucket, or it writes to an AWS DynamoDB table, or maybe you just
+   remove the Lambda Function altogether).
+- In the `ProducerStack` class, call `this.exportValue(this.bucket.bucketName)`. This
+   will make sure the CloudFormation Export continues to exist while the relationship
+   between the two stacks is being broken.
+- Deploy (this will effectively only change the `consumerStack`, but it's safe to deploy both).
+
+### Deployment 2: remove the bucket resource
+
+- You are now free to remove the `bucket` resource from `producerStack`.
+- Don't forget to remove the `exportValue()` call as well.
+- Deploy again (this time only the `producerStack` will be changed -- the bucket will be deleted).
+
+###### `exportedValue`<sup>Required</sup> <a name="exportedValue" id="aws-analytics-reference-architecture.CdkDeployer.exportValue.parameter.exportedValue"></a>
+
+- *Type:* any
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.CdkDeployer.exportValue.parameter.options"></a>
+
+- *Type:* aws-cdk-lib.ExportValueOptions
+
+---
+
+##### `formatArn` <a name="formatArn" id="aws-analytics-reference-architecture.CdkDeployer.formatArn"></a>
+
+```typescript
+public formatArn(components: ArnComponents): string
+```
+
+Creates an ARN from components.
+
+If `partition`, `region` or `account` are not specified, the stack's
+partition, region and account will be used.
+
+If any component is the empty string, an empty string will be inserted
+into the generated ARN at the location that component corresponds to.
+
+The ARN will be formatted as follows:
+
+   arn:{partition}:{service}:{region}:{account}:{resource}{sep}{resource-name}
+
+The required ARN pieces that are omitted will be taken from the stack that
+the 'scope' is attached to. If all ARN pieces are supplied, the supplied scope
+can be 'undefined'.
+
+###### `components`<sup>Required</sup> <a name="components" id="aws-analytics-reference-architecture.CdkDeployer.formatArn.parameter.components"></a>
+
+- *Type:* aws-cdk-lib.ArnComponents
+
+---
+
+##### `getLogicalId` <a name="getLogicalId" id="aws-analytics-reference-architecture.CdkDeployer.getLogicalId"></a>
+
+```typescript
+public getLogicalId(element: CfnElement): string
+```
+
+Allocates a stack-unique CloudFormation-compatible logical identity for a specific resource.
+
+This method is called when a `CfnElement` is created and used to render the
+initial logical identity of resources. Logical ID renames are applied at
+this stage.
+
+This method uses the protected method `allocateLogicalId` to render the
+logical ID for an element. To modify the naming scheme, extend the `Stack`
+class and override this method.
+
+###### `element`<sup>Required</sup> <a name="element" id="aws-analytics-reference-architecture.CdkDeployer.getLogicalId.parameter.element"></a>
+
+- *Type:* aws-cdk-lib.CfnElement
+
+The CloudFormation element for which a logical identity is needed.
+
+---
+
+##### `regionalFact` <a name="regionalFact" id="aws-analytics-reference-architecture.CdkDeployer.regionalFact"></a>
+
+```typescript
+public regionalFact(factName: string, defaultValue?: string): string
+```
+
+Look up a fact value for the given fact for the region of this stack.
+
+Will return a definite value only if the region of the current stack is resolved.
+If not, a lookup map will be added to the stack and the lookup will be done at
+CDK deployment time.
+
+What regions will be included in the lookup map is controlled by the
+`@aws-cdk/core:target-partitions` context value: it must be set to a list
+of partitions, and only regions from the given partitions will be included.
+If no such context key is set, all regions will be included.
+
+This function is intended to be used by construct library authors. Application
+builders can rely on the abstractions offered by construct libraries and do
+not have to worry about regional facts.
+
+If `defaultValue` is not given, it is an error if the fact is unknown for
+the given region.
+
+###### `factName`<sup>Required</sup> <a name="factName" id="aws-analytics-reference-architecture.CdkDeployer.regionalFact.parameter.factName"></a>
+
+- *Type:* string
+
+---
+
+###### `defaultValue`<sup>Optional</sup> <a name="defaultValue" id="aws-analytics-reference-architecture.CdkDeployer.regionalFact.parameter.defaultValue"></a>
+
+- *Type:* string
+
+---
+
+##### `renameLogicalId` <a name="renameLogicalId" id="aws-analytics-reference-architecture.CdkDeployer.renameLogicalId"></a>
+
+```typescript
+public renameLogicalId(oldId: string, newId: string): void
+```
+
+Rename a generated logical identities.
+
+To modify the naming scheme strategy, extend the `Stack` class and
+override the `allocateLogicalId` method.
+
+###### `oldId`<sup>Required</sup> <a name="oldId" id="aws-analytics-reference-architecture.CdkDeployer.renameLogicalId.parameter.oldId"></a>
+
+- *Type:* string
+
+---
+
+###### `newId`<sup>Required</sup> <a name="newId" id="aws-analytics-reference-architecture.CdkDeployer.renameLogicalId.parameter.newId"></a>
+
+- *Type:* string
+
+---
+
+##### `reportMissingContextKey` <a name="reportMissingContextKey" id="aws-analytics-reference-architecture.CdkDeployer.reportMissingContextKey"></a>
+
+```typescript
+public reportMissingContextKey(report: MissingContext): void
+```
+
+Indicate that a context key was expected.
+
+Contains instructions which will be emitted into the cloud assembly on how
+the key should be supplied.
+
+###### `report`<sup>Required</sup> <a name="report" id="aws-analytics-reference-architecture.CdkDeployer.reportMissingContextKey.parameter.report"></a>
+
+- *Type:* aws-cdk-lib.cloud_assembly_schema.MissingContext
+
+The set of parameters needed to obtain the context.
+
+---
+
+##### `resolve` <a name="resolve" id="aws-analytics-reference-architecture.CdkDeployer.resolve"></a>
+
+```typescript
+public resolve(obj: any): any
+```
+
+Resolve a tokenized value in the context of the current stack.
+
+###### `obj`<sup>Required</sup> <a name="obj" id="aws-analytics-reference-architecture.CdkDeployer.resolve.parameter.obj"></a>
+
+- *Type:* any
+
+---
+
+##### `splitArn` <a name="splitArn" id="aws-analytics-reference-architecture.CdkDeployer.splitArn"></a>
+
+```typescript
+public splitArn(arn: string, arnFormat: ArnFormat): ArnComponents
+```
+
+Splits the provided ARN into its components.
+
+Works both if 'arn' is a string like 'arn:aws:s3:::bucket',
+and a Token representing a dynamic CloudFormation expression
+(in which case the returned components will also be dynamic CloudFormation expressions,
+encoded as Tokens).
+
+###### `arn`<sup>Required</sup> <a name="arn" id="aws-analytics-reference-architecture.CdkDeployer.splitArn.parameter.arn"></a>
+
+- *Type:* string
+
+the ARN to split into its components.
+
+---
+
+###### `arnFormat`<sup>Required</sup> <a name="arnFormat" id="aws-analytics-reference-architecture.CdkDeployer.splitArn.parameter.arnFormat"></a>
+
+- *Type:* aws-cdk-lib.ArnFormat
+
+the expected format of 'arn' - depends on what format the service 'arn' represents uses.
+
+---
+
+##### `toJsonString` <a name="toJsonString" id="aws-analytics-reference-architecture.CdkDeployer.toJsonString"></a>
+
+```typescript
+public toJsonString(obj: any, space?: number): string
+```
+
+Convert an object, potentially containing tokens, to a JSON string.
+
+###### `obj`<sup>Required</sup> <a name="obj" id="aws-analytics-reference-architecture.CdkDeployer.toJsonString.parameter.obj"></a>
+
+- *Type:* any
+
+---
+
+###### `space`<sup>Optional</sup> <a name="space" id="aws-analytics-reference-architecture.CdkDeployer.toJsonString.parameter.space"></a>
+
+- *Type:* number
+
+---
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.isStack">isStack</a></code> | Return whether the given object is a Stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.of">of</a></code> | Looks up the first stack scope in which `construct` is defined. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.CdkDeployer.isConstruct"></a>
+
+```typescript
+import { CdkDeployer } from 'aws-analytics-reference-architecture'
+
+CdkDeployer.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.CdkDeployer.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+##### `isStack` <a name="isStack" id="aws-analytics-reference-architecture.CdkDeployer.isStack"></a>
+
+```typescript
+import { CdkDeployer } from 'aws-analytics-reference-architecture'
+
+CdkDeployer.isStack(x: any)
+```
+
+Return whether the given object is a Stack.
+
+We do attribute detection since we can't reliably use 'instanceof'.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.CdkDeployer.isStack.parameter.x"></a>
+
+- *Type:* any
+
+---
+
+##### `of` <a name="of" id="aws-analytics-reference-architecture.CdkDeployer.of"></a>
+
+```typescript
+import { CdkDeployer } from 'aws-analytics-reference-architecture'
+
+CdkDeployer.of(construct: IConstruct)
+```
+
+Looks up the first stack scope in which `construct` is defined.
+
+Fails if there is no stack up the tree.
+
+###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.CdkDeployer.of.parameter.construct"></a>
+
+- *Type:* constructs.IConstruct
+
+The construct to start the search from.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.account">account</a></code> | <code>string</code> | The AWS account into which this stack will be deployed. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.artifactId">artifactId</a></code> | <code>string</code> | The ID of the cloud assembly artifact for this stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.availabilityZones">availabilityZones</a></code> | <code>string[]</code> | Returns the list of AZs that are available in the AWS environment (account/region) associated with this stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.bundlingRequired">bundlingRequired</a></code> | <code>boolean</code> | Indicates whether the stack requires bundling or not. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.dependencies">dependencies</a></code> | <code>aws-cdk-lib.Stack[]</code> | Return the stacks this stack depends on. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.environment">environment</a></code> | <code>string</code> | The environment coordinates in which this stack is deployed. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.nested">nested</a></code> | <code>boolean</code> | Indicates if this is a nested stack, in which case `parentStack` will include a reference to it's parent. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.notificationArns">notificationArns</a></code> | <code>string[]</code> | Returns the list of notification Amazon Resource Names (ARNs) for the current stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.partition">partition</a></code> | <code>string</code> | The partition in which this stack is defined. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.region">region</a></code> | <code>string</code> | The AWS region into which this stack will be deployed (e.g. `us-west-2`). |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.stackId">stackId</a></code> | <code>string</code> | The ID of the stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.stackName">stackName</a></code> | <code>string</code> | The concrete CloudFormation physical stack name. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.synthesizer">synthesizer</a></code> | <code>aws-cdk-lib.IStackSynthesizer</code> | Synthesis method for this stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.tags">tags</a></code> | <code>aws-cdk-lib.TagManager</code> | Tags to be applied to the stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.templateFile">templateFile</a></code> | <code>string</code> | The name of the CloudFormation template file emitted to the output directory during synthesis. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.templateOptions">templateOptions</a></code> | <code>aws-cdk-lib.ITemplateOptions</code> | Options for CloudFormation template (like version, transform, description). |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.urlSuffix">urlSuffix</a></code> | <code>string</code> | The Amazon domain suffix for the region in which this stack is defined. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.nestedStackParent">nestedStackParent</a></code> | <code>aws-cdk-lib.Stack</code> | If this is a nested stack, returns it's parent stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.nestedStackResource">nestedStackResource</a></code> | <code>aws-cdk-lib.CfnResource</code> | If this is a nested stack, this represents its `AWS::CloudFormation::Stack` resource. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.terminationProtection">terminationProtection</a></code> | <code>boolean</code> | Whether termination protection is enabled for this stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.property.deployResult">deployResult</a></code> | <code>string</code> | The result of the deloyment. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.CdkDeployer.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `account`<sup>Required</sup> <a name="account" id="aws-analytics-reference-architecture.CdkDeployer.property.account"></a>
+
+```typescript
+public readonly account: string;
+```
+
+- *Type:* string
+
+The AWS account into which this stack will be deployed.
+
+This value is resolved according to the following rules:
+
+1. The value provided to `env.account` when the stack is defined. This can
+    either be a concrete account (e.g. `585695031111`) or the
+    `Aws.ACCOUNT_ID` token.
+3. `Aws.ACCOUNT_ID`, which represents the CloudFormation intrinsic reference
+    `{ "Ref": "AWS::AccountId" }` encoded as a string token.
+
+Preferably, you should use the return value as an opaque string and not
+attempt to parse it to implement your logic. If you do, you must first
+check that it is a concerete value an not an unresolved token. If this
+value is an unresolved token (`Token.isUnresolved(stack.account)` returns
+`true`), this implies that the user wishes that this stack will synthesize
+into a **account-agnostic template**. In this case, your code should either
+fail (throw an error, emit a synth error using `Annotations.of(construct).addError()`) or
+implement some other region-agnostic behavior.
+
+---
+
+##### `artifactId`<sup>Required</sup> <a name="artifactId" id="aws-analytics-reference-architecture.CdkDeployer.property.artifactId"></a>
+
+```typescript
+public readonly artifactId: string;
+```
+
+- *Type:* string
+
+The ID of the cloud assembly artifact for this stack.
+
+---
+
+##### `availabilityZones`<sup>Required</sup> <a name="availabilityZones" id="aws-analytics-reference-architecture.CdkDeployer.property.availabilityZones"></a>
+
+```typescript
+public readonly availabilityZones: string[];
+```
+
+- *Type:* string[]
+
+Returns the list of AZs that are available in the AWS environment (account/region) associated with this stack.
+
+If the stack is environment-agnostic (either account and/or region are
+tokens), this property will return an array with 2 tokens that will resolve
+at deploy-time to the first two availability zones returned from CloudFormation's
+`Fn::GetAZs` intrinsic function.
+
+If they are not available in the context, returns a set of dummy values and
+reports them as missing, and let the CLI resolve them by calling EC2
+`DescribeAvailabilityZones` on the target environment.
+
+To specify a different strategy for selecting availability zones override this method.
+
+---
+
+##### `bundlingRequired`<sup>Required</sup> <a name="bundlingRequired" id="aws-analytics-reference-architecture.CdkDeployer.property.bundlingRequired"></a>
+
+```typescript
+public readonly bundlingRequired: boolean;
+```
+
+- *Type:* boolean
+
+Indicates whether the stack requires bundling or not.
+
+---
+
+##### `dependencies`<sup>Required</sup> <a name="dependencies" id="aws-analytics-reference-architecture.CdkDeployer.property.dependencies"></a>
+
+```typescript
+public readonly dependencies: Stack[];
+```
+
+- *Type:* aws-cdk-lib.Stack[]
+
+Return the stacks this stack depends on.
+
+---
+
+##### `environment`<sup>Required</sup> <a name="environment" id="aws-analytics-reference-architecture.CdkDeployer.property.environment"></a>
+
+```typescript
+public readonly environment: string;
+```
+
+- *Type:* string
+
+The environment coordinates in which this stack is deployed.
+
+In the form
+`aws://account/region`. Use `stack.account` and `stack.region` to obtain
+the specific values, no need to parse.
+
+You can use this value to determine if two stacks are targeting the same
+environment.
+
+If either `stack.account` or `stack.region` are not concrete values (e.g.
+`Aws.ACCOUNT_ID` or `Aws.REGION`) the special strings `unknown-account` and/or
+`unknown-region` will be used respectively to indicate this stack is
+region/account-agnostic.
+
+---
+
+##### `nested`<sup>Required</sup> <a name="nested" id="aws-analytics-reference-architecture.CdkDeployer.property.nested"></a>
+
+```typescript
+public readonly nested: boolean;
+```
+
+- *Type:* boolean
+
+Indicates if this is a nested stack, in which case `parentStack` will include a reference to it's parent.
+
+---
+
+##### `notificationArns`<sup>Required</sup> <a name="notificationArns" id="aws-analytics-reference-architecture.CdkDeployer.property.notificationArns"></a>
+
+```typescript
+public readonly notificationArns: string[];
+```
+
+- *Type:* string[]
+
+Returns the list of notification Amazon Resource Names (ARNs) for the current stack.
+
+---
+
+##### `partition`<sup>Required</sup> <a name="partition" id="aws-analytics-reference-architecture.CdkDeployer.property.partition"></a>
+
+```typescript
+public readonly partition: string;
+```
+
+- *Type:* string
+
+The partition in which this stack is defined.
+
+---
+
+##### `region`<sup>Required</sup> <a name="region" id="aws-analytics-reference-architecture.CdkDeployer.property.region"></a>
+
+```typescript
+public readonly region: string;
+```
+
+- *Type:* string
+
+The AWS region into which this stack will be deployed (e.g. `us-west-2`).
+
+This value is resolved according to the following rules:
+
+1. The value provided to `env.region` when the stack is defined. This can
+    either be a concerete region (e.g. `us-west-2`) or the `Aws.REGION`
+    token.
+3. `Aws.REGION`, which is represents the CloudFormation intrinsic reference
+    `{ "Ref": "AWS::Region" }` encoded as a string token.
+
+Preferably, you should use the return value as an opaque string and not
+attempt to parse it to implement your logic. If you do, you must first
+check that it is a concerete value an not an unresolved token. If this
+value is an unresolved token (`Token.isUnresolved(stack.region)` returns
+`true`), this implies that the user wishes that this stack will synthesize
+into a **region-agnostic template**. In this case, your code should either
+fail (throw an error, emit a synth error using `Annotations.of(construct).addError()`) or
+implement some other region-agnostic behavior.
+
+---
+
+##### `stackId`<sup>Required</sup> <a name="stackId" id="aws-analytics-reference-architecture.CdkDeployer.property.stackId"></a>
+
+```typescript
+public readonly stackId: string;
+```
+
+- *Type:* string
+
+The ID of the stack.
+
+---
+
+*Example*
+
+```typescript
+// After resolving, looks like
+'arn:aws:cloudformation:us-west-2:123456789012:stack/teststack/51af3dc0-da77-11e4-872e-1234567db123'
+```
+
+
+##### `stackName`<sup>Required</sup> <a name="stackName" id="aws-analytics-reference-architecture.CdkDeployer.property.stackName"></a>
+
+```typescript
+public readonly stackName: string;
+```
+
+- *Type:* string
+
+The concrete CloudFormation physical stack name.
+
+This is either the name defined explicitly in the `stackName` prop or
+allocated based on the stack's location in the construct tree. Stacks that
+are directly defined under the app use their construct `id` as their stack
+name. Stacks that are defined deeper within the tree will use a hashed naming
+scheme based on the construct path to ensure uniqueness.
+
+If you wish to obtain the deploy-time AWS::StackName intrinsic,
+you can use `Aws.STACK_NAME` directly.
+
+---
+
+##### `synthesizer`<sup>Required</sup> <a name="synthesizer" id="aws-analytics-reference-architecture.CdkDeployer.property.synthesizer"></a>
+
+```typescript
+public readonly synthesizer: IStackSynthesizer;
+```
+
+- *Type:* aws-cdk-lib.IStackSynthesizer
+
+Synthesis method for this stack.
+
+---
+
+##### `tags`<sup>Required</sup> <a name="tags" id="aws-analytics-reference-architecture.CdkDeployer.property.tags"></a>
+
+```typescript
+public readonly tags: TagManager;
+```
+
+- *Type:* aws-cdk-lib.TagManager
+
+Tags to be applied to the stack.
+
+---
+
+##### `templateFile`<sup>Required</sup> <a name="templateFile" id="aws-analytics-reference-architecture.CdkDeployer.property.templateFile"></a>
+
+```typescript
+public readonly templateFile: string;
+```
+
+- *Type:* string
+
+The name of the CloudFormation template file emitted to the output directory during synthesis.
+
+Example value: `MyStack.template.json`
+
+---
+
+##### `templateOptions`<sup>Required</sup> <a name="templateOptions" id="aws-analytics-reference-architecture.CdkDeployer.property.templateOptions"></a>
+
+```typescript
+public readonly templateOptions: ITemplateOptions;
+```
+
+- *Type:* aws-cdk-lib.ITemplateOptions
+
+Options for CloudFormation template (like version, transform, description).
+
+---
+
+##### `urlSuffix`<sup>Required</sup> <a name="urlSuffix" id="aws-analytics-reference-architecture.CdkDeployer.property.urlSuffix"></a>
+
+```typescript
+public readonly urlSuffix: string;
+```
+
+- *Type:* string
+
+The Amazon domain suffix for the region in which this stack is defined.
+
+---
+
+##### `nestedStackParent`<sup>Optional</sup> <a name="nestedStackParent" id="aws-analytics-reference-architecture.CdkDeployer.property.nestedStackParent"></a>
+
+```typescript
+public readonly nestedStackParent: Stack;
+```
+
+- *Type:* aws-cdk-lib.Stack
+
+If this is a nested stack, returns it's parent stack.
+
+---
+
+##### `nestedStackResource`<sup>Optional</sup> <a name="nestedStackResource" id="aws-analytics-reference-architecture.CdkDeployer.property.nestedStackResource"></a>
+
+```typescript
+public readonly nestedStackResource: CfnResource;
+```
+
+- *Type:* aws-cdk-lib.CfnResource
+
+If this is a nested stack, this represents its `AWS::CloudFormation::Stack` resource.
+
+`undefined` for top-level (non-nested) stacks.
+
+---
+
+##### `terminationProtection`<sup>Optional</sup> <a name="terminationProtection" id="aws-analytics-reference-architecture.CdkDeployer.property.terminationProtection"></a>
+
+```typescript
+public readonly terminationProtection: boolean;
+```
+
+- *Type:* boolean
+
+Whether termination protection is enabled for this stack.
+
+---
+
+##### `deployResult`<sup>Required</sup> <a name="deployResult" id="aws-analytics-reference-architecture.CdkDeployer.property.deployResult"></a>
+
+```typescript
+public readonly deployResult: string;
+```
+
+- *Type:* string
+
+The result of the deloyment.
+
+---
+
+
 ### CentralGovernance <a name="CentralGovernance" id="aws-analytics-reference-architecture.CentralGovernance"></a>
 
 This CDK Construct creates a Data Product registration workflow and resources for the Central Governance account.
@@ -3152,6 +4030,7 @@ Role's policies yourself.
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isOwnedResource">isOwnedResource</a></code> | Returns true if the construct was created by CDK, and false otherwise. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles">customizeRoles</a></code> | Customize the creation of IAM roles within the given scope. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleArn">fromRoleArn</a></code> | Import an external role by ARN. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleName">fromRoleName</a></code> | Import an external role by name. |
 
@@ -3218,6 +4097,56 @@ Check whether the given construct is a Resource.
 ###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.Ec2SsmRole.isResource.parameter.construct"></a>
 
 - *Type:* constructs.IConstruct
+
+---
+
+##### `customizeRoles` <a name="customizeRoles" id="aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles"></a>
+
+```typescript
+import { Ec2SsmRole } from 'aws-analytics-reference-architecture'
+
+Ec2SsmRole.customizeRoles(scope: Construct, options?: CustomizeRolesOptions)
+```
+
+Customize the creation of IAM roles within the given scope.
+
+It is recommended that you **do not** use this method and instead allow
+CDK to manage role creation. This should only be used
+in environments where CDK applications are not allowed to created IAM roles.
+
+This can be used to prevent the CDK application from creating roles
+within the given scope and instead replace the references to the roles with
+precreated role names. A report will be synthesized in the cloud assembly (i.e. cdk.out)
+that will contain the list of IAM roles that would have been created along with the
+IAM policy statements that the role should contain. This report can then be used
+to create the IAM roles outside of CDK and then the created role names can be provided
+in `usePrecreatedRoles`.
+
+*Example*
+
+```typescript
+declare const app: App;
+Role.customizeRoles(app, {
+  usePrecreatedRoles: {
+    'ConstructPath/To/Role': 'my-precreated-role-name',
+  },
+});
+```
+
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+construct scope to customize role creation.
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles.parameter.options"></a>
+
+- *Type:* aws-cdk-lib.aws_iam.CustomizeRolesOptions
+
+options for configuring role creation.
 
 ---
 
@@ -3545,6 +4474,8 @@ cdk.CfnOutput(self,'ExecRoleArn', value = role.roleArn)
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.toString">toString</a></code> | Returns a string representation of this construct. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrEksNodegroup">addEmrEksNodegroup</a></code> | Add new nodegroups to the cluster for Amazon EMR on EKS. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addEmrVirtualCluster">addEmrVirtualCluster</a></code> | Add a new Amazon EMR Virtual Cluster linked to Amazon EKS Cluster. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate">addJobTemplate</a></code> | Creates a new Amazon EMR on EKS job template based on the props passed. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner">addKarpenterProvisioner</a></code> | Apply the provided manifest and add the CDK dependency on EKS cluster. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint">addManagedEndpoint</a></code> | Creates a new Amazon EMR managed endpoint to be used with Amazon EMR Virtual Cluster . |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity">addNodegroupCapacity</a></code> | Add a new Amazon EKS Nodegroup to the cluster. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.createExecutionRole">createExecutionRole</a></code> | Create and configure a new Amazon IAM Role usable as an execution role. |
@@ -3612,6 +4543,64 @@ the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}.
 
 ---
 
+##### `addJobTemplate` <a name="addJobTemplate" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate"></a>
+
+```typescript
+public addJobTemplate(scope: Construct, id: string, options: EmrEksJobTemplateDefinition): CustomResource
+```
+
+Creates a new Amazon EMR on EKS job template based on the props passed.
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the scope of the stack where job template is created.
+
+---
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate.parameter.id"></a>
+
+- *Type:* string
+
+the CDK id for job template resource.
+
+---
+
+###### `options`<sup>Required</sup> <a name="options" id="aws-analytics-reference-architecture.EmrEksCluster.addJobTemplate.parameter.options"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrEksJobTemplateDefinition">EmrEksJobTemplateDefinition</a>
+
+the EmrManagedEndpointOptions to configure the Amazon EMR managed endpoint.
+
+---
+
+##### `addKarpenterProvisioner` <a name="addKarpenterProvisioner" id="aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner"></a>
+
+```typescript
+public addKarpenterProvisioner(id: string, manifest: any): any
+```
+
+Apply the provided manifest and add the CDK dependency on EKS cluster.
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner.parameter.id"></a>
+
+- *Type:* string
+
+the unique ID of the CDK resource.
+
+---
+
+###### `manifest`<sup>Required</sup> <a name="manifest" id="aws-analytics-reference-architecture.EmrEksCluster.addKarpenterProvisioner.parameter.manifest"></a>
+
+- *Type:* any
+
+The manifest to apply.
+
+You can use the Utils class that offers method to read yaml file and load it as a manifest
+
+---
+
 ##### `addManagedEndpoint` <a name="addManagedEndpoint" id="aws-analytics-reference-architecture.EmrEksCluster.addManagedEndpoint"></a>
 
 ```typescript
@@ -3654,7 +4643,7 @@ public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions
 
 Add a new Amazon EKS Nodegroup to the cluster.
 
-This method is be used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
+This method is used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
   so it can be used for the cluster autoscaler.
 
 ###### `nodegroupId`<sup>Required</sup> <a name="nodegroupId" id="aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity.parameter.nodegroupId"></a>
@@ -3822,7 +4811,9 @@ the EmrEksClusterProps [properties]{@link EmrEksClusterProps} if created.
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.assetBucket">assetBucket</a></code> | <code>aws-cdk-lib.aws_s3.Bucket</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.clusterName">clusterName</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig">criticalDefaultConfig</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.ec2InstanceNodeGroupRole">ec2InstanceNodeGroupRole</a></code> | <code>aws-cdk-lib.aws_iam.Role</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.notebookDefaultConfig">notebookDefaultConfig</a></code> | <code>string</code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.podTemplateLocation">podTemplateLocation</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | *No description.* |
@@ -3852,6 +4843,16 @@ public readonly assetBucket: Bucket;
 
 ---
 
+##### `clusterName`<sup>Required</sup> <a name="clusterName" id="aws-analytics-reference-architecture.EmrEksCluster.property.clusterName"></a>
+
+```typescript
+public readonly clusterName: string;
+```
+
+- *Type:* string
+
+---
+
 ##### `criticalDefaultConfig`<sup>Required</sup> <a name="criticalDefaultConfig" id="aws-analytics-reference-architecture.EmrEksCluster.property.criticalDefaultConfig"></a>
 
 ```typescript
@@ -3859,6 +4860,16 @@ public readonly criticalDefaultConfig: string;
 ```
 
 - *Type:* string
+
+---
+
+##### `ec2InstanceNodeGroupRole`<sup>Required</sup> <a name="ec2InstanceNodeGroupRole" id="aws-analytics-reference-architecture.EmrEksCluster.property.ec2InstanceNodeGroupRole"></a>
+
+```typescript
+public readonly ec2InstanceNodeGroupRole: Role;
+```
+
+- *Type:* aws-cdk-lib.aws_iam.Role
 
 ---
 
@@ -3899,6 +4910,349 @@ public readonly sharedDefaultConfig: string;
 ```
 
 - *Type:* string
+
+---
+
+#### Constants <a name="Constants" id="Constants"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_CLUSTER_NAME">DEFAULT_CLUSTER_NAME</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EKS_VERSION">DEFAULT_EKS_VERSION</a></code> | <code>aws-cdk-lib.aws_eks.KubernetesVersion</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EMR_VERSION">DEFAULT_EMR_VERSION</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_KARPENTER_VERSION">DEFAULT_KARPENTER_VERSION</a></code> | <code>string</code> | *No description.* |
+
+---
+
+##### `DEFAULT_CLUSTER_NAME`<sup>Required</sup> <a name="DEFAULT_CLUSTER_NAME" id="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_CLUSTER_NAME"></a>
+
+```typescript
+public readonly DEFAULT_CLUSTER_NAME: string;
+```
+
+- *Type:* string
+
+---
+
+##### `DEFAULT_EKS_VERSION`<sup>Required</sup> <a name="DEFAULT_EKS_VERSION" id="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EKS_VERSION"></a>
+
+```typescript
+public readonly DEFAULT_EKS_VERSION: KubernetesVersion;
+```
+
+- *Type:* aws-cdk-lib.aws_eks.KubernetesVersion
+
+---
+
+##### `DEFAULT_EMR_VERSION`<sup>Required</sup> <a name="DEFAULT_EMR_VERSION" id="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_EMR_VERSION"></a>
+
+```typescript
+public readonly DEFAULT_EMR_VERSION: EmrVersion;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a>
+
+---
+
+##### `DEFAULT_KARPENTER_VERSION`<sup>Required</sup> <a name="DEFAULT_KARPENTER_VERSION" id="aws-analytics-reference-architecture.EmrEksCluster.property.DEFAULT_KARPENTER_VERSION"></a>
+
+```typescript
+public readonly DEFAULT_KARPENTER_VERSION: string;
+```
+
+- *Type:* string
+
+---
+
+### EmrEksImageBuilder <a name="EmrEksImageBuilder" id="aws-analytics-reference-architecture.EmrEksImageBuilder"></a>
+
+A CDK construct to create build and publish EMR on EKS custom image  The construct will create an ECR repository to publish the images  It provide a method {@link publishImage} to build a docker file and publish it to the ECR repository   Resources deployed:  * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access.
+
+These resources are:
+   * ECR Repository
+   * Codebuild project
+   * A custom resource to build and publish a custom EMR on EKS image 
+
+
+Usage example:
+
+```typescript
+
+const app = new App();
+   
+const account = process.env.CDK_DEFAULT_ACCOUNT;
+const region = process.env.CDK_DEFAULT_REGION;
+
+const stack = new Stack(app, 'EmrEksImageBuilderStack', {
+env: { account: account, region: region },
+});
+
+const publish = new EmrEksImageBuilder(stack, 'EmrEksImageBuilder', {
+  repositoryName: 'my-repo',
+  ecrRemovalPolicy: RemovalPolicy.RETAIN
+});
+
+publish.publishImage('PATH-TO-DOCKER-FILE-FOLDER', 'v4');
+
+```
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer"></a>
+
+```typescript
+import { EmrEksImageBuilder } from 'aws-analytics-reference-architecture'
+
+new EmrEksImageBuilder(scope: Construct, id: string, props: EmrEksImageBuilderProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.id">id</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilderProps">EmrEksImageBuilderProps</a></code> | *No description.* |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.EmrEksImageBuilder.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrEksImageBuilderProps">EmrEksImageBuilderProps</a>
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.publishImage">publishImage</a></code> | A method to build and publish the custom image from a Dockerfile  The method invoke the custom resource deployed by the construct  and publish the **URI** of the published custom image as Cloudformation output. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.EmrEksImageBuilder.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+##### `publishImage` <a name="publishImage" id="aws-analytics-reference-architecture.EmrEksImageBuilder.publishImage"></a>
+
+```typescript
+public publishImage(dockerfilePath: string, tag: string): void
+```
+
+A method to build and publish the custom image from a Dockerfile  The method invoke the custom resource deployed by the construct  and publish the **URI** of the published custom image as Cloudformation output.
+
+###### `dockerfilePath`<sup>Required</sup> <a name="dockerfilePath" id="aws-analytics-reference-architecture.EmrEksImageBuilder.publishImage.parameter.dockerfilePath"></a>
+
+- *Type:* string
+
+Path to the folder for Dockerfile.
+
+---
+
+###### `tag`<sup>Required</sup> <a name="tag" id="aws-analytics-reference-architecture.EmrEksImageBuilder.publishImage.parameter.tag"></a>
+
+- *Type:* string
+
+The tag used to publish to the ECR repository.
+
+---
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.EmrEksImageBuilder.isConstruct"></a>
+
+```typescript
+import { EmrEksImageBuilder } from 'aws-analytics-reference-architecture'
+
+EmrEksImageBuilder.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.EmrEksImageBuilder.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilder.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.EmrEksImageBuilder.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+
+### EmrEksJobTemplateProvider <a name="EmrEksJobTemplateProvider" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider"></a>
+
+A custom resource provider for CRUD operations on Amazon EMR on EKS Managed Endpoints.
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer"></a>
+
+```typescript
+import { EmrEksJobTemplateProvider } from 'aws-analytics-reference-architecture'
+
+new EmrEksJobTemplateProvider(scope: Construct, id: string)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the CDK Construct. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the CDK Construct.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.toString">toString</a></code> | Returns a string representation of this construct. |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.isConstruct"></a>
+
+```typescript
+import { EmrEksJobTemplateProvider } from 'aws-analytics-reference-architecture'
+
+EmrEksJobTemplateProvider.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.provider">provider</a></code> | <code>aws-cdk-lib.custom_resources.Provider</code> | The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources. |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `provider`<sup>Required</sup> <a name="provider" id="aws-analytics-reference-architecture.EmrEksJobTemplateProvider.property.provider"></a>
+
+```typescript
+public readonly provider: Provider;
+```
+
+- *Type:* aws-cdk-lib.custom_resources.Provider
+
+The custom resource Provider for creating Amazon EMR Managed Endpoints custom resources.
 
 ---
 
@@ -4577,7 +5931,7 @@ notebookPlatform.addUser([{
    identityName: 'user1',
    identityType: SSOIdentityType.USER,
    notebookManagedEndpoints: [{
-     emrOnEksVersion: 'emr-6.4.0-latest',
+     emrOnEksVersion: EmrVersion.V6_9,
      executionPolicy: policy1,
    }],
 }]);
@@ -4644,7 +5998,7 @@ Returns a string representation of this construct.
 ##### `addUser` <a name="addUser" id="aws-analytics-reference-architecture.NotebookPlatform.addUser"></a>
 
 ```typescript
-public addUser(userList: NotebookUserOptions[]): string[]
+public addUser(userList: NotebookUserOptions[]): Role[]
 ```
 
 ###### `userList`<sup>Required</sup> <a name="userList" id="aws-analytics-reference-architecture.NotebookPlatform.addUser.parameter.userList"></a>
@@ -7510,6 +8864,333 @@ The S3 object key sink where the BatchReplayer writes data.
 
 ---
 
+### CdkDeployerProps <a name="CdkDeployerProps" id="aws-analytics-reference-architecture.CdkDeployerProps"></a>
+
+The properties for the CdkDeployer construct.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.CdkDeployerProps.Initializer"></a>
+
+```typescript
+import { CdkDeployerProps } from 'aws-analytics-reference-architecture'
+
+const cdkDeployerProps: CdkDeployerProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.analyticsReporting">analyticsReporting</a></code> | <code>boolean</code> | Include runtime versioning information in this Stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.crossRegionReferences">crossRegionReferences</a></code> | <code>boolean</code> | Enable this flag to allow native cross region stack references. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.description">description</a></code> | <code>string</code> | A description of the stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.env">env</a></code> | <code>aws-cdk-lib.Environment</code> | The AWS environment (account/region) where this stack will be deployed. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.stackName">stackName</a></code> | <code>string</code> | Name to deploy the stack with. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.synthesizer">synthesizer</a></code> | <code>aws-cdk-lib.IStackSynthesizer</code> | Synthesis method to use while deploying this stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.tags">tags</a></code> | <code>{[ key: string ]: string}</code> | Stack tags that will be applied to all the taggable resources and the stack itself. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.terminationProtection">terminationProtection</a></code> | <code>boolean</code> | Whether to enable termination protection for this stack. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.deploymentType">deploymentType</a></code> | <code><a href="#aws-analytics-reference-architecture.DeploymentType">DeploymentType</a></code> | The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a one-click deploy button. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation">cdkAppLocation</a></code> | <code>string</code> | The location of the CDK application in the repository. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkParameters">cdkParameters</a></code> | <code>{[ key: string ]: aws-cdk-lib.CfnParameterProps}</code> | The CFN parameters to pass to the CDK application. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.cdkStack">cdkStack</a></code> | <code>string</code> | The CDK stack name to deploy. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.deployBuildSpec">deployBuildSpec</a></code> | <code>aws-cdk-lib.aws_codebuild.BuildSpec</code> | Deploy CodeBuild buildspec file name at the root of the cdk app folder. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.destroyBuildSpec">destroyBuildSpec</a></code> | <code>aws-cdk-lib.aws_codebuild.BuildSpec</code> | Destroy Codebuild buildspec file name at the root of the cdk app folder. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch">gitBranch</a></code> | <code>string</code> | The branch to use on the Github repository. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.githubRepository">githubRepository</a></code> | <code>string</code> | The github repository containing the CDK application. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.s3Repository">s3Repository</a></code> | <code>aws-cdk-lib.aws_s3.Location</code> | The Amazon S3 repository location containing the CDK application. |
+
+---
+
+##### `analyticsReporting`<sup>Optional</sup> <a name="analyticsReporting" id="aws-analytics-reference-architecture.CdkDeployerProps.property.analyticsReporting"></a>
+
+```typescript
+public readonly analyticsReporting: boolean;
+```
+
+- *Type:* boolean
+- *Default:* `analyticsReporting` setting of containing `App`, or value of 'aws:cdk:version-reporting' context key
+
+Include runtime versioning information in this Stack.
+
+---
+
+##### `crossRegionReferences`<sup>Optional</sup> <a name="crossRegionReferences" id="aws-analytics-reference-architecture.CdkDeployerProps.property.crossRegionReferences"></a>
+
+```typescript
+public readonly crossRegionReferences: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+Enable this flag to allow native cross region stack references.
+
+Enabling this will create a CloudFormation custom resource
+in both the producing stack and consuming stack in order to perform the export/import
+
+This feature is currently experimental
+
+---
+
+##### `description`<sup>Optional</sup> <a name="description" id="aws-analytics-reference-architecture.CdkDeployerProps.property.description"></a>
+
+```typescript
+public readonly description: string;
+```
+
+- *Type:* string
+- *Default:* No description.
+
+A description of the stack.
+
+---
+
+##### `env`<sup>Optional</sup> <a name="env" id="aws-analytics-reference-architecture.CdkDeployerProps.property.env"></a>
+
+```typescript
+public readonly env: Environment;
+```
+
+- *Type:* aws-cdk-lib.Environment
+- *Default:* The environment of the containing `Stage` if available, otherwise create the stack will be environment-agnostic.
+
+The AWS environment (account/region) where this stack will be deployed.
+
+Set the `region`/`account` fields of `env` to either a concrete value to
+select the indicated environment (recommended for production stacks), or to
+the values of environment variables
+`CDK_DEFAULT_REGION`/`CDK_DEFAULT_ACCOUNT` to let the target environment
+depend on the AWS credentials/configuration that the CDK CLI is executed
+under (recommended for development stacks).
+
+If the `Stack` is instantiated inside a `Stage`, any undefined
+`region`/`account` fields from `env` will default to the same field on the
+encompassing `Stage`, if configured there.
+
+If either `region` or `account` are not set nor inherited from `Stage`, the
+Stack will be considered "*environment-agnostic*"". Environment-agnostic
+stacks can be deployed to any environment but may not be able to take
+advantage of all features of the CDK. For example, they will not be able to
+use environmental context lookups such as `ec2.Vpc.fromLookup` and will not
+automatically translate Service Principals to the right format based on the
+environment's AWS partition, and other such enhancements.
+
+---
+
+*Example*
+
+```typescript
+// Use a concrete account and region to deploy this stack to:
+// `.account` and `.region` will simply return these values.
+new Stack(app, 'Stack1', {
+  env: {
+    account: '123456789012',
+    region: 'us-east-1'
+  },
+});
+
+// Use the CLI's current credentials to determine the target environment:
+// `.account` and `.region` will reflect the account+region the CLI
+// is configured to use (based on the user CLI credentials)
+new Stack(app, 'Stack2', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION
+  },
+});
+
+// Define multiple stacks stage associated with an environment
+const myStage = new Stage(app, 'MyStage', {
+  env: {
+    account: '123456789012',
+    region: 'us-east-1'
+  }
+});
+
+// both of these stacks will use the stage's account/region:
+// `.account` and `.region` will resolve to the concrete values as above
+new MyStack(myStage, 'Stack1');
+new YourStack(myStage, 'Stack2');
+
+// Define an environment-agnostic stack:
+// `.account` and `.region` will resolve to `{ "Ref": "AWS::AccountId" }` and `{ "Ref": "AWS::Region" }` respectively.
+// which will only resolve to actual values by CloudFormation during deployment.
+new MyStack(app, 'Stack1');
+```
+
+
+##### `stackName`<sup>Optional</sup> <a name="stackName" id="aws-analytics-reference-architecture.CdkDeployerProps.property.stackName"></a>
+
+```typescript
+public readonly stackName: string;
+```
+
+- *Type:* string
+- *Default:* Derived from construct path.
+
+Name to deploy the stack with.
+
+---
+
+##### `synthesizer`<sup>Optional</sup> <a name="synthesizer" id="aws-analytics-reference-architecture.CdkDeployerProps.property.synthesizer"></a>
+
+```typescript
+public readonly synthesizer: IStackSynthesizer;
+```
+
+- *Type:* aws-cdk-lib.IStackSynthesizer
+- *Default:* `DefaultStackSynthesizer` if the `@aws-cdk/core:newStyleStackSynthesis` feature flag is set, `LegacyStackSynthesizer` otherwise.
+
+Synthesis method to use while deploying this stack.
+
+---
+
+##### `tags`<sup>Optional</sup> <a name="tags" id="aws-analytics-reference-architecture.CdkDeployerProps.property.tags"></a>
+
+```typescript
+public readonly tags: {[ key: string ]: string};
+```
+
+- *Type:* {[ key: string ]: string}
+- *Default:* {}
+
+Stack tags that will be applied to all the taggable resources and the stack itself.
+
+---
+
+##### `terminationProtection`<sup>Optional</sup> <a name="terminationProtection" id="aws-analytics-reference-architecture.CdkDeployerProps.property.terminationProtection"></a>
+
+```typescript
+public readonly terminationProtection: boolean;
+```
+
+- *Type:* boolean
+- *Default:* false
+
+Whether to enable termination protection for this stack.
+
+---
+
+##### `deploymentType`<sup>Required</sup> <a name="deploymentType" id="aws-analytics-reference-architecture.CdkDeployerProps.property.deploymentType"></a>
+
+```typescript
+public readonly deploymentType: DeploymentType;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.DeploymentType">DeploymentType</a>
+
+The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a workshop studio deployment process CLICK_TO_DEPLOY: the CDK application is deployed through a one-click deploy button.
+
+---
+
+##### `cdkAppLocation`<sup>Optional</sup> <a name="cdkAppLocation" id="aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation"></a>
+
+```typescript
+public readonly cdkAppLocation: string;
+```
+
+- *Type:* string
+- *Default:* The root of the repository
+
+The location of the CDK application in the repository.
+
+It is used to `cd` into the folder before deploying the CDK application
+
+---
+
+##### `cdkParameters`<sup>Optional</sup> <a name="cdkParameters" id="aws-analytics-reference-architecture.CdkDeployerProps.property.cdkParameters"></a>
+
+```typescript
+public readonly cdkParameters: {[ key: string ]: CfnParameterProps};
+```
+
+- *Type:* {[ key: string ]: aws-cdk-lib.CfnParameterProps}
+- *Default:* No parameter is used
+
+The CFN parameters to pass to the CDK application.
+
+---
+
+##### `cdkStack`<sup>Optional</sup> <a name="cdkStack" id="aws-analytics-reference-architecture.CdkDeployerProps.property.cdkStack"></a>
+
+```typescript
+public readonly cdkStack: string;
+```
+
+- *Type:* string
+- *Default:* The default stack is deployed
+
+The CDK stack name to deploy.
+
+---
+
+##### `deployBuildSpec`<sup>Optional</sup> <a name="deployBuildSpec" id="aws-analytics-reference-architecture.CdkDeployerProps.property.deployBuildSpec"></a>
+
+```typescript
+public readonly deployBuildSpec: BuildSpec;
+```
+
+- *Type:* aws-cdk-lib.aws_codebuild.BuildSpec
+
+Deploy CodeBuild buildspec file name at the root of the cdk app folder.
+
+---
+
+##### `destroyBuildSpec`<sup>Optional</sup> <a name="destroyBuildSpec" id="aws-analytics-reference-architecture.CdkDeployerProps.property.destroyBuildSpec"></a>
+
+```typescript
+public readonly destroyBuildSpec: BuildSpec;
+```
+
+- *Type:* aws-cdk-lib.aws_codebuild.BuildSpec
+
+Destroy Codebuild buildspec file name at the root of the cdk app folder.
+
+---
+
+##### `gitBranch`<sup>Optional</sup> <a name="gitBranch" id="aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch"></a>
+
+```typescript
+public readonly gitBranch: string;
+```
+
+- *Type:* string
+- *Default:* The main branch of the repository
+
+The branch to use on the Github repository.
+
+---
+
+##### `githubRepository`<sup>Optional</sup> <a name="githubRepository" id="aws-analytics-reference-architecture.CdkDeployerProps.property.githubRepository"></a>
+
+```typescript
+public readonly githubRepository: string;
+```
+
+- *Type:* string
+- *Default:* Github is not used as the source of the CDK code.
+
+The github repository containing the CDK application.
+
+Either `githubRepository` or `s3Repository` needs to be set if `deploymentType` is `CLICK_TO_DEPLOY`.
+
+---
+
+##### `s3Repository`<sup>Optional</sup> <a name="s3Repository" id="aws-analytics-reference-architecture.CdkDeployerProps.property.s3Repository"></a>
+
+```typescript
+public readonly s3Repository: Location;
+```
+
+- *Type:* aws-cdk-lib.aws_s3.Location
+- *Default:* S3 is not used as the source of the CDK code
+
+The Amazon S3 repository location containing the CDK application.
+
+The object key is a Zip file.
+Either `githubRepository` or `s3Repository` needs to be set if `deploymentType` is `CLICK_TO_DEPLOY`.
+
+---
+
 ### CentralGovernanceProps <a name="CentralGovernanceProps" id="aws-analytics-reference-architecture.CentralGovernanceProps"></a>
 
 Properties for the CentralGovernance Construct.
@@ -7934,56 +9615,77 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscaling">autoscaling</a></code> | <code><a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a></code> | The autoscaling mechanism to use. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodes">defaultNodes</a></code> | <code>boolean</code> | If set to true, the Construct will create default EKS nodegroups or node provisioners (based on the autoscaler mechanism used). |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscalerVersion">autoscalerVersion</a></code> | <code>number</code> | The version of autoscaler to pass to Helm. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodeGroups">defaultNodeGroups</a></code> | <code>boolean</code> | If set to true construct will create default EKS nodegroups. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | The EKS cluster to setup EMR on. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcAttributes">eksVpcAttributes</a></code> | <code>aws-cdk-lib.aws_ec2.VpcAttributes</code> | Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups">emrEksNodegroups</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup">EmrEksNodegroup</a>[]</code> | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.karpenterVersion">karpenterVersion</a></code> | <code>string</code> | The version of karpenter to pass to Helm. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer">kubectlLambdaLayer</a></code> | <code>aws-cdk-lib.aws_lambda.ILayerVersion</code> | Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size.  A layer needs to be passed to the Construct. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion">kubernetesVersion</a></code> | <code>aws-cdk-lib.aws_eks.KubernetesVersion</code> | Kubernetes version for Amazon EKS cluster that will be created. |
 
 ---
 
-##### `eksAdminRoleArn`<sup>Required</sup> <a name="eksAdminRoleArn" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn"></a>
+##### `autoscaling`<sup>Required</sup> <a name="autoscaling" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscaling"></a>
+
+```typescript
+public readonly autoscaling: Autoscaler;
+```
+
+- *Type:* <a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a>
+
+The autoscaling mechanism to use.
+
+---
+
+##### `defaultNodes`<sup>Optional</sup> <a name="defaultNodes" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodes"></a>
+
+```typescript
+public readonly defaultNodes: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+If set to true, the Construct will create default EKS nodegroups or node provisioners (based on the autoscaler mechanism used).
+
+There are three types of nodes:
+  * Nodes for critical jobs which use on-demand instances, high speed disks and workload isolation
+  * Nodes for shared worklaods which uses spot instances and no isolation to optimize costs
+  * Nodes for notebooks which leverage a cost optimized configuration for running EMR managed endpoints and spark drivers/executors.
+
+---
+
+##### `eksAdminRoleArn`<sup>Optional</sup> <a name="eksAdminRoleArn" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn"></a>
 
 ```typescript
 public readonly eksAdminRoleArn: string;
 ```
 
 - *Type:* string
+- *Default:* No admin role is used and EKS cluster creation fails
 
 Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI.
 
----
-
-##### `autoscalerVersion`<sup>Optional</sup> <a name="autoscalerVersion" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscalerVersion"></a>
-
-```typescript
-public readonly autoscalerVersion: number;
-```
-
-- *Type:* number
-- *Default:* version matching the default Kubernete version
-
-The version of autoscaler to pass to Helm.
+An admin role must be passed if `eksCluster` property is not set.
 
 ---
 
-##### `defaultNodeGroups`<sup>Optional</sup> <a name="defaultNodeGroups" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodeGroups"></a>
+##### `eksCluster`<sup>Optional</sup> <a name="eksCluster" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksCluster"></a>
 
 ```typescript
-public readonly defaultNodeGroups: boolean;
+public readonly eksCluster: Cluster;
 ```
 
-- *Type:* boolean
-- *Default:* true
+- *Type:* aws-cdk-lib.aws_eks.Cluster
+- *Default:* An EKS Cluster is created
 
-If set to true construct will create default EKS nodegroups.
+The EKS cluster to setup EMR on.
 
-There are three types of Nodegroup:
-  * Nodegroup for critical jobs which use on-demand instances.
-  * Nodegroup using spot instances for jobs that are not critical and can be preempted if a spot instance is reclaimed
-  * Nodegroup to provide capacity for creating and running managed endpoints spark drivers and executors.
+The cluster needs to be created in the same CDK Stack.
+If the EKS cluster is provided, the cluster AddOns and all the controllers (Ingress controller, Cluster Autoscaler or Karpenter...) need to be configured. 
+When providing an EKS cluster, the methods for adding nodegroups can still be used. They implement the best practices for running Spark on EKS.
 
 ---
 
@@ -7994,21 +9696,9 @@ public readonly eksClusterName: string;
 ```
 
 - *Type:* string
-- *Default:* The [default cluster name]{@link EmrEksCluster.DEFAULT_CLUSTER_NAME}
+- *Default:* The [default cluster name]{@link DEFAULT_CLUSTER_NAME}
 
 Name of the Amazon EKS cluster to be created.
-
----
-
-##### `eksVpcAttributes`<sup>Optional</sup> <a name="eksVpcAttributes" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpcAttributes"></a>
-
-```typescript
-public readonly eksVpcAttributes: VpcAttributes;
-```
-
-- *Type:* aws-cdk-lib.aws_ec2.VpcAttributes
-
-Attributes of the VPC where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1'.
 
 ---
 
@@ -8025,6 +9715,35 @@ List of EmrEksNodegroup to create in the cluster in addition to the default [nod
 
 ---
 
+##### `karpenterVersion`<sup>Optional</sup> <a name="karpenterVersion" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.karpenterVersion"></a>
+
+```typescript
+public readonly karpenterVersion: string;
+```
+
+- *Type:* string
+- *Default:* The [default Karpenter version]{@link DEFAULT_KARPENTER_VERSION}
+
+The version of karpenter to pass to Helm.
+
+---
+
+##### `kubectlLambdaLayer`<sup>Optional</sup> <a name="kubectlLambdaLayer" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer"></a>
+
+```typescript
+public readonly kubectlLambdaLayer: ILayerVersion;
+```
+
+- *Type:* aws-cdk-lib.aws_lambda.ILayerVersion
+- *Default:* No layer is used
+
+Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size.  A layer needs to be passed to the Construct.
+
+The cdk [documentation] (https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_eks.KubernetesVersion.html#static-v1_22)
+contains the libraries that you should add for the right Kubernetes version
+
+---
+
 ##### `kubernetesVersion`<sup>Optional</sup> <a name="kubernetesVersion" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion"></a>
 
 ```typescript
@@ -8032,9 +9751,98 @@ public readonly kubernetesVersion: KubernetesVersion;
 ```
 
 - *Type:* aws-cdk-lib.aws_eks.KubernetesVersion
-- *Default:* v1.21 version is used
+- *Default:* Kubernetes v1.21 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
+
+---
+
+### EmrEksImageBuilderProps <a name="EmrEksImageBuilderProps" id="aws-analytics-reference-architecture.EmrEksImageBuilderProps"></a>
+
+The properties for initializing the construct to build custom EMR on EKS image.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.EmrEksImageBuilderProps.Initializer"></a>
+
+```typescript
+import { EmrEksImageBuilderProps } from 'aws-analytics-reference-architecture'
+
+const emrEksImageBuilderProps: EmrEksImageBuilderProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilderProps.property.repositoryName">repositoryName</a></code> | <code>string</code> | Required The name of the ECR repository to create. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksImageBuilderProps.property.ecrRemovalPolicy">ecrRemovalPolicy</a></code> | <code>aws-cdk-lib.RemovalPolicy</code> | *No description.* |
+
+---
+
+##### `repositoryName`<sup>Required</sup> <a name="repositoryName" id="aws-analytics-reference-architecture.EmrEksImageBuilderProps.property.repositoryName"></a>
+
+```typescript
+public readonly repositoryName: string;
+```
+
+- *Type:* string
+
+Required The name of the ECR repository to create.
+
+---
+
+##### `ecrRemovalPolicy`<sup>Optional</sup> <a name="ecrRemovalPolicy" id="aws-analytics-reference-architecture.EmrEksImageBuilderProps.property.ecrRemovalPolicy"></a>
+
+```typescript
+public readonly ecrRemovalPolicy: RemovalPolicy;
+```
+
+- *Type:* aws-cdk-lib.RemovalPolicy
+- *Default:* RemovalPolicy.RETAIN This option allow to delete or not the ECR repository If it is set to RemovalPolicy.DESTROY, you need to delete the images before we delete the Repository
+
+---
+
+### EmrEksJobTemplateDefinition <a name="EmrEksJobTemplateDefinition" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition"></a>
+
+The properties for the EMR Managed Endpoint to create.
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.Initializer"></a>
+
+```typescript
+import { EmrEksJobTemplateDefinition } from 'aws-analytics-reference-architecture'
+
+const emrEksJobTemplateDefinition: EmrEksJobTemplateDefinition = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.jobTemplateData">jobTemplateData</a></code> | <code>string</code> | The JSON definition of the job template. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.name">name</a></code> | <code>string</code> | The name of the job template. |
+
+---
+
+##### `jobTemplateData`<sup>Required</sup> <a name="jobTemplateData" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.jobTemplateData"></a>
+
+```typescript
+public readonly jobTemplateData: string;
+```
+
+- *Type:* string
+
+The JSON definition of the job template.
+
+---
+
+##### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.EmrEksJobTemplateDefinition.property.name"></a>
+
+```typescript
+public readonly name: string;
+```
+
+- *Type:* string
+
+The name of the job template.
 
 ---
 
@@ -8388,7 +10196,7 @@ const emrManagedEndpointOptions: EmrManagedEndpointOptions = { ... }
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the EMR managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.virtualClusterId">virtualClusterId</a></code> | <code>string</code> | The Id of the Amazon EMR virtual cluster containing the managed endpoint. |
 | <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>string</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint. |
-| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code>string</code> | The Amazon EMR version to use. |
+| <code><a href="#aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a></code> | The Amazon EMR version to use. |
 
 ---
 
@@ -8444,10 +10252,10 @@ The JSON configuration overrides for Amazon EMR on EKS configuration attached to
 ##### `emrOnEksVersion`<sup>Optional</sup> <a name="emrOnEksVersion" id="aws-analytics-reference-architecture.EmrManagedEndpointOptions.property.emrOnEksVersion"></a>
 
 ```typescript
-public readonly emrOnEksVersion: string;
+public readonly emrOnEksVersion: EmrVersion;
 ```
 
-- *Type:* string
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a>
 - *Default:* The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
 
 The Amazon EMR version to use.
@@ -8798,7 +10606,7 @@ const notebookManagedEndpointOptions: NotebookManagedEndpointOptions = { ... }
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.executionPolicy">executionPolicy</a></code> | <code>aws-cdk-lib.aws_iam.ManagedPolicy</code> | The name of the policy to be used for the execution Role to pass to ManagedEndpoint, this role should allow access to any resource needed for the job including: Amazon S3 buckets, Amazon DynamoDB, AWS Glue Data Catalog. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.managedEndpointName">managedEndpointName</a></code> | <code>string</code> | The name of the managed endpoint if no name is provided then the name of the policy associated with managed endpoint will be used as a name. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.configurationOverrides">configurationOverrides</a></code> | <code>any</code> | The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint an example can be found [here] (https://github.com/aws-samples/aws-analytics-reference-architecture/blob/main/core/src/emr-eks-data-platform/resources/k8s/emr-eks-config/critical.json). |
-| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code>string</code> | The version of Amazon EMR to deploy. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion">emrOnEksVersion</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a></code> | The version of Amazon EMR to deploy. |
 
 ---
 
@@ -8841,10 +10649,10 @@ The JSON configuration overrides for Amazon EMR on EKS configuration attached to
 ##### `emrOnEksVersion`<sup>Optional</sup> <a name="emrOnEksVersion" id="aws-analytics-reference-architecture.NotebookManagedEndpointOptions.property.emrOnEksVersion"></a>
 
 ```typescript
-public readonly emrOnEksVersion: string;
+public readonly emrOnEksVersion: EmrVersion;
 ```
 
-- *Type:* string
+- *Type:* <a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a>
 
 The version of Amazon EMR to deploy.
 
@@ -9941,6 +11749,29 @@ The BatchReplayer adds two columns ingestion_start and ingestion_end
 
 ## Enums <a name="Enums" id="Enums"></a>
 
+### Autoscaler <a name="Autoscaler" id="aws-analytics-reference-architecture.Autoscaler"></a>
+
+The different autoscaler available with EmrEksCluster.
+
+#### Members <a name="Members" id="Members"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.Autoscaler.KARPENTER">KARPENTER</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.Autoscaler.CLUSTER_AUTOSCALER">CLUSTER_AUTOSCALER</a></code> | *No description.* |
+
+---
+
+##### `KARPENTER` <a name="KARPENTER" id="aws-analytics-reference-architecture.Autoscaler.KARPENTER"></a>
+
+---
+
+
+##### `CLUSTER_AUTOSCALER` <a name="CLUSTER_AUTOSCALER" id="aws-analytics-reference-architecture.Autoscaler.CLUSTER_AUTOSCALER"></a>
+
+---
+
+
 ### CustomDatasetInputFormat <a name="CustomDatasetInputFormat" id="aws-analytics-reference-architecture.CustomDatasetInputFormat"></a>
 
 #### Members <a name="Members" id="Members"></a>
@@ -9964,6 +11795,98 @@ The BatchReplayer adds two columns ingestion_start and ingestion_end
 
 
 ##### `JSON` <a name="JSON" id="aws-analytics-reference-architecture.CustomDatasetInputFormat.JSON"></a>
+
+---
+
+
+### DeploymentType <a name="DeploymentType" id="aws-analytics-reference-architecture.DeploymentType"></a>
+
+#### Members <a name="Members" id="Members"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.DeploymentType.WORKSHOP_STUDIO">WORKSHOP_STUDIO</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.DeploymentType.CLICK_TO_DEPLOY">CLICK_TO_DEPLOY</a></code> | *No description.* |
+
+---
+
+##### `WORKSHOP_STUDIO` <a name="WORKSHOP_STUDIO" id="aws-analytics-reference-architecture.DeploymentType.WORKSHOP_STUDIO"></a>
+
+---
+
+
+##### `CLICK_TO_DEPLOY` <a name="CLICK_TO_DEPLOY" id="aws-analytics-reference-architecture.DeploymentType.CLICK_TO_DEPLOY"></a>
+
+---
+
+
+### EmrVersion <a name="EmrVersion" id="aws-analytics-reference-architecture.EmrVersion"></a>
+
+The different EMR versions available on EKS.
+
+#### Members <a name="Members" id="Members"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_9">V6_9</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_8">V6_8</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_7">V6_7</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_6">V6_6</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_5">V6_5</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_4">V6_4</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_3">V6_3</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_2">V6_2</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V5_33">V5_33</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V5_32">V5_32</a></code> | *No description.* |
+
+---
+
+##### `V6_9` <a name="V6_9" id="aws-analytics-reference-architecture.EmrVersion.V6_9"></a>
+
+---
+
+
+##### `V6_8` <a name="V6_8" id="aws-analytics-reference-architecture.EmrVersion.V6_8"></a>
+
+---
+
+
+##### `V6_7` <a name="V6_7" id="aws-analytics-reference-architecture.EmrVersion.V6_7"></a>
+
+---
+
+
+##### `V6_6` <a name="V6_6" id="aws-analytics-reference-architecture.EmrVersion.V6_6"></a>
+
+---
+
+
+##### `V6_5` <a name="V6_5" id="aws-analytics-reference-architecture.EmrVersion.V6_5"></a>
+
+---
+
+
+##### `V6_4` <a name="V6_4" id="aws-analytics-reference-architecture.EmrVersion.V6_4"></a>
+
+---
+
+
+##### `V6_3` <a name="V6_3" id="aws-analytics-reference-architecture.EmrVersion.V6_3"></a>
+
+---
+
+
+##### `V6_2` <a name="V6_2" id="aws-analytics-reference-architecture.EmrVersion.V6_2"></a>
+
+---
+
+
+##### `V5_33` <a name="V5_33" id="aws-analytics-reference-architecture.EmrVersion.V5_33"></a>
+
+---
+
+
+##### `V5_32` <a name="V5_32" id="aws-analytics-reference-architecture.EmrVersion.V5_32"></a>
 
 ---
 

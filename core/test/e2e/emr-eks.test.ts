@@ -10,7 +10,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { deployStack, destroyStack } from './utils';
 
-import { EmrEksCluster } from '../../src/emr-eks-platform';
+import { Autoscaler, EmrEksCluster } from '../../src/emr-eks-platform';
 
 jest.setTimeout(2000000);
 // GIVEN
@@ -19,6 +19,7 @@ const stack = new cdk.Stack(integTestApp, 'EmrEksClustereE2eTest');
 
 const emrEksCluster = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER,
 });
 
 new cdk.CfnOutput(stack, 'EmrEksAdminRoleOutput', {

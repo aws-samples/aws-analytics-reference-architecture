@@ -32,6 +32,7 @@ import {
   createUserSessionPolicy,
 } from './notebook-platform-helpers';
 import { NotebookUserOptions } from './notebook-user';
+import { EmrVersion } from '../emr-eks-platform/emr-eks-cluster';
 
 
 /**
@@ -153,7 +154,7 @@ export enum SSOIdentityType {
  *   identityName: 'user1',
  *   identityType: SSOIdentityType.USER,
  *   notebookManagedEndpoints: [{
- *     emrOnEksVersion: 'emr-6.4.0-latest',
+ *     emrOnEksVersion: EmrVersion.V6_9,
  *     executionPolicy: policy1,
  *   }],
  * }]);
@@ -161,7 +162,7 @@ export enum SSOIdentityType {
  * ```
  */
 export class NotebookPlatform extends TrackedConstruct {
-  private static readonly DEFAULT_EMR_VERSION = 'emr-6.6.0-latest';
+  private static readonly DEFAULT_EMR_VERSION = EmrVersion.V6_8;
   private static readonly STUDIO_PRINCIPAL: string = 'elasticmapreduce.amazonaws.com';
   private readonly studioId: string;
   private readonly workSpaceSecurityGroup: SecurityGroup;
@@ -357,7 +358,7 @@ export class NotebookPlatform extends TrackedConstruct {
 
     let iamRolePolicy: ManagedPolicy;
 
-    let iamUserList: string [] = [];
+    let iamRoleList: Role [] = [];
 
     //Loop through each user and create its managed endpoint(s) as defined by the user
     for (let user of userList) {
@@ -370,8 +371,16 @@ export class NotebookPlatform extends TrackedConstruct {
           //For each user or group, create a new managedEndpoint
           //ManagedEndpoint ARN is used to update and scope the session policy of the user or group
 
-          let emrOnEksVersion: string | undefined = user.notebookManagedEndpoints[index].emrOnEksVersion;
+          let emrOnEksVersion: EmrVersion | undefined = user.notebookManagedEndpoints[index].emrOnEksVersion;
           let configOverride: string | undefined = user.notebookManagedEndpoints[index].configurationOverrides;
+          let execRole = this.emrEks.createExecutionRole(
+            this,
+            `${user.identityName}${index}`,
+            notebookManagedEndpoint.executionPolicy,
+            this.vcNamespace,
+            `${notebookManagedEndpoint.managedEndpointName}-execRole`,
+          );
+          iamRoleList.push(execRole);
 
           let managedEndpoint = this.emrEks.addManagedEndpoint(
             this,
@@ -379,13 +388,7 @@ export class NotebookPlatform extends TrackedConstruct {
             {
               managedEndpointName: `${this.studioName}-${notebookManagedEndpoint.managedEndpointName}`,
               virtualClusterId: this.emrVirtCluster.attrId,
-              executionRole: this.emrEks.createExecutionRole(
-                this,
-                `${user.identityName}${index}`,
-                notebookManagedEndpoint.executionPolicy,
-                this.vcNamespace,
-                `${notebookManagedEndpoint.managedEndpointName}-execRole`,
-              ),
+              executionRole: execRole,
               emrOnEksVersion: emrOnEksVersion ? emrOnEksVersion : NotebookPlatform.DEFAULT_EMR_VERSION,
               configurationOverrides: configOverride ? configOverride : undefined,
             },
@@ -462,6 +465,6 @@ export class NotebookPlatform extends TrackedConstruct {
       }
     }
 
-    return iamUserList;
+    return iamRoleList;
   }
 }

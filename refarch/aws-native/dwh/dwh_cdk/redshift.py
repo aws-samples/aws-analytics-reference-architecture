@@ -120,8 +120,6 @@ class RedshiftCdkStack(Construct):
                                                    default_database_name=_config.RedshiftDeploy.REDSHIFT_DB_NAME,
                                                    encrypted=None,
                                                    encryption_key=None,
-                                                   logging_bucket=None,
-                                                   logging_key_prefix=None,
                                                    node_type=NodeType.DC2_LARGE,
                                                    number_of_nodes=2,
                                                    parameter_group=None,

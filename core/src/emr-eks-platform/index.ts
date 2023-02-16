@@ -1,4 +1,5 @@
-export { EmrEksClusterProps, EmrEksCluster } from './emr-eks-cluster';
+export { EmrEksClusterProps, EmrEksCluster, Autoscaler, EmrVersion } from './emr-eks-cluster';
 export { EmrEksNodegroupOptions, EmrEksNodegroup } from './emr-eks-nodegroup';
 export { EmrVirtualClusterOptions } from './emr-virtual-cluster';
 export { EmrManagedEndpointOptions } from './emr-managed-endpoint';
+export { EmrEksJobTemplateProvider, EmrEksJobTemplateDefinition } from './emr-eks-job-template';
