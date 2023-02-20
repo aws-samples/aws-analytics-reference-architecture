@@ -52,7 +52,7 @@ source .env/bin/activate
 2. Add the AWS Analytics Reference Architecture library in the dependencies of your project. Update **requirements.txt** 
 
 ```bash
-aws-cdk-lib==2.27.0
+aws-cdk-lib==2.51.0
 constructs>=10.0.0,<11.0.0
 aws_analytics_reference_architecture>=2.0.0
 ```
