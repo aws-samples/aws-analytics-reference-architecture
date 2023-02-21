@@ -34,7 +34,7 @@ This documentation explains how to get started with the core components of the A
 ```bash
 export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 export AWS_REGION=eu-west-1
-cdk bootstrap aws://$ACCOUNT_ID/eu-west-1
+cdk bootstrap aws://$ACCOUNT_ID/$AWS_REGION
 ```
 
 ### Initialization (in Python)
