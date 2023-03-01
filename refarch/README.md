@@ -65,14 +65,14 @@ Follow these steps or directly click on the launch button below
 If you install all modules, the Amazon QuickSight username (which can also be an IAM role) to which access should be granted to, as well as your QuickSight home region (the one selected during the QuickSight sign-up process) have to be specified. **Quicksight Entreprise edition is required to install the Dataviz module**.
 
    ```
-   cdk deploy -c QuickSightUsername=<ROLE/USERNAME> -c QuickSightIdentityRegion=<REGION>
+   cdk deploy -c QuickSightUsername=<ROLE/USERNAME> -c QuickSightIdentityRegion=<REGION> ara
    ```
 
    Alternatively or additionally, you can disable modules.
 The batch, data warehouse, data visualization, and streaming modules can be enabled/disabled using the respective context variable: `EnableBatch`/`EnableDWH`/`EnableDataviz`/`EnableStreaming`.
 To disable, for example, the data visualization module, the following argument has to be used.
    ```
-   cdk deploy  -c EnableDataviz=false
+   cdk deploy  -c EnableDataviz=false ara
    ```
    
    **NOTE:
