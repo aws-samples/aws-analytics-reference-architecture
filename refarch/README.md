@@ -275,7 +275,7 @@ psql -h localhost -p 5400 -U dwsuser -d dev
 3. Destroy the main AWS CDK stack.
    ```
    cd ../..
-   cdk destroy
+   cdk destroy ara
    # confirm "Are you sure you want to delete: ara (y/n)?" with y
    ```
 
