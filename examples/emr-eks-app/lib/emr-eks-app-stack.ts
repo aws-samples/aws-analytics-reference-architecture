@@ -14,8 +14,7 @@ export class EmrEksAppStack extends cdk.Stack {
     })
 
     const emrEks = ara.EmrEksCluster.getOrCreate(this,{
-      eksAdminRoleArn: '<YOUR_ADMIN_ROLE>>',
-      eksClusterName:'dataplatform',
+      eksClusterName:'emreks',
       autoscaling: ara.Autoscaler.KARPENTER,
     });
 
@@ -55,7 +54,13 @@ export class EmrEksAppStack extends cdk.Stack {
           ],
         }),
         new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW, actions:['logs:PutLogEvents','logs:CreateLogStream','logs:DescribeLogGroups','logs:DescribeLogStreams'],
+          effect: iam.Effect.ALLOW, actions:[
+            'logs:CreateLogGroup',
+            'logs:PutLogEvents',
+            'logs:CreateLogStream',
+            'logs:DescribeLogGroups',
+            'logs:DescribeLogStreams'
+          ],
           resources:['arn:aws:logs:*:*:*'],
         }),
       ]
