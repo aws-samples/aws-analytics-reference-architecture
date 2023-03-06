@@ -48,6 +48,7 @@ export class EmrEksAppStack extends cdk.Stack {
           actions:['glue:*'],
           resources:[
             `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:catalog`,
+            `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/default`,
             `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/emr_eks_demo`,
             `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:table/emr_eks_demo/value_rides`,
             `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:table/emr_eks_demo/raw_rides`
