@@ -14,8 +14,7 @@ export class EmrEksAppStack extends cdk.Stack {
     })
 
     const emrEks = ara.EmrEksCluster.getOrCreate(this,{
-      eksAdminRoleArn: '<YOUR_ADMIN_ROLE>>',
-      eksClusterName:'dataplatform',
+      eksClusterName:'emreks',
       autoscaling: ara.Autoscaler.KARPENTER,
     });
 
@@ -49,13 +48,20 @@ export class EmrEksAppStack extends cdk.Stack {
           actions:['glue:*'],
           resources:[
             `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:catalog`,
+            `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/default`,
             `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:database/emr_eks_demo`,
             `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:table/emr_eks_demo/value_rides`,
             `arn:aws:glue:${cdk.Aws.REGION}:${cdk.Aws.ACCOUNT_ID}:table/emr_eks_demo/raw_rides`
           ],
         }),
         new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW, actions:['logs:PutLogEvents','logs:CreateLogStream','logs:DescribeLogGroups','logs:DescribeLogStreams'],
+          effect: iam.Effect.ALLOW, actions:[
+            'logs:CreateLogGroup',
+            'logs:PutLogEvents',
+            'logs:CreateLogStream',
+            'logs:DescribeLogGroups',
+            'logs:DescribeLogStreams'
+          ],
           resources:['arn:aws:logs:*:*:*'],
         }),
       ]
