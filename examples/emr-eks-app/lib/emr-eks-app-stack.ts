@@ -3,6 +3,8 @@ import { Construct } from 'constructs';
 import * as ara from 'aws-analytics-reference-architecture';
 import * as iam from 'aws-cdk-lib/aws-iam' ;
 import { User } from 'aws-cdk-lib/aws-iam';
+import { KubectlV22Layer } from '@aws-cdk/lambda-layer-kubectl-v22'; 
+import { KubernetesVersion } from 'aws-cdk-lib/aws-eks';
 
 
 export class EmrEksAppStack extends cdk.Stack {
@@ -11,11 +13,15 @@ export class EmrEksAppStack extends cdk.Stack {
 
     const resultsBucket = ara.AraBucket.getOrCreate(this, {
       bucketName: 'results-bucket',
-    })
+    });
+
+    const kubectl = new KubectlV22Layer(this, 'KubectlLayer');
 
     const emrEks = ara.EmrEksCluster.getOrCreate(this,{
       eksClusterName:'emreks',
       autoscaling: ara.Autoscaler.KARPENTER,
+      kubernetesVersion: KubernetesVersion.V1_22,
+      kubectlLambdaLayer: kubectl,
     });
 
     const virtualCluster = emrEks.addEmrVirtualCluster(this,{
