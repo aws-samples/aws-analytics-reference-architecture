@@ -15,8 +15,8 @@ This example will provision the following resources and features:
 
 ### Setup the environement
 
-The `EmrEksCluster` construct requires an IAM Role to be set as the Amazon EKS administrator.
-Edit the `lib/emr-eks-app-stack.ts` file (line 16) and add the ARN of the IAM Role you want to use as administrator.
+The `EmrEksCluster` construct can take an IAM Role as parameter to set it as the Amazon EKS administrator.
+It's optional but if you want to do this, edit the `lib/emr-eks-app-stack.ts` file (line 16) and add the ARN of the IAM Role you want to use as administrator.
 
 The code should look like this:
 
