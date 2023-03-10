@@ -1,18 +1,28 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Aws, Duration, RemovalPolicy } from 'aws-cdk-lib';
+import { Aws, aws_ec2, Duration, RemovalPolicy } from 'aws-cdk-lib';
 import { Rule, Schedule } from 'aws-cdk-lib/aws-events';
 import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from 'aws-cdk-lib/aws-stepfunctions';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { Construct } from 'constructs';
 import { PreBundledFunction } from '../common/pre-bundled-function';
 import { PreparedDataset } from './prepared-dataset';
+import { ISecurityGroup, IVpc } from 'aws-cdk-lib/aws-ec2';
+import {
+  prepareAuroraTarget,
+  prepareDdbTarget,
+  prepareRdsTarget,
+  prepareRedshiftTarget,
+  prepareS3Target,
+  IS3Sink,
+  DbSink,
+  DynamoDbSink,
+} from './batch-replayer-helpers';
 
 /**
  * The properties for the BatchReplayer construct
@@ -29,50 +39,67 @@ export interface BatchReplayerProps {
    */
   readonly frequency?: Duration;
   /**
-   * The S3 Bucket sink where the BatchReplayer writes data.
-   * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
+   * Parameters to write to S3 target
    */
-  readonly sinkBucket: Bucket;
+  readonly s3Props?: IS3Sink;
   /**
-   * The S3 object key sink where the BatchReplayer writes data.
-   * @default - No object key is used and the BatchReplayer writes the dataset in s3://<BUCKET_NAME>/<TABLE_NAME>
+   * Parameters to write to DynamoDB target
    */
-  readonly sinkObjectKey?: string;
+  readonly ddbProps?: DynamoDbSink;
   /**
-   * The maximum file size in Bytes written by the BatchReplayer
-   * @default - The BatchReplayer writes 100MB files maximum
+   * Parameters to write to Redshift target
    */
-  readonly outputFileMaxSizeInBytes?: number;
+  readonly redshiftProps?: DbSink;
+  /**
+   * Parameters to write to Aurora target
+   */
+  readonly auroraProps?: DbSink;
+  /**
+   * Parameters to write to RDS target
+   */
+  readonly rdsProps?: DbSink;
+  /**
+   * Security group for the WriteInBatch Lambda function
+   */
+  readonly secGroup?: ISecurityGroup;
+  /**
+   * VPC for the WriteInBatch Lambda function
+   */
+  readonly vpc?: IVpc;
 }
 
 /**
  * Replay the data in the given PartitionedDataset.
  *
- * It will dump files into the `sinkBucket` based on the given `frequency`.
+ * It will dump files into the target based on the given `frequency`.
  * The computation is in a Step Function with two Lambda steps.
  *
  * 1. resources/lambdas/find-file-paths
  * Read the manifest file and output a list of S3 file paths within that batch time range
  *
  * 2. resources/lambdas/write-in-batch
- * Take a file path, filter only records within given time range, adjust the the time with offset to
- * make it looks like just being generated. Then write the output to the `sinkBucket`
+ * Take a file path, filter only records within given time range, adjust the time with offset to
+ * make it looks like just being generated. Then write the output to the target
  *
  * Usage example:
  * ```typescript
  *
  * const myBucket = new Bucket(stack, "MyBucket")
  *
+ * let myProps: IS3Sink = {
+ *  sinkBucket: myBucket,
+ *  sinkObjectKey: 'some-prefix',
+ *  outputFileMaxSizeInBytes: 10000000,
+ * }
+ *
  * new BatchReplayer(stack, "WebSalesReplayer", {
  *   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
- *   s3BucketSink: myBucket
- *   s3ObjectKeySink: 'some-prefix',
+ *   s3Props: myProps,
  *   frequency: 120,
- *   outputFileMaxSizeInBytes: 10000000,
  * });
  * ```
  *
- * :warnning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
+ * :warning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
  */
 export class BatchReplayer extends Construct {
 
@@ -86,24 +113,34 @@ export class BatchReplayer extends Construct {
    * for every given frequency and replay the data in that period
    */
   public readonly frequency: number;
-
   /**
-   * Sink bucket where the batch replayer will put data in
+   * Parameters to write to S3 target
    */
-  public readonly sinkBucket: Bucket;
-
+  public readonly s3Props?: IS3Sink;
   /**
-   * Sink object key where the batch replayer will put data in
+   * Parameters to write to DynamoDB target
    */
-  public readonly sinkObjectKey?: string;
-
+  public readonly ddbProps?: DynamoDbSink;
   /**
-   * Maximum file size for each output file. If the output batch file is,
-   * larger than that, it will be splitted into multiple files that fit this size.
-   *
-   * Default to 100MB (max value)
+   * Parameters to write to Redshift target
    */
-  public readonly outputFileMaxSizeInBytes?: number;
+  public readonly redshiftProps?: DbSink;
+  /**
+   * Parameters to write to Aurora target
+   */
+  public readonly auroraProps?: DbSink;
+  /**
+   * Parameters to write to RDS target
+   */
+  public readonly rdsProps?: DbSink;
+  /**
+   * Security group for the WriteInBatch Lambda function
+   */
+  public readonly secGroup?: ISecurityGroup;
+  /**
+   * VPC for the WriteInBatch Lambda function
+   */
+  public readonly vpc?: IVpc;
 
   /**
    * Constructs a new instance of the BatchReplayer construct
@@ -114,21 +151,31 @@ export class BatchReplayer extends Construct {
   constructor(scope: Construct, id: string, props: BatchReplayerProps) {
     super(scope, id);
 
-    // Used to force S3 bucket auto cleaning after deletion of this
-    this.node.addDependency(props.sinkBucket);
-
     this.dataset = props.dataset;
     this.frequency = props.frequency?.toSeconds() || 60;
-    this.sinkBucket = props.sinkBucket;
-    this.sinkObjectKey = this.sinkObjectKey ? `${this.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
-    this.outputFileMaxSizeInBytes = props.outputFileMaxSizeInBytes || 100 * 1024 * 1024; //Default to 100 MB
 
-    const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python39:1`);
-
+    // Properties for S3 target
+    if (props.s3Props) {
+      this.s3Props = props.s3Props;
+      if (!this.s3Props.outputFileMaxSizeInBytes) {
+        this.s3Props.outputFileMaxSizeInBytes = 100 * 1024 * 1024; //Default to 100 MB
+      }
+    }
     const manifestBucketName = this.dataset.manifestLocation.bucketName;
     const manifestObjectKey = this.dataset.manifestLocation.objectKey;
     const dataBucketName = this.dataset.location.bucketName;
     const dataObjectKey = this.dataset.location.objectKey;
+
+    // Properties for DynamoDB target
+    this.ddbProps = props.ddbProps ? props.ddbProps : undefined;
+    // Properties for Redshift target
+    this.redshiftProps = (props.redshiftProps && props.secGroup && props.vpc) ? props.redshiftProps : undefined;
+    // Properties for Aurora target
+    this.auroraProps = (props.auroraProps && props.secGroup && props.vpc) ? props.auroraProps : undefined;
+    // Properties for RDS target
+    this.rdsProps = (props.rdsProps && props.secGroup && props.vpc) ? props.rdsProps : undefined;
+
+    const dataWranglerLayer = LayerVersion.fromLayerVersionArn(this, 'PandasLayer', `arn:aws:lambda:${Aws.REGION}:336392948345:layer:AWSDataWrangler-Python39:1`);
 
     const findFilePathsFnPolicy = [
       new PolicyStatement({
@@ -172,18 +219,79 @@ export class BatchReplayer extends Construct {
       outputPath: '$.Payload',
     });
 
-    const writeInBatchFnPolicy = [
-      new PolicyStatement({
-        actions: [
-          's3:GetObject',
-          's3:ListBucket',
-        ],
-        resources: [
-          `arn:aws:s3:::${dataBucketName}/${dataObjectKey}/*`,
-          `arn:aws:s3:::${dataBucketName}`,
-        ],
-      }),
-    ];
+    const writeInBatchFnPolicy = [];
+
+    let taskInputObj = {
+      // Array from the last step to be mapped
+      outputFileIndex: JsonPath.stringAt('$.index'),
+      filePath: JsonPath.stringAt('$.filePath'),
+
+      // For calculating the start/end time
+      frequency: this.frequency,
+      triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
+      offset: this.dataset.offset,
+
+      // For file processing
+      dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
+      dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
+    };
+
+    // S3 target is selected
+    if (this.s3Props) {
+      // Used to force S3 bucket auto cleaning after deletion of this
+      this.node.addDependency(this.s3Props.sinkBucket);
+
+      this.s3Props.sinkObjectKey = this.s3Props.sinkObjectKey ?
+        `${this.s3Props.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
+
+      const { policy, taskInputParams } = prepareS3Target(this.s3Props, dataBucketName, dataObjectKey);
+      writeInBatchFnPolicy.push(policy);
+      taskInputObj = Object.assign(taskInputObj, taskInputParams);
+    }
+
+    // DynamoDB target is selected
+    if (this.ddbProps) {
+      const { policy, taskInputParams } = prepareDdbTarget(this.ddbProps);
+      writeInBatchFnPolicy.push(policy);
+      taskInputObj = Object.assign(taskInputObj, taskInputParams);
+    }
+
+    /**
+     * Redshift, Aurora and RDS databases require the Lambda to have VPC access.
+     */
+    if (this.secGroup && this.vpc) {
+
+      // Lambda requires these actions to have access to all resources in order to connect to a VPC
+      writeInBatchFnPolicy.push(
+        new PolicyStatement({
+          actions: [
+            'ec2:CreateNetworkInterface',
+            'ec2:DescribeNetworkInterfaces',
+            'ec2:DeleteNetworkInterface',
+          ],
+          resources: ['*'],
+        }),
+      );
+
+      // Redshift target is selected
+      if (this.redshiftProps) {
+        const { policy, taskInputParams } = prepareRedshiftTarget(this.redshiftProps);
+        writeInBatchFnPolicy.push(policy);
+        taskInputObj = Object.assign(taskInputObj, taskInputParams);
+      }
+      // Aurora target is selected
+      if (this.auroraProps) {
+        const { policy, taskInputParams } = prepareAuroraTarget(this.auroraProps);
+        writeInBatchFnPolicy.push(policy);
+        taskInputObj = Object.assign(taskInputObj, taskInputParams);
+      }
+      // RDS target is selected
+      if (this.rdsProps) {
+        const { policy, taskInputParams } = prepareRdsTarget(this.rdsProps);
+        writeInBatchFnPolicy.push(policy);
+        taskInputObj = Object.assign(taskInputObj, taskInputParams);
+      }
+    }
 
     /**
      * Rewrite data
@@ -197,29 +305,21 @@ export class BatchReplayer extends Construct {
       timeout: Duration.minutes(15),
       layers: [dataWranglerLayer],
       lambdaPolicyStatements: writeInBatchFnPolicy,
+      vpc: this.vpc ? this.vpc : undefined,
+      vpcSubnets: this.vpc ? this.vpc.selectSubnets({
+        subnetType: aws_ec2.SubnetType.PRIVATE_WITH_NAT,
+      }) : undefined,
+      securityGroups: this.secGroup ? [this.secGroup] : undefined,
     });
 
-    // grant permissions to write to the bucket and to use the KMS key
-    this.sinkBucket.grantWrite(writeInBatchFn, `${this.sinkObjectKey}/*`);
+    if (this.s3Props) {
+      // grant permissions to write to the bucket and to use the KMS key
+      this.s3Props.sinkBucket.grantWrite(writeInBatchFn, `${this.s3Props.sinkObjectKey}/*`);
+    }
 
     const writeInBatchFnTask = new LambdaInvoke(this, 'WriteInBatchFnTask', {
       lambdaFunction: writeInBatchFn,
-      payload: TaskInput.fromObject({
-        // Array from the last step to be mapped
-        outputFileIndex: JsonPath.stringAt('$.index'),
-        filePath: JsonPath.stringAt('$.filePath'),
-
-        // For calculating the start/end time
-        frequency: this.frequency,
-        triggerTime: JsonPath.stringAt('$$.Execution.Input.time'),
-        offset: this.dataset.offset,
-
-        // For file processing
-        dateTimeColumnToFilter: this.dataset.dateTimeColumnToFilter,
-        dateTimeColumnsToAdjust: this.dataset.dateTimeColumnsToAdjust,
-        sinkPath: this.sinkBucket.s3UrlForObject(this.sinkObjectKey),
-        outputFileMaxSizeInBytes: 20480,
-      }),
+      payload: TaskInput.fromObject(taskInputObj),
       // Retry on 500 error on invocation with an interval of 2 sec with back-off rate 2, for 6 times
       retryOnServiceExceptions: true,
       outputPath: '$.Payload',
@@ -254,5 +354,4 @@ export class BatchReplayer extends Construct {
       targets: [new SfnStateMachine(batchReplayStepFn, {})],
     });
   }
-
 }

@@ -1,0 +1,2 @@
+aws-psycopg2
+redshift-connector

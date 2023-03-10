@@ -246,6 +246,9 @@
           "exec": "pip3 install -r lib/common/resources/lambdas/pre-bundled-layer/requirements.txt --target lib/common/resources/lambdas/pre-bundled-layer --upgrade"
         },
         {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/db-targets-setup/requirements.txt --target lib/data-generator/resources/lambdas/db-targets-setup --upgrade"
+        },
+        {
           "exec": "pip3 install -r lib/data-generator/resources/lambdas/find-file-paths/requirements.txt --target lib/data-generator/resources/lambdas/find-file-paths --upgrade"
         },
         {
