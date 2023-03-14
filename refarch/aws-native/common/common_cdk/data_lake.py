@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT-0
 
 from aws_cdk import aws_dynamodb as _dynamodb
+from aws_cdk import aws_iam as _iam
 from aws_cdk import CfnOutput, Stack, Tags
 from constructs import Construct
 
@@ -100,6 +101,10 @@ class DataLake(Stack):
                                           redshift_sg_id=dwh_stack.redshift_sg_id,
                                           quicksight_username=quicksight_username,
                                           quicksight_identity_region=quicksight_identity_region)
+
+            quicksight_role = _iam.Role.from_role_name(self,'QuicksightRole', role_name='aws-quicksight-service-role-v0')
+            quicksight_role.node.add_dependency(dataviz_stack)
+            data_lake.clean_s3_bucket.encryption_key.grant_decrypt(quicksight_role)
 
             CfnOutput(self, 'QuickSight-Security-Group-Id',
                       value=dataviz_stack.quicksight_security_group_id)

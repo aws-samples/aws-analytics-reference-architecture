@@ -32,9 +32,6 @@ class QuickSightAthenaDataset(Construct):
         super().__init__(scope, id, **kwargs)
 
         aws_account_id = Aws.ACCOUNT_ID
-        uniquestring = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
-        athena_dataset_id = athena_dataset_name + uniquestring
-        athena_dataset_physical_id = athena_dataset_name + uniquestring
 
         quicksight_athena_dataset = cr.AwsCustomResource(self, 'AthenaDataSet',
                                                    on_create={
@@ -42,7 +39,7 @@ class QuickSightAthenaDataset(Construct):
                                                        "action": "createDataSet",
                                                        "parameters": {
                                                            "AwsAccountId": aws_account_id,
-                                                           "DataSetId": athena_dataset_id,
+                                                           "DataSetId": athena_dataset_name,
                                                            "Name": athena_dataset_name,
                                                            "ImportMode": "DIRECT_QUERY",
                                                            "PhysicalTableMap": {
@@ -73,16 +70,16 @@ class QuickSightAthenaDataset(Construct):
 
                                                        },
                                                        "physical_resource_id": cr.PhysicalResourceId.of(
-                                                           athena_dataset_physical_id)},
+                                                           athena_dataset_name)},
                                                    on_delete={
                                                        "service": "QuickSight",
                                                        "action": "deleteDataSet",
                                                        "parameters": {
                                                            "AwsAccountId": aws_account_id,
-                                                           "DataSetId": athena_dataset_id
+                                                           "DataSetId": athena_dataset_name
                                                        },
                                                        "physical_resource_id": cr.PhysicalResourceId.of(
-                                                           athena_dataset_physical_id)},
+                                                           athena_dataset_name)},
                                                    policy=iam_policy
                                                    )
 
