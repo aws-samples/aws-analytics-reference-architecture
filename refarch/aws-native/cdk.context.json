@@ -1,22 +1,26 @@
 {
   "CICD": {
     "name": "cicd",
-    "region": "us-east-1",
-    "account": "632368511077"
+    "region": "<CICD_REGION>",
+    "account": "<CICD_ACCOUNT>"
   },
   "DEV": {
     "name": "dev",
-    "region": "us-east-1",
-    "account": "632368511077"
+    "region": "<DEV_REGION>",
+    "account": "<DEV_ACCOUNT>"
   },
   "PROD": {
     "name": "prod",
-    "region": "eu-west-1",
-    "account": "632368511077"
+    "region": "<PROD_REGION>",
+    "account": "<PROD_ACCOUNT>"
   },
-  "availability-zones:account=632368511077:region=us-east-1": [
-    "us-east-1a",
-    "us-east-1b",
-    "us-east-1c"
-  ]
+  "availability-zones:account=<DEV_ACCOUNT>:region=<DEV_REGION>": [
+    "<DEV_REGION>a",
+    "<DEV_REGION>b",
+    "<DEV_REGION>c"
+  ],
+  "availability-zones:account=<PROD_ACCOUNT>:region=<PROD_REGION>": [
+    "<PROD_REGION>a",
+    "<PROD_REGION>b",
+    "<PROD_REGION>c"
 }
