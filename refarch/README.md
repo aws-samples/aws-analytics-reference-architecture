@@ -78,7 +78,7 @@ To disable, for example, the data visualization module, the following argument h
    **NOTE:
    Step 4 and 5 only have to be executed if the data visualization module has been installed.**
    
-1. Configure Amazon QuickSight:
+1. <a name="quicksight">Configure Amazon QuickSight:</a>
     * To link the clean data S3 bucket to the QuickSight account:
         * Visit the [QuickSight web console](https://quicksight.aws.amazon.com)
         * Click on your username in the upper right corner
@@ -164,9 +164,19 @@ The pipeline and the reference architecture can live in different accounts or in
    * **<DEV_ACCOUNT>** and **<PROD_ACCOUNT>**: with the account that will be deployed.
    * Note that you can have only a single account to be both CI/CD and DEV. If you don't want PROD account, you can comment out the line `deploy_envs.append(prod_env)` in the file `refarch/aws-native/app.py`
 
-1. Run `cdk deploy --profile <CICD_ACCOUNT_PROFILE_NAME> araPipelineStack` using the credentials for your CICD account.
+1. Push the code into the repository used by the CICD pipeline.
+
+```
+git push RepositoryName RepositoryBranch
+```
+
+2. Run `cdk deploy --profile <CICD_ACCOUNT_PROFILE_NAME> araPipelineStack` using the credentials for your CICD account.
       * This will deploy the stack containing the pipeline to your CICD account
       * After the pipeline has been successfully deploy, it will fetch code from the specified repo and deploy to the target account.
+
+2. Configure Quicksight as mentioned in [step 4](#quicksight) when provisioning the application directly
+
+
 
 #### Adding users to Kibana
 

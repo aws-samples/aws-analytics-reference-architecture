@@ -45,14 +45,14 @@ class PipelineStack(Stack):
                                                     'cd refarch/aws-native',
                                                     'pip install -r requirements.txt',
                                                     'which npx',
-                                                    'npm install -g aws-cdk',
+                                                    'npm install -g aws-cdk@2.51.0',
                                                     'cdk synth'
                                                 ],
                                                 primary_output_directory='refarch/aws-native/cdk.out'),
                                 cross_account_keys=True,
-
+                                self_mutation=True
                                 )
-
+    
         for env in deploy_envs:
             pipeline.add_stage(stage=PipelineStage(self, 'AnalyticsPipelineStage', env=Environment(
                 account=env.account,

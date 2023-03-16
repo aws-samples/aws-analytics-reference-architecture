@@ -6,22 +6,21 @@
   },
   "DEV": {
     "name": "dev",
-    "region": "eu-west-1",
+    "region": "<DEV_REGION>",
     "account": "<DEV_ACCOUNT>"
   },
   "PROD": {
     "name": "prod",
-    "region": "eu-west-1",
+    "region": "<PROD_REGION>",
     "account": "<PROD_ACCOUNT>"
   },
-  "availability-zones:account=<DEV_ACCOUNT>:region=eu-west-1": [
-    "eu-west-1a",
-    "eu-west-1b",
-    "eu-west-1c"
+  "availability-zones:account=<DEV_ACCOUNT>:region=<DEV_REGION>": [
+    "<DEV_REGION>a",
+    "<DEV_REGION>b",
+    "<DEV_REGION>c"
   ],
-  "availability-zones:account=<PROD_ACCOUNT>:region=eu-west-1": [
-    "eu-west-1a",
-    "eu-west-1b",
-    "eu-west-1c"
-  ]
+  "availability-zones:account=<PROD_ACCOUNT>:region=<PROD_REGION>": [
+    "<PROD_REGION>a",
+    "<PROD_REGION>b",
+    "<PROD_REGION>c"
 }
