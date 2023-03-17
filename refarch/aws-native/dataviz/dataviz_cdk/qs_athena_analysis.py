@@ -27,9 +27,6 @@ class QuickSightAthenaAnalysis(Construct):
         super().__init__(scope, id, **kwargs)
 
         aws_account_id = Aws.ACCOUNT_ID
-        uniquestring = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
-        athena_analysis_id = athena_analysis_name + uniquestring
-        athena_analysis_physical_id = athena_analysis_name + uniquestring
 
         athena_analysis = cr.AwsCustomResource(self, 'AthenaAnalysis',
                                                       on_create={
@@ -38,7 +35,7 @@ class QuickSightAthenaAnalysis(Construct):
                                                           "parameters": {
                                                               "AwsAccountId": aws_account_id,
                                                               "Name": athena_analysis_name,
-                                                              "AnalysisId": athena_analysis_id,
+                                                              "AnalysisId": athena_analysis_name,
                                                               "Permissions": [
                                                                   {
                                                                       'Principal': quicksight_group_arn,
@@ -58,16 +55,16 @@ class QuickSightAthenaAnalysis(Construct):
                                                               }
                                                           },
                                                           "physical_resource_id": cr.PhysicalResourceId.of(
-                                                              athena_analysis_physical_id)},
+                                                              athena_analysis_name)},
                                                       on_delete={
                                                           "service": "QuickSight",
                                                           "action": "deleteAnalysis",
                                                           "parameters": {
                                                               "AwsAccountId": aws_account_id,
-                                                              "AnalysisId": athena_analysis_id,
+                                                              "AnalysisId": athena_analysis_name,
                                                               "ForceDeleteWithoutRecovery": True
                                                           },
                                                           "physical_resource_id": cr.PhysicalResourceId.of(
-                                                              athena_analysis_physical_id)},
+                                                              athena_analysis_name)},
                                                       policy=iam_policy
                                                       )
