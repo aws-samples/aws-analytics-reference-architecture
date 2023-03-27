@@ -1814,9 +1814,9 @@ cdk-assets@2.51.0:
     yargs "^16.2.0"
 
 cdk-nag@^2.0.0:
-  version "2.21.56"
-  resolved "https://registry.yarnpkg.com/cdk-nag/-/cdk-nag-2.21.56.tgz#bfbdd62df432b502a410cd3eaac4d4a99bbbada2"
-  integrity sha512-SxHZi+Hr0OnXUvnHHywJqUyhwR9I85PsoXpCz57DYMLDJ/sYmP8yE8VKZ6O88YqT/Um1wk92aSt+x7FSlZZ8lA==
+  version "2.23.5"
+  resolved "https://registry.yarnpkg.com/cdk-nag/-/cdk-nag-2.23.5.tgz#868c9030c88c72454cdf070de0963108dc697503"
+  integrity sha512-4zZMspbaWc0EF9T/T4T4i4S8tRaK37FmVSpfdEyRputbnAnhoh80QvsV0eK7MdjW6FeI6zjBObNT78SczafCNA==
 
 chalk@^2.0.0, chalk@^2.4.2:
   version "2.4.2"
