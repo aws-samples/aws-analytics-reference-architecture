@@ -11610,6 +11610,7 @@ The different EMR versions available on EKS.
 
 | **Name** | **Description** |
 | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V_10">V_10</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_9">V6_9</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_8">V6_8</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_7">V6_7</a></code> | *No description.* |
@@ -11622,6 +11623,11 @@ The different EMR versions available on EKS.
 | <code><a href="#aws-analytics-reference-architecture.EmrVersion.V5_32">V5_32</a></code> | *No description.* |
 
 ---
+
+##### `V_10` <a name="V_10" id="aws-analytics-reference-architecture.EmrVersion.V_10"></a>
+
+---
+
 
 ##### `V6_9` <a name="V6_9" id="aws-analytics-reference-architecture.EmrVersion.V6_9"></a>
 

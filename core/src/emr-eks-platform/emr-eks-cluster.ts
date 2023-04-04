@@ -59,6 +59,7 @@ export enum Autoscaler {
  * The different EMR versions available on EKS
  */
 export  enum EmrVersion {
+  V_10= 'emr-6.10.0-latest',
   V6_9 = 'emr-6.9.0-latest',
   V6_8 = 'emr-6.8.0-latest',
   V6_7 = 'emr-6.7.0-latest',
