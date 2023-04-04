@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Aws, RemovalPolicy, aws_glue as glue } from 'aws-cdk-lib';;
+import { Aws, RemovalPolicy, aws_glue as glue, Duration } from 'aws-cdk-lib';;
 import { Construct, DependencyGroup } from 'constructs';
 import { IRole, Policy, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { CallAwsService, EventBridgePutEvents } from "aws-cdk-lib/aws-stepfunctions-tasks";
@@ -167,7 +167,14 @@ export class CentralGovernance extends Construct {
         },
       },
       outputPath: '$.tables.name',
-      resultPath: JsonPath.DISCARD
+      resultPath: JsonPath.DISCARD,
+    });
+
+    grantTablePermissions.addRetry({ 
+      errors: ['LakeFormation.ConcurrentModificationException'],
+      backoffRate: 2,
+      interval: Duration.seconds(5),
+      maxAttempts: 2 
     });
 
     // Trigger workflow in Data Domain account via Event Bridge
