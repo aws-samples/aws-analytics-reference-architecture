@@ -164,6 +164,7 @@ export class DataDomainNracWorkflow extends Construct {
 
     const rlMapTask = new Map(this, 'forEachTable', {
       itemsPath: '$.table_names',
+      inputPath: '$.[0]',
       parameters: {
         'central_database_name.$': '$.central_database_name',
         'database_name.$': '$.database_name',
@@ -172,7 +173,7 @@ export class DataDomainNracWorkflow extends Construct {
       resultPath: JsonPath.DISCARD,
     });
     rlMapTask.iterator(createResourceLink);
-    rlMapTask.next(new Choice(this, 'thisAccountIsProducer')
+    rlMapTask.next(new Choice(this, 'thisAccountIsProducer', {inputPath: '$.[0]'})
       .when(Condition.stringEquals('$.producer_acc_id', Aws.ACCOUNT_ID), triggerCrawler)
       .otherwise(finishWorkflow)
     );
@@ -219,11 +220,7 @@ export class DataDomainNracWorkflow extends Construct {
         }),
       ));
 
-    ramMapTask.next(new Choice(this, 'shareAccepted', { outputPath: '$[0]' })
-      .when(Condition.and(Condition.isPresent('$[0]'),
-        Condition.stringEquals('$[0].Response.Status', 'ACCEPTED')),
-        rlMapTask
-      ).otherwise(finishWorkflow))
+    ramMapTask.next(rlMapTask);
 
     // Avoid possible delays in between RAM share time and EventBridge event time 
     const initWait = new Wait(this, 'InitWait', {
