@@ -18,7 +18,7 @@ const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'EmrEksClustereE2eTest');
 
 const emrEksCluster = EmrEksCluster.getOrCreate(stack, {
-  eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
+  eksAdminRoleArn: 'arn:aws:iam::123445678912:role/my-role',
   autoscaling: Autoscaler.CLUSTER_AUTOSCALER,
 });
 
@@ -33,7 +33,7 @@ describe('deploy succeed', () => {
     const deployResult = await deployStack(integTestApp, stack);
     
     // THEN
-    expect(deployResult.outputs.emrEksAdminRole).toEqual('arn:aws:iam::123445678912:role/gromav');
+    expect(deployResult.outputs.emrEksAdminRole).toEqual('arn:aws:iam::123445678912:role/my-role');
 
   }, 9000000);
 });
