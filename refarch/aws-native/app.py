@@ -26,23 +26,6 @@ def make_env(scope: Construct, context_key: str):
 # Initialize the CDK App and PipelineStack
 app = App()
 
-# CdkDeployer( app,
-#     deployment_type=DeploymentType.CLICK_TO_DEPLOY,
-#     github_repository='aws-samples/aws-analytics-reference-architecture',
-#     stack_name='ara',
-#     git_branch='fix/refarch-bump',
-#     cdk_app_location='refarch/aws-native',
-#     cdk_parameters= {
-#         'QuickSightUsername': {
-#             'type': 'String',
-            
-#         },
-#         'QuickSightIdentityRegion': {
-#             'type': 'String',
-#         },
-#     },
-# )
-
 deploy_envs = []
 
 if app.node.try_get_context('EnableCICD') == 'true':
@@ -65,6 +48,7 @@ if app.node.try_get_context('EnableCICD') == 'true':
                 },
                 deploy_envs=deploy_envs)
 
-DataLake(app, "ara")
+else:
+    DataLake(app, "ara")
 
 app.synth()
