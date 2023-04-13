@@ -8689,8 +8689,6 @@ VPC for the WriteInBatch Lambda function.
 
 ### CdkDeployerProps <a name="CdkDeployerProps" id="aws-analytics-reference-architecture.CdkDeployerProps"></a>
 
-The properties for the CdkDeployer construct.
-
 #### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.CdkDeployerProps.Initializer"></a>
 
 ```typescript
@@ -8724,7 +8722,10 @@ const cdkDeployerProps: CdkDeployerProps = { ... }
 
 ---
 
-##### `analyticsReporting`<sup>Optional</sup> <a name="analyticsReporting" id="aws-analytics-reference-architecture.CdkDeployerProps.property.analyticsReporting"></a>
+##### ~~`analyticsReporting`~~<sup>Optional</sup> <a name="analyticsReporting" id="aws-analytics-reference-architecture.CdkDeployerProps.property.analyticsReporting"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly analyticsReporting: boolean;
@@ -8737,7 +8738,10 @@ Include runtime versioning information in this Stack.
 
 ---
 
-##### `crossRegionReferences`<sup>Optional</sup> <a name="crossRegionReferences" id="aws-analytics-reference-architecture.CdkDeployerProps.property.crossRegionReferences"></a>
+##### ~~`crossRegionReferences`~~<sup>Optional</sup> <a name="crossRegionReferences" id="aws-analytics-reference-architecture.CdkDeployerProps.property.crossRegionReferences"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly crossRegionReferences: boolean;
@@ -8755,7 +8759,10 @@ This feature is currently experimental
 
 ---
 
-##### `description`<sup>Optional</sup> <a name="description" id="aws-analytics-reference-architecture.CdkDeployerProps.property.description"></a>
+##### ~~`description`~~<sup>Optional</sup> <a name="description" id="aws-analytics-reference-architecture.CdkDeployerProps.property.description"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly description: string;
@@ -8768,7 +8775,10 @@ A description of the stack.
 
 ---
 
-##### `env`<sup>Optional</sup> <a name="env" id="aws-analytics-reference-architecture.CdkDeployerProps.property.env"></a>
+##### ~~`env`~~<sup>Optional</sup> <a name="env" id="aws-analytics-reference-architecture.CdkDeployerProps.property.env"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly env: Environment;
@@ -8842,7 +8852,10 @@ new MyStack(app, 'Stack1');
 ```
 
 
-##### `permissionsBoundary`<sup>Optional</sup> <a name="permissionsBoundary" id="aws-analytics-reference-architecture.CdkDeployerProps.property.permissionsBoundary"></a>
+##### ~~`permissionsBoundary`~~<sup>Optional</sup> <a name="permissionsBoundary" id="aws-analytics-reference-architecture.CdkDeployerProps.property.permissionsBoundary"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly permissionsBoundary: PermissionsBoundary;
@@ -8855,7 +8868,10 @@ Options for applying a permissions boundary to all IAM Roles and Users created w
 
 ---
 
-##### `stackName`<sup>Optional</sup> <a name="stackName" id="aws-analytics-reference-architecture.CdkDeployerProps.property.stackName"></a>
+##### ~~`stackName`~~<sup>Optional</sup> <a name="stackName" id="aws-analytics-reference-architecture.CdkDeployerProps.property.stackName"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly stackName: string;
@@ -8868,7 +8884,10 @@ Name to deploy the stack with.
 
 ---
 
-##### `synthesizer`<sup>Optional</sup> <a name="synthesizer" id="aws-analytics-reference-architecture.CdkDeployerProps.property.synthesizer"></a>
+##### ~~`synthesizer`~~<sup>Optional</sup> <a name="synthesizer" id="aws-analytics-reference-architecture.CdkDeployerProps.property.synthesizer"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly synthesizer: IStackSynthesizer;
@@ -8891,7 +8910,10 @@ other synthesizer is specified.
 
 ---
 
-##### `tags`<sup>Optional</sup> <a name="tags" id="aws-analytics-reference-architecture.CdkDeployerProps.property.tags"></a>
+##### ~~`tags`~~<sup>Optional</sup> <a name="tags" id="aws-analytics-reference-architecture.CdkDeployerProps.property.tags"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly tags: {[ key: string ]: string};
@@ -8904,7 +8926,10 @@ Stack tags that will be applied to all the taggable resources and the stack itse
 
 ---
 
-##### `terminationProtection`<sup>Optional</sup> <a name="terminationProtection" id="aws-analytics-reference-architecture.CdkDeployerProps.property.terminationProtection"></a>
+##### ~~`terminationProtection`~~<sup>Optional</sup> <a name="terminationProtection" id="aws-analytics-reference-architecture.CdkDeployerProps.property.terminationProtection"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly terminationProtection: boolean;
@@ -8917,7 +8942,10 @@ Whether to enable termination protection for this stack.
 
 ---
 
-##### `deploymentType`<sup>Required</sup> <a name="deploymentType" id="aws-analytics-reference-architecture.CdkDeployerProps.property.deploymentType"></a>
+##### ~~`deploymentType`~~<sup>Required</sup> <a name="deploymentType" id="aws-analytics-reference-architecture.CdkDeployerProps.property.deploymentType"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly deploymentType: DeploymentType;
@@ -8929,7 +8957,10 @@ The deployment type WORKSHOP_STUDIO: the CDK application is deployed through a w
 
 ---
 
-##### `cdkAppLocation`<sup>Optional</sup> <a name="cdkAppLocation" id="aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation"></a>
+##### ~~`cdkAppLocation`~~<sup>Optional</sup> <a name="cdkAppLocation" id="aws-analytics-reference-architecture.CdkDeployerProps.property.cdkAppLocation"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly cdkAppLocation: string;
@@ -8944,7 +8975,10 @@ It is used to `cd` into the folder before deploying the CDK application
 
 ---
 
-##### `cdkParameters`<sup>Optional</sup> <a name="cdkParameters" id="aws-analytics-reference-architecture.CdkDeployerProps.property.cdkParameters"></a>
+##### ~~`cdkParameters`~~<sup>Optional</sup> <a name="cdkParameters" id="aws-analytics-reference-architecture.CdkDeployerProps.property.cdkParameters"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly cdkParameters: {[ key: string ]: CfnParameterProps};
@@ -8957,7 +8991,10 @@ The CFN parameters to pass to the CDK application.
 
 ---
 
-##### `cdkStack`<sup>Optional</sup> <a name="cdkStack" id="aws-analytics-reference-architecture.CdkDeployerProps.property.cdkStack"></a>
+##### ~~`cdkStack`~~<sup>Optional</sup> <a name="cdkStack" id="aws-analytics-reference-architecture.CdkDeployerProps.property.cdkStack"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly cdkStack: string;
@@ -8970,7 +9007,10 @@ The CDK stack name to deploy.
 
 ---
 
-##### `deployBuildSpec`<sup>Optional</sup> <a name="deployBuildSpec" id="aws-analytics-reference-architecture.CdkDeployerProps.property.deployBuildSpec"></a>
+##### ~~`deployBuildSpec`~~<sup>Optional</sup> <a name="deployBuildSpec" id="aws-analytics-reference-architecture.CdkDeployerProps.property.deployBuildSpec"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly deployBuildSpec: BuildSpec;
@@ -8982,7 +9022,10 @@ Deploy CodeBuild buildspec file name at the root of the cdk app folder.
 
 ---
 
-##### `destroyBuildSpec`<sup>Optional</sup> <a name="destroyBuildSpec" id="aws-analytics-reference-architecture.CdkDeployerProps.property.destroyBuildSpec"></a>
+##### ~~`destroyBuildSpec`~~<sup>Optional</sup> <a name="destroyBuildSpec" id="aws-analytics-reference-architecture.CdkDeployerProps.property.destroyBuildSpec"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly destroyBuildSpec: BuildSpec;
@@ -8994,7 +9037,10 @@ Destroy Codebuild buildspec file name at the root of the cdk app folder.
 
 ---
 
-##### `gitBranch`<sup>Optional</sup> <a name="gitBranch" id="aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch"></a>
+##### ~~`gitBranch`~~<sup>Optional</sup> <a name="gitBranch" id="aws-analytics-reference-architecture.CdkDeployerProps.property.gitBranch"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly gitBranch: string;
@@ -9007,7 +9053,10 @@ The branch to use on the Github repository.
 
 ---
 
-##### `githubRepository`<sup>Optional</sup> <a name="githubRepository" id="aws-analytics-reference-architecture.CdkDeployerProps.property.githubRepository"></a>
+##### ~~`githubRepository`~~<sup>Optional</sup> <a name="githubRepository" id="aws-analytics-reference-architecture.CdkDeployerProps.property.githubRepository"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly githubRepository: string;
@@ -9022,7 +9071,10 @@ Either `githubRepository` or `s3Repository` needs to be set if `deploymentType` 
 
 ---
 
-##### `s3Repository`<sup>Optional</sup> <a name="s3Repository" id="aws-analytics-reference-architecture.CdkDeployerProps.property.s3Repository"></a>
+##### ~~`s3Repository`~~<sup>Optional</sup> <a name="s3Repository" id="aws-analytics-reference-architecture.CdkDeployerProps.property.s3Repository"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
 
 ```typescript
 public readonly s3Repository: Location;
@@ -11812,12 +11864,16 @@ The different autoscaler available with EmrEksCluster.
 
 ---
 
-##### `WORKSHOP_STUDIO` <a name="WORKSHOP_STUDIO" id="aws-analytics-reference-architecture.DeploymentType.WORKSHOP_STUDIO"></a>
+##### ~~`WORKSHOP_STUDIO`~~ <a name="WORKSHOP_STUDIO" id="aws-analytics-reference-architecture.DeploymentType.WORKSHOP_STUDIO"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
 
 ---
 
 
-##### `CLICK_TO_DEPLOY` <a name="CLICK_TO_DEPLOY" id="aws-analytics-reference-architecture.DeploymentType.CLICK_TO_DEPLOY"></a>
+##### ~~`CLICK_TO_DEPLOY`~~ <a name="CLICK_TO_DEPLOY" id="aws-analytics-reference-architecture.DeploymentType.CLICK_TO_DEPLOY"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
 
 ---
 
