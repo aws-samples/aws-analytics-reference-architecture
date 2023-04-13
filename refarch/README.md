@@ -61,7 +61,13 @@ Follow these steps or directly click on the launch button below
    pip install -r requirements.txt
    ```
 
-3. Deploy the main AWS CDK stack into your AWS account, providing the required parameters.
+3. Bootstrap CDK in your account:
+
+   ```
+   cdk bootstrap aws://<ACCOUNT_ID>/<REGION>
+   ```
+
+4. Deploy the main AWS CDK stack into your AWS account, providing the required parameters.
 If you install all modules, the Amazon QuickSight username (which can also be an IAM role) to which access should be granted to, as well as your QuickSight home region (the one selected during the QuickSight sign-up process) have to be specified. **Quicksight Entreprise edition is required to install the Dataviz module**.
 
    ```
