@@ -14,12 +14,15 @@ import { Utils } from '../utils';
 import { Bucket, Location } from 'aws-cdk-lib/aws-s3';
 import { startBuild, reportBuild } from './cdk-deployer-build';
 
-
+/**
+ * @deprecated The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+ */
 export enum DeploymentType {
   WORKSHOP_STUDIO,
   CLICK_TO_DEPLOY
 }
 /**
+ * @deprecated The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
  * The properties for the CdkDeployer construct.
  */
 export interface CdkDeployerProps extends cdk.StackProps {

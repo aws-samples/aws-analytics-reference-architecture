@@ -26,23 +26,6 @@ def make_env(scope: Construct, context_key: str):
 # Initialize the CDK App and PipelineStack
 app = App()
 
-CdkDeployer( app,
-    deployment_type=DeploymentType.CLICK_TO_DEPLOY,
-    github_repository='aws-samples/aws-analytics-reference-architecture',
-    stack_name='ara',
-    git_branch='feature/ref-arch-click-deploy',
-    cdk_app_location='refarch/aws-native',
-    cdk_parameters= {
-        'QuickSightUsername': {
-            'type': 'String',
-            
-        },
-        'QuickSightIdentityRegion': {
-            'type': 'String',
-        },
-    },
-)
-
 deploy_envs = []
 
 if app.node.try_get_context('EnableCICD') == 'true':
@@ -58,13 +41,14 @@ if app.node.try_get_context('EnableCICD') == 'true':
     # prod_env = make_env(app, 'PROD')
     # deploy_envs.append(prod_env)
 
-PipelineStack(app, "araPipelineStack",
-            env={
-                'account': cicd_account_context.get('account'),
-                'region': cicd_account_context.get('region')
-            },
-            deploy_envs=deploy_envs)
+    PipelineStack(app, "araPipelineStack",
+                env={
+                    'account': cicd_account_context.get('account'),
+                    'region': cicd_account_context.get('region')
+                },
+                deploy_envs=deploy_envs)
 
-DataLake(app, "ara")
+else:
+    DataLake(app, "ara")
 
 app.synth()

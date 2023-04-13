@@ -105,43 +105,43 @@
       "description": "Copy all resources directories from src to lib",
       "steps": [
         {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/common/resources lib/common"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-generator/resources lib/data-generator"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-mesh/resources lib/data-mesh"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/docker-builder/resources lib/docker-builder"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/emr-eks-platform/resources lib/emr-eks-platform"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/lake-formation/resources lib/lake-formation"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/notebook-platform/resources lib/notebook-platform"
-        },
-        {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-athena-query/resources lib/synchronous-athena-query"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-glue-job/resources lib/synchronous-glue-job"
         },
         {
           "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-crawler/resources lib/synchronous-crawler"
         },
         {
-          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-glue-job/resources lib/synchronous-glue-job"
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/synchronous-athena-query/resources lib/synchronous-athena-query"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/notebook-platform/resources lib/notebook-platform"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/lake-formation/resources lib/lake-formation"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/emr-eks-platform/resources lib/emr-eks-platform"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/docker-builder/resources lib/docker-builder"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources lib/db-schema-manager"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/test/resources lib/db-schema-manager/resources/flyway-lambda/src/test"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/db-schema-manager/resources/flyway-lambda/src/main/resources lib/db-schema-manager/resources/flyway-lambda/src/main"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-mesh/resources lib/data-mesh"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/data-generator/resources lib/data-generator"
+        },
+        {
+          "exec": "rsync -avr --exclude '*.ts' --exclude '*.js' src/common/resources lib/common"
         },
         {
           "exec": "perl -i -pe 's/flyway-all.jar//g' lib/db-schema-manager/resources/flyway-lambda/.gitignore"
@@ -196,6 +196,24 @@
         }
       ]
     },
+    "install": {
+      "name": "install",
+      "description": "Install project dependencies and update lockfile (non-frozen)",
+      "steps": [
+        {
+          "exec": "yarn install --check-files"
+        }
+      ]
+    },
+    "install:ci": {
+      "name": "install:ci",
+      "description": "Install project dependencies using frozen lockfile",
+      "steps": [
+        {
+          "exec": "yarn install --check-files --frozen-lockfile"
+        }
+      ]
+    },
     "package": {
       "name": "package",
       "description": "Creates the distribution package",
@@ -243,43 +261,43 @@
       "description": "pip install all folders in lib that has requirements.txt",
       "steps": [
         {
-          "exec": "pip3 install -r lib/common/resources/lambdas/pre-bundled-layer/requirements.txt --target lib/common/resources/lambdas/pre-bundled-layer --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/data-generator/resources/lambdas/db-targets-setup/requirements.txt --target lib/data-generator/resources/lambdas/db-targets-setup --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/data-generator/resources/lambdas/find-file-paths/requirements.txt --target lib/data-generator/resources/lambdas/find-file-paths --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/data-generator/resources/lambdas/write-in-batch/requirements.txt --target lib/data-generator/resources/lambdas/write-in-batch --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/docker-builder/resources/lambdas/requirements.txt --target lib/docker-builder/resources/lambdas --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/job-template/requirements.txt --target lib/emr-eks-platform/resources/lambdas/job-template --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/managed-endpoint/requirements.txt --target lib/emr-eks-platform/resources/lambdas/managed-endpoint --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/nodegroup-asg-tag/requirements.txt --target lib/emr-eks-platform/resources/lambdas/nodegroup-asg-tag --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/lake-formation/resources/lambdas/admin/requirements.txt --target lib/lake-formation/resources/lambdas/admin --upgrade"
-        },
-        {
-          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas --upgrade"
+          "exec": "pip3 install -r lib/synchronous-glue-job/resources/lambdas/requirements.txt --target lib/synchronous-glue-job/resources/lambdas --upgrade"
         },
         {
           "exec": "pip3 install -r lib/synchronous-crawler/resources/lambdas/requirements.txt --target lib/synchronous-crawler/resources/lambdas --upgrade"
         },
         {
-          "exec": "pip3 install -r lib/synchronous-glue-job/resources/lambdas/requirements.txt --target lib/synchronous-glue-job/resources/lambdas --upgrade"
+          "exec": "pip3 install -r lib/synchronous-athena-query/resources/lambdas/requirements.txt --target lib/synchronous-athena-query/resources/lambdas --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/lake-formation/resources/lambdas/admin/requirements.txt --target lib/lake-formation/resources/lambdas/admin --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/nodegroup-asg-tag/requirements.txt --target lib/emr-eks-platform/resources/lambdas/nodegroup-asg-tag --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/managed-endpoint/requirements.txt --target lib/emr-eks-platform/resources/lambdas/managed-endpoint --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/emr-eks-platform/resources/lambdas/job-template/requirements.txt --target lib/emr-eks-platform/resources/lambdas/job-template --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/docker-builder/resources/lambdas/requirements.txt --target lib/docker-builder/resources/lambdas --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/write-in-batch/requirements.txt --target lib/data-generator/resources/lambdas/write-in-batch --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/setup/requirements.txt --target lib/data-generator/resources/lambdas/setup --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/find-file-paths/requirements.txt --target lib/data-generator/resources/lambdas/find-file-paths --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/data-generator/resources/lambdas/db-targets-setup/requirements.txt --target lib/data-generator/resources/lambdas/db-targets-setup --upgrade"
+        },
+        {
+          "exec": "pip3 install -r lib/common/resources/lambdas/pre-bundled-layer/requirements.txt --target lib/common/resources/lambdas/pre-bundled-layer --upgrade"
         }
       ]
     },
@@ -413,19 +431,19 @@
           "exec": "yarn upgrade npm-check-updates"
         },
         {
-          "exec": "npm-check-updates --dep dev --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
+          "exec": "npm-check-updates --dep dev --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
         },
         {
-          "exec": "npm-check-updates --dep optional --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
+          "exec": "npm-check-updates --dep optional --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
         },
         {
-          "exec": "npm-check-updates --dep peer --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
+          "exec": "npm-check-updates --dep peer --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
         },
         {
-          "exec": "npm-check-updates --dep prod --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
+          "exec": "npm-check-updates --dep prod --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
         },
         {
-          "exec": "npm-check-updates --dep bundle --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs'"
+          "exec": "npm-check-updates --dep bundle --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cloudformation-diff,@aws-cdk/cx-api,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
         },
         {
           "exec": "yarn install --check-files"
