@@ -7,7 +7,7 @@ with open("README.md") as fp:
 
 setuptools.setup(
     name="analytics-reference-architecture",
-    version="2.4.12",
+    version="2.9.5",
 
     description="The Analytics Reference Architecture CDK app",
     long_description=long_description,
@@ -19,8 +19,8 @@ setuptools.setup(
     packages=setuptools.find_packages(where="common"),
 
     install_requires=[
-        "aws_analytics_reference_architecture==2.4.14",
-        "aws-cdk-lib>=2.26.0",
+        "aws_analytics_reference_architecture==2.9.5",
+        "aws-cdk-lib>=2.51.0",
         "aws-cdk.aws-glue-alpha>=2.26.0.a0"
         "aws-cdk.aws-redshift-alpha>=2.26.0.a0"
         "constructs>=10.0.0",

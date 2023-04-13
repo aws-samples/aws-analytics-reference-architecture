@@ -232,7 +232,7 @@ To represent all keys, specify ``"*"``.
 
 If you need to specify a keyPattern with multiple components, concatenate them into a single string, e.g.:
 
-   arnForObjects(`home/${team}/${user}/*`)
+  arnForObjects(`home/${team}/${user}/*`)
 
 ###### `keyPattern`<sup>Required</sup> <a name="keyPattern" id="aws-analytics-reference-architecture.AraBucket.arnForObjects.parameter.keyPattern"></a>
 
@@ -303,8 +303,8 @@ The method returns the `iam.Grant` object, which can then be modified
 as needed. For example, you can add a condition that will restrict access only
 to an IPv4 range like this:
 
-     const grant = bucket.grantPublicAccess();
-     grant.resourceStatement!.addCondition(‘IpAddress’, { “aws:SourceIp”: “54.240.143.0/24” });
+    const grant = bucket.grantPublicAccess();
+    grant.resourceStatement!.addCondition(‘IpAddress’, { “aws:SourceIp”: “54.240.143.0/24” });
 
 Note that if this `IBucket` refers to an existing bucket, possibly not
 managed by CloudFormation, this method will have no effect, since it's
@@ -364,7 +364,7 @@ public grantPutAcl(identity: IGrantable, objectsKeyPattern?: string): Grant
 Grant the given IAM identity permissions to modify the ACLs of objects in the given Bucket.
 
 If your application has the '@aws-cdk/aws-s3:grantWriteWithoutAcl' feature flag set,
-calling {@link grantWrite} or {@link grantReadWrite} no longer grants permissions to modify the ACLs of the objects;
+calling `grantWrite` or `grantReadWrite` no longer grants permissions to modify the ACLs of the objects;
 in this case, if you need to modify object ACLs, call this method explicitly.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantPutAcl.parameter.identity"></a>
@@ -423,7 +423,7 @@ If you want to get rid of that behavior, update your CDK version to 1.85.0 or la
 and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true`
 in the `context` key of your cdk.json file.
 If you've already updated, but still need the principal to have permissions to modify the ACLs,
-use the {@link grantPutAcl} method.
+use the `grantPutAcl` method.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantReadWrite.parameter.identity"></a>
 
@@ -440,7 +440,7 @@ use the {@link grantPutAcl} method.
 ##### `grantWrite` <a name="grantWrite" id="aws-analytics-reference-architecture.AraBucket.grantWrite"></a>
 
 ```typescript
-public grantWrite(identity: IGrantable, objectsKeyPattern?: any): Grant
+public grantWrite(identity: IGrantable, objectsKeyPattern?: any, allowedActionPatterns?: string[]): Grant
 ```
 
 Grant write permissions to this bucket to an IAM principal.
@@ -454,7 +454,7 @@ If you want to get rid of that behavior, update your CDK version to 1.85.0 or la
 and make sure the `@aws-cdk/aws-s3:grantWriteWithoutAcl` feature flag is set to `true`
 in the `context` key of your cdk.json file.
 If you've already updated, but still need the principal to have permissions to modify the ACLs,
-use the {@link grantPutAcl} method.
+use the `grantPutAcl` method.
 
 ###### `identity`<sup>Required</sup> <a name="identity" id="aws-analytics-reference-architecture.AraBucket.grantWrite.parameter.identity"></a>
 
@@ -465,6 +465,12 @@ use the {@link grantPutAcl} method.
 ###### `objectsKeyPattern`<sup>Optional</sup> <a name="objectsKeyPattern" id="aws-analytics-reference-architecture.AraBucket.grantWrite.parameter.objectsKeyPattern"></a>
 
 - *Type:* any
+
+---
+
+###### `allowedActionPatterns`<sup>Optional</sup> <a name="allowedActionPatterns" id="aws-analytics-reference-architecture.AraBucket.grantWrite.parameter.allowedActionPatterns"></a>
+
+- *Type:* string[]
 
 ---
 
@@ -744,7 +750,7 @@ The metric configuration to add.
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketArn">fromBucketArn</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketAttributes">fromBucketAttributes</a></code> | Creates a Bucket construct that represents an external bucket. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.fromBucketName">fromBucketName</a></code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.AraBucket.fromCfnBucket">fromCfnBucket</a></code> | Create a mutable {@link IBucket} based on a low-level {@link CfnBucket}. |
+| <code><a href="#aws-analytics-reference-architecture.AraBucket.fromCfnBucket">fromCfnBucket</a></code> | Create a mutable `IBucket` based on a low-level `CfnBucket`. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.validateBucketName">validateBucketName</a></code> | Thrown an exception if the given bucket name is not valid. |
 | <code><a href="#aws-analytics-reference-architecture.AraBucket.getOrCreate">getOrCreate</a></code> | Get the Amazon S3 Bucket from the AWS CDK Stack based on the provided name. |
 
@@ -911,7 +917,7 @@ import { AraBucket } from 'aws-analytics-reference-architecture'
 AraBucket.fromCfnBucket(cfnBucket: CfnBucket)
 ```
 
-Create a mutable {@link IBucket} based on a low-level {@link CfnBucket}.
+Create a mutable `IBucket` based on a low-level `CfnBucket`.
 
 ###### `cfnBucket`<sup>Required</sup> <a name="cfnBucket" id="aws-analytics-reference-architecture.AraBucket.fromCfnBucket.parameter.cfnBucket"></a>
 
@@ -1634,7 +1640,8 @@ the CdkDeployer [properties]{@link CdkDeployerProps}.
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addDependency">addDependency</a></code> | Add a dependency between this stack and another stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addMetadata">addMetadata</a></code> | Adds an arbitary key-value pair, with information you want to record about the stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.addTransform">addTransform</a></code> | Add a Transform to this stack. A Transform is a macro that AWS CloudFormation uses to process your template. |
-| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.exportValue">exportValue</a></code> | Create a CloudFormation Export for a value. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.exportStringListValue">exportStringListValue</a></code> | Create a CloudFormation Export for a string list value. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.exportValue">exportValue</a></code> | Create a CloudFormation Export for a string value. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.formatArn">formatArn</a></code> | Creates an ARN from components. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.getLogicalId">getLogicalId</a></code> | Allocates a stack-unique CloudFormation-compatible logical identity for a specific resource. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.regionalFact">regionalFact</a></code> | Look up a fact value for the given fact for the region of this stack. |
@@ -1643,6 +1650,7 @@ the CdkDeployer [properties]{@link CdkDeployerProps}.
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.resolve">resolve</a></code> | Resolve a tokenized value in the context of the current stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.splitArn">splitArn</a></code> | Splits the provided ARN into its components. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployer.toJsonString">toJsonString</a></code> | Convert an object, potentially containing tokens, to a JSON string. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployer.toYamlString">toYamlString</a></code> | Convert an object, potentially containing tokens, to a YAML string. |
 
 ---
 
@@ -1730,13 +1738,51 @@ The transform to add.
 
 ---
 
+##### `exportStringListValue` <a name="exportStringListValue" id="aws-analytics-reference-architecture.CdkDeployer.exportStringListValue"></a>
+
+```typescript
+public exportStringListValue(exportedValue: any, options?: ExportValueOptions): string[]
+```
+
+Create a CloudFormation Export for a string list value.
+
+Returns a string list representing the corresponding `Fn.importValue()`
+expression for this Export. The export expression is automatically wrapped with an
+`Fn::Join` and the import value with an `Fn::Split`, since CloudFormation can only
+export strings. You can control the name for the export by passing the `name` option.
+
+If you don't supply a value for `name`, the value you're exporting must be
+a Resource attribute (for example: `bucket.bucketName`) and it will be
+given the same name as the automatic cross-stack reference that would be created
+if you used the attribute in another Stack.
+
+One of the uses for this method is to *remove* the relationship between
+two Stacks established by automatic cross-stack references. It will
+temporarily ensure that the CloudFormation Export still exists while you
+remove the reference from the consuming stack. After that, you can remove
+the resource and the manual export.
+
+See `exportValue` for an example of this process.
+
+###### `exportedValue`<sup>Required</sup> <a name="exportedValue" id="aws-analytics-reference-architecture.CdkDeployer.exportStringListValue.parameter.exportedValue"></a>
+
+- *Type:* any
+
+---
+
+###### `options`<sup>Optional</sup> <a name="options" id="aws-analytics-reference-architecture.CdkDeployer.exportStringListValue.parameter.options"></a>
+
+- *Type:* aws-cdk-lib.ExportValueOptions
+
+---
+
 ##### `exportValue` <a name="exportValue" id="aws-analytics-reference-architecture.CdkDeployer.exportValue"></a>
 
 ```typescript
 public exportValue(exportedValue: any, options?: ExportValueOptions): string
 ```
 
-Create a CloudFormation Export for a value.
+Create a CloudFormation Export for a string value.
 
 Returns a string representing the corresponding `Fn.importValue()`
 expression for this Export. You can control the name for the export by
@@ -1768,11 +1814,11 @@ Instead, the process takes two deployments:
 ### Deployment 1: break the relationship
 
 - Make sure `consumerStack` no longer references `bucket.bucketName` (maybe the consumer
-   stack now uses its own bucket, or it writes to an AWS DynamoDB table, or maybe you just
-   remove the Lambda Function altogether).
+  stack now uses its own bucket, or it writes to an AWS DynamoDB table, or maybe you just
+  remove the Lambda Function altogether).
 - In the `ProducerStack` class, call `this.exportValue(this.bucket.bucketName)`. This
-   will make sure the CloudFormation Export continues to exist while the relationship
-   between the two stacks is being broken.
+  will make sure the CloudFormation Export continues to exist while the relationship
+  between the two stacks is being broken.
 - Deploy (this will effectively only change the `consumerStack`, but it's safe to deploy both).
 
 ### Deployment 2: remove the bucket resource
@@ -1809,7 +1855,7 @@ into the generated ARN at the location that component corresponds to.
 
 The ARN will be formatted as follows:
 
-   arn:{partition}:{service}:{region}:{account}:{resource}{sep}{resource-name}
+  arn:{partition}:{service}:{region}:{account}:{resource}{sep}{resource-name}
 
 The required ARN pieces that are omitted will be taken from the stack that
 the 'scope' is attached to. If all ARN pieces are supplied, the supplied scope
@@ -1986,6 +2032,20 @@ Convert an object, potentially containing tokens, to a JSON string.
 
 ---
 
+##### `toYamlString` <a name="toYamlString" id="aws-analytics-reference-architecture.CdkDeployer.toYamlString"></a>
+
+```typescript
+public toYamlString(obj: any): string
+```
+
+Convert an object, potentially containing tokens, to a YAML string.
+
+###### `obj`<sup>Required</sup> <a name="obj" id="aws-analytics-reference-architecture.CdkDeployer.toYamlString.parameter.obj"></a>
+
+- *Type:* any
+
+---
+
 #### Static Functions <a name="Static Functions" id="Static Functions"></a>
 
 | **Name** | **Description** |
@@ -2120,14 +2180,14 @@ The AWS account into which this stack will be deployed.
 This value is resolved according to the following rules:
 
 1. The value provided to `env.account` when the stack is defined. This can
-    either be a concrete account (e.g. `585695031111`) or the
-    `Aws.ACCOUNT_ID` token.
+   either be a concrete account (e.g. `585695031111`) or the
+   `Aws.ACCOUNT_ID` token.
 3. `Aws.ACCOUNT_ID`, which represents the CloudFormation intrinsic reference
-    `{ "Ref": "AWS::AccountId" }` encoded as a string token.
+   `{ "Ref": "AWS::AccountId" }` encoded as a string token.
 
 Preferably, you should use the return value as an opaque string and not
 attempt to parse it to implement your logic. If you do, you must first
-check that it is a concerete value an not an unresolved token. If this
+check that it is a concrete value an not an unresolved token. If this
 value is an unresolved token (`Token.isUnresolved(stack.account)` returns
 `true`), this implies that the user wishes that this stack will synthesize
 into a **account-agnostic template**. In this case, your code should either
@@ -2268,14 +2328,14 @@ The AWS region into which this stack will be deployed (e.g. `us-west-2`).
 This value is resolved according to the following rules:
 
 1. The value provided to `env.region` when the stack is defined. This can
-    either be a concerete region (e.g. `us-west-2`) or the `Aws.REGION`
-    token.
+   either be a concrete region (e.g. `us-west-2`) or the `Aws.REGION`
+   token.
 3. `Aws.REGION`, which is represents the CloudFormation intrinsic reference
-    `{ "Ref": "AWS::Region" }` encoded as a string token.
+   `{ "Ref": "AWS::Region" }` encoded as a string token.
 
 Preferably, you should use the return value as an opaque string and not
 attempt to parse it to implement your logic. If you do, you must first
-check that it is a concerete value an not an unresolved token. If this
+check that it is a concrete value an not an unresolved token. If this
 value is an unresolved token (`Token.isUnresolved(stack.region)` returns
 `true`), this implies that the user wishes that this stack will synthesize
 into a **region-agnostic template**. In this case, your code should either
@@ -3848,6 +3908,7 @@ Role's policies yourself.
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.customizeRoles">customizeRoles</a></code> | Customize the creation of IAM roles within the given scope. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleArn">fromRoleArn</a></code> | Import an external role by ARN. |
 | <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.fromRoleName">fromRoleName</a></code> | Import an external role by name. |
+| <code><a href="#aws-analytics-reference-architecture.Ec2SsmRole.isRole">isRole</a></code> | Return whether the given object is a Role. |
 
 ---
 
@@ -4058,6 +4119,22 @@ the name of the role to import.
 - *Type:* aws-cdk-lib.aws_iam.FromRoleNameOptions
 
 allow customizing the behavior of the returned role.
+
+---
+
+##### `isRole` <a name="isRole" id="aws-analytics-reference-architecture.Ec2SsmRole.isRole"></a>
+
+```typescript
+import { Ec2SsmRole } from 'aws-analytics-reference-architecture'
+
+Ec2SsmRole.isRole(x: any)
+```
+
+Return whether the given object is a Role.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.Ec2SsmRole.isRole.parameter.x"></a>
+
+- *Type:* any
 
 ---
 
@@ -6074,6 +6151,7 @@ resource properties.
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.toString">toString</a></code> | Returns a string representation of this construct. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.overrideLogicalId">overrideLogicalId</a></code> | Overrides the auto-generated logical ID with a specific ID. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDeletionOverride">addDeletionOverride</a></code> | Syntactic sugar for `addOverride(path, undefined)`. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependency">addDependency</a></code> | Indicates that this resource depends on another resource and cannot be provisioned unless the other resource has been successfully provisioned. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn">addDependsOn</a></code> | Indicates that this resource depends on another resource and cannot be provisioned unless the other resource has been successfully provisioned. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addMetadata">addMetadata</a></code> | Add a value to the CloudFormation Resource Metadata. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addOverride">addOverride</a></code> | Adds an override to the synthesized CloudFormation resource. |
@@ -6082,6 +6160,10 @@ resource properties.
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.applyRemovalPolicy">applyRemovalPolicy</a></code> | Sets the deletion policy of the resource based on the removal policy specified. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getAtt">getAtt</a></code> | Returns a token for an runtime attribute of this resource. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getMetadata">getMetadata</a></code> | Retrieve a value value from the CloudFormation Resource Metadata. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.obtainDependencies">obtainDependencies</a></code> | Retrieves an array of resources this resource depends on. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.obtainResourceDependencies">obtainResourceDependencies</a></code> | Get a shallow copy of dependencies between this resource and other resources in the same stack. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.removeDependency">removeDependency</a></code> | Indicates that this resource no longer depends on another resource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.replaceDependency">replaceDependency</a></code> | Replaces one dependency with another. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.inspect">inspect</a></code> | Examines the CloudFormation resource and discloses attributes. |
 
 ---
@@ -6126,16 +6208,30 @@ The path of the value to delete.
 
 ---
 
-##### `addDependsOn` <a name="addDependsOn" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn"></a>
+##### `addDependency` <a name="addDependency" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependency"></a>
 
 ```typescript
-public addDependsOn(target: CfnResource): void
+public addDependency(target: CfnResource): void
 ```
 
 Indicates that this resource depends on another resource and cannot be provisioned unless the other resource has been successfully provisioned.
 
 This can be used for resources across stacks (or nested stack) boundaries
 and the dependency will automatically be transferred to the relevant scope.
+
+###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependency.parameter.target"></a>
+
+- *Type:* aws-cdk-lib.CfnResource
+
+---
+
+##### ~~`addDependsOn`~~ <a name="addDependsOn" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn"></a>
+
+```typescript
+public addDependsOn(target: CfnResource): void
+```
+
+Indicates that this resource depends on another resource and cannot be provisioned unless the other resource has been successfully provisioned.
 
 ###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.addDependsOn.parameter.target"></a>
 
@@ -6200,20 +6296,20 @@ cfnResource.addOverride('Properties.GlobalSecondaryIndexes.1.ProjectionType', 'I
 would add the overrides
 ```json
 "Properties": {
-   "GlobalSecondaryIndexes": [
-     {
-       "Projection": {
-         "NonKeyAttributes": [ "myattribute" ]
-         ...
-       }
-       ...
-     },
-     {
-       "ProjectionType": "INCLUDE"
-       ...
-     },
-   ]
-   ...
+  "GlobalSecondaryIndexes": [
+    {
+      "Projection": {
+        "NonKeyAttributes": [ "myattribute" ]
+        ...
+      }
+      ...
+    },
+    {
+      "ProjectionType": "INCLUDE"
+      ...
+    },
+  ]
+  ...
 }
 ```
 
@@ -6229,7 +6325,7 @@ template.
 
 The path of the property, you can use dot notation to override values in complex types.
 
-Any intermdediate keys
+Any intermediate keys
 will be created as needed.
 
 ---
@@ -6322,7 +6418,7 @@ can be found in the following link:
 ##### `getAtt` <a name="getAtt" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getAtt"></a>
 
 ```typescript
-public getAtt(attributeName: string): Reference
+public getAtt(attributeName: string, typeHint?: ResolutionTypeHint): Reference
 ```
 
 Returns a token for an runtime attribute of this resource.
@@ -6335,6 +6431,12 @@ in case there is no generated attribute.
 - *Type:* string
 
 The name of the attribute.
+
+---
+
+###### `typeHint`<sup>Optional</sup> <a name="typeHint" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getAtt.parameter.typeHint"></a>
+
+- *Type:* aws-cdk-lib.ResolutionTypeHint
 
 ---
 
@@ -6359,6 +6461,66 @@ node metadata ends up in the Cloud Assembly.)
 ###### `key`<sup>Required</sup> <a name="key" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getMetadata.parameter.key"></a>
 
 - *Type:* string
+
+---
+
+##### `obtainDependencies` <a name="obtainDependencies" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.obtainDependencies"></a>
+
+```typescript
+public obtainDependencies(): Stack | CfnResource[]
+```
+
+Retrieves an array of resources this resource depends on.
+
+This assembles dependencies on resources across stacks (including nested stacks)
+automatically.
+
+##### `obtainResourceDependencies` <a name="obtainResourceDependencies" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.obtainResourceDependencies"></a>
+
+```typescript
+public obtainResourceDependencies(): CfnResource[]
+```
+
+Get a shallow copy of dependencies between this resource and other resources in the same stack.
+
+##### `removeDependency` <a name="removeDependency" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.removeDependency"></a>
+
+```typescript
+public removeDependency(target: CfnResource): void
+```
+
+Indicates that this resource no longer depends on another resource.
+
+This can be used for resources across stacks (including nested stacks)
+and the dependency will automatically be removed from the relevant scope.
+
+###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.removeDependency.parameter.target"></a>
+
+- *Type:* aws-cdk-lib.CfnResource
+
+---
+
+##### `replaceDependency` <a name="replaceDependency" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.replaceDependency"></a>
+
+```typescript
+public replaceDependency(target: CfnResource, newTarget: CfnResource): void
+```
+
+Replaces one dependency with another.
+
+###### `target`<sup>Required</sup> <a name="target" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.replaceDependency.parameter.target"></a>
+
+- *Type:* aws-cdk-lib.CfnResource
+
+The dependency to replace.
+
+---
+
+###### `newTarget`<sup>Required</sup> <a name="newTarget" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.replaceDependency.parameter.newTarget"></a>
+
+- *Type:* aws-cdk-lib.CfnResource
+
+The new dependency to add.
 
 ---
 
@@ -6495,10 +6657,10 @@ SingletonCfnLaunchTemplate.getOrCreate(scope: Construct, name: string, data: str
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnResourceType">cfnResourceType</a></code> | <code>string</code> | AWS resource type. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrDefaultVersionNumber">attrDefaultVersionNumber</a></code> | <code>string</code> | The default version of the launch template, such as 2. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrLatestVersionNumber">attrLatestVersionNumber</a></code> | <code>string</code> | The latest version of the launch template, such as `5` . |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData">launchTemplateData</a></code> | <code>aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty \| aws-cdk-lib.IResolvable</code> | The information for the launch template. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData">launchTemplateData</a></code> | <code>aws-cdk-lib.IResolvable \| aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty</code> | The information for the launch template. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateName">launchTemplateName</a></code> | <code>string</code> | A name for the launch template. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications">tagSpecifications</a></code> | <code>aws-cdk-lib.IResolvable \| aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty \| aws-cdk-lib.IResolvable[]</code> | The tags to apply to the launch template during creation. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.versionDescription">versionDescription</a></code> | <code>string</code> | `AWS::EC2::LaunchTemplate.VersionDescription`. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications">tagSpecifications</a></code> | <code>aws-cdk-lib.IResolvable \| aws-cdk-lib.IResolvable \| aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty[]</code> | The tags to apply to the launch template on creation. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.versionDescription">versionDescription</a></code> | <code>string</code> | A description for the first version of the launch template. |
 
 ---
 
@@ -6604,7 +6766,7 @@ public readonly attrDefaultVersionNumber: string;
 
 The default version of the launch template, such as 2.
 
-The default version of a launch template cannot be specified in AWS CloudFormation . The default version can be set in the Amazon EC2 Console or by using the `modify-launch-template` AWS CLI command.
+The default version of a launch template cannot be specified in AWS CloudFormation . The default version can be set in the Amazon EC2 console or by using the `modify-launch-template` AWS CLI command.
 
 ---
 
@@ -6623,10 +6785,10 @@ The latest version of the launch template, such as `5` .
 ##### `launchTemplateData`<sup>Required</sup> <a name="launchTemplateData" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData"></a>
 
 ```typescript
-public readonly launchTemplateData: LaunchTemplateDataProperty | IResolvable;
+public readonly launchTemplateData: IResolvable | LaunchTemplateDataProperty;
 ```
 
-- *Type:* aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty | aws-cdk-lib.IResolvable
+- *Type:* aws-cdk-lib.IResolvable | aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty
 
 The information for the launch template.
 
@@ -6651,12 +6813,16 @@ A name for the launch template.
 ##### `tagSpecifications`<sup>Optional</sup> <a name="tagSpecifications" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications"></a>
 
 ```typescript
-public readonly tagSpecifications: IResolvable | LaunchTemplateTagSpecificationProperty | IResolvable[];
+public readonly tagSpecifications: IResolvable | IResolvable | LaunchTemplateTagSpecificationProperty[];
 ```
 
-- *Type:* aws-cdk-lib.IResolvable | aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty | aws-cdk-lib.IResolvable[]
+- *Type:* aws-cdk-lib.IResolvable | aws-cdk-lib.IResolvable | aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty[]
 
-The tags to apply to the launch template during creation.
+The tags to apply to the launch template on creation.
+
+To tag the launch template, the resource type must be `launch-template` .
+
+> To specify the tags for the resources that are created when an instance is launched, you must use the `TagSpecifications` parameter in the [launch template data](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestLaunchTemplateData.html) structure.
 
 > [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications)
 
@@ -6670,7 +6836,7 @@ public readonly versionDescription: string;
 
 - *Type:* string
 
-`AWS::EC2::LaunchTemplate.VersionDescription`.
+A description for the first version of the launch template.
 
 > [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-versiondescription](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-versiondescription)
 
@@ -6705,7 +6871,7 @@ AWS Glue Database implementing the singleton pattern.
 ```typescript
 import { SingletonGlueDatabase } from 'aws-analytics-reference-architecture'
 
-new SingletonGlueDatabase(scope: Construct, id: string, props: DatabaseProps)
+new SingletonGlueDatabase(scope: Construct, id: string, props?: DatabaseProps)
 ```
 
 | **Name** | **Type** | **Description** |
@@ -6728,7 +6894,7 @@ new SingletonGlueDatabase(scope: Construct, id: string, props: DatabaseProps)
 
 ---
 
-##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.props"></a>
+##### `props`<sup>Optional</sup> <a name="props" id="aws-analytics-reference-architecture.SingletonGlueDatabase.Initializer.parameter.props"></a>
 
 - *Type:* @aws-cdk/aws-glue-alpha.DatabaseProps
 
@@ -7065,6 +7231,8 @@ new SingletonKey(scope: Construct, id: string, props?: KeyProps)
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantDecrypt">grantDecrypt</a></code> | Grant decryption permissions using this key to the given principal. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantEncrypt">grantEncrypt</a></code> | Grant encryption permissions using this key to the given principal. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantEncryptDecrypt">grantEncryptDecrypt</a></code> | Grant encryption and decryption permissions using this key to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantGenerateMac">grantGenerateMac</a></code> | Grant permissions to generating MACs to the given principal. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.grantVerifyMac">grantVerifyMac</a></code> | Grant permissions to verifying MACs to the given principal. |
 
 ---
 
@@ -7219,6 +7387,34 @@ Grant encryption and decryption permissions using this key to the given principa
 
 ---
 
+##### `grantGenerateMac` <a name="grantGenerateMac" id="aws-analytics-reference-architecture.SingletonKey.grantGenerateMac"></a>
+
+```typescript
+public grantGenerateMac(grantee: IGrantable): Grant
+```
+
+Grant permissions to generating MACs to the given principal.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantGenerateMac.parameter.grantee"></a>
+
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
+
+---
+
+##### `grantVerifyMac` <a name="grantVerifyMac" id="aws-analytics-reference-architecture.SingletonKey.grantVerifyMac"></a>
+
+```typescript
+public grantVerifyMac(grantee: IGrantable): Grant
+```
+
+Grant permissions to verifying MACs to the given principal.
+
+###### `grantee`<sup>Required</sup> <a name="grantee" id="aws-analytics-reference-architecture.SingletonKey.grantVerifyMac.parameter.grantee"></a>
+
+- *Type:* aws-cdk-lib.aws_iam.IGrantable
+
+---
+
 #### Static Functions <a name="Static Functions" id="Static Functions"></a>
 
 | **Name** | **Description** |
@@ -7226,7 +7422,7 @@ Grant encryption and decryption permissions using this key to the given principa
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.isOwnedResource">isOwnedResource</a></code> | Returns true if the construct was created by CDK, and false otherwise. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.isResource">isResource</a></code> | Check whether the given construct is a Resource. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromCfnKey">fromCfnKey</a></code> | Create a mutable {@link IKey} based on a low-level {@link CfnKey}. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromCfnKey">fromCfnKey</a></code> | Create a mutable `IKey` based on a low-level `CfnKey`. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromKeyArn">fromKeyArn</a></code> | Import an externally defined KMS Key using its ARN. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.fromLookup">fromLookup</a></code> | Import an existing Key by querying the AWS environment this stack is deployed to. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonKey.getOrCreate">getOrCreate</a></code> | Get the Amazon KMS Key the AWS CDK Stack based on the provided name. |
@@ -7305,15 +7501,15 @@ import { SingletonKey } from 'aws-analytics-reference-architecture'
 SingletonKey.fromCfnKey(cfnKey: CfnKey)
 ```
 
-Create a mutable {@link IKey} based on a low-level {@link CfnKey}.
+Create a mutable `IKey` based on a low-level `CfnKey`.
 
 This is most useful when combined with the cloudformation-include module.
-This method is different than {@link fromKeyArn()} because the {@link IKey}
+This method is different than `fromKeyArn()` because the `IKey`
 returned from this method is mutable;
 meaning, calling any mutating methods on it,
-like {@link IKey.addToResourcePolicy()},
+like `IKey.addToResourcePolicy()`,
 will actually be reflected in the resulting template,
-as opposed to the object returned from {@link fromKeyArn()},
+as opposed to the object returned from `fromKeyArn()`,
 on which calling those methods would have no effect.
 
 ###### `cfnKey`<sup>Required</sup> <a name="cfnKey" id="aws-analytics-reference-architecture.SingletonKey.fromCfnKey.parameter.cfnKey"></a>
@@ -8511,6 +8707,7 @@ const cdkDeployerProps: CdkDeployerProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.crossRegionReferences">crossRegionReferences</a></code> | <code>boolean</code> | Enable this flag to allow native cross region stack references. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.description">description</a></code> | <code>string</code> | A description of the stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.env">env</a></code> | <code>aws-cdk-lib.Environment</code> | The AWS environment (account/region) where this stack will be deployed. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.permissionsBoundary">permissionsBoundary</a></code> | <code>aws-cdk-lib.PermissionsBoundary</code> | Options for applying a permissions boundary to all IAM Roles and Users created within this Stage. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.stackName">stackName</a></code> | <code>string</code> | Name to deploy the stack with. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.synthesizer">synthesizer</a></code> | <code>aws-cdk-lib.IStackSynthesizer</code> | Synthesis method to use while deploying this stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.tags">tags</a></code> | <code>{[ key: string ]: string}</code> | Stack tags that will be applied to all the taggable resources and the stack itself. |
@@ -8645,6 +8842,19 @@ new MyStack(app, 'Stack1');
 ```
 
 
+##### `permissionsBoundary`<sup>Optional</sup> <a name="permissionsBoundary" id="aws-analytics-reference-architecture.CdkDeployerProps.property.permissionsBoundary"></a>
+
+```typescript
+public readonly permissionsBoundary: PermissionsBoundary;
+```
+
+- *Type:* aws-cdk-lib.PermissionsBoundary
+- *Default:* no permissions boundary is applied
+
+Options for applying a permissions boundary to all IAM Roles and Users created within this Stage.
+
+---
+
 ##### `stackName`<sup>Optional</sup> <a name="stackName" id="aws-analytics-reference-architecture.CdkDeployerProps.property.stackName"></a>
 
 ```typescript
@@ -8665,9 +8875,19 @@ public readonly synthesizer: IStackSynthesizer;
 ```
 
 - *Type:* aws-cdk-lib.IStackSynthesizer
-- *Default:* `DefaultStackSynthesizer` if the `@aws-cdk/core:newStyleStackSynthesis` feature flag is set, `LegacyStackSynthesizer` otherwise.
+- *Default:* The synthesizer specified on `App`, or `DefaultStackSynthesizer` otherwise.
 
 Synthesis method to use while deploying this stack.
+
+The Stack Synthesizer controls aspects of synthesis and deployment,
+like how assets are referenced and what IAM roles to use. For more
+information, see the README of the main CDK package.
+
+If not specified, the `defaultStackSynthesizer` from `App` will be used.
+If that is not specified, `DefaultStackSynthesizer` is used if
+`@aws-cdk/core:newStyleStackSynthesis` is set to `true` or the CDK major
+version is v2. In CDK v1 `LegacyStackSynthesizer` is the default if no
+other synthesizer is specified.
 
 ---
 
@@ -9702,7 +9922,7 @@ public readonly instanceTypes: InstanceType[];
 
 The instance types to use for your node group.
 
-> [- https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-nodegroup.html#cfn-eks-nodegroup-instancetypes](- https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-nodegroup.html#cfn-eks-nodegroup-instancetypes)
+> [ - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-nodegroup.html#cfn-eks-nodegroup-instancetypes]( - https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-eks-nodegroup.html#cfn-eks-nodegroup-instancetypes)
 
 ---
 
@@ -9730,7 +9950,7 @@ public readonly launchTemplateSpec: LaunchTemplateSpec;
 
 Launch template specification used for the nodegroup.
 
-> [- https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html](- https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
+> [ - https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html]( - https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
 
 ---
 
