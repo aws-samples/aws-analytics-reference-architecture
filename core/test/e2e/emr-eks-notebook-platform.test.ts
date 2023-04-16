@@ -23,7 +23,7 @@ const emrEksCluster = EmrEksCluster.getOrCreate(stack, {
   autoscaling: Autoscaler.CLUSTER_AUTOSCALER,
 });
 
-let iamAuthNotebook = new NotebookPlatform(stack, 'dataplatformIAMAuth', {
+new NotebookPlatform(stack, 'dataplatformIAMAuth', {
     emrEks: emrEksCluster,
     studioName: 'e2estudio',
     studioAuthMode: StudioAuthMode.IAM,
