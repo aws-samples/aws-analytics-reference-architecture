@@ -11,7 +11,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        suite: [data-lake, synchronous, emr-eks-cluster]
+        suite: [data-lake, synchronous, emr-eks]
       fail-fast: false
     env:
       CI: "true"
