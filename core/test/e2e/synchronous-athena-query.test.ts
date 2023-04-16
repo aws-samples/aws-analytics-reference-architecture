@@ -4,7 +4,7 @@
 /**
  * Tests SynchronousAthenaQuery
  *
- * @group integ/synchronous-athena-query
+ * @group integ/synchronous/synchronous-athena-query
  */
 
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';

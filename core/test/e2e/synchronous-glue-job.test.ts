@@ -4,7 +4,7 @@
 /**
  * Tests SynchronousGlueJob
  *
- * @group integ/synchronous-glue-job
+ * @group integ/synchronous/synchronous-glue-job
  */
 
 import * as cdk from 'aws-cdk-lib';
