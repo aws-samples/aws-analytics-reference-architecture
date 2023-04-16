@@ -45,7 +45,5 @@ jobs:
           aws-region: us-east-1
       - name: E2E
         run: cd core && npx jest --group=integ/${{ matrix.suite }}
-      - name: E2E-NOTEBOOK
-        run: cd core && npx jest --group=integ/notebook-platform
     container:
       image: jsii/superchain:1-buster-slim-node14

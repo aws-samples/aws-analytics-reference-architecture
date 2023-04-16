@@ -4,7 +4,7 @@
 /**
  * Tests EmrEksCluster
  *
- * @group integ/notebook-platform
+ * @group integ/emr-eks/notebook-platform
  */
 
 import * as cdk from 'aws-cdk-lib';
