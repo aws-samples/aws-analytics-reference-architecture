@@ -26,4 +26,5 @@ jobs:
             fix
             chore
             doc
+            test
           requireScope: false
