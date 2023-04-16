@@ -1,6 +1,8 @@
 name: E2E
 on:
-  pull_request: {}
+  push:
+    branches:
+      - "test/e2e"
 jobs:
   build:
     runs-on: ubuntu-latest
