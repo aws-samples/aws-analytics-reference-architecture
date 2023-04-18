@@ -126,7 +126,7 @@ export interface AraBucketProps {
 
   /**
    * The objectOwnership of the bucket.
-   * @default - No ObjectOwnership configuration, uploading account will own the object.
+   * @default - Writer account will own the object.
    */
   readonly objectOwnership?: ObjectOwnership;
 
@@ -205,7 +205,11 @@ export class AraBucket extends Bucket {
 
     var serverAccessLogsBucket = undefined;
     if (props.serverAccessLogsPrefix) {
-      serverAccessLogsBucket = props.serverAccessLogsBucket || AraBucket.getOrCreate(scope, { bucketName: 's3-access-logs', encryption: BucketEncryption.S3_MANAGED });
+      serverAccessLogsBucket = props.serverAccessLogsBucket || AraBucket.getOrCreate(scope, { 
+        bucketName: 's3-access-logs', 
+        encryption: BucketEncryption.S3_MANAGED,
+        objectOwnership: ObjectOwnership.OBJECT_WRITER,
+      });
     }
 
     // If using KMS encryption then use a customer managed key, if not set the key to undefined

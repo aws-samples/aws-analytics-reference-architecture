@@ -17,7 +17,10 @@ jest.setTimeout(100000);
 const integTestApp = new cdk.App();
 const stack = new cdk.Stack(integTestApp, 'AraBucketE2eTest');
 
-const araBucket = AraBucket.getOrCreate(stack, { bucketName: 'my-ara-bucket' });
+const araBucket = AraBucket.getOrCreate(stack, { 
+  bucketName: 'my-ara-bucket',
+  serverAccessLogsPrefix: 'test',
+});
 
 new cdk.CfnOutput(stack, 'BucketName', {
   value: araBucket.bucketName,
