@@ -203,12 +203,16 @@ export class AraBucket extends Bucket {
 
   private constructor(scope: Construct, props: AraBucketProps) {
 
+    if(scope.node.tryGetContext('@aws-cdk/aws-s3:serverAccessLogsUseBucketPolicy') === true) {
+      throw new Error("Using @aws-cdk/aws-s3:serverAccessLogsUseBucketPolicy is not supported please switch it to false in your cdk.json");
+    }
+
     var serverAccessLogsBucket = undefined;
     if (props.serverAccessLogsPrefix) {
       serverAccessLogsBucket = props.serverAccessLogsBucket || AraBucket.getOrCreate(scope, { 
         bucketName: 's3-access-logs', 
         encryption: BucketEncryption.S3_MANAGED,
-        objectOwnership: ObjectOwnership.OBJECT_WRITER,
+        objectOwnership: ObjectOwnership.BUCKET_OWNER_PREFERRED,
       });
     }
 
