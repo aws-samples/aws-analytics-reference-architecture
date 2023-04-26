@@ -138,4 +138,17 @@ test("BatchReplayer should create a step function", () => {
   template.resourceCountIs("AWS::StepFunctions::StateMachine", 1);
 });
 
+test("BatchReplayer should not have additionalStepFunctionTasks by default", ()=> {
+  expect(batchReplayer.additionalStepFunctionTasks).toBeUndefined();
+});
+
+test("BatchReplayer should allow additionalStepFunctionTasks as empty list", ()=> {
+
+  const batchReplayerWithEmptyAdditionalTasks = new BatchReplayer(testStack, "TestBatchReplayerAdditionalTasks", {
+    dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
+    s3Props: s3Props,
+    additionalStepFunctionTasks: []
+  });
+  expect(batchReplayerWithEmptyAdditionalTasks.additionalStepFunctionTasks).toEqual([])
+});
 
