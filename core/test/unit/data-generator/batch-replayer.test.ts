@@ -85,6 +85,7 @@ beforeEach(() => {
     rdsProps: rdsProps,
     vpc: vpc,
     secGroup: secGroup,
+    additionalStepFunctionTasks: []
   });
   template = Template.fromStack(testStack);
 });
@@ -139,16 +140,15 @@ test("BatchReplayer should create a step function", () => {
 });
 
 test("BatchReplayer should not have additionalStepFunctionTasks by default", ()=> {
-  expect(batchReplayer.additionalStepFunctionTasks).toBeUndefined();
+  expect(batchReplayer.additionalStepFunctionTasks).toEqual([]);
 });
 
 test("BatchReplayer should allow additionalStepFunctionTasks as empty list", ()=> {
 
   const batchReplayerWithEmptyAdditionalTasks = new BatchReplayer(testStack, "TestBatchReplayerAdditionalTasks", {
     dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
-    s3Props: s3Props,
-    additionalStepFunctionTasks: []
+    s3Props: s3Props
   });
-  expect(batchReplayerWithEmptyAdditionalTasks.additionalStepFunctionTasks).toEqual([])
+  expect(batchReplayerWithEmptyAdditionalTasks.additionalStepFunctionTasks).toBeUndefined();
 });
 
