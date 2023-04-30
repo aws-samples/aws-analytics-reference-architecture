@@ -21,6 +21,7 @@
       "aws",
       "aws-cn"
     ],
+    "@aws-cdk/aws-s3:serverAccessLogsUseBucketPolicy": false,
     "@aws-cdk-containers/ecs-service-extensions:enableDefaultLogDriver": true,
     "@aws-cdk/aws-ec2:uniqueImdsv2TemplateName": true,
     "@aws-cdk/aws-ecs:arnFormatIncludesClusterName": true,
