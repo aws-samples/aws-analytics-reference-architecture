@@ -25,7 +25,7 @@ import {
   ServicePrincipal,
 } from 'aws-cdk-lib/aws-iam';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { Bucket, BucketEncryption, Location } from 'aws-cdk-lib/aws-s3';
+import { Bucket, BucketEncryption, Location, ObjectOwnership } from 'aws-cdk-lib/aws-s3';
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment';
 import { Construct } from 'constructs';
 import * as SimpleBase from 'simple-base';
@@ -59,7 +59,7 @@ export enum Autoscaler {
  * The different EMR versions available on EKS
  */
 export  enum EmrVersion {
-  V_10= 'emr-6.10.0-latest',
+  V6_10= 'emr-6.10.0-latest',
   V6_9 = 'emr-6.9.0-latest',
   V6_8 = 'emr-6.8.0-latest',
   V6_7 = 'emr-6.7.0-latest',
@@ -340,7 +340,7 @@ export class EmrEksCluster extends TrackedConstruct {
       setDefaultKarpenterProvisioners(this);
     }
 
-    AraBucket.getOrCreate(this, { bucketName: 's3-access-logs' });
+    AraBucket.getOrCreate(this, { bucketName: 's3-access-logs', objectOwnership: ObjectOwnership.BUCKET_OWNER_PREFERRED });
 
     // Tags the Amazon VPC and Subnets of the Amazon EKS Cluster
     Tags.of(this.eksCluster.vpc).add(
