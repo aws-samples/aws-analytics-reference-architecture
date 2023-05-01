@@ -1,6 +1,7 @@
 {
   "app": "python3 app.py",
   "context": {
+    "@aws-cdk/aws-s3:serverAccessLogsUseBucketPolicy": false,
     "aws-cdk:enableDiffNoFail": "true",
     "EnableBatch": "true",
     "EnableDWH": "true",
