@@ -39,6 +39,7 @@ Before starting the deployment, ensure that the following steps are completed.
     1. Python [3.8-3.9.2]
     2. Git
     3. AWS CDK: Please refer to the [Getting started](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) guide.
+5. Disable AWS Lake Formation in the [catalog settings](https://docs.aws.amazon.com/lake-formation/latest/dg/initial-LF-setup.html#setup-change-cat-settings)
 
 #### Deployment option 1: provision stacks directly (without CI/CD pipeline)
 
@@ -78,7 +79,7 @@ If you install all modules, the Amazon QuickSight username (which can also be an
 The batch, data warehouse, data visualization, and streaming modules can be enabled/disabled using the respective context variable: `EnableBatch`/`EnableDWH`/`EnableDataviz`/`EnableStreaming`.
 To disable, for example, the data visualization module, the following argument has to be used.
    ```
-   cdk deploy  -c EnableDataviz=false ara
+   cdk deploy  -c EnableDataviz=false
    ```
    
    **NOTE:
