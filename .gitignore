@@ -35,3 +35,4 @@ core/.github/*
 core/tmp.yaml
 examples/emr-eks-app/bin/*.d.ts
 examples/emr-eks-app/bin/*.js
+examples/emr-eks-app-python/cdk.context.json

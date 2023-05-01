@@ -268,7 +268,8 @@ def handler(event, ctx):
         adjusted_start_time = start_time + timedelta(seconds=offset)
         adjusted_end_time = end_time + timedelta(seconds=offset)
         target_params['s3'] = {'path_prefix': f'{sink_path}/ingestion_start={adjusted_start_time.isoformat()}'
-                                              f'/ingestion_end={adjusted_end_time.isoformat()}/{output_file_index:03d}'}
+                                              f'/ingestion_end={adjusted_end_time.isoformat()}/{output_file_index:03d}',
+                               'table_name': ''}
 
     # DynamoDB params
     log.info(f'ddbTableName = {event.get("ddbTableName")}')

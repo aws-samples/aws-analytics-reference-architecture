@@ -8,7 +8,7 @@ from ara_py.ara_py_stack import AraPyStack
 
 app = cdk.App()
 AraPyStack(app, "AraPyStack",
-    env=cdk.Environment(account='1111111111', region='')
+    env=cdk.Environment(account='111111111111', region='')
     )
 
 app.synth()
