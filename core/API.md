@@ -1590,7 +1590,6 @@ Any object.
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | Dataset used for replay. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.frequency">frequency</a></code> | <code>number</code> | Frequency (in Seconds) of the replaying. |
-| <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.additionalStepFunctionTasks">additionalStepFunctionTasks</a></code> | <code>aws-cdk-lib.aws_stepfunctions.IChainable[]</code> | Optional Sequence of additional Tasks to append at the end of the Step Function that replays data that will execute after data has been replayed. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.auroraProps">auroraProps</a></code> | <code><a href="#aws-analytics-reference-architecture.DbSink">DbSink</a></code> | Parameters to write to Aurora target. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.ddbProps">ddbProps</a></code> | <code><a href="#aws-analytics-reference-architecture.DynamoDbSink">DynamoDbSink</a></code> | Parameters to write to DynamoDB target. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayer.property.rdsProps">rdsProps</a></code> | <code><a href="#aws-analytics-reference-architecture.DbSink">DbSink</a></code> | Parameters to write to RDS target. |
@@ -1637,18 +1636,6 @@ Frequency (in Seconds) of the replaying.
 
 The batch job will start
 for every given frequency and replay the data in that period
-
----
-
-##### `additionalStepFunctionTasks`<sup>Optional</sup> <a name="additionalStepFunctionTasks" id="aws-analytics-reference-architecture.BatchReplayer.property.additionalStepFunctionTasks"></a>
-
-```typescript
-public readonly additionalStepFunctionTasks: IChainable[];
-```
-
-- *Type:* aws-cdk-lib.aws_stepfunctions.IChainable[]
-
-Optional Sequence of additional Tasks to append at the end of the Step Function that replays data that will execute after data has been replayed.
 
 ---
 

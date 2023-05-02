@@ -175,7 +175,7 @@ export class BatchReplayer extends Construct {
    * Optional Sequence of additional Tasks to append at the end of the Step Function
    * that replays data that will execute after data has been replayed
    */
-  readonly additionalStepFunctionTasks?: IChainable [];
+  private readonly additionalStepFunctionTasks?: IChainable [];
 
 
   /**
