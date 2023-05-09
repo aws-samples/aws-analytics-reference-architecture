@@ -21,8 +21,8 @@ setuptools.setup(
     install_requires=[
         "aws_analytics_reference_architecture==2.9.11",
         "aws-cdk-lib==2.72.1",
-        "aws-cdk.aws-glue-alpha>=2.26.0.a0"
-        "aws-cdk.aws-redshift-alpha>=2.26.0.a0"
+        "aws-cdk.aws-glue-alpha==2.72.1a0",
+        "aws-cdk.aws-redshift-alpha==2.72.1a0",
         "constructs>=10.0.0",
         "cdk_ec2_key_pair==3.3.1"
     ],
