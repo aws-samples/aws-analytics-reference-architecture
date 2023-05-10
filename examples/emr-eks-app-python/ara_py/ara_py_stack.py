@@ -98,7 +98,7 @@ class AraPyStack(Stack):
         CfnOutput(self, 'VirtualClusterId', value=my_vc.attr_id)
         CfnOutput(self, 'RoleArn', value=role.role_arn)
         CfnOutput(self, 'CriticalConfig', value=emr_eks.critical_default_config)
-        CfnOutput(self, 'CriticalConfig', value=result_bucket.bucket_name)
+        CfnOutput(self, 'ResultsBucket', value=result_bucket.bucket_name)
 
 
 

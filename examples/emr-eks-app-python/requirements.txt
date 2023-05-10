@@ -1,4 +1,4 @@
-aws-cdk-lib==2.51.0
+aws-cdk-lib==2.72.1
 constructs>=10.0.0,<11.0.0
-aws_analytics_reference_architecture==2.9.2
+aws_analytics_reference_architecture==2.9.11
 aws-cdk.lambda-layer-kubectl-v22==2.0.7
