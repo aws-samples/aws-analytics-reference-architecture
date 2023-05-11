@@ -3,7 +3,9 @@
 
 from constructs import Construct
 from aws_cdk import (
-    aws_ec2 as ec2
+    CfnOutput,
+    aws_ec2 as ec2,
+    aws_iam as iam,
 )
 
 class QuickSightVpcConnectionReqs(Construct):
@@ -11,6 +13,10 @@ class QuickSightVpcConnectionReqs(Construct):
     @property
     def security_group_id(self):
         return self.__quicksight_sg_id
+    
+    @property
+    def vpc_role(self):
+        return self.__quicksight_vpc_role
 
     def __init__(
             self,
@@ -33,5 +39,17 @@ class QuickSightVpcConnectionReqs(Construct):
         redshift_sg.add_ingress_rule(quicksight_sg, ec2.Port.tcp(5439))
         redshift_sg.add_egress_rule(quicksight_sg, ec2.Port.all_tcp())
 
+        self.__quicksight_vpc_role = iam.Role(self, 'quicksight-vpc-role', assumed_by=iam.ServicePrincipal('quicksight.amazonaws.com'))
+        self.__quicksight_vpc_role.add_to_policy(iam.PolicyStatement(
+            actions=[
+                "ec2:CreateNetworkInterface",
+                "ec2:ModifyNetworkInterfaceAttribute",
+                "ec2:DeleteNetworkInterface",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups"
+            ],
+            resources=['*']
+        )
+        )
 
 

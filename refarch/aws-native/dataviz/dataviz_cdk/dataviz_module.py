@@ -24,7 +24,11 @@ class DataVizModule(NestedStack):
 
     @property
     def quicksight_security_group_id(self):
-        return self.__quicksight_security_group_id
+        return self.__quicksight_reqs.security_group_id
+    
+    @property
+    def quicksight_vpc_role(self):
+        return self.__quicksight_reqs.vpc_role
 
     def __init__(self, scope: Construct, id: str,
                  vpc: ec2.IVpc, clean_glue_db_name: glue.Database,
@@ -82,8 +86,8 @@ class DataVizModule(NestedStack):
                                  analysis_actions=cfg.ANALYSIS_ACTIONS
                                  )
 
-        self.__quicksight_security_group_id = QuickSightVpcConnectionReqs(self, 'VpcConnReqs', vpc=vpc,
-                                                                          redshift_security_group_id=redshift_sg_id,
-                                                                          quicksight_security_group_name='quicksight-sg').security_group_id
+        self.__quicksight_reqs = QuickSightVpcConnectionReqs(self, 'VpcConnReqs', vpc=vpc,
+                                                            redshift_security_group_id=redshift_sg_id,
+                                                            quicksight_security_group_name='quicksight-sg')
 
         Tags.of(self).add('module-name', 'dataviz')
