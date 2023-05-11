@@ -88,6 +88,7 @@ To disable, for example, the data visualization module, the following argument h
 1. <a name="quicksight">Configure Amazon QuickSight:</a>
     * To link the clean data S3 bucket to the QuickSight account:
         * Visit the [QuickSight web console](https://quicksight.aws.amazon.com)
+        * Select the region you used to subscribe to Quicksight (the one passed in the stack parameter which can be different from the region where you deployed the stack) 
         * Click on your username in the upper right corner
         * Go to "Manage QuickSight"
         * Click "Security & permissions"
@@ -97,12 +98,14 @@ To disable, for example, the data visualization module, the following argument h
         * Click "Finish" and then "Save" to confirm the selection 
     * To create the QuickSight VPC Connection:
         * Visit the [QuickSight web console](https://quicksight.aws.amazon.com)
+        * Select the region you used to deploy the stack
         * Click on your username in the upper right corner
         * Go to "Manage QuickSight"
         * Click "Manage VPC connections"
         * Click "Add VPC connection"
         * Enter a "VPC connection name" of your choice, e.g., `ara`
         * Choose the "VPC ID" as the value of the CloudFormation output key `VPCID` from the main CDK stack (named `ara`) deployed into your account
+        * Choose the "Execution role" as the value of the CloudFormation output key `QuickSight-Vpc-Role` from the CDK stack
         * Select one of the subnets that <strong>IS NOT</strong> shown in the outputs `SUBNETID0` and `SUBNETID1` from the main CDK stack
         * Copy and paste the value of the CloudFormation output key `QuickSightSecurityGroupId` from the main CDK stack into the "Security Group ID" field
         * Click "Create"
