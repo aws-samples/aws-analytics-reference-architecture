@@ -112,6 +112,8 @@ class DataLake(Stack):
             CfnOutput(self, 'QuickSight-Group-Arn',
                       value=dataviz_stack.quicksight_group_arn,
                       export_name='ara-QuickSight-Group-Arn')
+            
+            CfnOutput(self, 'QuickSight-Vpc-Role',value=dataviz_stack.quicksight_vpc_role.role_name)
 
         # STREAMING module
         if is_module_enabled(streaming_module_param):
