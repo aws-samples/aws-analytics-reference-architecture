@@ -66,4 +66,4 @@ class PocStack(Stack):
         CfnOutput(self, 'VirtualClusterId', value=my_vc.attr_id)
         CfnOutput(self, 'RoleArn', value=role.role_arn)
         CfnOutput(self, 'CriticalConfig', value=emr_eks.critical_default_config)
-        CfnOutput(self, 'Prometheus', value=prometheus_workspace.attr_id)
+        CfnOutput(self, 'Prometheus', value=prometheus_workspace.attr_arn)
