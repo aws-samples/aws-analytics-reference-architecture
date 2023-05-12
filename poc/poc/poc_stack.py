@@ -9,8 +9,8 @@ from aws_cdk.aws_eks import (
     KubernetesVersion,
     Cluster
     )
-from aws_cdk.aws_prometheus import(
-    PrometheusWorkspace
+from aws_cdk.aws_aps import(
+    CfnWorkspace
 )
 import aws_cdk.aws_iam as iam
 
@@ -21,7 +21,7 @@ class PocStack(Stack):
 
         kubectl = KubectlV22Layer (self, 'kubectl_layer')
 
-        prometheus_workspace = PrometheusWorkspace(self, 'PrometheusWorkspace')
+        prometheus_workspace = CfnWorkspace(self, 'PrometheusWorkspace')
 
         emr_eks = ara.EmrEksCluster.get_or_create(self,
                                                   eks_cluster_name='poc-cluster',
@@ -66,4 +66,4 @@ class PocStack(Stack):
         CfnOutput(self, 'VirtualClusterId', value=my_vc.attr_id)
         CfnOutput(self, 'RoleArn', value=role.role_arn)
         CfnOutput(self, 'CriticalConfig', value=emr_eks.critical_default_config)
-        CfnOutput(self, 'Prometheus', value=prometheus_workspace.attr_id)
+        CfnOutput(self, 'Prometheus', value=prometheus_workspace.attr_arn)
