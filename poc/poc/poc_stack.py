@@ -9,7 +9,7 @@ from aws_cdk.aws_eks import (
     KubernetesVersion,
     Cluster
     )
-from aws_cdk.aws_prometheus import(
+from aws_cdk.aws_aps import(
     PrometheusWorkspace
 )
 import aws_cdk.aws_iam as iam
