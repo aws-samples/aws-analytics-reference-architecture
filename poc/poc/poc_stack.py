@@ -10,7 +10,7 @@ from aws_cdk.aws_eks import (
     Cluster
     )
 from aws_cdk.aws_aps import(
-    PrometheusWorkspace
+    CfnWorkspace
 )
 import aws_cdk.aws_iam as iam
 
@@ -21,7 +21,7 @@ class PocStack(Stack):
 
         kubectl = KubectlV22Layer (self, 'kubectl_layer')
 
-        prometheus_workspace = PrometheusWorkspace(self, 'PrometheusWorkspace')
+        prometheus_workspace = CfnWorkspace(self, 'PrometheusWorkspace')
 
         emr_eks = ara.EmrEksCluster.get_or_create(self,
                                                   eks_cluster_name='poc-cluster',
