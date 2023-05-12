@@ -14,10 +14,19 @@ import { TaintEffect } from 'aws-cdk-lib/aws-eks';
 import { Template, Match } from 'aws-cdk-lib/assertions';
 
 const emrEksClusterStack = new Stack();
+const emrEksClusterStackCustomVpc = new Stack();
+
 const cluster = EmrEksCluster.getOrCreate(emrEksClusterStack, {
   eksAdminRoleArn: 'arn:aws:iam::1234567890:role/AdminAccess',
   autoscaling: Autoscaler.CLUSTER_AUTOSCALER
 });
+
+EmrEksCluster.getOrCreate(emrEksClusterStackCustomVpc, {
+  eksAdminRoleArn: 'arn:aws:iam::1234567890:role/AdminAccess',
+  autoscaling: Autoscaler.CLUSTER_AUTOSCALER,
+  vpcCidr: '10.0.0.0/18'
+});
+
 cluster.addEmrVirtualCluster(emrEksClusterStack, {
   name: 'test',
 });
@@ -33,6 +42,8 @@ const policy = new ManagedPolicy(emrEksClusterStack, 'testPolicy', {
 });
 cluster.createExecutionRole(emrEksClusterStack, 'test', policy, 'default', 'myExecRole');
 const template = Template.fromStack(emrEksClusterStack);
+
+const templateCustomVpc = Template.fromStack(emrEksClusterStackCustomVpc);
 
 test('EKS cluster created with correct version and name', () => {
   // THEN
@@ -55,6 +66,13 @@ test('EKS VPC should be tagged', () => {
         Value: 'true',
       }),
     ]),
+  });
+});
+
+test('EKS is used with Custom VPC CIDR', () => {
+  // THEN
+  templateCustomVpc.hasResourceProperties('AWS::EC2::VPC', {
+    CidrBlock: '10.0.0.0/18',
   });
 });
 
