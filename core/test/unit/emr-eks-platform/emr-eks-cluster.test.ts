@@ -51,7 +51,7 @@ test('EKS cluster created with correct version and name', () => {
 
   template.hasResourceProperties('Custom::AWSCDK-EKS-Cluster', {
     Config: Match.objectLike({
-      version: '1.22',
+      version: '1.25',
       name: 'data-platform',
     }),
   });
