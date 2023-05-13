@@ -49,6 +49,7 @@
     "@aws-cdk/cloudformation-diff": "2.72.1",
     "@aws-cdk/cx-api": "2.72.1",
     "@aws-cdk/lambda-layer-kubectl-v22": "^2.0.7",
+    "@aws-cdk/lambda-layer-kubectl-v25": "^2.0.3",
     "@types/jest": "^27",
     "@types/js-yaml": "*",
     "@types/node": "^16",
