@@ -11,7 +11,7 @@ import { Cluster } from '@aws-cdk/aws-redshift-alpha';
 import {
   aws_dynamodb,
   aws_ec2,
-  aws_rds, Duration,
+  aws_rds, aws_stepfunctions_tasks, Duration,
   RemovalPolicy,
   Stack,
 } from 'aws-cdk-lib';
@@ -20,6 +20,9 @@ import { Template } from 'aws-cdk-lib/assertions';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { BatchReplayer, DbSink, DynamoDbSink, IS3Sink, PreparedDataset } from '../../../src';
 import { IVpc, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { PreBundledFunction } from '../../../src/common/pre-bundled-function';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 let testStack: Stack;
 let s3Props: IS3Sink;
@@ -32,6 +35,7 @@ let rdsProps: DbSink;
 let defaultName = 'test';
 let vpc: IVpc;
 let secGroup: SecurityGroup;
+const expectedAdditionalTaskName = "SummarizeOutput"
 
 beforeEach(() => {
   testStack = new Stack();
@@ -138,4 +142,65 @@ test("BatchReplayer should create a step function", () => {
   template.resourceCountIs("AWS::StepFunctions::StateMachine", 1);
 });
 
+test("BatchReplayer should not have additionalStepFunctionTasks", ()=> {
+
+  const resources = template.toJSON().Resources
+  const stepFnDefinition:any[] = resources.TestBatchReplayerBatchReplayStepFnBB59B3E9.Properties
+  .DefinitionString["Fn::Join"][1]
+
+  // filter strings that contains : expectedAdditionalTaskName
+  const found = stepFnDefinition.map<String>((a) => (typeof a === 'string' || a instanceof String) ? a : "")
+                    .filter((a:String)=>  a.includes(expectedAdditionalTaskName))
+                    
+  expect(found.length).toBe(0)
+
+});
+
+test("BatchReplayer should have one additionalStepFunctionTask : expectedAdditionalTaskName", ()=> {
+  const testStack2 = new Stack();
+
+  /**
+   * Lambda to be used as additional task
+   */
+  const summaryOutputState = new PreBundledFunction(testStack2, 'SummaryFn', {
+    memorySize: 128,
+    codePath: '../test/unit/data-generator/resources/lambdas/summary-additional-task',
+    runtime: Runtime.PYTHON_3_9,
+    handler: 'summary-additional-task.handler',
+    logRetention: RetentionDays.ONE_WEEK,
+    timeout: Duration.minutes(1),
+  });
+
+  /** 
+   * Additional Task
+  */
+  const additionalTask = new aws_stepfunctions_tasks
+          .LambdaInvoke(testStack2, expectedAdditionalTaskName,  {
+              lambdaFunction: summaryOutputState,
+              outputPath: "$",
+              retryOnServiceExceptions: true
+              });
+
+  const bucket2 = new Bucket(testStack2, 'Bucket');
+  const s3Props2 = { sinkBucket: bucket2 };
+
+  new BatchReplayer(testStack2, 'TestBatchReplayer', {
+    dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
+    frequency: Duration.seconds(120),
+    s3Props: s3Props2,
+    additionalStepFunctionTasks: [additionalTask]
+  });
+
+  const template2 = Template.fromStack(testStack2);
+
+  const resources = template2.toJSON().Resources
+  const stepFnDefinition: any[] = resources.TestBatchReplayerBatchReplayStepFnBB59B3E9.Properties
+                          .DefinitionString["Fn::Join"][1]
+
+  // filter strings that contains : expectedAdditionalTaskName
+  const found = stepFnDefinition.map<String>((a) => (typeof a === 'string' || a instanceof String) ? a : "")
+                    .filter((a:String)=>  a.includes(expectedAdditionalTaskName))
+
+  expect(found.length > 0).toBeTruthy()
+});
 

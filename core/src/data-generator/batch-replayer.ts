@@ -7,7 +7,8 @@ import { SfnStateMachine } from 'aws-cdk-lib/aws-events-targets';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { LayerVersion, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { JsonPath, LogLevel, Map, StateMachine, TaskInput } from 'aws-cdk-lib/aws-stepfunctions';
+import { JsonPath, LogLevel, Map, StateMachine, 
+         TaskInput, INextable, IChainable } from 'aws-cdk-lib/aws-stepfunctions';
 import { LambdaInvoke } from 'aws-cdk-lib/aws-stepfunctions-tasks';
 import { Construct } from 'constructs';
 import { PreBundledFunction } from '../common/pre-bundled-function';
@@ -66,6 +67,34 @@ export interface BatchReplayerProps {
    * VPC for the WriteInBatch Lambda function
    */
   readonly vpc?: IVpc;
+  /**
+   * Additional StupFunction Tasks to run sequentially after the BatchReplayer finishes
+   * @default - The BatchReplayer do not have additional Tasks
+   * 
+   * The expected input for the first Task in this sequence is:
+   * 
+   * input = [
+   *  {
+   *    "processedRecords": Int,
+   *    "outputPaths": String [],
+   *    "startTimeinIso": String,
+   *    "endTimeinIso": String
+   *  }
+   * ]
+   * 
+   * Each element in input represents the output of each lambda iterator that replays the data.
+   * 
+   * param: processedRecods -> Number of records processed
+   * param: ouputPaths -> List of files created in S3 
+   *  **  eg. "s3://<sinkBucket name>/<s3ObjectKeySink prefix, if any>/<dataset name>/ingestion_start=<timestamp>/ingestion_end=<timestamp>/<s3 filename>.csv",
+
+   * param: startTimeinIso -> Start Timestamp on original dataset
+   * param: endTimeinIso -> End Timestamp on original dataset
+   * 
+   * *outputPaths* can be used to extract and aggregate new partitions on data and 
+   * trigger additional Tasks.
+   */
+  readonly additionalStepFunctionTasks?: IChainable [];
 }
 
 /**
@@ -143,6 +172,13 @@ export class BatchReplayer extends Construct {
   public readonly vpc?: IVpc;
 
   /**
+   * Optional Sequence of additional Tasks to append at the end of the Step Function
+   * that replays data that will execute after data has been replayed
+   */
+  private readonly additionalStepFunctionTasks?: IChainable [];
+
+
+  /**
    * Constructs a new instance of the BatchReplayer construct
    * @param {Construct} scope the Scope of the CDK Construct
    * @param {string} id the ID of the CDK Construct
@@ -153,6 +189,7 @@ export class BatchReplayer extends Construct {
 
     this.dataset = props.dataset;
     this.frequency = props.frequency?.toSeconds() || 60;
+    this.additionalStepFunctionTasks = props.additionalStepFunctionTasks;
 
     // Properties for S3 target
     if (props.s3Props) {
@@ -337,7 +374,9 @@ export class BatchReplayer extends Construct {
 
     // Overarching Step Function StateMachine
     const batchReplayStepFn = new StateMachine(this, 'BatchReplayStepFn', {
-      definition: findFilePathsFnTask.next(writeInBatchMapTask),
+      definition: this.chainStepFunctionTasks(
+          findFilePathsFnTask.next(writeInBatchMapTask)
+        ),
       timeout: Duration.minutes(20),
       logs: {
         destination: new LogGroup(this, 'LogGroup', {
@@ -354,4 +393,18 @@ export class BatchReplayer extends Construct {
       targets: [new SfnStateMachine(batchReplayStepFn, {})],
     });
   }
+
+  private chainStepFunctionTasks(requiredTasks: IChainable & INextable) {
+  
+    let base = requiredTasks;
+
+    if (this.additionalStepFunctionTasks) {
+    
+      this.additionalStepFunctionTasks.forEach(newTask => {
+        base = base.next(newTask)
+      });
+    }
+    return base;
+  }
+
 }

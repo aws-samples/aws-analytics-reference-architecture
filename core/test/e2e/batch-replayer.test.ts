@@ -8,13 +8,17 @@
 */
 
 import { Bucket } from 'aws-cdk-lib/aws-s3';
-import { App, Stack, aws_ec2, aws_rds, aws_dynamodb, RemovalPolicy, CfnOutput } from 'aws-cdk-lib';
+import { App, Stack, aws_ec2, aws_rds, aws_stepfunctions_tasks, 
+        aws_dynamodb, RemovalPolicy, CfnOutput, Duration } from 'aws-cdk-lib';
 import { Cluster } from '@aws-cdk/aws-redshift-alpha';
 import { deployStack, destroyStack } from './utils';
 
 import { BatchReplayer } from '../../src/data-generator/batch-replayer';
 import { IS3Sink, DynamoDbSink, DbSink } from '../../src/data-generator/batch-replayer-helpers';
 import { PreparedDataset } from '../../src/data-generator/prepared-dataset';
+import { PreBundledFunction } from '../../src/common/pre-bundled-function';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 jest.setTimeout(3000000);
 // GIVEN
@@ -66,6 +70,29 @@ const rdsPostgres = new aws_rds.DatabaseInstance(stack, 'PostgreSQL', {
 const rdsPostgresCreds = rdsPostgres.secret ? rdsPostgres.secret.secretArn : '';
 let rdsProps: DbSink = { table: defaultName, connection: rdsPostgresCreds, schema: defaultName, type: 'postgresql' };
 
+/**
+ * Lambda to be used as additional task
+ */
+const summaryOutputState = new PreBundledFunction(stack, 'WriteInBatch', {
+  memorySize: 128,
+  codePath: 'data-generator/resources/lambdas/summary-additional-task',
+  runtime: Runtime.PYTHON_3_9,
+  handler: 'summary-additional-task.handler',
+  logRetention: RetentionDays.ONE_WEEK,
+  timeout: Duration.minutes(1),
+});
+
+/** 
+ * Additional Task
+*/
+const additionalTask = new aws_stepfunctions_tasks
+        .LambdaInvoke(stack, "SummarizeOutput",  {
+            lambdaFunction: summaryOutputState,
+            outputPath: "$",
+            retryOnServiceExceptions: true
+            });
+
+
 const batchReplayer = new BatchReplayer(stack, 'BatchReplay', {
   dataset: PreparedDataset.RETAIL_1_GB_STORE_SALE,
   s3Props: s3Props,
@@ -75,6 +102,7 @@ const batchReplayer = new BatchReplayer(stack, 'BatchReplay', {
   rdsProps: rdsProps,
   vpc: vpc,
   secGroup: secGroup,
+  additionalStepFunctionTasks: [additionalTask]
 });
 
 new BatchReplayer(stack, 'BatchReplay2', {
@@ -86,6 +114,7 @@ new BatchReplayer(stack, 'BatchReplay2', {
   rdsProps: rdsProps,
   vpc: vpc,
   secGroup: secGroup,
+  additionalStepFunctionTasks: [additionalTask]
 });
 
 new CfnOutput(stack, 'DatasetName', {

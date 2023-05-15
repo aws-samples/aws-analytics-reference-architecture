@@ -8725,6 +8725,7 @@ const batchReplayerProps: BatchReplayerProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.dataset">dataset</a></code> | <code><a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a></code> | The [PreparedDataset]{@link PreparedDataset} used to replay data. |
+| <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.additionalStepFunctionTasks">additionalStepFunctionTasks</a></code> | <code>aws-cdk-lib.aws_stepfunctions.IChainable[]</code> | Additional StupFunction Tasks to run sequentially after the BatchReplayer finishes. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.auroraProps">auroraProps</a></code> | <code><a href="#aws-analytics-reference-architecture.DbSink">DbSink</a></code> | Parameters to write to Aurora target. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.ddbProps">ddbProps</a></code> | <code><a href="#aws-analytics-reference-architecture.DynamoDbSink">DynamoDbSink</a></code> | Parameters to write to DynamoDB target. |
 | <code><a href="#aws-analytics-reference-architecture.BatchReplayerProps.property.frequency">frequency</a></code> | <code>aws-cdk-lib.Duration</code> | The frequency of the replay. |
@@ -8745,6 +8746,19 @@ public readonly dataset: PreparedDataset;
 - *Type:* <a href="#aws-analytics-reference-architecture.PreparedDataset">PreparedDataset</a>
 
 The [PreparedDataset]{@link PreparedDataset} used to replay data.
+
+---
+
+##### `additionalStepFunctionTasks`<sup>Optional</sup> <a name="additionalStepFunctionTasks" id="aws-analytics-reference-architecture.BatchReplayerProps.property.additionalStepFunctionTasks"></a>
+
+```typescript
+public readonly additionalStepFunctionTasks: IChainable[];
+```
+
+- *Type:* aws-cdk-lib.aws_stepfunctions.IChainable[]
+- *Default:* The BatchReplayer do not have additional Tasks  The expected input for the first Task in this sequence is:  input = [ { "processedRecords": Int, "outputPaths": String [], "startTimeinIso": String, "endTimeinIso": String } ]  Each element in input represents the output of each lambda iterator that replays the data.  param: processedRecods -> Number of records processed param: ouputPaths -> List of files created in S3  **  eg. "s3://<sinkBucket name>/<s3ObjectKeySink prefix, if any>/<dataset name>/ingestion_start=<timestamp>/ingestion_end=<timestamp>/<s3 filename>.csv", param: startTimeinIso -> Start Timestamp on original dataset param: endTimeinIso -> End Timestamp on original dataset  *outputPaths* can be used to extract and aggregate new partitions on data and  trigger additional Tasks.
+
+Additional StupFunction Tasks to run sequentially after the BatchReplayer finishes.
 
 ---
 
