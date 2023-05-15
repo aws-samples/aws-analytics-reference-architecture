@@ -3,7 +3,7 @@
 
 import { join } from 'path';
 import { Aws, CfnOutput, CustomResource, Stack, Tags, RemovalPolicy, CfnJson, Fn } from 'aws-cdk-lib';
-import { FlowLogDestination, SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { FlowLogDestination, IVpc, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import {
   CapacityType,
   Cluster,
@@ -46,6 +46,7 @@ import { SingletonCfnLaunchTemplate } from '../singleton-launch-template';
 import { EmrEksNodegroupAsgTagProvider } from './emr-eks-nodegroup-asg-tag';
 import { ILayerVersion } from 'aws-cdk-lib/aws-lambda';
 import { EmrEksJobTemplateDefinition, EmrEksJobTemplateProvider } from './emr-eks-job-template';
+import { vpcBootstrap } from './vpc-helper';
 
 /**
  * The different autoscaler available with EmrEksCluster
@@ -132,6 +133,25 @@ export interface EmrEksClusterProps {
    * @default - No layer is used
    */
   readonly kubectlLambdaLayer?: ILayerVersion;
+
+   /**
+   * The CIDR of the VPC to use with EKS, if provided a VPC with three public subnets and three private subnet is create
+   * The size of the private subnets is four time the one of the public subnet 
+   * @default - A vpc with the following CIDR 10.0.0.0/16 will be used
+   */
+   readonly vpcCidr?: string;
+
+   /**
+   * The VPC object where to deploy the EKS cluster
+   * VPC should have at least two private and public subnets in different Availability Zones
+   * All private subnets should have the following tags:
+   * 'for-use-with-amazon-emr-managed-policies'='true'
+   * 'kubernetes.io/role/internal-elb'='1'
+   * All public subnets should have the following tag:
+   * 'kubernetes.io/role/elb'='1'
+   * Cannot be combined with vpcCidr, if combined vpcCidr takes precendency
+   */
+  readonly eksVpc?: IVpc;
 }
 
 /**
@@ -196,8 +216,8 @@ export class EmrEksCluster extends TrackedConstruct {
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-  public static readonly DEFAULT_EMR_VERSION = EmrVersion.V6_8;
-  public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_22;
+  public static readonly DEFAULT_EMR_VERSION = EmrVersion.V6_10;
+  public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_25;
   public static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
   public static readonly DEFAULT_KARPENTER_VERSION = 'v0.20.0';
   public readonly eksCluster: Cluster;
@@ -266,12 +286,15 @@ export class EmrEksCluster extends TrackedConstruct {
     // create an Amazon EKS CLuster with default parameters if not provided in the properties
     if (props.eksCluster == undefined) {
 
+      let eksVpc: IVpc | undefined = props.vpcCidr ? vpcBootstrap (scope, props.vpcCidr ,this.clusterName) : props.eksVpc;
+
       this.eksCluster = new Cluster(scope, `${this.clusterName}Cluster`, {
         defaultCapacity: 0,
         clusterName: this.clusterName,
         version: props.kubernetesVersion || EmrEksCluster.DEFAULT_EKS_VERSION,
         clusterLogging: eksClusterLogging,
         kubectlLayer: props.kubectlLambdaLayer as ILayerVersion ?? undefined,
+        vpc: eksVpc
       });
 
       //Create VPC flow log for the EKS VPC

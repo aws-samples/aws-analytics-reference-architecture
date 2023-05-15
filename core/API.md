@@ -9790,10 +9790,12 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | The EKS cluster to setup EMR on. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksClusterName">eksClusterName</a></code> | <code>string</code> | Name of the Amazon EKS cluster to be created. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpc">eksVpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | The VPC object where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1' Cannot be combined with vpcCidr, if combined vpcCidr takes precendency. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups">emrEksNodegroups</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup">EmrEksNodegroup</a>[]</code> | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.karpenterVersion">karpenterVersion</a></code> | <code>string</code> | The version of karpenter to pass to Helm. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer">kubectlLambdaLayer</a></code> | <code>aws-cdk-lib.aws_lambda.ILayerVersion</code> | Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size.  A layer needs to be passed to the Construct. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion">kubernetesVersion</a></code> | <code>aws-cdk-lib.aws_eks.KubernetesVersion</code> | Kubernetes version for Amazon EKS cluster that will be created. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.vpcCidr">vpcCidr</a></code> | <code>string</code> | The CIDR of the VPC to use with EKS, if provided a VPC with three public subnets and three private subnet is create The size of the private subnets is four time the one of the public subnet. |
 
 ---
 
@@ -9872,6 +9874,18 @@ Name of the Amazon EKS cluster to be created.
 
 ---
 
+##### `eksVpc`<sup>Optional</sup> <a name="eksVpc" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpc"></a>
+
+```typescript
+public readonly eksVpc: IVpc;
+```
+
+- *Type:* aws-cdk-lib.aws_ec2.IVpc
+
+The VPC object where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1' Cannot be combined with vpcCidr, if combined vpcCidr takes precendency.
+
+---
+
 ##### `emrEksNodegroups`<sup>Optional</sup> <a name="emrEksNodegroups" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups"></a>
 
 ```typescript
@@ -9924,6 +9938,19 @@ public readonly kubernetesVersion: KubernetesVersion;
 - *Default:* Kubernetes v1.21 version is used
 
 Kubernetes version for Amazon EKS cluster that will be created.
+
+---
+
+##### `vpcCidr`<sup>Optional</sup> <a name="vpcCidr" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.vpcCidr"></a>
+
+```typescript
+public readonly vpcCidr: string;
+```
+
+- *Type:* string
+- *Default:* A vpc with the following CIDR 10.0.0.0/16 will be used
+
+The CIDR of the VPC to use with EKS, if provided a VPC with three public subnets and three private subnet is create The size of the private subnets is four time the one of the public subnet.
 
 ---
 
