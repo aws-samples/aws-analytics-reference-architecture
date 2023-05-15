@@ -471,6 +471,15 @@ NagSuppressions.addResourceSuppressionsByPath(
   }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/IamPolicyEbsCsiDriverIAMPolicy/Resource',
+  [{
+    id: 'AwsSolutions-IAM5',
+    reason: 'Policy as defined in the CSI Driver documentation and is scoped by IRSA',
+  }],
+);
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);

@@ -4,7 +4,7 @@
 /**
  * Tests EmrEksCluster
  *
- * @group unit/best-practice/emr-eks-image-builder
+ * @group unit/best-practice/image-builder-emr-eks
  */
 
 

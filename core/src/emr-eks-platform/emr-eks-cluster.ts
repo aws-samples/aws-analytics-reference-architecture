@@ -216,8 +216,8 @@ export class EmrEksCluster extends TrackedConstruct {
 
     return stack.node.tryFindChild(id) as EmrEksCluster || emrEksCluster!;
   }
-  public static readonly DEFAULT_EMR_VERSION = EmrVersion.V6_8;
-  public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_22;
+  public static readonly DEFAULT_EMR_VERSION = EmrVersion.V6_10;
+  public static readonly DEFAULT_EKS_VERSION = KubernetesVersion.V1_25;
   public static readonly DEFAULT_CLUSTER_NAME = 'data-platform';
   public static readonly DEFAULT_KARPENTER_VERSION = 'v0.20.0';
   public readonly eksCluster: Cluster;

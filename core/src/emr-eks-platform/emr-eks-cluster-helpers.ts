@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Cluster, HelmChart, KubernetesManifest, KubernetesVersion } from 'aws-cdk-lib/aws-eks';
+import { Cluster, HelmChart, KubernetesManifest, KubernetesVersion, CfnAddon } from 'aws-cdk-lib/aws-eks';
 import { CfnInstanceProfile, Effect, FederatedPrincipal, ManagedPolicy, Policy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Aws, CfnOutput, Duration, Stack, Tags } from 'aws-cdk-lib';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
@@ -13,6 +13,7 @@ import { Utils } from '../utils';
 import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
 import { EmrEksCluster } from './emr-eks-cluster';
 import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
+import * as IamPolicyEbsCsiDriver from'./resources/k8s/iam-policy-ebs-csi-driver.json';
 
 
 /**
@@ -30,13 +31,38 @@ export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdm
     cluster.eksCluster.awsAuth.addMastersRole(Role.fromRoleArn( scope, 'AdminRole', eksAdminRoleArn ), 'AdminRole');
   }
 
+  const ebsCsiDriverIrsa = cluster.eksCluster.addServiceAccount ('ebsCSIDriverRoleSA', {
+    name: 'ebs-csi-controller-sa',
+    namespace: 'kube-system',
+  });
+
+  const ebsCsiDriverPolicyDocument = PolicyDocument.fromJson(IamPolicyEbsCsiDriver);
+
+  const ebsCsiDriverPolicy = new Policy(
+    scope,
+    'IamPolicyEbsCsiDriverIAMPolicy',
+    { document: ebsCsiDriverPolicyDocument },
+  );
+
+  ebsCsiDriverPolicy.attachToRole (ebsCsiDriverIrsa.role);
+
+  const ebsCSIDriver = new CfnAddon(scope, 'ebsCsiDriver', {
+    addonName: 'aws-ebs-csi-driver',
+    clusterName: cluster.eksCluster.clusterName,
+    serviceAccountRoleArn: ebsCsiDriverIrsa.role.roleArn,
+    addonVersion: 'v1.18.0-eksbuild.1',
+    resolveConflicts: "OVERWRITE"
+  });
+
+  ebsCSIDriver.node.addDependency(ebsCsiDriverIrsa);
+
   // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
   const certManager = cluster.eksCluster.addHelmChart('CertManager', {
     createNamespace: true,
     namespace: 'cert-manager',
     chart: 'cert-manager',
     repository: 'https://charts.jetstack.io',
-    version: 'v1.10.1',
+    version: '1.11.2',
     timeout: Duration.minutes(14),
     values: {
       startupapicheck: {
@@ -64,7 +90,7 @@ export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdm
     chart: 'aws-load-balancer-controller',
     repository: 'https://aws.github.io/eks-charts',
     namespace: 'kube-system',
-    version: '1.4.6',
+    version: '1.5.2',
     timeout: Duration.minutes(14),
     values: {
       clusterName: cluster.clusterName,
@@ -456,9 +482,10 @@ export function clusterAutoscalerSetup(
 
     //Version of the autoscaler, controls the image tag
     const versionMap = new Map([
+        [KubernetesVersion.V1_25, "9.25.0"],
+        [KubernetesVersion.V1_24, "9.25.0"],
         [KubernetesVersion.V1_23, "9.21.0"],
-        [KubernetesVersion.V1_22, "9.13.1"],
-        [KubernetesVersion.V1_21, "9.13.1"]
+        [KubernetesVersion.V1_22, "9.13.1"]
     ]);
     
     // Create a Kubernetes Service Account for the Cluster Autoscaler with Amazon IAM Role
