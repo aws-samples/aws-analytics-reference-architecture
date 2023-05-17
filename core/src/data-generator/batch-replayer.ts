@@ -115,7 +115,7 @@ export interface BatchReplayerProps {
  *
  * const myBucket = new Bucket(stack, "MyBucket")
  *
- * let myProps: IS3Sink = {
+ * let myProps: S3Sink = {
  *  sinkBucket: myBucket,
  *  sinkObjectKey: 'some-prefix',
  *  outputFileMaxSizeInBytes: 10000000,
