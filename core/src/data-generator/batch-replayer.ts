@@ -20,7 +20,7 @@ import {
   prepareRdsTarget,
   prepareRedshiftTarget,
   prepareS3Target,
-  IS3Sink,
+  S3Sink,
   DbSink,
   DynamoDbSink,
 } from './batch-replayer-helpers';
@@ -42,7 +42,7 @@ export interface BatchReplayerProps {
   /**
    * Parameters to write to S3 target
    */
-  readonly s3Props?: IS3Sink;
+  readonly s3Props?: S3Sink;
   /**
    * Parameters to write to DynamoDB target
    */
@@ -145,7 +145,7 @@ export class BatchReplayer extends Construct {
   /**
    * Parameters to write to S3 target
    */
-  public readonly s3Props?: IS3Sink;
+  public readonly s3Props?: S3Sink;
   /**
    * Parameters to write to DynamoDB target
    */
@@ -191,13 +191,6 @@ export class BatchReplayer extends Construct {
     this.frequency = props.frequency?.toSeconds() || 60;
     this.additionalStepFunctionTasks = props.additionalStepFunctionTasks;
 
-    // Properties for S3 target
-    if (props.s3Props) {
-      this.s3Props = props.s3Props;
-      if (!this.s3Props.outputFileMaxSizeInBytes) {
-        this.s3Props.outputFileMaxSizeInBytes = 100 * 1024 * 1024; //Default to 100 MB
-      }
-    }
     const manifestBucketName = this.dataset.manifestLocation.bucketName;
     const manifestObjectKey = this.dataset.manifestLocation.objectKey;
     const dataBucketName = this.dataset.location.bucketName;
@@ -274,12 +267,18 @@ export class BatchReplayer extends Construct {
     };
 
     // S3 target is selected
-    if (this.s3Props) {
+    if (props.s3Props) {
       // Used to force S3 bucket auto cleaning after deletion of this
-      this.node.addDependency(this.s3Props.sinkBucket);
+      this.node.addDependency(props.s3Props.sinkBucket);
+      var modS3Props = { ...props.s3Props };
+      if (!props.s3Props.outputFileMaxSizeInBytes) {
+        modS3Props.outputFileMaxSizeInBytes = 100 * 1024 * 1024; //Default to 100 MB
+      }
 
-      this.s3Props.sinkObjectKey = this.s3Props.sinkObjectKey ?
-        `${this.s3Props.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
+      modS3Props.sinkObjectKey = props.s3Props.sinkObjectKey ?
+        `${props.s3Props.sinkObjectKey}/${this.dataset.tableName}` : this.dataset.tableName;
+        
+      this.s3Props = modS3Props;
 
       const { policy, taskInputParams } = prepareS3Target(this.s3Props, dataBucketName, dataObjectKey);
       writeInBatchFnPolicy.push(policy);
