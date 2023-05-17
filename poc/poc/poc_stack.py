@@ -4,7 +4,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 import aws_analytics_reference_architecture as ara
-from aws_cdk.lambda_layer_kubectl_v22 import KubectlV22Layer
+from aws_cdk.lambda_layer_kubectl_v25 import KubectlV25Layer
 from aws_cdk.aws_eks import (
     KubernetesVersion,
     Cluster
@@ -19,14 +19,14 @@ class PocStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        kubectl = KubectlV22Layer (self, 'kubectl_layer')
+        kubectl = KubectlV25Layer (self, 'kubectl_layer')
 
         prometheus_workspace = CfnWorkspace(self, 'PrometheusWorkspace')
 
         emr_eks = ara.EmrEksCluster.get_or_create(self,
                                                   eks_cluster_name='poc-cluster',
                                                   autoscaling=ara.Autoscaler.KARPENTER,
-                                                  kubernetes_version= KubernetesVersion.V1_22,
+                                                  kubernetes_version= KubernetesVersion.V1_25,
                                                   kubectl_lambda_layer=kubectl
                                                 )
         
