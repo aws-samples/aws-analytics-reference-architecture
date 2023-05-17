@@ -18,14 +18,14 @@ import {
 
 import { Template } from 'aws-cdk-lib/assertions';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
-import { BatchReplayer, DbSink, DynamoDbSink, IS3Sink, PreparedDataset } from '../../../src';
+import { BatchReplayer, DbSink, DynamoDbSink, S3Sink, PreparedDataset } from '../../../src';
 import { IVpc, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import { PreBundledFunction } from '../../../src/common/pre-bundled-function';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 let testStack: Stack;
-let s3Props: IS3Sink;
+let s3Props: S3Sink;
 let batchReplayer: BatchReplayer;
 let template: Template;
 let ddbProps: DynamoDbSink;
@@ -105,7 +105,7 @@ test("BatchReplayer should use default frequency", () => {
 });
 
 test("BatchReplayer should use given max output file size", () => {
-  const s3MaxOutputFileSizeSet: IS3Sink = {
+  const s3MaxOutputFileSizeSet: S3Sink = {
     sinkBucket: new Bucket(testStack, 'filesizeBucket'),
     outputFileMaxSizeInBytes: 20480,
   };
@@ -119,7 +119,7 @@ test("BatchReplayer should use given max output file size", () => {
 });
 
 test("BatchReplayer should use default max output file size 100MB", () => {
-  const s3MaxOutputFileSizeDefault: IS3Sink = {
+  const s3MaxOutputFileSizeDefault: S3Sink = {
     sinkBucket: new Bucket(testStack, 'noFilesizeBucket'),
   };
   const batchReplayerWithNoFilesizeProp = new BatchReplayer(testStack, "TestBatchReplayerWithNoFreqProp", {

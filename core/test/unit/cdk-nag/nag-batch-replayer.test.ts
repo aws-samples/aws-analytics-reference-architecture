@@ -13,14 +13,14 @@ import { App, Aspects, Duration, Stack } from 'aws-cdk-lib';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { BatchReplayer, PreparedDataset } from '../../../src';
-import { IS3Sink } from '../../../lib';
+import { S3Sink } from '../../../lib';
 
 const mockApp = new App();
 
 const batchReplayerStack = new Stack(mockApp, 'BatchReplayer');
 const sinkBucket = new Bucket(batchReplayerStack, 'SinkBucket');
 // Instantiate a DataGenerator
-const s3Props: IS3Sink = { sinkBucket: sinkBucket, sinkObjectKey: 'test' };
+const s3Props: S3Sink = { sinkBucket: sinkBucket, sinkObjectKey: 'test' };
 const batchReplayer = new BatchReplayer(batchReplayerStack, 'TestBatchReplayer', {
   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
   frequency: Duration.seconds(120),

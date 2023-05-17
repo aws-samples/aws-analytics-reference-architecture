@@ -3,7 +3,7 @@ import { ITable } from 'aws-cdk-lib/aws-dynamodb';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 
 
-export interface IS3Sink {
+export interface S3Sink {
   /**
    * The S3 Bucket sink where the BatchReplayer writes data.
    * :warning: **If the Bucket is encrypted with KMS, the Key must be managed by this stack.
@@ -13,12 +13,12 @@ export interface IS3Sink {
    * The S3 object key sink where the BatchReplayer writes data.
    * @default - No object key is used and the BatchReplayer writes the dataset in s3://<BUCKET_NAME>/<TABLE_NAME>
    */
-  sinkObjectKey?: string;
+  readonly sinkObjectKey?: string;
   /**
    * The maximum file size in Bytes written by the BatchReplayer
    * @default - The BatchReplayer writes 100MB files maximum
    */
-  outputFileMaxSizeInBytes?: number;
+  readonly outputFileMaxSizeInBytes?: number;
 }
 
 export interface DbSink {
@@ -54,7 +54,7 @@ export interface DynamoDbSink {
  * @param dataBucketName
  * @param dataObjectKey
  */
-export function prepareS3Target(S3Props: IS3Sink, dataBucketName: string, dataObjectKey: string)
+export function prepareS3Target(S3Props: S3Sink, dataBucketName: string, dataObjectKey: string)
   : {policy:PolicyStatement; taskInputParams:Object} {
   // Add policy to allow access to bucket
   const policy = new PolicyStatement({
