@@ -73,6 +73,11 @@ spec:
     kubernetes.io/cluster/{{cluster-name}}: owned
   tags:
     KarpenerProvisionerName: "critical"
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 2
+    httpTokens: required
   amiFamily: AL2
   userData: |
     MIME-Version: 1.0

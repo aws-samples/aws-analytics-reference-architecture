@@ -579,7 +579,7 @@ export class EmrEksCluster extends TrackedConstruct {
   public addEmrEksNodegroup(id: string, props: EmrEksNodegroupOptions) {
 
     if (this.isKarpenter) {
-      throw new Error(`You can\'t use this method when the autoscaler is set to ${Autoscaler.KARPENTER}`);
+      throw new Error(`You cannot use this method when the autoscaler is set to ${Autoscaler.KARPENTER}`);
     }
 
     // Get the subnet from Properties or one private subnet for each AZ
