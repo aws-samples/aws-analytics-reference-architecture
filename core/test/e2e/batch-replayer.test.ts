@@ -14,7 +14,7 @@ import { Cluster } from '@aws-cdk/aws-redshift-alpha';
 import { deployStack, destroyStack } from './utils';
 
 import { BatchReplayer } from '../../src/data-generator/batch-replayer';
-import { IS3Sink, DynamoDbSink, DbSink } from '../../src/data-generator/batch-replayer-helpers';
+import { S3Sink, DynamoDbSink, DbSink } from '../../src/data-generator/batch-replayer-helpers';
 import { PreparedDataset } from '../../src/data-generator/prepared-dataset';
 import { PreBundledFunction } from '../../src/common/pre-bundled-function';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
@@ -31,7 +31,7 @@ const sinkBucket = new Bucket(stack, 'SinkBucket', {
   removalPolicy: RemovalPolicy.DESTROY,
   autoDeleteObjects: true,
 });
-let s3Props: IS3Sink = { sinkBucket: sinkBucket };
+let s3Props: S3Sink = { sinkBucket: sinkBucket };
 
 const vpc = new aws_ec2.Vpc(stack, 'Vpc');
 
