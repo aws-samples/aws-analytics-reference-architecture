@@ -15,8 +15,15 @@ export class SingletonCfnLaunchTemplate extends CfnLaunchTemplate {
     const id = `${name}`;
     return stack.node.tryFindChild(id) as CfnLaunchTemplate || new CfnLaunchTemplate(stack, id, {
       launchTemplateName: name,
+      
       launchTemplateData: {
         userData: data,
+        metadataOptions: {
+          httpEndpoint: 'enabled',
+          httpProtocolIpv6: 'disabled',
+          httpPutResponseHopLimit: 2,
+          httpTokens: 'required'
+        }
       },
     });
   }
