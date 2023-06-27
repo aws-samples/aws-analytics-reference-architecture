@@ -8,7 +8,7 @@ const glob = require('glob');
 
 const { awscdk } = require('projen');
 
-const CDK_VERSION = '2.72.1';
+const CDK_VERSION = '2.80.0';
 const project = new awscdk.AwsCdkConstructLibrary({
   majorVersion: 2,
   authorName: 'Amazon Web Services',
