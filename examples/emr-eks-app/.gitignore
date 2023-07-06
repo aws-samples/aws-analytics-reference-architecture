@@ -47,3 +47,4 @@ junit.xml
 tsconfig.json
 !/API.md
 bin/*
+node_modules/*
