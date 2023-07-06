@@ -168,14 +168,14 @@ The bucket name is mandatory and is used as the CDK id.
 The bucket name is postfixed with the AWS account ID and the AWS region.
 
 The bucket has the following default properties:
-  * the encryption mode is KMS managed by AWS
-  * if the encryption mode is KMS customer managed, the encryption key is a default and unique KMS key for ARA
-  * the KMS key is used as a bucket key
-  * the SSL is enforced
-  * the objects are automatically deleted when the bucket is deleted
-  * the access are logged in a default and unique S3 bucket for ARA if serverAccessLogsPrefix is provided
-  * the access are not logged if serverAccessLogsPrefix is  not provided
-  * the public access is blocked and no bucket policy or object permission can grant public access
+ * the encryption mode is KMS managed by AWS
+ * if the encryption mode is KMS customer managed, the encryption key is a default and unique KMS key for ARA
+ * the KMS key is used as a bucket key
+ * the SSL is enforced
+ * the objects are automatically deleted when the bucket is deleted
+ * the access are logged in a default and unique S3 bucket for ARA if serverAccessLogsPrefix is provided
+ * the access are not logged if serverAccessLogsPrefix is  not provided
+ * the public access is blocked and no bucket policy or object permission can grant public access
 
 All standard S3 Bucket properties can be provided to not use the defaults.
 Usage example:
@@ -187,8 +187,8 @@ const exampleApp = new cdk.App();
 const stack = new cdk.Stack(exampleApp, 'AraBucketStack');
 
 new AraBucket(stack, {
-  bucketName: 'test-bucket',
-  serverAccessLogsPrefix: 'test-bucket',
+ bucketName: 'test-bucket',
+ serverAccessLogsPrefix: 'test-bucket',
 });
 ```
 
@@ -1473,15 +1473,15 @@ Usage example:
 const myBucket = new Bucket(stack, "MyBucket")
 
 let myProps: S3Sink = {
-  sinkBucket: myBucket,
-  sinkObjectKey: 'some-prefix',
-  outputFileMaxSizeInBytes: 10000000,
+ sinkBucket: myBucket,
+ sinkObjectKey: 'some-prefix',
+ outputFileMaxSizeInBytes: 10000000,
 }
 
 new BatchReplayer(stack, "WebSalesReplayer", {
-   dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
-   s3Props: myProps,
-   frequency: 120,
+  dataset: PreparedDataset.RETAIL_1_GB_WEB_SALE,
+  s3Props: myProps,
+  frequency: 120,
 });
 ```
 
@@ -1733,29 +1733,29 @@ It can be used for AWS workshop or AWS blog examples deployment when CDK is not 
 The stack supports passing the CDK application stack name to deploy (in case there are multiple stacks in the CDK app) and CDK parameters.
 
 It contains the necessary resources to synchronously deploy a CDK application from a GitHub repository:
-  * A CodeBuild project to effectively deploy the CDK application
-  * A StartBuild custom resource to synchronously triggers the build using a callback pattern based on Event Bridge
-  * The necessary roles and permissions
+ * A CodeBuild project to effectively deploy the CDK application
+ * A StartBuild custom resource to synchronously triggers the build using a callback pattern based on Event Bridge
+ * The necessary roles and permissions
 
 The StartBuild CFN custom resource is using the callback pattern to wait for the build completion:
-  1. a Lambda function starts the build but doesn't return any value to the CFN callback URL. Instead, the callback URL is passed to the build project.
-  2. the completion of the build triggers an Event and a second Lambda function which checks the result of the build and send information to the CFN callback URL
+ 1. a Lambda function starts the build but doesn't return any value to the CFN callback URL. Instead, the callback URL is passed to the build project.
+ 2. the completion of the build triggers an Event and a second Lambda function which checks the result of the build and send information to the CFN callback URL
 
-  * Usage example:
+ * Usage example:
 ```typescript
 new CdkDeployer(AwsNativeRefArchApp, 'AwsNativeRefArchDeployer', {
-  githubRepository: 'aws-samples/aws-analytics-reference-architecture',
-  cdkAppLocation: 'refarch/aws-native',
-  cdkParameters: {
-    QuickSightUsername: {
-      default: 'myuser',
-      type: 'String',
-    },
-    QuickSightIdentityRegion: {
-      default: 'us-east-1',
-      type: 'String',
-    },
-  },
+ githubRepository: 'aws-samples/aws-analytics-reference-architecture',
+ cdkAppLocation: 'refarch/aws-native',
+ cdkParameters: {
+   QuickSightUsername: {
+     default: 'myuser',
+     type: 'String',
+   },
+   QuickSightIdentityRegion: {
+     default: 'us-east-1',
+     type: 'String',
+   },
+ },
 });
 ```
 
@@ -2765,9 +2765,9 @@ Object references are passed from the DataDomain account to the CentralGovernanc
 It includes the following JSON object:
 ```json
 {
-   BucketName: 'clean-<ACCOUNT_ID>-<REGION>',
-   Prefix: 'data-products',
-   KmsKeyId: '<KMS_ID>,
+  BucketName: 'clean-<ACCOUNT_ID>-<REGION>',
+  Prefix: 'data-products',
+  KmsKeyId: '<KMS_ID>,
 }
 ```
 
@@ -2959,20 +2959,20 @@ const app = new App();
 const stack = new Stack(app, 'CustomDatasetStack');
 
 const custom = new CustomDataset(stack, 'CustomDataset', {
-   s3Location: {
-     bucketName: 'aws-analytics-reference-architecture',
-     objectKey: 'datasets/custom',
-   },
-   inputFormat: CustomDatasetInputFormat.CSV,
-   datetimeColumn: 'tpep_pickup_datetime',
-   datetimeColumnsToAdjust: ['tpep_pickup_datetime'],
-   partitionRange: Duration.minutes(5),
-   approximateDataSize: 1,
+  s3Location: {
+    bucketName: 'aws-analytics-reference-architecture',
+    objectKey: 'datasets/custom',
+  },
+  inputFormat: CustomDatasetInputFormat.CSV,
+  datetimeColumn: 'tpep_pickup_datetime',
+  datetimeColumnsToAdjust: ['tpep_pickup_datetime'],
+  partitionRange: Duration.minutes(5),
+  approximateDataSize: 1,
 });
 
 new CfnOutput(this, 'LogGroupName', {
-   exportName: 'logGroupName,
-   value: custom.glueJobLogGroup,
+  exportName: 'logGroupName,
+  value: custom.glueJobLogGroup,
 });
 ```
 
@@ -3129,7 +3129,7 @@ It creates the following:
 * A data lake with multiple layers (Raw, Cleaned, Transformed) using {@link DataLakeStorage} construct
 * An mazon EventBridge Event Bus and Rules to enable Central Governance account to send events to Data Domain account
 * An AWS Secret Manager secret encrypted via AWS KMS and used to share references with the central governance account
-* A Data Domain Workflow {@link DataDomainWorkflow} responsible for creating resources in the data domain via a Step Functions state machine
+* A Data Domain Workflow {@link DataDomainWorkflow } responsible for creating resources in the data domain via a Step Functions state machine
 * An optional Crawler workflow {@link DataDomainCrawler} responsible for updating the data product schema after registration via a Step Functions state machine
 
 Usage example:
@@ -3142,9 +3142,9 @@ const exampleApp = new App();
 const stack = new Stack(exampleApp, 'DataProductStack');
 
 new DataDomain(stack, 'myDataDomain', {
-  centralAccountId: '1234567891011',
-  crawlerWorkflow: true,
-  domainName: 'domainName'
+ centralAccountId: '1234567891011',
+ crawlerWorkflow: true,
+ domainName: 'domainName'
 });
 ```
 
@@ -3364,7 +3364,7 @@ public readonly DOMAIN_CONFIG_SECRET: string;
 
 ### DataLakeCatalog <a name="DataLakeCatalog" id="aws-analytics-reference-architecture.DataLakeCatalog"></a>
 
-A Data Lake Catalog composed of 3 AWS Glue Database configured with AWS best practices:   Databases for Raw/Cleaned/Transformed data,.
+A Data Lake Catalog composed of 3 AWS Glue Database configured with AWS best practices:  Databases for Raw/Cleaned/Transformed data,.
 
 #### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.DataLakeCatalog.Initializer"></a>
 
@@ -3649,17 +3649,17 @@ Constructs a new instance of the DataLakeExporter class.
 A CDK Construct that creates the storage layers of a data lake composed of Amazon S3 Buckets.
 
 This construct is based on 3 Amazon S3 buckets configured with AWS best practices:
-  * S3 buckets for Raw/Cleaned/Transformed data,
-  * data lifecycle optimization/transitioning to different Amazon S3 storage classes
-  * server side buckets encryption managed by KMS customer key
-  * Default single KMS key
-  * SSL communication enforcement
-  * access logged to an S3 bucket
-  * All public access blocked
+ * S3 buckets for Raw/Cleaned/Transformed data,
+ * data lifecycle optimization/transitioning to different Amazon S3 storage classes
+ * server side buckets encryption managed by KMS customer key
+ * Default single KMS key
+ * SSL communication enforcement
+ * access logged to an S3 bucket
+ * All public access blocked
 
 By default the transitioning rules to Amazon S3 storage classes are configured as following:
-  * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days
-  * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived
+ * Raw data is moved to Infrequent Access after 30 days and archived to Glacier after 90 days
+ * Clean and Transformed data is moved to Infrequent Access after 90 days and is not archived
 
 Objects and buckets are automatically deleted when the CDK application is detroyed.
 
@@ -3674,12 +3674,12 @@ const exampleApp = new cdk.App();
 const stack = new cdk.Stack(exampleApp, 'DataLakeStorageStack');
 
 new DataLakeStorage(stack, 'MyDataLakeStorage', {
-  rawInfrequentAccessDelay: 90,
-  rawArchiveDelay: 180,
-  cleanInfrequentAccessDelay: 180,
-  cleanArchiveDelay: 360,
-  transformInfrequentAccessDelay: 180,
-  transformArchiveDelay: 360,
+ rawInfrequentAccessDelay: 90,
+ rawArchiveDelay: 180,
+ cleanInfrequentAccessDelay: 180,
+ cleanArchiveDelay: 360,
+ transformInfrequentAccessDelay: 180,
+ transformArchiveDelay: 360,
 });
 ```
 
@@ -4160,7 +4160,7 @@ in `usePrecreatedRoles`.
 
 ```typescript
 declare const app: App;
-Role.customizeRoles(app, {
+iam.Role.customizeRoles(app, {
   usePrecreatedRoles: {
     'ConstructPath/To/Role': 'my-precreated-role-name',
   },
@@ -4494,18 +4494,18 @@ Usage example:
 
 ```typescript
 const emrEks: EmrEksCluster = EmrEksCluster.getOrCreate(stack, {
-   eksAdminRoleArn: <ROLE_ARN>,
-   eksClusterName: <CLUSTER_NAME>,
+  eksAdminRoleArn: <ROLE_ARN>,
+  eksClusterName: <CLUSTER_NAME>,
 });
 
 const virtualCluster = emrEks.addEmrVirtualCluster(stack, {
-   name: <Virtual_Cluster_Name>,
-   createNamespace: <TRUE OR FALSE>,
-   eksNamespace: <K8S_namespace>,
+  name: <Virtual_Cluster_Name>,
+  createNamespace: <TRUE OR FALSE>,
+  eksNamespace: <K8S_namespace>,
 });
 
 const role = emrEks.createExecutionRole(stack, 'ExecRole',{
-   policy: <POLICY>,
+  policy: <POLICY>,
 })
 
 // EMR on EKS virtual cluster ID
@@ -4589,7 +4589,7 @@ of the stack where virtual cluster is deployed.
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrVirtualClusterOptions">EmrVirtualClusterOptions</a>
 
-the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps}.
+the EmrVirtualClusterProps [properties]{@link EmrVirtualClusterProps }.
 
 ---
 
@@ -4694,7 +4694,7 @@ public addNodegroupCapacity(nodegroupId: string, options: EmrEksNodegroupOptions
 Add a new Amazon EKS Nodegroup to the cluster.
 
 This method is used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
-  so it can be used for the cluster autoscaler.
+ so it can be used for the cluster autoscaler.
 
 ###### `nodegroupId`<sup>Required</sup> <a name="nodegroupId" id="aws-analytics-reference-architecture.EmrEksCluster.addNodegroupCapacity.parameter.nodegroupId"></a>
 
@@ -5019,9 +5019,9 @@ public readonly DEFAULT_KARPENTER_VERSION: string;
 A CDK construct to create build and publish EMR on EKS custom image  The construct will create an ECR repository to publish the images  It provide a method {@link publishImage} to build a docker file and publish it to the ECR repository   Resources deployed:  * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access.
 
 These resources are:
-   * ECR Repository
-   * Codebuild project
-   * A custom resource to build and publish a custom EMR on EKS image 
+  * ECR Repository
+  * Codebuild project
+  * A custom resource to build and publish a custom EMR on EKS image 
 
 
 Usage example:
@@ -5029,7 +5029,7 @@ Usage example:
 ```typescript
 
 const app = new App();
-   
+  
 const account = process.env.CDK_DEFAULT_ACCOUNT;
 const region = process.env.CDK_DEFAULT_REGION;
 
@@ -5038,8 +5038,8 @@ env: { account: account, region: region },
 });
 
 const publish = new EmrEksImageBuilder(stack, 'EmrEksImageBuilder', {
-  repositoryName: 'my-repo',
-  ecrRemovalPolicy: RemovalPolicy.RETAIN
+ repositoryName: 'my-repo',
+ ecrRemovalPolicy: RemovalPolicy.RETAIN
 });
 
 publish.publishImage('PATH-TO-DOCKER-FILE-FOLDER', 'v4');
@@ -5332,19 +5332,19 @@ const vpc = new ec2.Vpc(stack, 'Vpc');
 
 const dbName = 'testdb';
 const cluster = new redshift.Cluster(stack, 'Redshift', {
-   removalPolicy: cdk.RemovalPolicy.DESTROY,
-   masterUser: {
-     masterUsername: 'admin',
-   },
-   vpc,
-   defaultDatabaseName: dbName,
+  removalPolicy: cdk.RemovalPolicy.DESTROY,
+  masterUser: {
+    masterUsername: 'admin',
+  },
+  vpc,
+  defaultDatabaseName: dbName,
 });
 
 new FlywayRunner(stack, 'testMigration', {
-   migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),
-   cluster: cluster,
-   vpc: vpc,
-   databaseName: dbName,
+  migrationScriptsFolderAbsolutePath: path.join(__dirname, './resources/sql'),
+  cluster: cluster,
+  vpc: vpc,
+  databaseName: dbName,
 });
 ```
 
@@ -5762,15 +5762,15 @@ public readonly principal: IRole | IUser;
 
 This CDK construct aims to register an S3 Location for Lakeformation with Read and Write access.
 
-If the location is in a different account, cross account access should be granted via the [S3CrossAccount]{@link S3CrossAccount} construct.
+If the location is in a different account, cross account access should be granted via the [S3CrossAccount]{@link S3CrossAccount } construct.
 If the S3 location is encrypted with KMS, the key must be explicitly passed to the construct because CDK cannot retrieve bucket encryption key from imported buckets. 
 Imported buckets are generally used in cross account setup like data mesh.
 
 This construct instantiate 2 objects:
 * An IAM role with read/write permissions to the S3 location and encrypt/decrypt access to the KMS key used to encypt the bucket
 * A CfnResource is based on an IAM role with 2 policy statement folowing the least privilege AWS best practices:
-   * Statement 1 for S3 permissions
-   * Statement 2 for KMS permissions if the bucket is encrypted
+  * Statement 1 for S3 permissions
+  * Statement 2 for KMS permissions if the bucket is encrypted
 
 The CDK construct instantiate the CfnResource in order to register the S3 location with Lakeformation using the IAM role defined above.
 
@@ -5784,15 +5784,15 @@ const stack = new cdk.Stack(exampleApp, 'LakeformationS3LocationStack');
 
 const myKey = new Key(stack, 'MyKey')
 const myBucket = new Bucket(stack, 'MyBucket', {
-   encryptionKey: myKey,
+  encryptionKey: myKey,
 })
 
 new LakeFormationS3Location(stack, 'MyLakeformationS3Location', {
-   s3Location: {
-     bucketName: myBucket.bucketName,
-     objectKey: 'my-prefix',
-   },
-   kmsKeyId: myBucket.encryptionKey.keyId,
+  s3Location: {
+    bucketName: myBucket.bucketName,
+    objectKey: 'my-prefix',
+  },
+  kmsKeyId: myBucket.encryptionKey.keyId,
 });
 ```
 
@@ -5934,56 +5934,56 @@ Resources deployed:
 * Multiple EMR on EKS Managed Endpoints, each for a user or a group of users
 * An execution role to be passed to the Managed endpoint from a policy provided by the user
 * Multiple Session Policies that are used to map an EMR Studio user or group to a set of resources they are allowed to access. These resources are:
-   * EMR Virtual Cluster - created above
-   * ManagedEndpoint
+  * EMR Virtual Cluster - created above
+  * ManagedEndpoint
 
 
 Usage example:
 
 ```typescript
 const emrEks = EmrEksCluster.getOrCreate(stack, {
-   eksAdminRoleArn: 'arn:aws:iam::012345678912:role/Admin-Admin',
-   eksClusterName: 'cluster',
+  eksAdminRoleArn: 'arn:aws:iam::012345678912:role/Admin-Admin',
+  eksClusterName: 'cluster',
 });
 
 const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {
-   emrEks: emrEks,
-   eksNamespace: 'platformns',
-   studioName: 'platform',
-   studioAuthMode: StudioAuthMode.SSO,
+  emrEks: emrEks,
+  eksNamespace: 'platformns',
+  studioName: 'platform',
+  studioAuthMode: StudioAuthMode.SSO,
 });
 
 // If the S3 bucket is encrypted, add policy to the key for the role
 const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
-   statements: [
-     new PolicyStatement({
-       resources: <BUCKET ARN(s)>,
-       actions: ['s3:*'],
-     }),
-     new PolicyStatement({
-       resources: [
-         stack.formatArn({
-           account: Aws.ACCOUNT_ID,
-           region: Aws.REGION,
-           service: 'logs',
-           resource: '*',
-           arnFormat: ArnFormat.NO_RESOURCE_NAME,
-         }),
-       ],
-       actions: [
-         'logs:*',
-       ],
-     }),
-   ],
+  statements: [
+    new PolicyStatement({
+      resources: <BUCKET ARN(s)>,
+      actions: ['s3:*'],
+    }),
+    new PolicyStatement({
+      resources: [
+        stack.formatArn({
+          account: Aws.ACCOUNT_ID,
+          region: Aws.REGION,
+          service: 'logs',
+          resource: '*',
+          arnFormat: ArnFormat.NO_RESOURCE_NAME,
+        }),
+      ],
+      actions: [
+        'logs:*',
+      ],
+    }),
+  ],
 });
 
 notebookPlatform.addUser([{
-   identityName: 'user1',
-   identityType: SSOIdentityType.USER,
-   notebookManagedEndpoints: [{
-     emrOnEksVersion: EmrVersion.V6_9,
-     executionPolicy: policy1,
-   }],
+  identityName: 'user1',
+  identityType: SSOIdentityType.USER,
+  notebookManagedEndpoints: [{
+    emrOnEksVersion: EmrVersion.V6_9,
+    executionPolicy: policy1,
+  }],
 }]);
 
 ```
@@ -6141,9 +6141,9 @@ const stack = new cdk.Stack(exampleApp, 'S3CrossAccountStack');
 const myBucket = new Bucket(stack, 'MyBucket')
 
 new S3CrossAccount(stack, 'S3CrossAccountGrant', {
-   bucket: myBucket,
-   s3ObjectKey: 'my-data',
-   accountId: '1234567891011',
+  bucket: myBucket,
+  s3ObjectKey: 'my-data',
+  accountId: '1234567891011',
 });
 ```
 
@@ -8756,7 +8756,7 @@ public readonly additionalStepFunctionTasks: IChainable[];
 ```
 
 - *Type:* aws-cdk-lib.aws_stepfunctions.IChainable[]
-- *Default:* The BatchReplayer do not have additional Tasks  The expected input for the first Task in this sequence is:  input = [ { "processedRecords": Int, "outputPaths": String [], "startTimeinIso": String, "endTimeinIso": String } ]  Each element in input represents the output of each lambda iterator that replays the data.  param: processedRecods -> Number of records processed param: ouputPaths -> List of files created in S3  **  eg. "s3://<sinkBucket name>/<s3ObjectKeySink prefix, if any>/<dataset name>/ingestion_start=<timestamp>/ingestion_end=<timestamp>/<s3 filename>.csv", param: startTimeinIso -> Start Timestamp on original dataset param: endTimeinIso -> End Timestamp on original dataset  *outputPaths* can be used to extract and aggregate new partitions on data and  trigger additional Tasks.
+- *Default:* The BatchReplayer do not have additional Tasks  The expected input for the first Task in this sequence is:  input = [ { "processedRecords": Int, "outputPaths": String [], "startTimeinIso": String, "endTimeinIso": String } ]  Each element in input represents the output of each lambda iterator that replays the data.  param: processedRecods -> Number of records processed param: ouputPaths -> List of files created in S3  **  eg. "s3://<sinkBucket name>/<s3ObjectKeySink prefix, if any>/<dataset name>/ingestion_start=<timestamp>/ingestion_end=<timestamp>/<s3 filename>.csv",  param: startTimeinIso -> Start Timestamp on original dataset param: endTimeinIso -> End Timestamp on original dataset  *outputPaths* can be used to extract and aggregate new partitions on data and  trigger additional Tasks.
 
 Additional StupFunction Tasks to run sequentially after the BatchReplayer finishes.
 
@@ -9823,9 +9823,9 @@ public readonly defaultNodes: boolean;
 If set to true, the Construct will create default EKS nodegroups or node provisioners (based on the autoscaler mechanism used).
 
 There are three types of nodes:
-  * Nodes for critical jobs which use on-demand instances, high speed disks and workload isolation
-  * Nodes for shared worklaods which uses spot instances and no isolation to optimize costs
-  * Nodes for notebooks which leverage a cost optimized configuration for running EMR managed endpoints and spark drivers/executors.
+ * Nodes for critical jobs which use on-demand instances, high speed disks and workload isolation
+ * Nodes for shared worklaods which uses spot instances and no isolation to optimize costs
+ * Nodes for notebooks which leverage a cost optimized configuration for running EMR managed endpoints and spark drivers/executors.
 
 ---
 
@@ -9868,7 +9868,7 @@ public readonly eksClusterName: string;
 ```
 
 - *Type:* string
-- *Default:* The [default cluster name]{@link DEFAULT_CLUSTER_NAME}
+- *Default:* The [default cluster name]{@link DEFAULT_CLUSTER_NAME }
 
 Name of the Amazon EKS cluster to be created.
 
@@ -9906,7 +9906,7 @@ public readonly karpenterVersion: string;
 ```
 
 - *Type:* string
-- *Default:* The [default Karpenter version]{@link DEFAULT_KARPENTER_VERSION}
+- *Default:* The [default Karpenter version]{@link DEFAULT_KARPENTER_VERSION }
 
 The version of karpenter to pass to Helm.
 
@@ -10440,7 +10440,7 @@ public readonly configurationOverrides: string;
 ```
 
 - *Type:* string
-- *Default:* Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR}
+- *Default:* Configuration related to the [default nodegroup for notebook]{@link EmrEksNodegroup.NOTEBOOK_EXECUTOR }
 
 The JSON configuration overrides for Amazon EMR on EKS configuration attached to the managed endpoint.
 
@@ -10453,7 +10453,7 @@ public readonly emrOnEksVersion: EmrVersion;
 ```
 
 - *Type:* <a href="#aws-analytics-reference-architecture.EmrVersion">EmrVersion</a>
-- *Default:* The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION}
+- *Default:* The [default Amazon EMR version]{@link EmrEksCluster.DEFAULT_EMR_VERSION }
 
 The Amazon EMR version to use.
 
@@ -10624,16 +10624,16 @@ Example:
 
 * The SQL file:
 
-   ```sql
-   SELECT * FROM ${TABLE_NAME};
-   ```
+  ```sql
+  SELECT * FROM ${TABLE_NAME};
+  ```
 * The replacement map:
 
-   ```typescript
-   replaceDictionary = {
-     TABLE_NAME: 'my_table'
-   }
-   ```
+  ```typescript
+  replaceDictionary = {
+    TABLE_NAME: 'my_table'
+  }
+  ```
 
 ---
 
@@ -10877,7 +10877,7 @@ const notebookPlatformProps: NotebookPlatformProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.NotebookPlatformProps.property.eksNamespace">eksNamespace</a></code> | <code>string</code> | the namespace where to deploy the EMR Virtual Cluster. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookPlatformProps.property.idpArn">idpArn</a></code> | <code>string</code> | Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value taken from the IAM console in the Identity providers console. |
 | <code><a href="#aws-analytics-reference-architecture.NotebookPlatformProps.property.idpAuthUrl">idpAuthUrl</a></code> | <code>string</code> | Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio This is the URL used to sign in the AWS console. |
-| <code><a href="#aws-analytics-reference-architecture.NotebookPlatformProps.property.idpRelayStateParameterName">idpRelayStateParameterName</a></code> | <code>string</code> | Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value can be set with {@link IdpRelayState} Enum or through a value provided by the user. |
+| <code><a href="#aws-analytics-reference-architecture.NotebookPlatformProps.property.idpRelayStateParameterName">idpRelayStateParameterName</a></code> | <code>string</code> | Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value can be set with {@link IdpRelayState } Enum or through a value provided by the user. |
 
 ---
 
@@ -10924,7 +10924,7 @@ public readonly eksNamespace: string;
 ```
 
 - *Type:* string
-- *Default:* Use the {@link EmrVirtualClusterOptions} default namespace
+- *Default:* Use the {@link EmrVirtualClusterOptions } default namespace
 
 the namespace where to deploy the EMR Virtual Cluster.
 
@@ -10962,7 +10962,7 @@ public readonly idpRelayStateParameterName: string;
 
 - *Type:* string
 
-Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value can be set with {@link IdpRelayState} Enum or through a value provided by the user.
+Used when IAM Authentication is selected with IAM federation with an external identity provider (IdP) for Amazon EMR Studio Value can be set with {@link IdpRelayState } Enum or through a value provided by the user.
 
 ---
 
@@ -11538,11 +11538,11 @@ public readonly TOOLING_ALL: EmrEksNodegroupOptions;
 
 ### PreparedDataset <a name="PreparedDataset" id="aws-analytics-reference-architecture.PreparedDataset"></a>
 
-PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer} to generate data in different targets.
+PreparedDataset is used by the [BatchReplayer]{@link BatchReplayer } to generate data in different targets.
 
 One of the startDatetime or offset parameter needs to be passed to the constructor: 
-  * StartDatetime is used for prepared datasets provided by the Analytics Reference Architecture because they are known during synthetize time.
-  * Offset is used when a PreparedDataset is created from a CustomDataset because the startDatetime is not known during synthetize time.
+ * StartDatetime is used for prepared datasets provided by the Analytics Reference Architecture because they are known during synthetize time.
+ * Offset is used when a PreparedDataset is created from a CustomDataset because the startDatetime is not known during synthetize time.
 
 A PreparedDataset has following properties:
 
@@ -11555,21 +11555,21 @@ Here is an example:
 
 |- time_range_start=16000000000
 
-    |- file1.csv 100MB
+   |- file1.csv 100MB
 
-    |- file2.csv 50MB
+   |- file2.csv 50MB
 
 |- time_range_start=16000000300 // 5 minute range (300 sec)
 
-    |- file1.csv 1MB
+   |- file1.csv 1MB
 
 |- time_range_start=16000000600
 
-    |- file1.csv 100MB
+   |- file1.csv 100MB
 
-    |- file2.csv 100MB
+   |- file2.csv 100MB
 
-    |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB
+   |- whichever-file-name-is-fine-as-we-have-manifest-files.csv 50MB
 
 2. It has a manifest CSV file with two columns: start and path. Start is the timestamp
 
