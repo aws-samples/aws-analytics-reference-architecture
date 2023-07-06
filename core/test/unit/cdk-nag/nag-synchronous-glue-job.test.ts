@@ -145,6 +145,18 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-GL1', reason: 'Glue job properties for security configuration is out of scope of the construct (passed by construct consumer)' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousGlueJobStack,
+  'SynchronousGlueJob/MyJob/StartFn/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousGlueJobStack,
+  'SynchronousGlueJob/MyJob/WaitFn/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(synchronousGlueJobStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);

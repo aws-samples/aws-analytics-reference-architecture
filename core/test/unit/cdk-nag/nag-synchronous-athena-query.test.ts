@@ -121,6 +121,18 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/WaitFn/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  synchronousAthenaStack,
+  'synchronous-athena-query/SynchronousAthenaQueryTest/StartFn/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(synchronousAthenaStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);

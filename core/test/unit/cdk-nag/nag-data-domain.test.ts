@@ -127,6 +127,12 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-IAM5', reason: 'IAM policy cannot be scoped down to log level, log name generated at run time' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(
+  dataDomainStack,
+  'dataDomain/myDataDomain/TagPermissionsFn/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(dataDomainStack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);

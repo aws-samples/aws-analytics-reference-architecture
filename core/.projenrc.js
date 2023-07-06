@@ -8,7 +8,8 @@ const glob = require('glob');
 
 const { awscdk } = require('projen');
 
-const CDK_VERSION = '2.80.0';
+const CDK_VERSION = '2.84.0';
+const CDK_CONSTRUCTS_VERSION = '10.2.55';
 const project = new awscdk.AwsCdkConstructLibrary({
   majorVersion: 2,
   authorName: 'Amazon Web Services',
@@ -25,7 +26,8 @@ const project = new awscdk.AwsCdkConstructLibrary({
   ],
 
   cdkVersion: CDK_VERSION,
-  constructsVersion: '10.1.308',
+  jsiiVersion: '~5.0.0',
+  constructsVersion: CDK_CONSTRUCTS_VERSION,
   defaultReleaseBranch: 'main',
   license: 'MIT-0',
   name: 'aws-analytics-reference-architecture',

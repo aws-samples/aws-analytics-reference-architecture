@@ -73,6 +73,18 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/FindFilePath/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
+  'BatchReplayer/TestBatchReplayer/WriteInBatch/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  batchReplayerStack,
   'BatchReplayer/TestBatchReplayer/BatchReplayStepFn/Role/DefaultPolicy/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The Step Function default policy is using *' }],
 );

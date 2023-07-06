@@ -106,7 +106,7 @@ NagSuppressions.addResourceSuppressionsByPath(
 NagSuppressions.addResourceSuppressionsByPath(
   customDatasetStack,
   'CustomDataset/AWS679f53fac002430cb0da5b7982bd2287/Resource',
-  [{ id: 'AwsSolutions-L1', reason: 'The default lambda for AwsCustomResource CDK construct doesn\'t use the latest runtime' }],
+  [{ id: 'CdkNagValidationFailure', reason: 'The default lambda for AwsCustomResource CDK construct doesn\'t use the latest runtime' }],
 );
 
 NagSuppressions.addResourceSuppressionsByPath(
@@ -131,6 +131,23 @@ NagSuppressions.addResourceSuppressionsByPath(
   customDatasetStack,
   'CustomDataset/CustomDatasetRole/Resource',
   [{ id: 'AwsSolutions-IAM5', reason: 'The log group name cannot be infered from the Glue job properties' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  customDatasetStack,
+  'CustomDataset/CustomDatasetJob/WaitFn/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+NagSuppressions.addResourceSuppressionsByPath(
+  customDatasetStack,
+  'CustomDataset/CustomDatasetJob/StartFn/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  customDatasetStack,
+  'CustomDataset/AWS679f53fac002430cb0da5b7982bd2287/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Custom resource as L2' }],
 );
 
                                       

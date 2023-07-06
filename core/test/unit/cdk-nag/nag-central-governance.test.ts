@@ -158,6 +158,12 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   centralGovStack,
+  'CentralGovernanceStack/CdkLfAdmin/lfAdminCreateFn/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  centralGovStack,
   'CentralGovernanceStack/CentralGovernance/RegisterDataProduct/Resource',
   [{ id: 'AwsSolutions-SF2', reason: 'X-ray not required for the CentralGovernance workflow' }],
 );

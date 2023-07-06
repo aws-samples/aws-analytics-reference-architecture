@@ -198,6 +198,12 @@ NagSuppressions.addResourceSuppressionsByPath(
     [{ id: 'AwsSolutions-IAM5', reason: 'Policy managed by L2 construct' }],
   );
 
+  NagSuppressions.addResourceSuppressionsByPath(
+    stack,
+    'docker-build/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/Resource',
+    [{ id: 'AwsSolutions-L1', reason: 'Log disabled the bucket hold asset needed for build no data' }],
+  );
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);
