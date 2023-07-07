@@ -221,15 +221,6 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/@aws-cdk--aws-eks.KubectlProvider/Handler/ServiceRole/Resource',
-  [{
-    id: 'AwsSolutions-IAM4',
-    reason: 'AWS Managed policy basic lambda execution role, read access to ECR and access to VPC to send kubectl command to control plan',
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  stack,
   'eks-emr-studio/data-platform/ManagedEndpointProvider/CustomResourceProvider/framework-onEvent/ServiceRole/DefaultPolicy/Resource',
   [{
     id: 'AwsSolutions-IAM5',
@@ -473,12 +464,46 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
+  'eks-emr-studio/data-platformCluster/KubectlHandlerRole/Resource',
+  [{
+    id: 'AwsSolutions-IAM4',
+    reason: 'IAM policies defined by custom resources for kubectl lambda L2 construct',
+  }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/IsComplete/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/ManagedEndpointProvider/OnEvent/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
   'eks-emr-studio/data-platform/IamPolicyEbsCsiDriverIAMPolicy/Resource',
   [{
     id: 'AwsSolutions-IAM5',
-    reason: 'Policy as defined in the CSI Driver documentation and is scoped by IRSA',
+    reason: 'use for the EBS CSI driver',
   }],
 );
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/AsgTagProvider/Tag/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
+NagSuppressions.addResourceSuppressionsByPath(
+  stack,
+  'eks-emr-studio/data-platform/jobTemplateProvider/OnEvent/Resource',
+  [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
+);
+
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));

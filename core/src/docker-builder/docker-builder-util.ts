@@ -25,7 +25,7 @@ export function EmrEksImageBuilderCRProviderSetup (scope: Construct, codeBuildPr
       // AWS Lambda function supporting the start a codebuild project
       const onEvent = new PreBundledFunction(scope, 'OnEvent', {
         codePath: 'docker-builder/resources/lambdas',
-        runtime: Runtime.PYTHON_3_9,
+        runtime: Runtime.PYTHON_3_10,
         handler: 'lambda.on_event',
         layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
         lambdaPolicyStatements: lambdaPolicy,
@@ -39,7 +39,7 @@ export function EmrEksImageBuilderCRProviderSetup (scope: Construct, codeBuildPr
           handler: 'lambda.is_complete',
           layers: [PreBundledLayer.getOrCreate(scope, 'common/resources/lambdas/pre-bundled-layer')],
           lambdaPolicyStatements: lambdaPolicy,
-          runtime: Runtime.PYTHON_3_9,
+          runtime: Runtime.PYTHON_3_10,
           logRetention: RetentionDays.ONE_WEEK,
           timeout: Duration.seconds(120),
         });

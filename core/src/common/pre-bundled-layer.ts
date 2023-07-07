@@ -45,7 +45,7 @@ export class PreBundledLayer extends LayerVersion {
 
     return boto3Layer || new PreBundledLayer(stack, id, {
       codePath: codePath,
-      compatibleRuntimes: [Runtime.PYTHON_3_8, Runtime.PYTHON_3_7, Runtime.PYTHON_3_9],
+      compatibleRuntimes: [Runtime.PYTHON_3_9, Runtime.PYTHON_3_10],
       layerVersionName: 'ara-boto3-layer',
     });
   }

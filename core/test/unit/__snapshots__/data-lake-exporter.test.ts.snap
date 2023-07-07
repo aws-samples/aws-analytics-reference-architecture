@@ -446,9 +446,6 @@ Object {
             },
           ],
         },
-        "StreamModeDetails": Object {
-          "StreamMode": "PROVISIONED",
-        },
       },
       "Type": "AWS::Kinesis::Stream",
     },
@@ -465,7 +462,7 @@ Object {
           "Name": "test_table",
           "Parameters": Object {
             "classification": "json",
-            "has_encrypted_data": false,
+            "has_encrypted_data": true,
           },
           "StorageDescriptor": Object {
             "Columns": Array [
@@ -501,6 +498,17 @@ Object {
     },
     "testTableBucket030117E6": Object {
       "DeletionPolicy": "Retain",
+      "Properties": Object {
+        "BucketEncryption": Object {
+          "ServerSideEncryptionConfiguration": Array [
+            Object {
+              "ServerSideEncryptionByDefault": Object {
+                "SSEAlgorithm": "AES256",
+              },
+            },
+          ],
+        },
+      },
       "Type": "AWS::S3::Bucket",
       "UpdateReplacePolicy": "Retain",
     },
