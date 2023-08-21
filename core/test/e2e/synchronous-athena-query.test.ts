@@ -7,25 +7,29 @@
  * @group integ/synchronous-athena-query
  */
 
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { deployStack, destroyStack } from './utils';
+import { TestStack } from './TestStack';
 
 import { SynchronousAthenaQuery } from '../../src/synchronous-athena-query';
 
 jest.setTimeout(300000);
 // GIVEN
-const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'SynchronousAthenaQueryE2eTest');
+const testStack = new TestStack('SynchronousAthenaQueryE2eTest');
+const { stack } = testStack;
 
 const resultsBucket = new Bucket(stack, 'ResultsBucket', {
   removalPolicy: RemovalPolicy.DESTROY,
   autoDeleteObjects: true,
 });
 
-const sourceBucket = Bucket.fromBucketName(stack, 'SourceBucket', `athena-examples-${cdk.Aws.REGION}`);
+const sourceBucket = Bucket.fromBucketName(
+  stack,
+  'SourceBucket',
+  `athena-examples-${cdk.Aws.REGION}`
+);
 
 const synchronousAthenaQuery = new SynchronousAthenaQuery(stack, 'SynchronousAthenaQuery', {
   statement: 'SELECT * FROM sampledb.elb_logs limit 10;',
@@ -57,20 +61,11 @@ const synchronousAthenaQuery = new SynchronousAthenaQuery(stack, 'SynchronousAth
           resourceName: 'sampledb/elb_logs',
         }),
       ],
-      actions: [
-        'glue:GetTable',
-        'glue:GetPartitions',
-      ],
+      actions: ['glue:GetTable', 'glue:GetPartitions'],
     }),
     new PolicyStatement({
-      resources: [
-        sourceBucket.arnForObjects('elb/plaintext/*'),
-        sourceBucket.bucketArn,
-      ],
-      actions: [
-        's3:GetObject',
-        's3:ListBucket',
-      ],
+      resources: [sourceBucket.arnForObjects('elb/plaintext/*'), sourceBucket.bucketArn],
+      actions: ['s3:GetObject', 's3:ListBucket'],
     }),
   ],
 });
@@ -83,14 +78,13 @@ new cdk.CfnOutput(stack, 'SynchronousAthenaQueryResource', {
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
-    await deployStack(integTestApp, stack);
+    await testStack.deploy();
 
     // THEN
     expect(true);
-
   }, 9000000);
 });
 
 afterAll(async () => {
-  await destroyStack(integTestApp, stack);
+  await testStack.destroy();
 });

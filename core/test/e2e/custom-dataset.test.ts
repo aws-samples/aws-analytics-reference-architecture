@@ -8,7 +8,7 @@
  */
 
 import * as cdk from 'aws-cdk-lib';
-import { deployStack, destroyStack } from './utils';
+import { TestStack } from './TestStack';
 
 import { CustomDataset, CustomDatasetInputFormat } from '../../src/data-generator/custom-dataset';
 import { Duration } from 'aws-cdk-lib';
@@ -16,8 +16,8 @@ import { Duration } from 'aws-cdk-lib';
 jest.setTimeout(600000);
 
 //GIVEN
-const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'CustomDatasetE2eTest');
+const testStack = new TestStack('CustomDatasetE2eTest');
+const { stack } = testStack;
 
 const custom = new CustomDataset(stack, 'CustomDataset', {
   s3Location: {
@@ -44,15 +44,14 @@ new cdk.CfnOutput(stack, 'LogGroup', {
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
-    const deployResult = await deployStack(integTestApp, stack);
-    
-    // THEN
-    expect(deployResult.outputs.Offset).toMatch(new RegExp("^[0-9]+$"));
-    expect(deployResult.outputs.LogGroup).toContain('/aws-glue/jobs/');
+    const deployResult = await testStack.deploy();
 
+    // THEN
+    expect(deployResult.Offset).toMatch(new RegExp('^[0-9]+$'));
+    expect(deployResult.LogGroup).toContain('/aws-glue/jobs/');
   }, 9000000);
 });
 
 afterAll(async () => {
-  await destroyStack(integTestApp, stack);
+  await testStack.destroy();
 });

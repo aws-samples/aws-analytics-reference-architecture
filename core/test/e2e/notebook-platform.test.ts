@@ -7,18 +7,17 @@
  * @group integ/notebook-platform
  */
 
-import { ManagedPolicy, PolicyStatement } from '@aws-cdk/aws-iam';
-import { ArnFormat, Aws, App, Stack } from 'aws-cdk-lib';
-import { SdkProvider } from 'aws-cdk/lib/api/aws-auth';
-import { CloudFormationDeployments } from 'aws-cdk/lib/api/cloudformation-deployments';
+import { ArnFormat, Aws, aws_iam, CfnOutput } from 'aws-cdk-lib';
 
+import { TestStack } from './TestStack';
 import { NotebookPlatform, StudioAuthMode } from '../../src';
 import { Autoscaler, EmrEksCluster } from '../../src/emr-eks-platform';
+import { EmrVersion } from '../../src/emr-eks-platform/emr-eks-cluster';
 
 jest.setTimeout(2000000);
 // GIVEN
-const integTestApp = new App();
-const stack = new Stack(integTestApp, 'notebookPlatformE2eTest');
+const testStack = new TestStack('notebookPlatformE2eTest');
+const { stack } = testStack;
 
 const emrEksCluster = EmrEksCluster.getOrCreate(stack, {
   eksAdminRoleArn: 'arn:aws:iam::123445678912:role/gromav',
@@ -32,14 +31,13 @@ const notebookPlatform = new NotebookPlatform(stack, 'platform-notebook', {
   studioAuthMode: StudioAuthMode.IAM,
 });
 
-
-const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
+const policy1 = new aws_iam.ManagedPolicy(stack, 'MyPolicy1', {
   statements: [
-    new PolicyStatement({
+    new aws_iam.PolicyStatement({
       resources: ['*'],
       actions: ['s3:*'],
     }),
-    new PolicyStatement({
+    new aws_iam.PolicyStatement({
       resources: [
         stack.formatArn({
           account: Aws.ACCOUNT_ID,
@@ -49,24 +47,25 @@ const policy1 = new ManagedPolicy(stack, 'MyPolicy1', {
           arnFormat: ArnFormat.NO_RESOURCE_NAME,
         }),
       ],
-      actions: [
-        'logs:*',
-      ],
+      actions: ['logs:*'],
     }),
   ],
 });
 
-notebookPlatform.addUser([{
-  identityName: 'janeDoe',
-  notebookManagedEndpoints: [
-    {
-      emrOnEksVersion: 'emr-6.4.0-latest',
-      executionPolicy: policy1,
-    },
-  ],
-}]);
+notebookPlatform.addUser([
+  {
+    identityName: 'janeDoe',
+    notebookManagedEndpoints: [
+      {
+        managedEndpointName: 'endpoint',
+        emrOnEksVersion: EmrVersion.V6_4,
+        executionPolicy: policy1,
+      },
+    ],
+  },
+]);
 
-new cdk.CfnOutput(stack, 'EmrEksAdminRoleOutput', {
+new CfnOutput(stack, 'EmrEksAdminRoleOutput', {
   value: emrEksCluster.eksCluster.adminRole.roleArn,
   exportName: 'emrEksAdminRole',
 });
@@ -74,33 +73,13 @@ new cdk.CfnOutput(stack, 'EmrEksAdminRoleOutput', {
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
-    const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-    const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-      profile: process.env.AWS_PROFILE,
-    });
-    const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-    // WHEN
-    const deployResult = await cloudFormation.deployStack({
-      stack: stackArtifact,
-    });
+    const deployResult = await testStack.deploy();
 
     // THEN
-    expect(deployResult.outputs.emrEksAdminRole).toEqual('arn:aws:iam::123445678912:role/gromav');
-
+    expect(deployResult.emrEksAdminRole).toEqual('arn:aws:iam::123445678912:role/gromav');
   }, 9000000);
 });
 
 afterAll(async () => {
-  const stackArtifact = integTestApp.synth().getStackByName(stack.stackName);
-
-  const sdkProvider = await SdkProvider.withAwsCliCompatibleDefaults({
-    profile: process.env.AWS_PROFILE,
-  });
-  const cloudFormation = new CloudFormationDeployments({ sdkProvider });
-
-  await cloudFormation.destroyStack({
-    stack: stackArtifact,
-  });
+  await testStack.destroy();
 });

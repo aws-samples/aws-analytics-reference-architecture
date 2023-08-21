@@ -46,8 +46,8 @@
   "devDependencies": {
     "@aws-cdk/aws-glue-alpha": "2.84.0-alpha.0",
     "@aws-cdk/aws-redshift-alpha": "2.84.0-alpha.0",
+    "@aws-cdk/cli-lib-alpha": "2.84.0-alpha.0",
     "@aws-cdk/cloudformation-diff": "2.84.0",
-    "@aws-cdk/cx-api": "2.84.0",
     "@aws-cdk/lambda-layer-kubectl-v22": "^2.0.9",
     "@aws-cdk/lambda-layer-kubectl-v25": "^2.0.4",
     "@types/jest": "^27",
