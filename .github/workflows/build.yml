@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     env:
-      CI: "true"
+      CI: 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -22,8 +22,10 @@ jobs:
         with:
           distribution: 'zulu' # OpenJDK
           java-version: '11'
+      - name: make shims writable for pip force-reinstall
+        run: echo $SHIM_PATH
       - name: force cryptography version
-        run: pip install --force-reinstall "cryptography==38.0.4"      
+        run: pip install --force-reinstall "cryptography==38.0.4"
       - name: Install dependencies
         run: cd core && yarn install --check-files --frozen-lockfile
       - name: Set git identity
@@ -43,7 +45,8 @@ jobs:
           HEAD:$REF'
       - if: steps.git_diff.outputs.has_changes
         name: Update status check (if changed)
-        run: gh api -X POST /repos/$FULL_NAME/check-runs -F name="build" -F head_sha="$(git rev-parse HEAD)" -F
+        run:
+          gh api -X POST /repos/$FULL_NAME/check-runs -F name="build" -F head_sha="$(git rev-parse HEAD)" -F
           status="completed" -F conclusion="success"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
