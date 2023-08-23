@@ -23,7 +23,7 @@ jobs:
           distribution: 'zulu' # OpenJDK
           java-version: '11'
       - name: make shims writable for pip force-reinstall
-        run: echo $SHIM_PATH
+        run: sudo chmod 777 -R /opt/pyenv/shims
       - name: force cryptography version
         run: pip install --force-reinstall "cryptography==38.0.4"
       - name: Install dependencies
