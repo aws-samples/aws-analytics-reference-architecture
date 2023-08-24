@@ -11,7 +11,7 @@ import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 
 import { SynchronousAthenaQuery } from '../../src/synchronous-athena-query';
 

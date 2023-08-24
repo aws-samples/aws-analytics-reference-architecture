@@ -11,7 +11,7 @@ import { Database, DataFormat, Table } from '@aws-cdk/aws-glue-alpha';
 import { Stream } from 'aws-cdk-lib/aws-kinesis';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 
 import { DataLakeExporter } from '../../src/data-lake-exporter';
 import { LakeFormationAdmin } from '../../src/lake-formation';

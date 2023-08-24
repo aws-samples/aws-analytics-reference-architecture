@@ -8,7 +8,7 @@
  */
 
 import * as cdk from 'aws-cdk-lib';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 
 import { CustomDataset, CustomDatasetInputFormat } from '../../src/data-generator/custom-dataset';
 import { Duration } from 'aws-cdk-lib';

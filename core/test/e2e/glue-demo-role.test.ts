@@ -8,7 +8,7 @@
  */
 
 import * as cdk from 'aws-cdk-lib';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 
 import { GlueDemoRole } from '../../src/glue-demo-role';
 

@@ -9,7 +9,7 @@
 
 import { ArnFormat, Aws, aws_iam, CfnOutput } from 'aws-cdk-lib';
 
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 import { NotebookPlatform, StudioAuthMode } from '../../src';
 import { Autoscaler, EmrEksCluster } from '../../src/emr-eks-platform';
 import { EmrVersion } from '../../src/emr-eks-platform/emr-eks-cluster';

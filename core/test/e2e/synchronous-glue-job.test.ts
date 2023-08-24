@@ -7,7 +7,7 @@
  * @group integ/synchronous-glue-job
  */
 
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 import { Code, GlueVersion, JobExecutable, PythonVersion } from '@aws-cdk/aws-glue-alpha';
 import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 

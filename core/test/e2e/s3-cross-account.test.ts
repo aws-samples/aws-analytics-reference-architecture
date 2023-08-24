@@ -9,7 +9,7 @@
 import { Key } from 'aws-cdk-lib/aws-kms';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import * as cdk from 'aws-cdk-lib';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 import { S3CrossAccount } from '../../src/s3-cross-account';
 
 jest.setTimeout(300000);

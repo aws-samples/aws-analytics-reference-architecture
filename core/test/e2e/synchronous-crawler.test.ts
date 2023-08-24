@@ -8,7 +8,7 @@
  */
 
 import * as cdk from 'aws-cdk-lib';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 import { Database } from '@aws-cdk/aws-glue-alpha';
 import { CfnCrawler } from 'aws-cdk-lib/aws-glue';
 import { ManagedPolicy, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';

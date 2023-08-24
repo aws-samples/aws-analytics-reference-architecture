@@ -8,7 +8,7 @@
  */
 
 import * as cdk from 'aws-cdk-lib';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 
 import { AthenaDemoSetup } from '../../src/athena-demo-setup';
 

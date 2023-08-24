@@ -18,7 +18,7 @@ import {
   Duration,
 } from 'aws-cdk-lib';
 import { Cluster } from '@aws-cdk/aws-redshift-alpha';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 
 import { BatchReplayer } from '../../src/data-generator/batch-replayer';
 import { S3Sink, DynamoDbSink, DbSink } from '../../src/data-generator/batch-replayer-helpers';

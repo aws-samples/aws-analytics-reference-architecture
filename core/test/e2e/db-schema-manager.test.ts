@@ -11,7 +11,7 @@ import * as path from 'path';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as redshift from '@aws-cdk/aws-redshift-alpha';
 import * as cdk from 'aws-cdk-lib';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 
 import { FlywayRunner } from '../../src/db-schema-manager';
 

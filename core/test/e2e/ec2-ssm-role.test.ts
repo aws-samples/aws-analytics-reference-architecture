@@ -8,7 +8,7 @@
  */
 
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 
 import { Ec2SsmRole } from '../../src/ec2-ssm-role';
 

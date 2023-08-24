@@ -8,7 +8,7 @@
 
 import * as cdk from 'aws-cdk-lib';
 import { DataLakeStorage } from '../../src';
-import { TestStack } from './TestStack';
+import { TestStack } from './utils/TestStack';
 
 jest.setTimeout(100000);
 // GIVEN
