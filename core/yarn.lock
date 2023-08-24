@@ -521,9 +521,9 @@
   integrity sha512-s2UHCoiXfxMvmfzqoN+vrQ84ahUSYde9qNO1MdxmoEhyHWsfmwOpFlwYV+ePJEVc7gFnATGUi376WowX1N7tFg==
 
 "@exodus/schemasafe@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@exodus/schemasafe/-/schemasafe-1.0.1.tgz#e4e2d86ae176b7c96fbff033f3b1a8b1cfd390fb"
-  integrity sha512-PQdbF8dGd4LnbwBlcc4ML8RKYdplm+e9sUeWBTr4zgF13/Shiuov9XznvM4T8cb1CfyKK21yTUkuAIIh/DAH/g==
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@exodus/schemasafe/-/schemasafe-1.2.4.tgz#e671579887e9a735ab4352942f7523a551001640"
+  integrity sha512-DNmuVYeOqFmLmJIJvFIX1TKttOZVI9FwDrqDujhyArjqtXUaZuuB+SuDBTQq3Ev368a7ONJiAJ8m9zi0+IBqZQ==
 
 "@humanwhocodes/config-array@^0.11.10":
   version "0.11.10"
