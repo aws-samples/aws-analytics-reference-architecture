@@ -2,23 +2,25 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
-* Tests AthenaDemoSetup
-*
-* @group integ/athena-demo-setup
-*/
+ * Tests AthenaDemoSetup
+ *
+ * @group integ/athena-demo-setup
+ */
 
 import * as cdk from 'aws-cdk-lib';
-import { deployStack, destroyStack } from './utils';
+import { TestStack } from './utils/TestStack';
 
 import { AthenaDemoSetup } from '../../src/athena-demo-setup';
 
 jest.setTimeout(100000);
 // GIVEN
-const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'AthenaDemoSetupE2eTest');
+const testStack = new TestStack('AthenaDemoSetupE2eTest');
+const { stack } = testStack;
 
 const athenaSetup = new AthenaDemoSetup(stack, 'AthenaSetup', {});
-const athenaSetup2 = new AthenaDemoSetup(stack, 'AthenaSetup2', {workgroupName: 'custom'});
+const athenaSetup2 = new AthenaDemoSetup(stack, 'AthenaSetup2', {
+  workgroupName: 'custom',
+});
 
 new cdk.CfnOutput(stack, 'ResultsBucketName', {
   value: athenaSetup.resultBucket.bucketName,
@@ -42,18 +44,16 @@ new cdk.CfnOutput(stack, 'ResultsBucketName2', {
 
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
-    const deployResult = await deployStack(integTestApp, stack);
+    const deployResult = await testStack.deploy();
 
-    
     // THEN
-    expect(deployResult.outputs.AthenaWorkgroupName).toEqual('demo');
-    expect(deployResult.outputs.AthenaWorkgroupName2).toEqual('custom');
-    expect(deployResult.outputs.ResultsBucketName).toContain('demo-athena-logs');
-    expect(deployResult.outputs.ResultsBucketName2).toContain('custom-athena-logs');
-
+    expect(deployResult.AthenaWorkgroupName).toEqual('demo');
+    expect(deployResult.AthenaWorkgroupName2).toEqual('custom');
+    expect(deployResult.ResultsBucketName).toContain('demo-athena-logs');
+    expect(deployResult.ResultsBucketName2).toContain('custom-athena-logs');
   }, 9000000);
 });
 
 afterAll(async () => {
-  await destroyStack(integTestApp, stack);
+  await testStack.destroy();
 });

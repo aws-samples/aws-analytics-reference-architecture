@@ -11,12 +11,12 @@
       "type": "build"
     },
     {
-      "name": "@aws-cdk/cloudformation-diff",
-      "version": "2.84.0",
+      "name": "@aws-cdk/cli-lib-alpha",
+      "version": "2.84.0-alpha.0",
       "type": "build"
     },
     {
-      "name": "@aws-cdk/cx-api",
+      "name": "@aws-cdk/cloudformation-diff",
       "version": "2.84.0",
       "type": "build"
     },

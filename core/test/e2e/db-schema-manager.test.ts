@@ -11,13 +11,13 @@ import * as path from 'path';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as redshift from '@aws-cdk/aws-redshift-alpha';
 import * as cdk from 'aws-cdk-lib';
-import { deployStack, destroyStack } from './utils';
+import { TestStack } from './utils/TestStack';
 
 import { FlywayRunner } from '../../src/db-schema-manager';
 
 // GIVEN
-const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'FlywayRunnerE2eTest');
+const testStack = new TestStack('FlywayRunnerE2eTest');
+const { stack } = testStack;
 
 const vpc = new ec2.Vpc(stack, 'Vpc');
 
@@ -51,13 +51,13 @@ new cdk.CfnOutput(stack, 'schemaVersion', {
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // WHEN
-    const deployResult = await deployStack(integTestApp, stack);
+    const deployResult = await testStack.deploy();
 
     // THEN
-    expect(deployResult.outputs.schemaVersion).toEqual('3');
+    expect(deployResult.schemaVersion).toEqual('3');
   }, 9000000);
 });
 
 afterAll(async () => {
-  await destroyStack(integTestApp, stack);
+  await testStack.destroy();
 }, 9000000);

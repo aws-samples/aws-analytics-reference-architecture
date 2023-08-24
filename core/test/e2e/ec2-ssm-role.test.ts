@@ -8,15 +8,14 @@
  */
 
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import * as cdk from 'aws-cdk-lib';
-import { deployStack, destroyStack } from './utils';
+import { TestStack } from './utils/TestStack';
 
 import { Ec2SsmRole } from '../../src/ec2-ssm-role';
 
 jest.setTimeout(100000);
 // GIVEN
-const integTestApp = new cdk.App();
-const stack = new cdk.Stack(integTestApp, 'Ec2SsmRoleE2eTest');
+const testStack = new TestStack('Ec2SsmRoleE2eTest');
+const { stack } = testStack;
 
 new Ec2SsmRole(stack, 'Ec2SsmRole', {
   assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
@@ -25,14 +24,13 @@ new Ec2SsmRole(stack, 'Ec2SsmRole', {
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
     // GIVEN
-    await deployStack(integTestApp, stack);
-    
+    await testStack.deploy();
+
     // THEN
     expect(true);
-
   }, 9000000);
 });
 
 afterAll(async () => {
-  await destroyStack(integTestApp, stack);
+  await testStack.destroy();
 });

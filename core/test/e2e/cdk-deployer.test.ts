@@ -2,21 +2,22 @@
 // SPDX-License-Identifier: MIT-0
 
 /**
-* Tests CdkDeployer
-*
-* @group integ/cdk-deployer
-*/
+ * Tests CdkDeployer
+ *
+ * @group integ/cdk-deployer
+ */
 
 import * as cdk from 'aws-cdk-lib';
-import { deployStack, destroyStack } from './utils';
+import { TestStack } from './utils/TestStack';
 
 import { CdkDeployer, DeploymentType } from '../../src/common/cdk-deployer';
 
 jest.setTimeout(20000000);
 // GIVEN
-const integTestApp = new cdk.App();
+const testStack = new TestStack('CdkDeployerE2eTest');
+const { stack } = testStack;
 
-const cdkDeployerStack = new CdkDeployer(integTestApp, {
+const cdkDeployerStack = new CdkDeployer(stack, {
   deploymentType: DeploymentType.CLICK_TO_DEPLOY,
   githubRepository: 'aws-samples/aws-analytics-reference-architecture',
   cdkAppLocation: 'refarch/aws-native',
@@ -41,14 +42,13 @@ new cdk.CfnOutput(cdkDeployerStack, 'CodeBuildStatus', {
 
 describe('deploy succeed', () => {
   it('can be deploy succcessfully', async () => {
-    const deployResult = await deployStack(integTestApp, cdkDeployerStack, true, false);
-    
+    const deployResult = await testStack.deploy();
+
     // THEN
-    expect(deployResult.outputs.CodeBuildStatus).toEqual('SUCCESS');
-    
+    expect(deployResult.CodeBuildStatus).toEqual('SUCCESS');
   }, 20000000);
 });
 
 afterAll(async () => {
-  await destroyStack(integTestApp, cdkDeployerStack);
+  await testStack.destroy();
 });

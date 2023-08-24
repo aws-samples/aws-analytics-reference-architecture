@@ -43,6 +43,11 @@
     fs-extra "^9.1.0"
     md5 "^2.3.0"
 
+"@aws-cdk/cli-lib-alpha@2.84.0-alpha.0":
+  version "2.84.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/cli-lib-alpha/-/cli-lib-alpha-2.84.0-alpha.0.tgz#c637ccee03f1c89407dda30433ce5d14f3f311ba"
+  integrity sha512-vgyzwaT66iP2lcwieLoZYk7YnPtdaFpsUyeH1BslGJA+KPhdxHyD3YKcRKXDBWAIvAvKzVZk0PLfeqW8lSnJAQ==
+
 "@aws-cdk/cloud-assembly-schema@2.84.0":
   version "2.84.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-2.84.0.tgz#692b23ef22a93199864954b27c45415e15c46901"
