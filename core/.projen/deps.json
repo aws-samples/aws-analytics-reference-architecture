@@ -167,6 +167,30 @@
       "type": "build"
     },
     {
+      "name": "@aws-crypto/sha256-browser",
+      "type": "bundled"
+    },
+    {
+      "name": "@aws-sdk/client-secrets-manager",
+      "type": "bundled"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-node",
+      "type": "bundled"
+    },
+    {
+      "name": "@aws-sdk/node-http-handler",
+      "type": "bundled"
+    },
+    {
+      "name": "@aws-sdk/protocol-http",
+      "type": "bundled"
+    },
+    {
+      "name": "@aws-sdk/signature-v4",
+      "type": "bundled"
+    },
+    {
       "name": "@exodus/schemasafe",
       "type": "bundled"
     },

@@ -91,6 +91,12 @@
   "dependencies": {
     "@aws-cdk/aws-glue-alpha": "2.84.0-alpha.0",
     "@aws-cdk/aws-redshift-alpha": "2.84.0-alpha.0",
+    "@aws-crypto/sha256-browser": "^5.0.0",
+    "@aws-sdk/client-secrets-manager": "^3.377.0",
+    "@aws-sdk/credential-provider-node": "^3.370.0",
+    "@aws-sdk/node-http-handler": "^3.374.0",
+    "@aws-sdk/protocol-http": "^3.374.0",
+    "@aws-sdk/signature-v4": "^3.374.0",
     "@exodus/schemasafe": "^1.0.1",
     "aws-sdk": "^2.1405.0",
     "js-yaml": "^4.1.0",
@@ -98,6 +104,12 @@
     "uuid": "^9.0.0"
   },
   "bundledDependencies": [
+    "@aws-crypto/sha256-browser",
+    "@aws-sdk/client-secrets-manager",
+    "@aws-sdk/credential-provider-node",
+    "@aws-sdk/node-http-handler",
+    "@aws-sdk/protocol-http",
+    "@aws-sdk/signature-v4",
     "@exodus/schemasafe",
     "aws-sdk",
     "js-yaml",
