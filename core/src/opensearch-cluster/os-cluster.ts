@@ -70,7 +70,6 @@ export class OpensearchCluster extends Construct {
         // ManagedPolicy.fromAwsManagedPolicyName('SecretsManagerReadWrite'),
       ],
     });
-    // const masterRole = aws_iam.Role.fromRoleName(this, 'AccessRole', 'l3master');
 
     this.domain = new aws_opensearchservice.Domain(this, 'Domain', {
       domainName: this.domainName,
@@ -100,16 +99,10 @@ export class OpensearchCluster extends Construct {
       role: this.masterRole,
     });
 
-    this.addAdminUser(adminUsername);
-    usernames.map((username) => this.addDasboardUser(username));
+    this.addAdminUser(adminUsername, adminUsername);
+    usernames.map((username) => this.addDasboardUser(username, username));
 
-    accessRoles.map((accessRole) => this.addAccessRole(accessRole));
-
-    // const domain = aws_opensearchservice.Domain.fromDomainEndpoint(
-    //   this,
-    //   'Domain',
-    //   'https://search-aaa-ry3e2cedp3wnt24ntku4tfcyry.eu-west-1.es.amazonaws.com'
-    // );
+    accessRoles.map((accessRole) => this.addAccessRole(accessRole.toString(), accessRole));
 
     const awsCustom = new custom_resources.AwsCustomResource(this, 'EnableInternalUserDatabaseCR', {
       onCreate: {
@@ -129,59 +122,50 @@ export class OpensearchCluster extends Construct {
       }),
     });
     this.domain.grantReadWrite(awsCustom);
-
-    // const bootstrapFn = new aws_lambda_nodejs.NodejsFunction(this, 'bootstrap', {
-    //   timeout: Duration.minutes(1),
-    //   architecture: Architecture.ARM_64,
-    //   runtime: Runtime.NODEJS_18_X,
-    //   environment: {
-    //     REGION: Stack.of(this).region,
-    //     ENDPOINT: domain.domainEndpoint,
-    //   },
-    //   role: this.masterRole,
-    // });
-
-    // domain.grantIndexReadWrite('*', bootstrapFn);
-    // domain.grantPathReadWrite('*', bootstrapFn);
-    // domain.grantReadWrite(bootstrapFn);
-
-    // const provider = new custom_resources.Provider(this, 'BootstrapProvider', {
-    //   onEventHandler: bootstrapFn,
-    // });
-    // new CustomResource(this, 'BootstrapCR', {
-    //   serviceToken: provider.serviceToken,
-    //   properties: {
-    //     accessRolesArns: accessRoles.map((role) => role.roleArn),
-    //     adminSecretArn: adminSecret.secretArn,
-    //     // TO_BE_REMOVED: Date.now(),
-    //   },
-    // });
   }
 
-  private apiCustomResource(path: string, body: any, id?: string) {
-    const provider = new custom_resources.Provider(this, 'Provider/' + (id || path), {
+  private apiCustomResource(id: string, path: string, body: any) {
+    const provider = new custom_resources.Provider(this, 'Provider/' + id, {
       onEventHandler: this.apiFn,
     });
 
-    new CustomResource(this, 'ApiCR/' + (id || path), {
+    new CustomResource(this, 'ApiCR/' + id, {
       serviceToken: provider.serviceToken,
       properties: {
         path,
         body,
-        // TO_BE_REMOVED: Date.now(),
       },
     });
   }
 
-  public addAdminUser(username: string) {
-    this.addUser(username, ['all_access', 'security_manager']);
+  /**
+   * Add a new role to the cluster.
+   * This method is used to add an admin user to the Amazon opensearch cluster
+   * @param {string} id a unique id
+   * @param {string} username the username
+   */
+  public addAdminUser(id: string, username: string) {
+    this.addUser(id, username, ['all_access', 'security_manager']);
   }
 
-  public addDasboardUser(username: string) {
-    this.addUser(username, ['opensearch_dashboards_user']);
+  /**
+   * Add a new role to the cluster.
+   * This method is used to add a dashboard user to the Amazon opensearch cluster
+   * @param {string} id a unique id
+   * @param {string} username the username
+   */
+  public addDasboardUser(id: string, username: string) {
+    this.addUser(id, username, ['opensearch_dashboards_user']);
   }
 
-  public addUser(username: string, permissions: Array<string>) {
+  /**
+   * Add a new role to the cluster.
+   * This method is used to add a user to the Amazon opensearch cluster
+   * @param {string} id a unique id
+   * @param {string} username the username
+   * @param {object} template the permissions template
+   */
+  public addUser(id: string, username: string, template: Array<string>) {
     const secret = new aws_secretsmanager.Secret(this, `${username}-Secret`, {
       generateSecretString: {
         secretStringTemplate: JSON.stringify({ username }),
@@ -189,62 +173,80 @@ export class OpensearchCluster extends Construct {
       },
     });
     secret.grantRead(this.masterRole);
-    this.apiCustomResource('_plugins/_security/api/internalusers/' + username, {
+    this.apiCustomResource(id, '_plugins/_security/api/internalusers/' + username, {
       passwordFieldSecretArn: secret.secretArn,
-      opendistro_security_roles: permissions,
+      opendistro_security_roles: template,
     });
-  }
-
-  public addAccessRole(role: aws_iam.Role) {
-    const name = role.roleName;
-    // const name = roleArn.split(':').pop()?.split('/').pop();
-    this.domain.grantIndexReadWrite('*', role);
-    this.domain.grantPathReadWrite('*', role);
-    this.domain.grantReadWrite(role);
-
-    this.apiCustomResource(
-      '_plugins/_security/api/roles/' + name,
-      {
-        cluster_permissions: ['cluster_composite_ops', 'cluster_monitor'],
-        index_permissions: [
-          {
-            index_patterns: ['*'],
-            allowed_actions: ['crud', 'create_index', 'manage'],
-          },
-        ],
-      },
-      'role-' + role.toString()
-    );
-    this.apiCustomResource(
-      '_plugins/_security/api/rolesmapping/' + name,
-      {
-        backend_roles: [role.roleArn],
-      },
-      'mapping-' + role.toString()
-    );
   }
 
   /**
    * Add a new role to the cluster.
-   * This method is used to add a nodegroup to the Amazon EKS cluster and automatically set tags based on labels and taints
-   * @param {string} name the role name
-   * @param {object} permissions the permissions template
+   * This method is used to add an access role to the Amazon opensearch cluster
+   * @param {string} id a unique id
+   * @param {aws_iam.Role} role the iam role
    */
-  public addRole(name: string, permissions: object) {
-    this.apiCustomResource('_plugins/_security/api/roles/' + name, permissions);
+  public addAccessRole(id: string, role: aws_iam.Role) {
+    const name = role.roleName;
+    this.domain.grantIndexReadWrite('*', role);
+    this.domain.grantPathReadWrite('*', role);
+    this.domain.grantReadWrite(role);
+
+    this.addRole('role-' + id, name, {
+      cluster_permissions: ['cluster_composite_ops', 'cluster_monitor'],
+      index_permissions: [
+        {
+          index_patterns: ['*'],
+          allowed_actions: ['crud', 'create_index', 'manage'],
+        },
+      ],
+    });
+
+    this.addRoleMapping('mapping-' + id, name, role);
   }
 
-  public addRoleMapping(name: string, role: aws_iam.Role) {
-    this.apiCustomResource('_plugins/_security/api/rolesmapping/' + name, {
+  /**
+   * Add a new role to the cluster.
+   * This method is used to add a security role to the Amazon opensearch cluster
+   * @param {string} id a unique id
+   * @param {string} name the role name
+   * @param {object} template the permissions template
+   */
+  public addRole(id: string, name: string, template: object) {
+    this.apiCustomResource(id, '_plugins/_security/api/roles/' + name, template);
+  }
+
+  /**
+   * Add a new role to the cluster.
+   * This method is used to add a role mapping to the Amazon opensearch cluster
+   * @param {string} id a unique id
+   * @param {string} name the role name
+   * @param {aws_iam.Role} role the iam role
+   */
+  public addRoleMapping(id: string, name: string, role: aws_iam.Role) {
+    this.apiCustomResource(id, '_plugins/_security/api/rolesmapping/' + name, {
       backend_roles: [role.roleArn],
     });
   }
 
-  public addIndex(name: string, mapping: any) {
-    this.apiCustomResource('/' + name, mapping);
+  /**
+   * Add a new role to the cluster.
+   * This method is used to add an index to the Amazon opensearch cluster
+   * @param {string} id a unique id
+   * @param {string} name the role name
+   * @param {object} template the permissions template
+   */
+  public addIndex(id: string, name: string, template: any) {
+    this.apiCustomResource(id, '/' + name, template);
   }
 
-  public addRollupStrategy(name: string, mapping: any) {
-    this.apiCustomResource('_plugins/_rollup/jobs/' + name, mapping);
+  /**
+   * Add a new role to the cluster.
+   * This method is used to add a rollup strtegy to the Amazon opensearch cluster
+   * @param {string} id a unique id
+   * @param {string} name the role name
+   * @param {object} template the permissions template
+   */
+  public addRollupStrategy(id: string, name: string, template: any) {
+    this.apiCustomResource(id, '_plugins/_rollup/jobs/' + name, template);
   }
 }
