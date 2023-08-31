@@ -9,6 +9,7 @@ type Event = {
   ResourceProperties: { path: string; body: string };
 };
 export async function handler(event: Event): Promise<any> {
+  console.log(JSON.stringify(event, null, 1));
   switch (event.RequestType) {
     case 'Create':
     case 'Update':

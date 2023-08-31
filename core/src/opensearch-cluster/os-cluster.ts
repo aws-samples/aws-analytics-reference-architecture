@@ -8,6 +8,7 @@ import {
   CustomResource,
   aws_lambda_nodejs,
   Stack,
+  CfnOutput,
 } from 'aws-cdk-lib';
 import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
@@ -44,6 +45,7 @@ export class OpensearchCluster extends Construct {
   public readonly domain: aws_opensearchservice.Domain;
   private readonly apiFn: aws_lambda_nodejs.NodejsFunction;
   private readonly masterRole: aws_iam.Role;
+  private prevCr?: CustomResource;
 
   /**
    * @public
@@ -56,9 +58,6 @@ export class OpensearchCluster extends Construct {
   constructor(scope: Construct, id: string, props: OpensearchClusterProps) {
     super(scope, id);
     const { accessRoles, adminUsername, usernames } = props;
-    // const slr = new aws_iam.CfnServiceLinkedRole(this, 'Service Linked Role', {
-    //   awsServiceName: 'es.amazonaws.com',
-    // });
 
     this.domainName = props.domainName ?? OpensearchCluster.DEFAULT_DOMAIN_NAME;
 
@@ -67,7 +66,6 @@ export class OpensearchCluster extends Construct {
       managedPolicies: [
         ManagedPolicy.fromAwsManagedPolicyName('CloudWatchLogsFullAccess'),
         ManagedPolicy.fromAwsManagedPolicyName('AmazonOpenSearchServiceFullAccess'),
-        // ManagedPolicy.fromAwsManagedPolicyName('SecretsManagerReadWrite'),
       ],
     });
 
@@ -136,6 +134,8 @@ export class OpensearchCluster extends Construct {
       },
     });
     cr.node.addDependency(this.domain);
+    if (this.prevCr) cr.node.addDependency(this.prevCr);
+    this.prevCr = cr;
   }
 
   /**
@@ -171,6 +171,10 @@ export class OpensearchCluster extends Construct {
         secretStringTemplate: JSON.stringify({ username }),
         generateStringKey: 'password',
       },
+    });
+    new CfnOutput(this, 'output-' + id, {
+      description: 'Secret with Username & Password for user ' + username,
+      value: secret.secretName,
     });
     secret.grantRead(this.masterRole);
     this.apiCustomResource(id, '_plugins/_security/api/internalusers/' + username, {
