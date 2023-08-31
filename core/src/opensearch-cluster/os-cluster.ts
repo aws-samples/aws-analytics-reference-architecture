@@ -128,14 +128,14 @@ export class OpensearchCluster extends Construct {
     const provider = new custom_resources.Provider(this, 'Provider/' + id, {
       onEventHandler: this.apiFn,
     });
-
-    new CustomResource(this, 'ApiCR/' + id, {
+    const cr = new CustomResource(this, 'ApiCR/' + id, {
       serviceToken: provider.serviceToken,
       properties: {
         path,
         body,
       },
     });
+    cr.node.addDependency(this.domain);
   }
 
   /**
