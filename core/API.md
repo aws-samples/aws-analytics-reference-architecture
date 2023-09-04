@@ -6167,14 +6167,14 @@ the OpensearchCluster [properties]{@link OpensearchClusterProps}.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.toString">toString</a></code> | Returns a string representation of this construct. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addAccessRole">addAccessRole</a></code> | Add a new role to the cluster. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addAdminUser">addAdminUser</a></code> | Add a new role to the cluster. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addDasboardUser">addDasboardUser</a></code> | Add a new role to the cluster. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addIndex">addIndex</a></code> | Add a new role to the cluster. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addRole">addRole</a></code> | Add a new role to the cluster. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addRoleMapping">addRoleMapping</a></code> | Add a new role to the cluster. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addRollupStrategy">addRollupStrategy</a></code> | Add a new role to the cluster. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addUser">addUser</a></code> | Add a new role to the cluster. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addAccessRole">addAccessRole</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addAdminUser">addAdminUser</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addDasboardUser">addDasboardUser</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addIndex">addIndex</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addRole">addRole</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addRoleMapping">addRoleMapping</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addRollupStrategy">addRollupStrategy</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addUser">addUser</a></code> | *No description.* |
 
 ---
 
@@ -6191,10 +6191,6 @@ Returns a string representation of this construct.
 ```typescript
 public addAccessRole(id: string, role: Role): void
 ```
-
-Add a new role to the cluster.
-
-This method is used to add an access role to the Amazon opensearch cluster
 
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addAccessRole.parameter.id"></a>
 
@@ -6218,10 +6214,6 @@ the iam role.
 public addAdminUser(id: string, username: string): void
 ```
 
-Add a new role to the cluster.
-
-This method is used to add an admin user to the Amazon opensearch cluster
-
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addAdminUser.parameter.id"></a>
 
 - *Type:* string
@@ -6244,10 +6236,6 @@ the username.
 public addDasboardUser(id: string, username: string): void
 ```
 
-Add a new role to the cluster.
-
-This method is used to add a dashboard user to the Amazon opensearch cluster
-
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addDasboardUser.parameter.id"></a>
 
 - *Type:* string
@@ -6269,10 +6257,6 @@ the username.
 ```typescript
 public addIndex(id: string, name: string, template: any): void
 ```
-
-Add a new role to the cluster.
-
-This method is used to add an index to the Amazon opensearch cluster
 
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addIndex.parameter.id"></a>
 
@@ -6304,10 +6288,6 @@ the permissions template.
 public addRole(id: string, name: string, template: object): void
 ```
 
-Add a new role to the cluster.
-
-This method is used to add a security role to the Amazon opensearch cluster
-
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addRole.parameter.id"></a>
 
 - *Type:* string
@@ -6337,10 +6317,6 @@ the permissions template.
 ```typescript
 public addRoleMapping(id: string, name: string, role: Role): void
 ```
-
-Add a new role to the cluster.
-
-This method is used to add a role mapping to the Amazon opensearch cluster
 
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addRoleMapping.parameter.id"></a>
 
@@ -6372,10 +6348,6 @@ the iam role.
 public addRollupStrategy(id: string, name: string, template: any): void
 ```
 
-Add a new role to the cluster.
-
-This method is used to add a rollup strtegy to the Amazon opensearch cluster
-
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addRollupStrategy.parameter.id"></a>
 
 - *Type:* string
@@ -6406,10 +6378,6 @@ the permissions template.
 public addUser(id: string, username: string, template: string[]): void
 ```
 
-Add a new role to the cluster.
-
-This method is used to add a user to the Amazon opensearch cluster
-
 ###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addUser.parameter.id"></a>
 
 - *Type:* string
@@ -6439,7 +6407,7 @@ the permissions template.
 | **Name** | **Description** |
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.getOrCreate">getOrCreate</a></code> | Get an existing OpensearchCluster based on the cluster name property or create a new one only one Opensearch cluster can exist per stack. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.getOrCreate">getOrCreate</a></code> | *No description.* |
 
 ---
 
@@ -6483,8 +6451,6 @@ import { OpensearchCluster } from 'aws-analytics-reference-architecture'
 OpensearchCluster.getOrCreate(scope: Construct, props: OpensearchClusterProps)
 ```
 
-Get an existing OpensearchCluster based on the cluster name property or create a new one only one Opensearch cluster can exist per stack.
-
 ###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.OpensearchCluster.getOrCreate.parameter.scope"></a>
 
 - *Type:* constructs.Construct
@@ -6507,7 +6473,6 @@ the OpensearchClusterProps [properties]{@link OpensearchClusterProps} if created
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
 | <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.property.domain">domain</a></code> | <code>aws-cdk-lib.aws_opensearchservice.Domain</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.property.domainName">domainName</a></code> | <code>string</code> | *No description.* |
 
 ---
 
@@ -6533,33 +6498,6 @@ public readonly domain: Domain;
 
 ---
 
-##### `domainName`<sup>Required</sup> <a name="domainName" id="aws-analytics-reference-architecture.OpensearchCluster.property.domainName"></a>
-
-```typescript
-public readonly domainName: string;
-```
-
-- *Type:* string
-
----
-
-#### Constants <a name="Constants" id="Constants"></a>
-
-| **Name** | **Type** | **Description** |
-| --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.property.DEFAULT_DOMAIN_NAME">DEFAULT_DOMAIN_NAME</a></code> | <code>string</code> | *No description.* |
-
----
-
-##### `DEFAULT_DOMAIN_NAME`<sup>Required</sup> <a name="DEFAULT_DOMAIN_NAME" id="aws-analytics-reference-architecture.OpensearchCluster.property.DEFAULT_DOMAIN_NAME"></a>
-
-```typescript
-public readonly DEFAULT_DOMAIN_NAME: string;
-```
-
-- *Type:* string
-
----
 
 ### S3CrossAccount <a name="S3CrossAccount" id="aws-analytics-reference-architecture.S3CrossAccount"></a>
 
@@ -11496,10 +11434,10 @@ const opensearchClusterProps: OpensearchClusterProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.accessRoles">accessRoles</a></code> | <code>aws-cdk-lib.aws_iam.Role[]</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.adminUsername">adminUsername</a></code> | <code>string</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.usernames">usernames</a></code> | <code>string[]</code> | *No description.* |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.domainName">domainName</a></code> | <code>string</code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.accessRoles">accessRoles</a></code> | <code>aws-cdk-lib.aws_iam.Role[]</code> | initial access roles to be mapped. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.adminUsername">adminUsername</a></code> | <code>string</code> | initial admin users to be created. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.usernames">usernames</a></code> | <code>string[]</code> | initial dasboards users to be created. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.domainProps">domainProps</a></code> | <code>aws-cdk-lib.aws_opensearchservice.DomainProps</code> | Override Opensearch domain props {@link aws_opensearchservice.DomainProps}. |
 
 ---
 
@@ -11511,6 +11449,8 @@ public readonly accessRoles: Role[];
 
 - *Type:* aws-cdk-lib.aws_iam.Role[]
 
+initial access roles to be mapped.
+
 ---
 
 ##### `adminUsername`<sup>Required</sup> <a name="adminUsername" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.adminUsername"></a>
@@ -11520,6 +11460,8 @@ public readonly adminUsername: string;
 ```
 
 - *Type:* string
+
+initial admin users to be created.
 
 ---
 
@@ -11531,15 +11473,19 @@ public readonly usernames: string[];
 
 - *Type:* string[]
 
+initial dasboards users to be created.
+
 ---
 
-##### `domainName`<sup>Optional</sup> <a name="domainName" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.domainName"></a>
+##### `domainProps`<sup>Optional</sup> <a name="domainProps" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.domainProps"></a>
 
 ```typescript
-public readonly domainName: string;
+public readonly domainProps: DomainProps;
 ```
 
-- *Type:* string
+- *Type:* aws-cdk-lib.aws_opensearchservice.DomainProps
+
+Override Opensearch domain props {@link aws_opensearchservice.DomainProps}.
 
 ---
 
