@@ -51,10 +51,10 @@ const resolveSecrets: any = async (object: any) => {
     if (Object.prototype.hasOwnProperty.call(object, key)) {
       let value = object[key];
       if (typeof value !== 'object' && value !== null && key.endsWith('FieldSecretArn')) {
-        const secretFeildName = key.replace('FieldSecretArn', '');
+        const secretFieldName = key.replace('FieldSecretArn', '');
         const secret = await client.send(new GetSecretValueCommand({ SecretId: value }));
-        value = JSON.parse(secret.SecretString!)[secretFeildName];
-        key = secretFeildName;
+        value = JSON.parse(secret.SecretString!)[secretFieldName];
+        key = secretFieldName;
       }
       resolvedObject[key] = await resolveSecrets(value);
     }

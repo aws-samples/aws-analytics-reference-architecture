@@ -14,6 +14,7 @@ import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
 
 export interface OpensearchClusterProps {
+  readonly version?: aws_opensearchservice.EngineVersion;
   readonly domainName?: string;
   readonly accessRoles: aws_iam.Role[];
   readonly adminUsername: string;
@@ -43,7 +44,7 @@ export class OpensearchCluster extends Construct {
   public static readonly DEFAULT_DOMAIN_NAME = 'opensearch-platform';
   public readonly domainName: string;
   public readonly domain: aws_opensearchservice.Domain;
-  private readonly apiFn: aws_lambda_nodejs.NodejsFunction;
+  private readonly apiProvider: custom_resources.Provider;
   private readonly masterRole: aws_iam.Role;
   private prevCr?: CustomResource;
 
@@ -57,22 +58,45 @@ export class OpensearchCluster extends Construct {
 
   constructor(scope: Construct, id: string, props: OpensearchClusterProps) {
     super(scope, id);
-    const { accessRoles, adminUsername, usernames } = props;
+    const {
+      version = aws_opensearchservice.EngineVersion.OPENSEARCH_2_5,
+      accessRoles,
+      adminUsername,
+      usernames,
+    } = props;
+
+    try {
+      aws_iam.Role.fromRoleName(this, 'OpensearchSlr', 'AWSServiceRoleForAmazonOpenSearchService');
+    } catch (error) {
+      new aws_iam.CfnServiceLinkedRole(this, 'ServiceLinkedRole', {
+        awsServiceName: 'es.amazonaws.com',
+      });
+    }
 
     this.domainName = props.domainName ?? OpensearchCluster.DEFAULT_DOMAIN_NAME;
 
     this.masterRole = new aws_iam.Role(this, 'AccessRole', {
       assumedBy: new aws_iam.ServicePrincipal('lambda.amazonaws.com'),
       managedPolicies: [
-        ManagedPolicy.fromAwsManagedPolicyName('CloudWatchLogsFullAccess'),
-        ManagedPolicy.fromAwsManagedPolicyName('AmazonOpenSearchServiceFullAccess'),
+        ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
       ],
     });
+    this.masterRole.addToPolicy(
+      new aws_iam.PolicyStatement({
+        actions: [
+          'es:UpdateElasticsearchDomainConfig',
+          'ec2:CreateNetworkInterface',
+          'ec2:DescribeNetworkInterfaces',
+          'ec2:DeleteNetworkInterface',
+        ],
+        resources: ['*'],
+      })
+    );
 
     this.domain = new aws_opensearchservice.Domain(this, 'Domain', {
+      version,
       domainName: this.domainName,
       removalPolicy: RemovalPolicy.DESTROY,
-      version: aws_opensearchservice.EngineVersion.OPENSEARCH_1_0,
       useUnsignedBasicAuth: true,
       fineGrainedAccessControl: {
         masterUserArn: this.masterRole.roleArn,
@@ -87,7 +111,8 @@ export class OpensearchCluster extends Construct {
         resources: [this.domain.domainArn],
       })
     );
-    this.apiFn = new aws_lambda_nodejs.NodejsFunction(this, 'api', {
+
+    const apiFn = new aws_lambda_nodejs.NodejsFunction(this, 'api', {
       architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_18_X,
       environment: {
@@ -95,6 +120,9 @@ export class OpensearchCluster extends Construct {
         ENDPOINT: this.domain.domainEndpoint,
       },
       role: this.masterRole,
+    });
+    this.apiProvider = new custom_resources.Provider(this, 'Provider/' + id, {
+      onEventHandler: apiFn,
     });
 
     this.addAdminUser(adminUsername, adminUsername);
@@ -123,11 +151,8 @@ export class OpensearchCluster extends Construct {
   }
 
   private apiCustomResource(id: string, path: string, body: any) {
-    const provider = new custom_resources.Provider(this, 'Provider/' + id, {
-      onEventHandler: this.apiFn,
-    });
     const cr = new CustomResource(this, 'ApiCR/' + id, {
-      serviceToken: provider.serviceToken,
+      serviceToken: this.apiProvider.serviceToken,
       properties: {
         path,
         body,
@@ -139,7 +164,7 @@ export class OpensearchCluster extends Construct {
   }
 
   /**
-   * Add a new role to the cluster.
+   * Add a new admin user to the cluster.
    * This method is used to add an admin user to the Amazon opensearch cluster
    * @param {string} id a unique id
    * @param {string} username the username
@@ -149,7 +174,7 @@ export class OpensearchCluster extends Construct {
   }
 
   /**
-   * Add a new role to the cluster.
+   * Add a new dashboard user to the cluster.
    * This method is used to add a dashboard user to the Amazon opensearch cluster
    * @param {string} id a unique id
    * @param {string} username the username
@@ -159,7 +184,7 @@ export class OpensearchCluster extends Construct {
   }
 
   /**
-   * Add a new role to the cluster.
+   * Add a new user to the cluster.
    * This method is used to add a user to the Amazon opensearch cluster
    * @param {string} id a unique id
    * @param {string} username the username
@@ -184,7 +209,7 @@ export class OpensearchCluster extends Construct {
   }
 
   /**
-   * Add a new role to the cluster.
+   * Add a new access role to the cluster.
    * This method is used to add an access role to the Amazon opensearch cluster
    * @param {string} id a unique id
    * @param {aws_iam.Role} role the iam role
@@ -220,7 +245,7 @@ export class OpensearchCluster extends Construct {
   }
 
   /**
-   * Add a new role to the cluster.
+   * Add a new role mapping to the cluster.
    * This method is used to add a role mapping to the Amazon opensearch cluster
    * @param {string} id a unique id
    * @param {string} name the role name
@@ -233,7 +258,7 @@ export class OpensearchCluster extends Construct {
   }
 
   /**
-   * Add a new role to the cluster.
+   * Add a new index to the cluster.
    * This method is used to add an index to the Amazon opensearch cluster
    * @param {string} id a unique id
    * @param {string} name the role name
@@ -244,7 +269,7 @@ export class OpensearchCluster extends Construct {
   }
 
   /**
-   * Add a new role to the cluster.
+   * Add a new rollup strategy to the cluster.
    * This method is used to add a rollup strtegy to the Amazon opensearch cluster
    * @param {string} id a unique id
    * @param {string} name the role name
