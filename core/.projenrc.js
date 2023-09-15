@@ -107,6 +107,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
   stability: 'experimental',
 });
+project.addPackageIgnore('!yarn.lock');
 
 project.testTask.reset('jest --group=unit');
 

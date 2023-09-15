@@ -9,12 +9,15 @@ import {
   aws_lambda_nodejs,
   Stack,
   CfnOutput,
+  Duration,
+  aws_logs,
 } from 'aws-cdk-lib';
-import { Architecture, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { ManagedPolicy } from 'aws-cdk-lib/aws-iam';
+import * as path from 'path';
 
 const defaultDomainProps: aws_opensearchservice.DomainProps = {
-  domainName: 'opensearch-platform',
+  domainName: 'ada-opensearch-platform',
   version: aws_opensearchservice.EngineVersion.OPENSEARCH_2_5,
   useUnsignedBasicAuth: true,
   enforceHttps: true,
@@ -22,12 +25,12 @@ const defaultDomainProps: aws_opensearchservice.DomainProps = {
 };
 
 export interface OpensearchClusterProps {
-  /** initial access roles to be mapped */
-  readonly accessRoles: aws_iam.Role[];
   /** initial admin users to be created */
   readonly adminUsername: string;
+  /** initial access roles to be mapped */
+  readonly accessRoles?: aws_iam.Role[];
   /** initial dasboards users to be created */
-  readonly usernames: string[];
+  readonly usernames?: string[];
   /** Override Opensearch domain props {@link aws_opensearchservice.DomainProps} */
   readonly domainProps?: aws_opensearchservice.DomainProps;
 }
@@ -62,7 +65,7 @@ export class OpensearchCluster extends Construct {
 
   constructor(scope: Construct, id: string, props: OpensearchClusterProps) {
     super(scope, id);
-    const { accessRoles, adminUsername, usernames, domainProps = {} } = props;
+    const { adminUsername, accessRoles = [], usernames = [], domainProps = {} } = props;
 
     try {
       aws_iam.Role.fromRoleName(this, 'OpensearchSlr', 'AWSServiceRoleForAmazonOpenSearchService');
@@ -109,13 +112,15 @@ export class OpensearchCluster extends Construct {
     );
 
     const apiFn = new aws_lambda_nodejs.NodejsFunction(this, 'api', {
-      architecture: Architecture.ARM_64,
       runtime: Runtime.NODEJS_18_X,
+      depsLockFilePath: path.join(__dirname, '../../yarn.lock'),
       environment: {
         REGION: Stack.of(this).region,
         ENDPOINT: this.domain.domainEndpoint,
       },
       role: this.masterRole,
+      timeout: Duration.minutes(1),
+      logRetention: aws_logs.RetentionDays.ONE_WEEK,
     });
     this.apiProvider = new custom_resources.Provider(this, 'Provider/' + id, {
       onEventHandler: apiFn,
