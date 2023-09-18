@@ -11434,22 +11434,10 @@ const opensearchClusterProps: OpensearchClusterProps = { ... }
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.accessRoles">accessRoles</a></code> | <code>aws-cdk-lib.aws_iam.Role[]</code> | initial access roles to be mapped. |
 | <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.adminUsername">adminUsername</a></code> | <code>string</code> | initial admin users to be created. |
-| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.usernames">usernames</a></code> | <code>string[]</code> | initial dasboards users to be created. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.accessRoles">accessRoles</a></code> | <code>aws-cdk-lib.aws_iam.Role[]</code> | initial access roles to be mapped. |
 | <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.domainProps">domainProps</a></code> | <code>aws-cdk-lib.aws_opensearchservice.DomainProps</code> | Override Opensearch domain props {@link aws_opensearchservice.DomainProps}. |
-
----
-
-##### `accessRoles`<sup>Required</sup> <a name="accessRoles" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.accessRoles"></a>
-
-```typescript
-public readonly accessRoles: Role[];
-```
-
-- *Type:* aws-cdk-lib.aws_iam.Role[]
-
-initial access roles to be mapped.
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.usernames">usernames</a></code> | <code>string[]</code> | initial dasboards users to be created. |
 
 ---
 
@@ -11465,15 +11453,15 @@ initial admin users to be created.
 
 ---
 
-##### `usernames`<sup>Required</sup> <a name="usernames" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.usernames"></a>
+##### `accessRoles`<sup>Optional</sup> <a name="accessRoles" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.accessRoles"></a>
 
 ```typescript
-public readonly usernames: string[];
+public readonly accessRoles: Role[];
 ```
 
-- *Type:* string[]
+- *Type:* aws-cdk-lib.aws_iam.Role[]
 
-initial dasboards users to be created.
+initial access roles to be mapped.
 
 ---
 
@@ -11486,6 +11474,18 @@ public readonly domainProps: DomainProps;
 - *Type:* aws-cdk-lib.aws_opensearchservice.DomainProps
 
 Override Opensearch domain props {@link aws_opensearchservice.DomainProps}.
+
+---
+
+##### `usernames`<sup>Optional</sup> <a name="usernames" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.usernames"></a>
+
+```typescript
+public readonly usernames: string[];
+```
+
+- *Type:* string[]
+
+initial dasboards users to be created.
 
 ---
 
