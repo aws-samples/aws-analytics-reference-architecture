@@ -30,6 +30,6 @@ test('Opensearch cluster created with correct name', () => {
   template.resourceCountIs('AWS::OpenSearchService::Domain', 1);
 
   template.hasResourceProperties('AWS::OpenSearchService::Domain', {
-    DomainName: 'opensearch-platform',
+    DomainName: 'ada-opensearch-platform',
   });
 });
