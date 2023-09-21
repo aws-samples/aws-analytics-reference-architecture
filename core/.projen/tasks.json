@@ -314,17 +314,17 @@
       "name": "post-upgrade",
       "description": "Runs after upgrading dependencies"
     },
-    "pre-compile": {
-      "name": "pre-compile",
-      "description": "Prepare the project for compilation"
-    },
-    "prepack": {
-      "name": "prepack",
+    "postinstall": {
+      "name": "postinstall",
       "steps": [
         {
           "exec": "npm shrinkwrap"
         }
       ]
+    },
+    "pre-compile": {
+      "name": "pre-compile",
+      "description": "Prepare the project for compilation"
     },
     "release": {
       "name": "release",

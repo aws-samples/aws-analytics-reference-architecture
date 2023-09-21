@@ -111,7 +111,7 @@ const project = new awscdk.AwsCdkConstructLibrary({
 project.addGitIgnore('npm-shrinkwrap.json');
 project.addPackageIgnore('!npm-shrinkwrap.json');
 
-project.addTask('prepack', {
+project.addTask('postinstall', {
   exec: 'npm shrinkwrap',
 });
 
