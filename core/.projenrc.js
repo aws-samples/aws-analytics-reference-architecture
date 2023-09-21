@@ -107,7 +107,13 @@ const project = new awscdk.AwsCdkConstructLibrary({
 
   stability: 'experimental',
 });
-project.addPackageIgnore('!yarn.lock');
+
+project.addGitIgnore('npm-shrinkwrap.json');
+project.addPackageIgnore('!npm-shrinkwrap.json');
+
+project.addTask('prepack', {
+  exec: 'npm shrinkwrap',
+});
 
 project.testTask.reset('jest --group=unit');
 

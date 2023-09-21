@@ -25,6 +25,7 @@
     "post-compile": "npx projen post-compile",
     "post-upgrade": "npx projen post-upgrade",
     "pre-compile": "npx projen pre-compile",
+    "prepack": "npx projen prepack",
     "release": "npx projen release",
     "test": "npx projen test",
     "test:best-practice": "npx projen test:best-practice",

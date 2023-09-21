@@ -318,6 +318,14 @@
       "name": "pre-compile",
       "description": "Prepare the project for compilation"
     },
+    "prepack": {
+      "name": "prepack",
+      "steps": [
+        {
+          "exec": "npm shrinkwrap"
+        }
+      ]
+    },
     "release": {
       "name": "release",
       "description": "Prepare a release from \"main\" branch",

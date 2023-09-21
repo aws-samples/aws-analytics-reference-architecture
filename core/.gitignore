@@ -47,3 +47,4 @@ junit.xml
 .jsii
 tsconfig.json
 !/API.md
+npm-shrinkwrap.json

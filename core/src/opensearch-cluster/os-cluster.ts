@@ -113,7 +113,7 @@ export class OpensearchCluster extends Construct {
 
     const apiFn = new aws_lambda_nodejs.NodejsFunction(this, 'api', {
       runtime: Runtime.NODEJS_18_X,
-      depsLockFilePath: path.join(__dirname, '../../yarn.lock'),
+      depsLockFilePath: path.join(__dirname, '../../npm-shrinkwrap.json'),
       environment: {
         REGION: Stack.of(this).region,
         ENDPOINT: this.domain.domainEndpoint,

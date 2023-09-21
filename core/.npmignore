@@ -20,4 +20,4 @@ dist
 tsconfig.tsbuildinfo
 /.eslintrc.json
 !.jsii
-!yarn.lock
+!npm-shrinkwrap.json
