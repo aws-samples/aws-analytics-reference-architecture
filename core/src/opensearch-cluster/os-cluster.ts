@@ -131,7 +131,7 @@ export class OpensearchCluster extends Construct {
 
     accessRoles.map((accessRole) => this.addAccessRole(accessRole.toString(), accessRole));
 
-    const awsCustom = new custom_resources.AwsCustomResource(this, 'EnableInternalUserDatabaseCR', {
+    new custom_resources.AwsCustomResource(this, 'EnableInternalUserDatabaseCR', {
       onCreate: {
         service: 'OpenSearch',
         action: 'updateDomainConfig',
@@ -148,7 +148,6 @@ export class OpensearchCluster extends Construct {
         resources: [this.domain.domainArn],
       }),
     });
-    this.domain.grantReadWrite(awsCustom);
   }
 
   private apiCustomResource(id: string, path: string, body: any) {

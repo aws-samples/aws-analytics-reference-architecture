@@ -854,7 +854,9 @@
   "resolved" "https://registry.npmjs.org/@colors/colors/-/colors-1.5.0.tgz"
   "version" "1.5.0"
 
-"@esbuild/linux-x64@0.18.20":
+"@esbuild/darwin-arm64@0.18.20":
+  "integrity" "sha512-bxRHW5kHU38zS2lPTPOyuyTm+S+eobPUnTNkdJEfAddYgEcll4xkT8DB9d2008DtTbl7uJag2HuE5NZAZgnNEA=="
+  "resolved" "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.18.20.tgz"
   "version" "0.18.20"
 
 "@eslint-community/eslint-utils@^4.2.0":
@@ -4086,6 +4088,16 @@
   "integrity" "sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw=="
   "resolved" "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
   "version" "1.0.0"
+
+"fsevents@^2.3.2":
+  "integrity" "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="
+  "resolved" "https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz"
+  "version" "2.3.3"
+
+"fsevents@2.3.2":
+  "integrity" "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA=="
+  "resolved" "https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz"
+  "version" "2.3.2"
 
 "function-bind@^1.1.1":
   "integrity" "sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A=="
@@ -8090,7 +8102,7 @@
   "version" "5.0.4"
 
 "typescript@next":
-  "version" "5.3.0-dev.20230921"
+  "version" "5.3.0-dev.20231003"
 
 "uglify-js@^3.1.4":
   "integrity" "sha512-T9q82TJI9e/C1TAxYvfb16xO120tMVFZrGA3f9/P4424DNu6ypK103y0GPFVa17yotwSyZW5iYXgjYHkGrJW/g=="
