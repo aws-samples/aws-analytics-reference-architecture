@@ -1,6 +1,8 @@
 
 # AWS Analytics Reference Architecture
 
+:warning: **this project is deprecated in favor of the [AWS Data Solutions Framework](https://awslabs.github.io/aws-data-solutions-framework/)**. AWS DSF provides not only examples but also components that can be directly reused by AWS partners and customers. Popular constructs from this project will be migrated step by step into AWS DSF. 
+
 The AWS Analytics Reference Architecture is a set of analytics solutions put together as end-to-end examples.
 It regroups AWS best practices for designing, implementing, and operating analytics platforms through different purpose-built patterns, handling common requirements, and solving customers' challenges.
 
