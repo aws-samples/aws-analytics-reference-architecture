@@ -32,6 +32,9 @@ nav:
       - Streaming Solutions: 'solutions/streaming.md'
       - Costs Solutions: 'solutions/costs.md'
 markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
   - toc:
       permalink: true
   - pymdownx.highlight:
