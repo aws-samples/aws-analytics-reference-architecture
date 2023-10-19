@@ -1,19 +1,28 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 
-import { Cluster, HelmChart, KubernetesManifest, KubernetesVersion, CfnAddon } from 'aws-cdk-lib/aws-eks';
-import { CfnInstanceProfile, Effect, FederatedPrincipal, ManagedPolicy, Policy, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { Aws, CfnOutput, Duration, Stack, Tags } from 'aws-cdk-lib';
-import { Queue } from 'aws-cdk-lib/aws-sqs';
-import { Rule } from 'aws-cdk-lib/aws-events';
-import { SqsQueue } from 'aws-cdk-lib/aws-events-targets';
-import { Construct } from 'constructs';
-import { ISubnet, Port, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
-import { Utils } from '../utils';
-import { EmrEksNodegroup, EmrEksNodegroupOptions } from './emr-eks-nodegroup';
-import { EmrEksCluster } from './emr-eks-cluster';
-import * as IamPolicyAlb from './resources/k8s/iam-policy-alb.json';
-import * as IamPolicyEbsCsiDriver from'./resources/k8s/iam-policy-ebs-csi-driver.json';
+import {CfnAddon, Cluster, HelmChart, KubernetesManifest, KubernetesVersion} from 'aws-cdk-lib/aws-eks';
+import {
+    CfnInstanceProfile,
+    Effect,
+    FederatedPrincipal,
+    ManagedPolicy,
+    Policy,
+    PolicyDocument,
+    PolicyStatement,
+    Role,
+    ServicePrincipal
+} from 'aws-cdk-lib/aws-iam';
+import {Aws, CfnOutput, Duration, Stack, Tags} from 'aws-cdk-lib';
+import {Queue} from 'aws-cdk-lib/aws-sqs';
+import {Rule} from 'aws-cdk-lib/aws-events';
+import {SqsQueue} from 'aws-cdk-lib/aws-events-targets';
+import {Construct} from 'constructs';
+import {ISubnet, Port, SecurityGroup, SubnetType} from 'aws-cdk-lib/aws-ec2';
+import {Utils} from '../utils';
+import {EmrEksNodegroup, EmrEksNodegroupOptions} from './emr-eks-nodegroup';
+import {EmrEksCluster} from './emr-eks-cluster';
+import * as IamPolicyEbsCsiDriver from './resources/k8s/iam-policy-ebs-csi-driver.json';
 
 
 /**
@@ -57,7 +66,7 @@ export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdm
   ebsCSIDriver.node.addDependency(ebsCsiDriverIrsa);
 
   // Deploy the Helm Chart for the Certificate Manager. Required for EMR Studio ALB.
-  const certManager = cluster.eksCluster.addHelmChart('CertManager', {
+  cluster.eksCluster.addHelmChart('CertManager', {
     createNamespace: true,
     namespace: 'cert-manager',
     chart: 'cert-manager',
@@ -71,37 +80,6 @@ export function eksClusterSetup(cluster: EmrEksCluster, scope: Construct, eksAdm
       installCRDs: true
     }
   });
-
-  //Create service account for ALB and install ALB
-  const albPolicyDocument = PolicyDocument.fromJson(IamPolicyAlb);
-  const albIAMPolicy = new Policy(
-    scope,
-    'AWSLoadBalancerControllerIAMPolicy',
-    { document: albPolicyDocument },
-  );
-
-  const albServiceAccount = cluster.eksCluster.addServiceAccount('ALB', {
-    name: 'aws-load-balancer-controller',
-    namespace: 'kube-system',
-  });
-  albIAMPolicy.attachToRole(albServiceAccount.role);
-
-  const albService = cluster.eksCluster.addHelmChart('ALB', {
-    chart: 'aws-load-balancer-controller',
-    repository: 'https://aws.github.io/eks-charts',
-    namespace: 'kube-system',
-    version: '1.5.2',
-    timeout: Duration.minutes(14),
-    values: {
-      clusterName: cluster.clusterName,
-      serviceAccount: {
-        name: 'aws-load-balancer-controller',
-        create: false,
-      },
-    },
-  });
-  albService.node.addDependency(albServiceAccount);
-  albService.node.addDependency(certManager);
 
   // Add the kubernetes dashboard from helm chart
   cluster.eksCluster.addHelmChart('KubernetesDashboard', {
@@ -420,7 +398,7 @@ export function karpenterSetup(cluster: Cluster,
     });
 
     Tags.of(karpenterInstancesSg).add('karpenter.sh/discovery', `${eksClusterName}`);
-    
+
     cluster.clusterSecurityGroup.addIngressRule(
         karpenterInstancesSg,
         Port.allTraffic(),
@@ -487,7 +465,7 @@ export function clusterAutoscalerSetup(
         [KubernetesVersion.V1_23, "9.21.0"],
         [KubernetesVersion.V1_22, "9.13.1"]
     ]);
-    
+
     // Create a Kubernetes Service Account for the Cluster Autoscaler with Amazon IAM Role
     const AutoscalerServiceAccount = cluster.addServiceAccount('Autoscaler', {
         name: 'cluster-autoscaler',

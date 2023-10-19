@@ -164,16 +164,6 @@ NagSuppressions.addResourceSuppressionsByPath(
 
 NagSuppressions.addResourceSuppressionsByPath(
   stack,
-  'eks-emr-studio/data-platform/AWSLoadBalancerControllerIAMPolicy/Resource',
-  [{
-    id: 'AwsSolutions-IAM5',
-    reason: 'IAM policy as provided by the open source community for AWS Load Balancer Controller ' +
-            'in https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.3.1/docs/install/iam_policy.json',
-  }],
-);
-
-NagSuppressions.addResourceSuppressionsByPath(
-  stack,
   'eks-emr-studio/data-platform/ec2InstanceNodeGroupRole/Resource',
   [{
     id: 'AwsSolutions-IAM4',

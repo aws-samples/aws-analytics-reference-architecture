@@ -120,15 +120,6 @@ test('EKS should have a helm chart for deploying the cert manager', () => {
   });
 });
 
-test('EKS should have a helm chart for deploying the AWS load balancer controller', () => {
-  template.hasResourceProperties('Custom::AWSCDK-EKS-HelmChart', {
-    Chart: 'aws-load-balancer-controller',
-    Repository: 'https://aws.github.io/eks-charts',
-    Namespace: 'kube-system',
-    Values: '{"clusterName":"data-platform","serviceAccount":{"name":"aws-load-balancer-controller","create":false}}',
-  });
-});
-
 test('EKS should have a helm chart for deploying the Kubernetes Dashboard', () => {
   template.hasResourceProperties('Custom::AWSCDK-EKS-HelmChart', {
     Chart: 'kubernetes-dashboard',
