@@ -152,6 +152,13 @@ export interface EmrEksClusterProps {
    * Cannot be combined with vpcCidr, if combined vpcCidr takes precendency
    */
   readonly eksVpc?: IVpc;
+
+  /**
+  * Wether we need to create an EMR on EKS Service Linked Role
+  * @default - true
+  */
+
+  readonly createEmrOnEksServiceLinkedRole?: boolean;
 }
 
 /**
@@ -230,12 +237,13 @@ export class EmrEksCluster extends TrackedConstruct {
   public readonly ec2InstanceNodeGroupRole: Role;
   private readonly managedEndpointProviderServiceToken: string;
   private readonly jobTemplateProviderToken: string;
-  private readonly emrServiceRole: CfnServiceLinkedRole;
+  private readonly emrServiceRole?: CfnServiceLinkedRole;
   private readonly assetUploadBucketRole: Role;
   private readonly karpenterChart?: HelmChart;
   private readonly isKarpenter: boolean;
   private readonly nodegroupAsgTagsProviderServiceToken: string;
   private readonly defaultNodes: boolean;
+  private createEmrOnEksServiceLinkedRole: boolean;
   /**
    * Constructs a new instance of the EmrEksCluster construct.
    * @param {Construct} scope the Scope of the CDK Construct
@@ -251,6 +259,10 @@ export class EmrEksCluster extends TrackedConstruct {
     super(scope, id, trackedConstructProps);
 
     this.clusterName = props.eksClusterName ?? EmrEksCluster.DEFAULT_CLUSTER_NAME;
+
+    //Set the flag for creating the EMR on EKS Service Linked Role
+    this.createEmrOnEksServiceLinkedRole = props.createEmrOnEksServiceLinkedRole ?? true;
+
     //Define EKS cluster logging
     const eksClusterLogging: ClusterLoggingTypes[] = [
       ClusterLoggingTypes.API,
@@ -379,9 +391,13 @@ export class EmrEksCluster extends TrackedConstruct {
 
     // Create Amazon IAM ServiceLinkedRole for Amazon EMR and add to kubernetes configmap
     // required to add a dependency on the Amazon EMR virtual cluster
-    this.emrServiceRole = new CfnServiceLinkedRole(this, 'EmrServiceRole', {
-      awsServiceName: 'emr-containers.amazonaws.com',
-    });
+
+    if (this.createEmrOnEksServiceLinkedRole) {
+      this.emrServiceRole = new CfnServiceLinkedRole(this, 'EmrServiceRole', {
+        awsServiceName: 'emr-containers.amazonaws.com',
+      });
+    }
+    
 
     this.eksCluster.awsAuth.addRoleMapping(
       Role.fromRoleArn(
@@ -487,7 +503,9 @@ export class EmrEksCluster extends TrackedConstruct {
     const k8sRole = JSON.parse(JSON.stringify(K8sRole));
     k8sRole.metadata.namespace = eksNamespace;
     const role = this.eksCluster.addManifest(`${options.name}Role`, k8sRole);
-    role.node.addDependency(this.emrServiceRole);
+
+    if (this.createEmrOnEksServiceLinkedRole) role.node.addDependency(this.emrServiceRole!);
+
     if (ns) role.node.addDependency(ns);
 
     // deep clone the Role Binding template object and replace the namespace
@@ -510,7 +528,8 @@ export class EmrEksCluster extends TrackedConstruct {
     });
 
     virtCluster.node.addDependency(roleBinding);
-    virtCluster.node.addDependency(this.emrServiceRole);
+    if(this.createEmrOnEksServiceLinkedRole)
+      virtCluster.node.addDependency(this.emrServiceRole!);
     
     if (ns)
       virtCluster.node.addDependency(ns);

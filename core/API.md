@@ -9786,6 +9786,7 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.autoscaling">autoscaling</a></code> | <code><a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a></code> | The autoscaling mechanism to use. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.createEmrOnEksServiceLinkedRole">createEmrOnEksServiceLinkedRole</a></code> | <code>boolean</code> | Wether we need to create an EMR on EKS Service Linked Role. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.defaultNodes">defaultNodes</a></code> | <code>boolean</code> | If set to true, the Construct will create default EKS nodegroups or node provisioners (based on the autoscaler mechanism used). |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksAdminRoleArn">eksAdminRoleArn</a></code> | <code>string</code> | Amazon IAM Role to be added to Amazon EKS master roles that will give access to kubernetes cluster from AWS console UI. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksCluster">eksCluster</a></code> | <code>aws-cdk-lib.aws_eks.Cluster</code> | The EKS cluster to setup EMR on. |
@@ -9808,6 +9809,19 @@ public readonly autoscaling: Autoscaler;
 - *Type:* <a href="#aws-analytics-reference-architecture.Autoscaler">Autoscaler</a>
 
 The autoscaling mechanism to use.
+
+---
+
+##### `createEmrOnEksServiceLinkedRole`<sup>Optional</sup> <a name="createEmrOnEksServiceLinkedRole" id="aws-analytics-reference-architecture.EmrEksClusterProps.property.createEmrOnEksServiceLinkedRole"></a>
+
+```typescript
+public readonly createEmrOnEksServiceLinkedRole: boolean;
+```
+
+- *Type:* boolean
+- *Default:* true
+
+Wether we need to create an EMR on EKS Service Linked Role.
 
 ---
 
