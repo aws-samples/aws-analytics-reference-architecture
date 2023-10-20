@@ -495,6 +495,11 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(stack, 'eks-emr-studio/eksemrstudiodataplatformCluster5BF625E0-AlbController/alb-sa/Role/DefaultPolicy/Resource', [{
+  id: 'AwsSolutions-IAM5',
+  reason: 'IAM policies defined by L2 constructs',
+}]);
+
 
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));

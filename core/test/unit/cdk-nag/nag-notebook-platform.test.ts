@@ -584,6 +584,22 @@ NagSuppressions.addResourceSuppressionsByPath(
   [{ id: 'AwsSolutions-L1', reason: 'Runtime set the by the L2 construct, cannot be changed' }],
 );
 
+NagSuppressions.addResourceSuppressionsByPath(stack, 'eks-emr-studio/data-platform/IamPolicyEbsCsiDriverIAMPolicy/Resource', [{
+  id: 'AwsSolutions-IAM5',
+  reason: 'use for the EBS CSI driver',
+}]);
+
+NagSuppressions.addResourceSuppressionsByPath(stack, 'eks-emr-studio/data-platformCluster/KubectlHandlerRole/Resource', [{
+  id: 'AwsSolutions-IAM4',
+  reason: 'IAM policies defined by custom resources for kubectl lambda L2 construct',
+}]);
+
+NagSuppressions.addResourceSuppressionsByPath(stack, 'eks-emr-studio/eksemrstudiodataplatformCluster5BF625E0-AlbController/alb-sa/Role/DefaultPolicy/Resource', [{
+  id: 'AwsSolutions-IAM5',
+  reason: 'IAM policies defined by L2 constructs',
+}]);
+
+
 test('No unsuppressed Errors', () => {
   const errors = Annotations.fromStack(stack).findError('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(errors);
