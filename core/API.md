@@ -9794,7 +9794,7 @@ const emrEksClusterProps: EmrEksClusterProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.eksVpc">eksVpc</a></code> | <code>aws-cdk-lib.aws_ec2.IVpc</code> | The VPC object where to deploy the EKS cluster VPC should have at least two private and public subnets in different Availability Zones All private subnets should have the following tags: 'for-use-with-amazon-emr-managed-policies'='true' 'kubernetes.io/role/internal-elb'='1' All public subnets should have the following tag: 'kubernetes.io/role/elb'='1' Cannot be combined with vpcCidr, if combined vpcCidr takes precendency. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.emrEksNodegroups">emrEksNodegroups</a></code> | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroup">EmrEksNodegroup</a>[]</code> | List of EmrEksNodegroup to create in the cluster in addition to the default [nodegroups]{@link EmrEksNodegroup}. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.karpenterVersion">karpenterVersion</a></code> | <code>string</code> | The version of karpenter to pass to Helm. |
-| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer">kubectlLambdaLayer</a></code> | <code>aws-cdk-lib.aws_lambda.ILayerVersion</code> | Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size.  A layer needs to be passed to the Construct. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubectlLambdaLayer">kubectlLambdaLayer</a></code> | <code>aws-cdk-lib.aws_lambda.ILayerVersion</code> | Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size. A layer needs to be passed to the Construct. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.kubernetesVersion">kubernetesVersion</a></code> | <code>aws-cdk-lib.aws_eks.KubernetesVersion</code> | Kubernetes version for Amazon EKS cluster that will be created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksClusterProps.property.vpcCidr">vpcCidr</a></code> | <code>string</code> | The CIDR of the VPC to use with EKS, if provided a VPC with three public subnets and three private subnet is create The size of the private subnets is four time the one of the public subnet. |
 
@@ -9870,7 +9870,7 @@ public readonly eksCluster: Cluster;
 The EKS cluster to setup EMR on.
 
 The cluster needs to be created in the same CDK Stack.
-If the EKS cluster is provided, the cluster AddOns and all the controllers (Ingress controller, Cluster Autoscaler or Karpenter...) need to be configured. 
+If the EKS cluster is provided, the cluster AddOns and all the controllers (Ingress controller, Cluster Autoscaler or Karpenter...) need to be configured.
 When providing an EKS cluster, the methods for adding nodegroups can still be used. They implement the best practices for running Spark on EKS.
 
 ---
@@ -9935,7 +9935,7 @@ public readonly kubectlLambdaLayer: ILayerVersion;
 - *Type:* aws-cdk-lib.aws_lambda.ILayerVersion
 - *Default:* No layer is used
 
-Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size.  A layer needs to be passed to the Construct.
+Starting k8s 1.22, CDK no longer bundle the kubectl layer with the code due to breaking npm package size. A layer needs to be passed to the Construct.
 
 The cdk [documentation] (https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_eks.KubernetesVersion.html#static-v1_22)
 contains the libraries that you should add for the right Kubernetes version
@@ -12103,6 +12103,10 @@ The different EMR versions available on EKS.
 
 | **Name** | **Description** |
 | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_14">V6_14</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_13">V6_13</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_12">V6_12</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_11">V6_11</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_10">V6_10</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_9">V6_9</a></code> | *No description.* |
 | <code><a href="#aws-analytics-reference-architecture.EmrVersion.V6_8">V6_8</a></code> | *No description.* |
@@ -12116,6 +12120,26 @@ The different EMR versions available on EKS.
 | <code><a href="#aws-analytics-reference-architecture.EmrVersion.V5_32">V5_32</a></code> | *No description.* |
 
 ---
+
+##### `V6_14` <a name="V6_14" id="aws-analytics-reference-architecture.EmrVersion.V6_14"></a>
+
+---
+
+
+##### `V6_13` <a name="V6_13" id="aws-analytics-reference-architecture.EmrVersion.V6_13"></a>
+
+---
+
+
+##### `V6_12` <a name="V6_12" id="aws-analytics-reference-architecture.EmrVersion.V6_12"></a>
+
+---
+
+
+##### `V6_11` <a name="V6_11" id="aws-analytics-reference-architecture.EmrVersion.V6_11"></a>
+
+---
+
 
 ##### `V6_10` <a name="V6_10" id="aws-analytics-reference-architecture.EmrVersion.V6_10"></a>
 
