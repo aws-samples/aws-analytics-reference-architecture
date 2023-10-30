@@ -78,7 +78,19 @@ const project = new awscdk.AwsCdkConstructLibrary({
     },
   },
 
-  bundledDeps: ['js-yaml', 'uuid', 'aws-sdk', '@exodus/schemasafe', 'simple-base'],
+  bundledDeps: [
+    'js-yaml',
+    'uuid',
+    'aws-sdk',
+    '@exodus/schemasafe',
+    'simple-base',
+    '@aws-crypto/sha256-browser',
+    '@aws-sdk/client-secrets-manager',
+    '@aws-sdk/credential-provider-node',
+    '@aws-sdk/node-http-handler',
+    '@aws-sdk/protocol-http',
+    '@aws-sdk/signature-v4',
+  ],
 
   python: {
     distName: 'aws_analytics_reference_architecture',
@@ -94,6 +106,13 @@ const project = new awscdk.AwsCdkConstructLibrary({
   },
 
   stability: 'experimental',
+});
+
+project.addGitIgnore('npm-shrinkwrap.json');
+project.addPackageIgnore('!npm-shrinkwrap.json');
+
+project.addTask('postinstall', {
+  exec: 'npm shrinkwrap',
 });
 
 project.testTask.reset('jest --group=unit');

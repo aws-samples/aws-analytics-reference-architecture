@@ -6120,6 +6120,385 @@ The tree node.
 ---
 
 
+### OpensearchCluster <a name="OpensearchCluster" id="aws-analytics-reference-architecture.OpensearchCluster"></a>
+
+#### Initializers <a name="Initializers" id="aws-analytics-reference-architecture.OpensearchCluster.Initializer"></a>
+
+```typescript
+import { OpensearchCluster } from 'aws-analytics-reference-architecture'
+
+new OpensearchCluster(scope: Construct, id: string, props: OpensearchClusterProps)
+```
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | the Scope of the AWS CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.Initializer.parameter.id">id</a></code> | <code>string</code> | the ID of the AWS CDK Construct. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.Initializer.parameter.props">props</a></code> | <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps">OpensearchClusterProps</a></code> | the OpensearchCluster [properties]{@link OpensearchClusterProps}. |
+
+---
+
+##### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.OpensearchCluster.Initializer.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the Scope of the AWS CDK Construct.
+
+---
+
+##### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.Initializer.parameter.id"></a>
+
+- *Type:* string
+
+the ID of the AWS CDK Construct.
+
+---
+
+##### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.OpensearchCluster.Initializer.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.OpensearchClusterProps">OpensearchClusterProps</a>
+
+the OpensearchCluster [properties]{@link OpensearchClusterProps}.
+
+---
+
+#### Methods <a name="Methods" id="Methods"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.toString">toString</a></code> | Returns a string representation of this construct. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addAccessRole">addAccessRole</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addAdminUser">addAdminUser</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addDasboardUser">addDasboardUser</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addIndex">addIndex</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addRole">addRole</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addRoleMapping">addRoleMapping</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addRollupStrategy">addRollupStrategy</a></code> | *No description.* |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.addUser">addUser</a></code> | *No description.* |
+
+---
+
+##### `toString` <a name="toString" id="aws-analytics-reference-architecture.OpensearchCluster.toString"></a>
+
+```typescript
+public toString(): string
+```
+
+Returns a string representation of this construct.
+
+##### `addAccessRole` <a name="addAccessRole" id="aws-analytics-reference-architecture.OpensearchCluster.addAccessRole"></a>
+
+```typescript
+public addAccessRole(id: string, role: Role): void
+```
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addAccessRole.parameter.id"></a>
+
+- *Type:* string
+
+a unique id.
+
+---
+
+###### `role`<sup>Required</sup> <a name="role" id="aws-analytics-reference-architecture.OpensearchCluster.addAccessRole.parameter.role"></a>
+
+- *Type:* aws-cdk-lib.aws_iam.Role
+
+the iam role.
+
+---
+
+##### `addAdminUser` <a name="addAdminUser" id="aws-analytics-reference-architecture.OpensearchCluster.addAdminUser"></a>
+
+```typescript
+public addAdminUser(id: string, username: string): void
+```
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addAdminUser.parameter.id"></a>
+
+- *Type:* string
+
+a unique id.
+
+---
+
+###### `username`<sup>Required</sup> <a name="username" id="aws-analytics-reference-architecture.OpensearchCluster.addAdminUser.parameter.username"></a>
+
+- *Type:* string
+
+the username.
+
+---
+
+##### `addDasboardUser` <a name="addDasboardUser" id="aws-analytics-reference-architecture.OpensearchCluster.addDasboardUser"></a>
+
+```typescript
+public addDasboardUser(id: string, username: string): void
+```
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addDasboardUser.parameter.id"></a>
+
+- *Type:* string
+
+a unique id.
+
+---
+
+###### `username`<sup>Required</sup> <a name="username" id="aws-analytics-reference-architecture.OpensearchCluster.addDasboardUser.parameter.username"></a>
+
+- *Type:* string
+
+the username.
+
+---
+
+##### `addIndex` <a name="addIndex" id="aws-analytics-reference-architecture.OpensearchCluster.addIndex"></a>
+
+```typescript
+public addIndex(id: string, name: string, template: any): void
+```
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addIndex.parameter.id"></a>
+
+- *Type:* string
+
+a unique id.
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.OpensearchCluster.addIndex.parameter.name"></a>
+
+- *Type:* string
+
+the role name.
+
+---
+
+###### `template`<sup>Required</sup> <a name="template" id="aws-analytics-reference-architecture.OpensearchCluster.addIndex.parameter.template"></a>
+
+- *Type:* any
+
+the permissions template.
+
+---
+
+##### `addRole` <a name="addRole" id="aws-analytics-reference-architecture.OpensearchCluster.addRole"></a>
+
+```typescript
+public addRole(id: string, name: string, template: object): void
+```
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addRole.parameter.id"></a>
+
+- *Type:* string
+
+a unique id.
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.OpensearchCluster.addRole.parameter.name"></a>
+
+- *Type:* string
+
+the role name.
+
+---
+
+###### `template`<sup>Required</sup> <a name="template" id="aws-analytics-reference-architecture.OpensearchCluster.addRole.parameter.template"></a>
+
+- *Type:* object
+
+the permissions template.
+
+---
+
+##### `addRoleMapping` <a name="addRoleMapping" id="aws-analytics-reference-architecture.OpensearchCluster.addRoleMapping"></a>
+
+```typescript
+public addRoleMapping(id: string, name: string, role: Role): void
+```
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addRoleMapping.parameter.id"></a>
+
+- *Type:* string
+
+a unique id.
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.OpensearchCluster.addRoleMapping.parameter.name"></a>
+
+- *Type:* string
+
+the role name.
+
+---
+
+###### `role`<sup>Required</sup> <a name="role" id="aws-analytics-reference-architecture.OpensearchCluster.addRoleMapping.parameter.role"></a>
+
+- *Type:* aws-cdk-lib.aws_iam.Role
+
+the iam role.
+
+---
+
+##### `addRollupStrategy` <a name="addRollupStrategy" id="aws-analytics-reference-architecture.OpensearchCluster.addRollupStrategy"></a>
+
+```typescript
+public addRollupStrategy(id: string, name: string, template: any): void
+```
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addRollupStrategy.parameter.id"></a>
+
+- *Type:* string
+
+a unique id.
+
+---
+
+###### `name`<sup>Required</sup> <a name="name" id="aws-analytics-reference-architecture.OpensearchCluster.addRollupStrategy.parameter.name"></a>
+
+- *Type:* string
+
+the role name.
+
+---
+
+###### `template`<sup>Required</sup> <a name="template" id="aws-analytics-reference-architecture.OpensearchCluster.addRollupStrategy.parameter.template"></a>
+
+- *Type:* any
+
+the permissions template.
+
+---
+
+##### `addUser` <a name="addUser" id="aws-analytics-reference-architecture.OpensearchCluster.addUser"></a>
+
+```typescript
+public addUser(id: string, username: string, template: string[]): void
+```
+
+###### `id`<sup>Required</sup> <a name="id" id="aws-analytics-reference-architecture.OpensearchCluster.addUser.parameter.id"></a>
+
+- *Type:* string
+
+a unique id.
+
+---
+
+###### `username`<sup>Required</sup> <a name="username" id="aws-analytics-reference-architecture.OpensearchCluster.addUser.parameter.username"></a>
+
+- *Type:* string
+
+the username.
+
+---
+
+###### `template`<sup>Required</sup> <a name="template" id="aws-analytics-reference-architecture.OpensearchCluster.addUser.parameter.template"></a>
+
+- *Type:* string[]
+
+the permissions template.
+
+---
+
+#### Static Functions <a name="Static Functions" id="Static Functions"></a>
+
+| **Name** | **Description** |
+| --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.getOrCreate">getOrCreate</a></code> | *No description.* |
+
+---
+
+##### `isConstruct` <a name="isConstruct" id="aws-analytics-reference-architecture.OpensearchCluster.isConstruct"></a>
+
+```typescript
+import { OpensearchCluster } from 'aws-analytics-reference-architecture'
+
+OpensearchCluster.isConstruct(x: any)
+```
+
+Checks if `x` is a construct.
+
+Use this method instead of `instanceof` to properly detect `Construct`
+instances, even when the construct library is symlinked.
+
+Explanation: in JavaScript, multiple copies of the `constructs` library on
+disk are seen as independent, completely different libraries. As a
+consequence, the class `Construct` in each copy of the `constructs` library
+is seen as a different class, and an instance of one class will not test as
+`instanceof` the other class. `npm install` will not create installations
+like this, but users may manually symlink construct libraries together or
+use a monorepo tool: in those cases, multiple copies of the `constructs`
+library can be accidentally installed, and `instanceof` will behave
+unpredictably. It is safest to avoid using `instanceof`, and using
+this type-testing method instead.
+
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.OpensearchCluster.isConstruct.parameter.x"></a>
+
+- *Type:* any
+
+Any object.
+
+---
+
+##### `getOrCreate` <a name="getOrCreate" id="aws-analytics-reference-architecture.OpensearchCluster.getOrCreate"></a>
+
+```typescript
+import { OpensearchCluster } from 'aws-analytics-reference-architecture'
+
+OpensearchCluster.getOrCreate(scope: Construct, props: OpensearchClusterProps)
+```
+
+###### `scope`<sup>Required</sup> <a name="scope" id="aws-analytics-reference-architecture.OpensearchCluster.getOrCreate.parameter.scope"></a>
+
+- *Type:* constructs.Construct
+
+the CDK scope used to search or create the cluster.
+
+---
+
+###### `props`<sup>Required</sup> <a name="props" id="aws-analytics-reference-architecture.OpensearchCluster.getOrCreate.parameter.props"></a>
+
+- *Type:* <a href="#aws-analytics-reference-architecture.OpensearchClusterProps">OpensearchClusterProps</a>
+
+the OpensearchClusterProps [properties]{@link OpensearchClusterProps} if created.
+
+---
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.property.node">node</a></code> | <code>constructs.Node</code> | The tree node. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchCluster.property.domain">domain</a></code> | <code>aws-cdk-lib.aws_opensearchservice.Domain</code> | *No description.* |
+
+---
+
+##### `node`<sup>Required</sup> <a name="node" id="aws-analytics-reference-architecture.OpensearchCluster.property.node"></a>
+
+```typescript
+public readonly node: Node;
+```
+
+- *Type:* constructs.Node
+
+The tree node.
+
+---
+
+##### `domain`<sup>Required</sup> <a name="domain" id="aws-analytics-reference-architecture.OpensearchCluster.property.domain"></a>
+
+```typescript
+public readonly domain: Domain;
+```
+
+- *Type:* aws-cdk-lib.aws_opensearchservice.Domain
+
+---
+
+
 ### S3CrossAccount <a name="S3CrossAccount" id="aws-analytics-reference-architecture.S3CrossAccount"></a>
 
 This CDK construct grants cross account permissions on an Amazon S3 location.
@@ -11052,6 +11431,75 @@ public readonly identityType: string;
 - *Type:* string
 
 Required Type of the identity either GROUP or USER, to be used when SSO is used as an authentication mode {@see SSOIdentityType}.
+
+---
+
+### OpensearchClusterProps <a name="OpensearchClusterProps" id="aws-analytics-reference-architecture.OpensearchClusterProps"></a>
+
+#### Initializer <a name="Initializer" id="aws-analytics-reference-architecture.OpensearchClusterProps.Initializer"></a>
+
+```typescript
+import { OpensearchClusterProps } from 'aws-analytics-reference-architecture'
+
+const opensearchClusterProps: OpensearchClusterProps = { ... }
+```
+
+#### Properties <a name="Properties" id="Properties"></a>
+
+| **Name** | **Type** | **Description** |
+| --- | --- | --- |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.adminUsername">adminUsername</a></code> | <code>string</code> | initial admin users to be created. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.accessRoles">accessRoles</a></code> | <code>aws-cdk-lib.aws_iam.Role[]</code> | initial access roles to be mapped. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.domainProps">domainProps</a></code> | <code>aws-cdk-lib.aws_opensearchservice.DomainProps</code> | Override Opensearch domain props {@link aws_opensearchservice.DomainProps}. |
+| <code><a href="#aws-analytics-reference-architecture.OpensearchClusterProps.property.usernames">usernames</a></code> | <code>string[]</code> | initial dasboards users to be created. |
+
+---
+
+##### `adminUsername`<sup>Required</sup> <a name="adminUsername" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.adminUsername"></a>
+
+```typescript
+public readonly adminUsername: string;
+```
+
+- *Type:* string
+
+initial admin users to be created.
+
+---
+
+##### `accessRoles`<sup>Optional</sup> <a name="accessRoles" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.accessRoles"></a>
+
+```typescript
+public readonly accessRoles: Role[];
+```
+
+- *Type:* aws-cdk-lib.aws_iam.Role[]
+
+initial access roles to be mapped.
+
+---
+
+##### `domainProps`<sup>Optional</sup> <a name="domainProps" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.domainProps"></a>
+
+```typescript
+public readonly domainProps: DomainProps;
+```
+
+- *Type:* aws-cdk-lib.aws_opensearchservice.DomainProps
+
+Override Opensearch domain props {@link aws_opensearchservice.DomainProps}.
+
+---
+
+##### `usernames`<sup>Optional</sup> <a name="usernames" id="aws-analytics-reference-architecture.OpensearchClusterProps.property.usernames"></a>
+
+```typescript
+public readonly usernames: string[];
+```
+
+- *Type:* string[]
+
+initial dasboards users to be created.
 
 ---
 
