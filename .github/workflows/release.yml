@@ -33,7 +33,7 @@ jobs:
         run: cd core && npx projen release
       - name: Check for new commits
         id: git_remote
-        run: echo ::set-output name=latest_commit::"$(git ls-remote origin -h ${{
+        run: echo latest_commit="$(git ls-remote origin -h ${{ >> "$GITHUB_OUTPUT"
           github.ref }} | cut -f1)"
       - name: Upload artifact
         if: ${{ steps.git_remote.outputs.latest_commit == github.sha }}
