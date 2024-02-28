@@ -204,6 +204,14 @@ NagSuppressions.addResourceSuppressionsByPath(
     [{ id: 'AwsSolutions-L1', reason: 'Log disabled the bucket hold asset needed for build no data' }],
   );
 
+  NagSuppressions.addResourceSuppressionsByPath(
+    stack, [
+      'docker-build/test/OnEvent/Resource',
+      'docker-build/test/IsComplete/Resource',
+    ],
+    [{ id: 'AwsSolutions-L1', reason: 'already using the latest version' }],
+  );
+
 test('No unsuppressed Warnings', () => {
   const warnings = Annotations.fromStack(stack).findWarning('*', Match.stringLikeRegexp('AwsSolutions-.*'));
   console.log(warnings);

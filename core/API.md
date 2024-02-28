@@ -439,6 +439,8 @@ The principal.
 
 Restrict the permission to a certain key pattern (default '*').
 
+Parameter type is `any` but `string` should be passed in.
+
 ---
 
 ##### `grantPublicAccess` <a name="grantPublicAccess" id="aws-analytics-reference-architecture.AraBucket.grantPublicAccess"></a>
@@ -511,6 +513,8 @@ The principal.
 
 Restrict the permission to a certain key pattern (default '*').
 
+Parameter type is `any` but `string` should be passed in.
+
 ---
 
 ##### `grantPutAcl` <a name="grantPutAcl" id="aws-analytics-reference-architecture.AraBucket.grantPutAcl"></a>
@@ -561,6 +565,8 @@ The principal.
 - *Type:* any
 
 Restrict the permission to a certain key pattern (default '*').
+
+Parameter type is `any` but `string` should be passed in.
 
 ---
 
@@ -2631,7 +2637,7 @@ If this is a nested stack, this represents its `AWS::CloudFormation::Stack` reso
 
 ---
 
-##### `terminationProtection`<sup>Optional</sup> <a name="terminationProtection" id="aws-analytics-reference-architecture.CdkDeployer.property.terminationProtection"></a>
+##### `terminationProtection`<sup>Required</sup> <a name="terminationProtection" id="aws-analytics-reference-architecture.CdkDeployer.property.terminationProtection"></a>
 
 ```typescript
 public readonly terminationProtection: boolean;
@@ -6272,9 +6278,9 @@ new SingletonCfnLaunchTemplate(scope: Construct, id: string, props: CfnLaunchTem
 
 | **Name** | **Type** | **Description** |
 | --- | --- | --- |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | - scope in which this resource is defined. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.id">id</a></code> | <code>string</code> | - scoped id of the resource. |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props">props</a></code> | <code>aws-cdk-lib.aws_ec2.CfnLaunchTemplateProps</code> | - resource properties. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.scope">scope</a></code> | <code>constructs.Construct</code> | Scope in which this resource is defined. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.id">id</a></code> | <code>string</code> | Construct identifier for this resource (unique in its scope). |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.Initializer.parameter.props">props</a></code> | <code>aws-cdk-lib.aws_ec2.CfnLaunchTemplateProps</code> | Resource properties. |
 
 ---
 
@@ -6282,7 +6288,7 @@ new SingletonCfnLaunchTemplate(scope: Construct, id: string, props: CfnLaunchTem
 
 - *Type:* constructs.Construct
 
-scope in which this resource is defined.
+Scope in which this resource is defined.
 
 ---
 
@@ -6290,7 +6296,7 @@ scope in which this resource is defined.
 
 - *Type:* string
 
-scoped id of the resource.
+Construct identifier for this resource (unique in its scope).
 
 ---
 
@@ -6298,7 +6304,7 @@ scoped id of the resource.
 
 - *Type:* aws-cdk-lib.aws_ec2.CfnLaunchTemplateProps
 
-resource properties.
+Resource properties.
 
 ---
 
@@ -6704,7 +6710,7 @@ tree inspector to collect and process attributes.
 | --- | --- |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isConstruct">isConstruct</a></code> | Checks if `x` is a construct. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnElement">isCfnElement</a></code> | Returns `true` if a construct is a stack element (i.e. part of the synthesized cloudformation template). |
-| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource">isCfnResource</a></code> | Check whether the given construct is a CfnResource. |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource">isCfnResource</a></code> | Check whether the given object is a CfnResource. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.getOrCreate">getOrCreate</a></code> | *No description.* |
 
 ---
@@ -6765,14 +6771,14 @@ versions of this library to be included in the same stack.
 ```typescript
 import { SingletonCfnLaunchTemplate } from 'aws-analytics-reference-architecture'
 
-SingletonCfnLaunchTemplate.isCfnResource(construct: IConstruct)
+SingletonCfnLaunchTemplate.isCfnResource(x: any)
 ```
 
-Check whether the given construct is a CfnResource.
+Check whether the given object is a CfnResource.
 
-###### `construct`<sup>Required</sup> <a name="construct" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource.parameter.construct"></a>
+###### `x`<sup>Required</sup> <a name="x" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.isCfnResource.parameter.x"></a>
 
-- *Type:* constructs.IConstruct
+- *Type:* any
 
 ---
 
@@ -6815,6 +6821,7 @@ SingletonCfnLaunchTemplate.getOrCreate(scope: Construct, name: string, data: str
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.cfnResourceType">cfnResourceType</a></code> | <code>string</code> | AWS resource type. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrDefaultVersionNumber">attrDefaultVersionNumber</a></code> | <code>string</code> | The default version of the launch template, such as 2. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrLatestVersionNumber">attrLatestVersionNumber</a></code> | <code>string</code> | The latest version of the launch template, such as `5` . |
+| <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrLaunchTemplateId">attrLaunchTemplateId</a></code> | <code>string</code> | The ID of the launch template. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData">launchTemplateData</a></code> | <code>aws-cdk-lib.IResolvable \| aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty</code> | The information for the launch template. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateName">launchTemplateName</a></code> | <code>string</code> | A name for the launch template. |
 | <code><a href="#aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications">tagSpecifications</a></code> | <code>aws-cdk-lib.IResolvable \| aws-cdk-lib.IResolvable \| aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateTagSpecificationProperty[]</code> | The tags to apply to the launch template on creation. |
@@ -6940,6 +6947,18 @@ The latest version of the launch template, such as `5` .
 
 ---
 
+##### `attrLaunchTemplateId`<sup>Required</sup> <a name="attrLaunchTemplateId" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.attrLaunchTemplateId"></a>
+
+```typescript
+public readonly attrLaunchTemplateId: string;
+```
+
+- *Type:* string
+
+The ID of the launch template.
+
+---
+
 ##### `launchTemplateData`<sup>Required</sup> <a name="launchTemplateData" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.launchTemplateData"></a>
 
 ```typescript
@@ -6949,8 +6968,6 @@ public readonly launchTemplateData: IResolvable | LaunchTemplateDataProperty;
 - *Type:* aws-cdk-lib.IResolvable | aws-cdk-lib.aws_ec2.CfnLaunchTemplate.LaunchTemplateDataProperty
 
 The information for the launch template.
-
-> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatedata](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatedata)
 
 ---
 
@@ -6964,8 +6981,6 @@ public readonly launchTemplateName: string;
 
 A name for the launch template.
 
-> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatename](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-launchtemplatename)
-
 ---
 
 ##### `tagSpecifications`<sup>Optional</sup> <a name="tagSpecifications" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.tagSpecifications"></a>
@@ -6978,12 +6993,6 @@ public readonly tagSpecifications: IResolvable | IResolvable | LaunchTemplateTag
 
 The tags to apply to the launch template on creation.
 
-To tag the launch template, the resource type must be `launch-template` .
-
-> To specify the tags for the resources that are created when an instance is launched, you must use the `TagSpecifications` parameter in the [launch template data](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestLaunchTemplateData.html) structure.
-
-> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-tagspecifications)
-
 ---
 
 ##### `versionDescription`<sup>Optional</sup> <a name="versionDescription" id="aws-analytics-reference-architecture.SingletonCfnLaunchTemplate.property.versionDescription"></a>
@@ -6995,8 +7004,6 @@ public readonly versionDescription: string;
 - *Type:* string
 
 A description for the first version of the launch template.
-
-> [http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-versiondescription](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-launchtemplate.html#cfn-ec2-launchtemplate-versiondescription)
 
 ---
 
@@ -8879,6 +8886,7 @@ const cdkDeployerProps: CdkDeployerProps = { ... }
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.env">env</a></code> | <code>aws-cdk-lib.Environment</code> | The AWS environment (account/region) where this stack will be deployed. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.permissionsBoundary">permissionsBoundary</a></code> | <code>aws-cdk-lib.PermissionsBoundary</code> | Options for applying a permissions boundary to all IAM Roles and Users created within this Stage. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.stackName">stackName</a></code> | <code>string</code> | Name to deploy the stack with. |
+| <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.suppressTemplateIndentation">suppressTemplateIndentation</a></code> | <code>boolean</code> | Enable this flag to suppress indentation in generated CloudFormation templates. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.synthesizer">synthesizer</a></code> | <code>aws-cdk-lib.IStackSynthesizer</code> | Synthesis method to use while deploying this stack. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.tags">tags</a></code> | <code>{[ key: string ]: string}</code> | Stack tags that will be applied to all the taggable resources and the stack itself. |
 | <code><a href="#aws-analytics-reference-architecture.CdkDeployerProps.property.terminationProtection">terminationProtection</a></code> | <code>boolean</code> | Whether to enable termination protection for this stack. |
@@ -9053,6 +9061,26 @@ public readonly stackName: string;
 - *Default:* Derived from construct path.
 
 Name to deploy the stack with.
+
+---
+
+##### ~~`suppressTemplateIndentation`~~<sup>Optional</sup> <a name="suppressTemplateIndentation" id="aws-analytics-reference-architecture.CdkDeployerProps.property.suppressTemplateIndentation"></a>
+
+- *Deprecated:* The enum should not be used. Use https://github.com/flochaz/cdk-standalone-deployer
+The properties for the CdkDeployer construct.
+
+```typescript
+public readonly suppressTemplateIndentation: boolean;
+```
+
+- *Type:* boolean
+- *Default:* the value of `@aws-cdk/core:suppressTemplateIndentation`, or `false` if that is not set.
+
+Enable this flag to suppress indentation in generated CloudFormation templates.
+
+If not specified, the value of the `@aws-cdk/core:suppressTemplateIndentation`
+context key will be used. If that is not specified, then the
+default value `false` will be used.
 
 ---
 
@@ -10088,6 +10116,8 @@ const emrEksNodegroupOptions: EmrEksNodegroupOptions = { ... }
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.labels">labels</a></code> | <code>{[ key: string ]: string}</code> | The Kubernetes labels to be applied to the nodes in the node group when they are created. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.launchTemplateSpec">launchTemplateSpec</a></code> | <code>aws-cdk-lib.aws_eks.LaunchTemplateSpec</code> | Launch template specification used for the nodegroup. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.maxSize">maxSize</a></code> | <code>number</code> | The maximum number of worker nodes that the managed node group can scale out to. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.maxUnavailable">maxUnavailable</a></code> | <code>number</code> | The maximum number of nodes unavailable at once during a version update. |
+| <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.maxUnavailablePercentage">maxUnavailablePercentage</a></code> | <code>number</code> | The maximum percentage of nodes unavailable during a version update. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.minSize">minSize</a></code> | <code>number</code> | The minimum number of worker nodes that the managed node group can scale in to. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.nodegroupName">nodegroupName</a></code> | <code>string</code> | Name of the Nodegroup. |
 | <code><a href="#aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.nodeRole">nodeRole</a></code> | <code>aws-cdk-lib.aws_iam.IRole</code> | The IAM role to associate with your node group. |
@@ -10231,6 +10261,44 @@ public readonly maxSize: number;
 The maximum number of worker nodes that the managed node group can scale out to.
 
 Managed node groups can support up to 100 nodes by default.
+
+---
+
+##### `maxUnavailable`<sup>Optional</sup> <a name="maxUnavailable" id="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.maxUnavailable"></a>
+
+```typescript
+public readonly maxUnavailable: number;
+```
+
+- *Type:* number
+- *Default:* 1
+
+The maximum number of nodes unavailable at once during a version update.
+
+Nodes will be updated in parallel. The maximum number is 100.
+
+This value or `maxUnavailablePercentage` is required to have a value for custom update configurations to be applied.
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-nodegroup-updateconfig.html#cfn-eks-nodegroup-updateconfig-maxunavailable](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-nodegroup-updateconfig.html#cfn-eks-nodegroup-updateconfig-maxunavailable)
+
+---
+
+##### `maxUnavailablePercentage`<sup>Optional</sup> <a name="maxUnavailablePercentage" id="aws-analytics-reference-architecture.EmrEksNodegroupOptions.property.maxUnavailablePercentage"></a>
+
+```typescript
+public readonly maxUnavailablePercentage: number;
+```
+
+- *Type:* number
+- *Default:* undefined - node groups will update instances one at a time
+
+The maximum percentage of nodes unavailable during a version update.
+
+This percentage of nodes will be updated in parallel, up to 100 nodes at once.
+
+This value or `maxUnavailable` is required to have a value for custom update configurations to be applied.
+
+> [https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-nodegroup-updateconfig.html#cfn-eks-nodegroup-updateconfig-maxunavailablepercentage](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-eks-nodegroup-updateconfig.html#cfn-eks-nodegroup-updateconfig-maxunavailablepercentage)
 
 ---
 

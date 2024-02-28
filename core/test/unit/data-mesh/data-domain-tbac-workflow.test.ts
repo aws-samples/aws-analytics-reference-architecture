@@ -60,6 +60,16 @@ describe('DataDomainTbacWorkflow', () => {
         PolicyDocument: {
           Statement: [
             {
+              Action: "glue:createDatabase",
+              Effect: "Allow",
+              Resource: "*"
+            },
+            {
+              Action: "events:PutEvents",
+              Effect: "Allow",
+              Resource: Match.anyValue()
+            },
+            {
               Action: [
                 "logs:CreateLogDelivery",
                 "logs:GetLogDelivery",
@@ -72,16 +82,6 @@ describe('DataDomainTbacWorkflow', () => {
               ],
               Effect: "Allow",
               Resource: "*"
-            },
-            {
-              Action: "glue:createDatabase",
-              Effect: "Allow",
-              Resource: "*"
-            },
-            {
-              Action: "events:PutEvents",
-              Effect: "Allow",
-              Resource: Match.anyValue()
             },
           ]
         }
