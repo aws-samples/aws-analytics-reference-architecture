@@ -431,25 +431,25 @@
           "exec": "yarn upgrade npm-check-updates"
         },
         {
-          "exec": "npm-check-updates --dep dev --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
+          "exec": "npm-check-updates --dep dev --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii-rosetta,jsii'"
         },
         {
-          "exec": "npm-check-updates --dep optional --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
+          "exec": "npm-check-updates --dep bundle --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii-rosetta,jsii'"
         },
         {
-          "exec": "npm-check-updates --dep peer --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
+          "exec": "npm-check-updates --dep peer --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii-rosetta,jsii'"
         },
         {
-          "exec": "npm-check-updates --dep prod --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
+          "exec": "npm-check-updates --dep prod --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii-rosetta,jsii'"
         },
         {
-          "exec": "npm-check-updates --dep bundle --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii'"
+          "exec": "npm-check-updates --dep optional --upgrade --target=minor --reject='@aws-cdk/aws-glue-alpha,@aws-cdk/aws-redshift-alpha,@aws-cdk/cli-lib-alpha,@aws-cdk/cloudformation-diff,@types/prettier,aws-cdk-lib,aws-cdk,cdk-assets,constructs,jsii-rosetta,jsii'"
         },
         {
           "exec": "yarn install --check-files"
         },
         {
-          "exec": "yarn upgrade"
+          "exec": "yarn upgrade @aws-cdk/aws-glue-alpha @aws-cdk/aws-redshift-alpha @aws-cdk/cli-lib-alpha @aws-cdk/cloudformation-diff @aws-cdk/lambda-layer-kubectl-v22 @aws-cdk/lambda-layer-kubectl-v25 @types/jest @types/js-yaml @types/node @types/prettier @typescript-eslint/eslint-plugin @typescript-eslint/parser aws-cdk-lib aws-cdk cdk-assets cdk-nag constructs esbuild eslint-import-resolver-node eslint-import-resolver-typescript eslint-plugin-import eslint glob jest jest-junit jest-runner-groups jsii-diff jsii-docgen jsii-pacmak jsii-rosetta jsii npm-check-updates projen promptly proxy-agent standard-version ts-jest typescript @exodus/schemasafe aws-sdk js-yaml simple-base uuid @aws-cdk/aws-glue-alpha @aws-cdk/aws-redshift-alpha aws-cdk-lib constructs @aws-cdk/aws-glue-alpha @aws-cdk/aws-redshift-alpha @exodus/schemasafe"
         },
         {
           "exec": "npx projen"

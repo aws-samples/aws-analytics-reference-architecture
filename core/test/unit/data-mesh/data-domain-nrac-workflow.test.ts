@@ -60,20 +60,6 @@ describe('DataDomainNracWorkflowTests', () => {
         PolicyDocument: {
           Statement: [
             {
-              Action: [
-                "logs:CreateLogDelivery",
-                "logs:GetLogDelivery",
-                "logs:UpdateLogDelivery",
-                "logs:DeleteLogDelivery",
-                "logs:ListLogDeliveries",
-                "logs:PutResourcePolicy",
-                "logs:DescribeResourcePolicies",
-                "logs:DescribeLogGroups"
-              ],
-              Effect: "Allow",
-              Resource: "*"
-            },
-            {
               Action: "ram:getResourceShareInvitations",
               Effect: "Allow",
               Resource: "*"
@@ -102,7 +88,21 @@ describe('DataDomainNracWorkflowTests', () => {
               Action: "ram:acceptResourceShareInvitation",
               Effect: "Allow",
               Resource: "*"
-            }
+            },
+            {
+              Action: [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups"
+              ],
+              Effect: "Allow",
+              Resource: "*"
+            },
           ]
         }
       })

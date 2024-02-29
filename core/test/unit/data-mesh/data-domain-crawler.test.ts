@@ -63,20 +63,6 @@ describe('DataDomainCrawlerTests', () => {
               }
             },
             {
-              "Action": [
-                "logs:CreateLogDelivery",
-                "logs:GetLogDelivery",
-                "logs:UpdateLogDelivery",
-                "logs:DeleteLogDelivery",
-                "logs:ListLogDeliveries",
-                "logs:PutResourcePolicy",
-                "logs:DescribeResourcePolicies",
-                "logs:DescribeLogGroups"
-              ],
-              "Effect": "Allow",
-              "Resource": "*"
-            },
-            {
               "Action": "lakeformation:grantPermissions",
               "Effect": "Allow",
               "Resource": "*"
@@ -108,6 +94,20 @@ describe('DataDomainCrawlerTests', () => {
             },
             {
               "Action": "lakeformation:batchGrantPermissions",
+              "Effect": "Allow",
+              "Resource": "*"
+            },
+            {
+              "Action": [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups"
+              ],
               "Effect": "Allow",
               "Resource": "*"
             },
