@@ -4,7 +4,7 @@
 /**
  * Tests EmrEksCluster
  *
- * @group integ/emr-eks-cluster
+ * @group integ/emr-eks/cluster
  */
 
 import * as cdk from 'aws-cdk-lib';

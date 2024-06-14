@@ -333,6 +333,7 @@ export class NotebookPlatform extends TrackedConstruct {
 
     new CfnOutput(this, `URL for EMR Studio: ${this.studioName}`, {
       value: this.studioInstance.attrUrl,
+      exportName: `{this.studioName}`
     });
 
     /*//Return EMR Studio URL as CfnOutput

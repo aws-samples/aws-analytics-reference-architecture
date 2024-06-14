@@ -4,7 +4,7 @@
 /**
  * Tests SyncrhonousCrawler
  *
- * @group integ/synchronous-crawler
+ * @group integ/synchronous/synchronous-crawler
  */
 
 import * as cdk from 'aws-cdk-lib';
